@@ -1,0 +1,56 @@
+﻿println "Akarrú!!!"
+
+blog := "La naturaleza del software" // blog es de tipo String
+
+
+ogú := Cavernícola(nombre: "ogú) // ogú es de tipo Cavernícola
+
+
+x, y := 1, 2 // x e y son de tipo Int
+
+factorial : Int -> Int
+
+factorial 0 = 1
+
+factorial 1 = 1
+
+factorial n = n * factorial (n-1)
+
+
+fact : (n:Int)->Int  =  (n == 0) 1 else  n * fact(n-1)
+
+suma : (a,b : Int)-> Int = { 
+   a+b // el valor es a+b 
+} 
+
+suma2 : (a, b : Int) –> (resultado: Int) =  { 
+        resultado = a+b 
+        println "el resultado es " + resultado // el valor de suma es resultado 
+}
+
+
+Persona : (nombre: String, edadInicial: Int) ={
+
+     var _edad = edadInicial
+
+     saludar : () = println "hola " + nombre 
+
+     celebrarCumpleaños : () = { 
+          _edad = _edad + 1 
+          println "¡¡ feliz cumpleaños " + nombre + "!!"
+    } 
+}
+
+
+Cavernícola : (nombre, grito : String) 
+
+Cavernícola : (nombre : String) = Cavernícola(nombre, “akarrú!!”)
+
+Cavernícola = {
+
+     pelear : () = { 
+        println "yiko pelea!"
+        println grito 
+    } 
+}
+
