@@ -44,7 +44,7 @@ Persona : (nombre: String, edadInicial: Int) ={
 
 Cavernícola : (nombre, grito : String) 
 
-Cavernícola : (nombre : String) = Cavernícola(nombre, “akarrú!!”)
+Cavernícola  (nombre : String) = Cavernícola(nombre, “akarrú!!”)
 
 Cavernícola = {
 
