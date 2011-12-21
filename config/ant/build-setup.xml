@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+
+<!--
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
+compliance with the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is
+distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+implied. See the License for the specific language governing permissions and limitations under the License.
+
+This work is copyright by the author(s) and is part of a greater work collectively copyright by the
+Ogu community. See the NOTICE.txt file distributed with this work for additional information.
+
+Author : Eduardo Diaz
+$Revision:$ ($LastChangedBy$)
+$Date$
+-->
+
+<project name="build-setup" default="antlr_classpath" basedir="../..">
+	<property name="sourceDirectory" value="src"/>
+	<property name="mainSourceDirectory" location="${sourceDirectory}/main"/>
+    <property name="testSourceDirectory" value="${sourceDirectory}/test"/>
+
+    <property name="antlrDirectory" value="${mainSourceDirectory}/net/lnds/ogu/antlr" />
+    <property name="oguParserDirectory" value="${antlrDirectory}/parser" />
+
+    <!-- Check if ANTLR3 can be found in the classpath -->
+	<target name="antlr_classpath">
+		<whichresource property="antlr.in.classpath" class="org.antlr.Tool" />
+			<fail message="ANTLR3 not found via CLASSPATH ${java.class.path}">
+				<condition>
+					<not>
+						<isset property="antlr.in.classpath"/>
+					</not>
+				</condition>
+			</fail>
+		<echo>ANTLR3 found via CLASSPATH</echo>
+	</target>
+
+	<!-- Inquire environment variables -->
+    <property environment="envList"/>
+
+    <property name="token.lib" location="${antlrDirectory}/${package}" />
+    <property name="classes" location="classes"/>
+      <property name="dist" location="dist" />
+
+ <!-- Use wildcards in pattern definition -->
+    <!-- to be independent of antlr versions -->
+    <patternset id="antlr.libs">
+        <include name="antlr-*.jar" />
+        <include name="stringtemplate-*.jar" />
+        <include name="runtime-*.jar" />
+    </patternset>
+
+   <property name="antlrHome" value="${envList.ANTLR_HOME}"/>
+	   <!-- Looking for archives in ANTLR_HOME directory -->
+    <path id="antlr.path">
+        <fileset dir="${antlrHome}" casesensitive="yes">
+            <patternset refid="antlr.libs" />
+        </fileset>
+    </path>   
+    
+
+	<macrodef name="antlr3">
+        <attribute name="grammar.name"/>
+        <attribute name="package" default="${package}"/>
+        <attribute name="make" default="True"/>
+        <attribute name="verbose" default="True"/>
+        <sequential>
+            <echo message="antlr ${antlrDirectory}/@{grammar.name}" />
+            <antlr:ant-antlr3 xmlns:antlr="antlib:org/apache/tools/ant/antlr"
+                  target="${antlrDirectory}/@{grammar.name}"
+                  outputdirectory="${antlrDirectory}/@{package}"
+                  libdirectory="${antlrDirectory}/@{package}"
+                  multithreaded="${multithreaded}"
+                  make="@{make}"
+                  verbose="@{verbose}"
+                  report="${report}"
+                  debug="${debug}">
+                <classpath>
+                    <path refid="antlr.path"/>
+                </classpath>
+                <jvmarg value="-Xmx512M"/>
+            </antlr:ant-antlr3>
+        </sequential>
+    </macrodef>
+
+ 	
+   
+</project>
