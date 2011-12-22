@@ -50,13 +50,15 @@ tokens {
    }
 }
 
-prog	:   (decl)* ;
+prog	: (opt_sep)  (decl)* ;
 
 
 stat
+@after { println($stat.tree.toStringTree()+"\n"); }
     : decl | expr sep ;
 
 decl
+@after { println($decl.tree.toStringTree()+"\n"); }
     : def | var | val;
     
 var

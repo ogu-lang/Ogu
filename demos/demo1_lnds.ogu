@@ -1,56 +1,57 @@
-﻿println "Akarrú!!!"
+// actualmente no compila porque no esta list el soporte de utf-8 o unicode
 
-blog := "La naturaleza del software" // blog es de tipo String
-
-
-ogú := Cavernícola(nombre: "ogú) // ogú es de tipo Cavernícola
+var blog := "La naturaleza del software" // blog es de tipo String
 
 
-x, y := 1, 2 // x e y son de tipo Int
-
-factorial : Int -> Int
-
-factorial 0 = 1
-
-factorial 1 = 1
-
-factorial n = n * factorial (n-1)
 
 
-fact : (n:Int)->Int  =  (n == 0) 1 else  n * fact(n-1)
+var ogu := Cavernicola(nombre: "ogu") // ogu es de tipo Cavernicola
 
-suma : (a,b : Int)-> Int = { 
+
+val x, y := 1, 2 // x e y son de tipo Int
+
+def factorial : Int -> Int
+
+def factorial 0 = 1
+
+def factorial 1 = 1
+
+def factorial n = n * factorial (n-1)
+
+
+def fact : (n:Int)->Int  =  (n == 0) 1 else  n * fact(n-1)
+
+def suma : (a,b : Int)-> Int = { 
    a+b // el valor es a+b 
 } 
 
-suma2 : (a, b : Int) –> (resultado: Int) =  { 
+def suma2 : (a, b : Int) -> (resultado: Int) =  { 
         resultado = a+b 
         println "el resultado es " + resultado // el valor de suma es resultado 
 }
 
 
-Persona : (nombre: String, edadInicial: Int) ={
+def Persona : class (nombre: String, edadInicial: Int) ={
 
      var _edad = edadInicial
 
-     saludar : () = println "hola " + nombre 
+     def saludar  () = println "hola " + nombre 
 
-     celebrarCumpleaños : () = { 
+     def celebrarCumplea�os  () = { 
           _edad = _edad + 1 
-          println "¡¡ feliz cumpleaños " + nombre + "!!"
+          println "�� feliz cumplea�os " + nombre + "!!"
     } 
 }
 
 
-Cavernícola : (nombre, grito : String) 
+def Cavernicola (nombre:String) = Cavernicola(nombre, "akarru!!!" )
 
-Cavernícola  (nombre : String) = Cavernícola(nombre, “akarrú!!”)
+def Cavernicola : class (nombre, grito : String) = {
 
-Cavernícola = {
-
-     pelear : () = { 
+     def pelear  () = { 
         println "yiko pelea!"
         println grito 
     } 
 }
 
+println "Akarru!!!"
