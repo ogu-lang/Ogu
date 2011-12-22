@@ -50,7 +50,7 @@ tokens {
    }
 }
 
-prog	: (opt_sep)  (decl)* ;
+prog	: (opt_sep)  (stat)* ;
 
 
 stat
@@ -58,7 +58,6 @@ stat
     : decl | expr sep ;
 
 decl
-@after { println($decl.tree.toStringTree()+"\n"); }
     : def | var | val;
     
 var
@@ -70,14 +69,13 @@ val
     ;
 
 def
-@after { println($def.tree.toStringTree()+"\n"); }
-    : DEF^ id (def_func  | def_class | def_trait | ASSIGN^ class_body sep) ;
+    : DEF^ id (def_func  | def_class | def_trait | def_object | ASSIGN^ class_body sep) ;
 
 
 def_func
-    : COLON! (func_args)=> func_args (func_rets)? (ASSIGN^ (expr|block))? sep
-    | (func_args)=> func_args (func_rets)? (ASSIGN^ (expr|block))? sep
-    | func_expr_args ASSIGN^ (expr | block) sep
+    : COLON! (func_args)=> func_args (func_rets)? (ASSIGN^ opt_sep (expr|block))? sep
+    | (func_args)=> func_args (func_rets)? (ASSIGN^ opt_sep (expr|block))? sep
+    | func_expr_args ASSIGN^ opt_sep (expr | block) sep
     ;
 
 func_expr_args
@@ -126,6 +124,8 @@ def_trait
 
 trait_body : block ;
 
+def_object
+    : COLON OBJECT class_args? (class_extends)? (class_satisfies)?  (ASSIGN class_body)? sep;
 
 type
 options { backtrack = true;}
@@ -266,9 +266,10 @@ sep
 @init {
     int marker = input.mark();
 }
-: SEMI ! 
+: SEMI! (NL!)* 
 | (NL!)+
 | RCURLY { input.rewind(marker); }
+| EOF!
 ;
 
 opt_sep : (sep)? ;
@@ -277,6 +278,7 @@ nl : (NL!)+ ;
 
 CLASS : 'class';
 DEF : 'def';
+OBJECT : 'object';
 TRAIT : 'trait';
 VAR : 'var';
 VAL : 'val';

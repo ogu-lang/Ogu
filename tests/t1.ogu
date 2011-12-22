@@ -1,0 +1,22 @@
+
+
+/// tests separators and new lines...
+
+def f : Int -> Int = 0
+
+def g : Int -> Int =
+	0
+
+def h : Int -> Int = {
+	0
+}
+
+def i : (n:Int) -> Int = { n + 1; n }
+	
+def j : (n:Int) -> Int = { n + 1 
+	n }
+
+def k : (n:Int) -> Int = {
+	n+1;
+	n
+}
