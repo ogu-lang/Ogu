@@ -1,0 +1,14 @@
+This is the programming language Ogu
+
+BUILD
+-----
+
+You will need ANTLR v 3.4 and ANT 1.8+
+
+Just type ant to build the parser
+
+
+This software is distributed under a BSD License, see LICENSE file for details
+
+(c) 2011 Eduardo Diaz
+www.lnds.net
