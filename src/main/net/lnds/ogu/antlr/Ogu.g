@@ -71,17 +71,21 @@ val
 def
     : DEF^ id (def_func  | def_class | def_trait | def_object | ASSIGN^ class_body sep) ;
 
+expr_block
+    : expr | block
+    ;
 
 def_func
-    : COLON! (func_args)=> func_args (func_rets)? (ASSIGN^ opt_sep (expr|block))? sep
-    | (func_args)=> func_args (func_rets)? (ASSIGN^ opt_sep (expr|block))? sep
-    | func_expr_args ASSIGN^ opt_sep (expr | block) sep
+    : COLON! (func_args)=> func_args func_rets? func_body? sep
+    | (func_args)=> func_args func_rets?  func_body? sep
+    | func_expr_args  func_body? sep
     ;
 
 func_expr_args
-    : (eq_expr_list)=>eq_expr_list
-    | LPAREN! (eq_expr_list)? RPAREN!
+    : (cond_expr_list)=>cond_expr_list
+    | LPAREN! (cond_expr_list)? RPAREN!
     ;
+
 func_args
     : (func_arg)=> func_arg (COMMA func_arg)*
     | LPAREN (func_args)? RPAREN 
@@ -93,6 +97,15 @@ func_arg
 
 func_rets
     : ARROW (type | LPAREN id COLON RPAREN) ;
+
+func_body
+    :( ASSIGN^ opt_sep expr_block
+    |func_bar_body+)
+    ;
+
+func_bar_body
+    : (nl)?  BAR^ cond_expr ASSIGN expr_block 
+    ;
 
 def_class
     : COLON CLASS class_args? (class_extends)? (class_satisfies)?  (ASSIGN class_body)? sep;
@@ -135,7 +148,7 @@ options { backtrack = true;}
     ;
 
 type_expr
-    : type ((BIT_OR | BIT_AND) type)*
+    : type ((BAR | AMPERSAND) type)*
     ;
 
 type_expr_list
@@ -167,12 +180,54 @@ expr_list
     ;
 
 expr 
-    :   eq_expr ((ASSIGN)=> ASSIGN^ (expr|block))?
+    :  
+     cond_expr ( (ASSIGN)=> ASSIGN^ expr_block | (where_clause)=>where_clause)?
     | lambda_expr
+    | if_expr
+    | for_expr
+    | case_expr
+    | let_expr
     ;
 
-eq_expr_list
-    : eq_expr (COMMA eq_expr)* ;
+where_clause
+    : ((nl)=>nl)? WHERE (nl)? where_var_decl ((semi_sep where_var_decl)=>semi_sep where_var_decl)*;
+
+where_var_decl
+    : id (COLON (type)?)? ASSIGN expr_block
+    ;
+
+let_expr
+    : LET (nl)? let_var_decl ((semi_sep let_var_decl)=> semi_sep let_var_decl)* 
+      (nl)?
+      IN (nl)? expr_block
+    ;
+
+let_var_decl
+    : id (COLON (type)?)? ASSIGN expr_block 
+    ;
+
+if_expr
+    : IF LPAREN expr RPAREN (nl)? expr_block
+      ((nl)?ELSIF LPAREN expr RPAREN (nl)? expr_block)*
+      ELSE (nl)? expr_block
+    ;
+
+for_expr
+    : FOR LPAREN id IN expr RPAREN expr_block ;
+
+case_expr
+    : CASE LPAREN id_list RPAREN OF (nl)?
+        expr BIG_ARROW expr ((sep expr BIG_ARROW)=>sep expr BIG_ARROW expr)*
+        ;
+
+cond_expr_list
+    : cond_expr (COMMA cond_expr)* ;
+
+cond_expr
+    : and_expr ((OR)=> OR and_expr)* ;
+
+and_expr
+    : eq_expr ((AND)=> AND eq_expr)* ;
 
 eq_expr
     : rel_expr ((eq_op)=> eq_op^ rel_expr)*
@@ -185,7 +240,7 @@ rel_expr
     ;
 
 rel_op
-    : LT | GT | LE | GE | IN;
+    : LT | GT | LE | GE | LT_MINUS;
 
 
 add_expr
@@ -197,7 +252,7 @@ add_op
     ;
 
 mult_expr
-    : post_fix_expr ((mul_op)=> mul_op^ post_fix_expr)*
+    : unary_expr ((mul_op)=> mul_op^ unary_expr)*
     ;
 
 mul_op
@@ -205,7 +260,7 @@ mul_op
     ;
 
 unary_expr
-    : unary_op post_fix_expr
+    : (unary_op )=> unary_op unary_expr
     | post_fix_expr
     ;
 
@@ -257,6 +312,8 @@ lambda_arg
 
 bracket_inner_expr
     : expr_list (DOT2 (expr_list))?
+    | id BAR expr_list
+    | id COLON expr (COMMA id COLON expr)*
     ;
 
 
@@ -272,20 +329,40 @@ sep
 | EOF!
 ;
 
+semi_sep
+    : SEMI! | (NL!)+
+    ;
+
 opt_sep : (sep)? ;
 
 nl : (NL!)+ ;
 
+CASE : 'case';
 CLASS : 'class';
 DEF : 'def';
+ELSE : 'else';
+ELSIF : 'elsif';
+FINALLY : 'finally';
+FOR : 'for';
+IF : 'if';
+IN : 'in' ;
+LET : 'let';
+
 OBJECT : 'object';
+OF : 'of' ;
 TRAIT : 'trait';
+TRY : 'try';
 VAR : 'var';
 VAL : 'val';
+WHERE : 'where';
+
+AND : '&&' ;
+OR  : '||' ;
 
 ASSIGN : '=';
 LAMBDA : '\\';
 ARROW : '->';
+BIG_ARROW : '=>';
 COLON : ':' ;
 CONS : '::' ;
 COMMA : ',' ;
@@ -304,15 +381,16 @@ RBRACKET : ']' { --bracketLevel; };
 MULT : '*' ;
 DIV : '/' ;
 LT : '<';
+LT_MINUS : '<-';
 GT : '>';
 LE : '<=';
 GE : '>=';
 EQ : '==';
 NE : '!=';
 NOT : '!' ;
-IN : 'in' ;
-BIT_OR : '|' ;
-BIT_AND : '&' ;
+
+BAR : '|' ;
+AMPERSAND : '&' ;
 TILDE : '~' ;
 
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;

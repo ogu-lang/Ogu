@@ -1,0 +1,35 @@
+
+def qs [] = []
+
+def qs (h::t) = qs (l) + [h] + qs(g)
+	where 
+		l = [x | x <- t,  x <= h]
+		g = [x | x <- t, x > h]
+
+def qs2 (h::t) = 
+	let
+		l = [x | x <- t, x <= h]
+		g = [x | x <- t, x > h]
+	in 
+		qs (l) + [h] + qs(g)
+
+def head (h::_) = h
+
+def tail (_::t) = t
+
+def sign (x)
+	| (x > 0)= 1 
+	| (x == 0) = 0
+	| (c < 0) = -1
+
+def sgn x = case (x) of
+			x > 0 => 1
+			x == 0 => 1
+			x < 0 => -1
+
+
+
+def fib 0 = 1
+def fib 1 = 1
+def fib n = fib(n-1)+fib(n-2)
+
