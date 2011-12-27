@@ -133,7 +133,7 @@ block
     ;
             
 def_trait
-    : COLON TRAIT class_satisfies ASSIGN (trait_body)?  ;
+    : COLON TRAIT class_satisfies (ASSIGN trait_body)? ;
 
 trait_body : block ;
 
@@ -252,11 +252,15 @@ add_op
     ;
 
 mult_expr
-    : unary_expr ((mul_op)=> mul_op^ unary_expr)*
+    : power_expr ((mul_op)=> mul_op^ power_expr)*
     ;
 
 mul_op
-    : MULT | DIV | CONS
+    : MULT | DIV | CONS | MOD
+    ;
+
+power_expr
+    : unary_expr ((POWER)=>POWER^ unary_expr)*
     ;
 
 unary_expr
@@ -269,11 +273,16 @@ unary_op
 
 post_fix_expr
 options { backtrack= true;}
-    : primary 
-        ( call_args 
+    : primary (DOT method_id)*
+        ( call
         | (expr)=> expr
         |
         )
+    ;
+
+call
+    : LPAREN (call_args)? RPAREN
+    | (named_args)=> named_args
     ;
 
 primary
@@ -284,18 +293,29 @@ primary
 
 atom:    literal | id ;
 
+method_id
+    : id | PLUS | MINUS | MULT | DIV | MOD
+    ;
+
 literal
     : INT | FLOAT | STRING
     ;
 
 call_args
-    : (call_arg)=> call_arg ((COMMA)=> COMMA call_arg)*
-    | LPAREN (call_args)? RPAREN
+    : call_arg ((COMMA)=> COMMA call_arg)*
     ;
 
 call_arg
-    : (id COLON)=> id COLON expr 
+    : (named_arg)=> named_arg
     | expr;
+
+named_arg
+    : id COLON expr
+    ;
+
+named_args
+    : named_arg ((COMMA)=> COMMA named_arg)*
+    ;
 
 lambda_expr
     : LAMBDA lambda_args ARROW expr
@@ -368,7 +388,6 @@ CONS : '::' ;
 COMMA : ',' ;
 DOT : '.' ;
 DOT2 : '..';
-PLUS_ASSIGN : '+=' ;
 PLUS : '+' ;
 MINUS : '-';
 SEMI : ';' ;
@@ -380,7 +399,9 @@ LBRACKET : '[' { ++bracketLevel; };
 RBRACKET : ']' { --bracketLevel; };
 MULT : '*' ;
 DIV : '/' ;
+MOD : '%' ;
 LT : '<';
+
 LT_MINUS : '<-';
 GT : '>';
 LE : '<=';
@@ -388,21 +409,22 @@ GE : '>=';
 EQ : '==';
 NE : '!=';
 NOT : '!' ;
-
+POWER : '^';
 BAR : '|' ;
 AMPERSAND : '&' ;
 TILDE : '~' ;
 
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 
+
+INT :   '0'..'9'+
+    ;
+
 FLOAT
-    :   ('0'..'9')+ '.' ('0'..'9')+ EXPONENT?
-    |   '.' ('0'..'9')+ EXPONENT?
+    :   ('0'..'9')+ DOT ('0'..'9')+ EXPONENT?
+    |   DOT ('0'..'9')+ EXPONENT?
     |   ('0'..'9')+ EXPONENT
     ; 
-
-INT :	'0'..'9'+
-    ;
 
 
 COMMENT
@@ -425,7 +447,7 @@ STRING
     ;
     
 fragment
-EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;    
+EXPONENT : ('e'|'E') (PLUS|MINUS)? ('0'..'9')+ ;    
     
 fragment
 HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
