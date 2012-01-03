@@ -44,19 +44,21 @@ def Ventana : class = {
 	}
 }
 
+doc "funcion recursiva"
+author "eduardo diaz"
+version 1
+see (fact0)
 def factorial : Int -> Int
 def factorial 0 = 1
 def factorial n = n * factorial (n-1)
 
-/**
 def fact(n:Int) -> Int = 
 	if (n == 0)
 	   1
 	else
 	   n = n * fact(n-1)
 
-
-def fact : (n:Int) -> Int = 
+def f : (n:Int) -> Int = 
 	if (n == 0)
 	   1
 	else
@@ -76,11 +78,12 @@ pf2 = factorial
 
 pf2 = fact
 
+
 val pf3 :  factorial
+
 
 pf3 (0) // <- error
 
 val pf4 = factorial // es lo mismo que val pf4 : factorial = factorial
 
 
-*/

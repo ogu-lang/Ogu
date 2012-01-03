@@ -28,7 +28,7 @@ def sgn x = case (x) of
 			x < 0 => -1
 
 
-
+doc "esta es una funcion recursiva"
 def fib 0 = 1
 def fib 1 = 1
 def fib n = fib(n-1)+fib(n-2)

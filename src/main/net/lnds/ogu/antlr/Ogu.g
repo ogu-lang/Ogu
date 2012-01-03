@@ -54,22 +54,43 @@ prog	: (opt_sep)  (stat)* ;
 
 
 stat
+options { backtrack = true;}
 @after { println($stat.tree.toStringTree()+"\n"); }
-    : decl | expr sep ;
+    : expr sep
+    | decl 
+    | (annotation)=> annotated_decl
+    ;
 
 decl
-    : def | var | val;
+    : def | var | val;   
     
+annotated_decl
+    : annotation (nl annotation)* decl;
+
 var
-    : VAR id_list (COLON (type)?) ASSIGN expr_list sep
+    : VAR id_list 
+      ( COLON type (ASSIGN expr_list)? 
+      | COLON ASSIGN expr_list
+      | ASSIGN expr_list
+      )
+      sep
     ;
 
 val
-    : VAL id_list (COLON (type)?) ASSIGN expr_list sep
+    : VAL id_list (COLON (type)?)? (ASSIGN expr_list)? sep
     ;
 
 def
     : DEF^ id (def_func  | def_class | def_trait | def_object | ASSIGN^ class_body sep) ;
+
+annotation
+    : id 
+     ( literal 
+     | LPAREN expr_list RPAREN
+     | named_args
+     | LPAREN named_args RPAREN
+     )
+    ;
 
 expr_block
     : expr | block
@@ -208,8 +229,8 @@ let_var_decl
 
 if_expr
     : IF LPAREN expr RPAREN (nl)? expr_block
-      ((nl)?ELSIF LPAREN expr RPAREN (nl)? expr_block)*
-      ELSE (nl)? expr_block
+      ( (nl)? ELSIF LPAREN expr RPAREN (nl)? expr_block )*
+      (nl)? ELSE (nl)? expr_block
     ;
 
 for_expr
@@ -274,8 +295,8 @@ unary_op
 post_fix_expr
 options { backtrack= true;}
     : primary (DOT method_id)*
-        ( call
-        | (expr)=> expr
+        ( (expr)=> expr
+        |call
         |
         )
     ;
@@ -379,6 +400,7 @@ WHERE : 'where';
 AND : '&&' ;
 OR  : '||' ;
 
+ARROBA : '@';
 ASSIGN : '=';
 LAMBDA : '\\';
 ARROW : '->';

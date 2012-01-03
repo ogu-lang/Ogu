@@ -1,0 +1,14 @@
+doc "annotations tests"
+by "eduardo diaz"
+version 1.0
+def method = {
+	do_something
+}
+
+
+doc "annotations tests"
+implements (Interface)
+version 1.0
+def MyClass : class () ~ Interface = {
+	
+}
