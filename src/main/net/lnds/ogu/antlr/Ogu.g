@@ -56,10 +56,11 @@ prog	: (opt_sep)  (stat)* ;
 stat
 options { backtrack = true;}
 @after { println($stat.tree.toStringTree()+"\n"); }
-    : decl { println ("decl"); }
-    | (annotated_decl)=> annotated_decl { println ("annotated_decl"); }
-    | expr sep { println ("expr"); }
+    : decl 
+    | (annotated_decl)=> annotated_decl 
+    | expr sep 
     ;
+
 
 decl
     : def | var | val;   
@@ -81,7 +82,7 @@ val
     ;
 
 def
-    : DEF^ id (def_func  | def_class | def_trait | def_object | ASSIGN^ class_body sep) ;
+    : DEF^ id (def_gen_args)? (def_func  | def_class | def_trait | def_object | ASSIGN^ class_body sep) ;
 
 annotation
     : i=id 
@@ -89,12 +90,36 @@ annotation
      | LPAREN expr_list RPAREN -> ^(ANNOTATION $i expr_list)
      | named_args -> ^(ANNOTATION $i named_args)
      | LPAREN named_args RPAREN -> ^(ANNOTATION $i named_args)
+     | -> ^(ANNOTATION $i)
      )
      
     ;
 
+def_gen_args
+    : LCURLY type_constraint  RCURLY
+    ;
+
+type_constraint
+    : id_list 
+      (BAR type_constraint_expr (COMMA type_constraint_expr)*)?
+    ;
+
+type_constraint_expr
+    : id (GT|TILDE) id
+    ;
+
+
 expr_block
     : expr | block
+    ;
+
+block
+    : LCURLY (nl)? (block_stat)*  RCURLY
+    ;
+
+block_stat
+    : decl 
+    | expr sep
     ;
 
 def_func
@@ -122,7 +147,7 @@ func_rets
 
 func_body
     :( ASSIGN^ opt_sep expr_block
-    |func_bar_body+)
+    | func_bar_body+)
     ;
 
 func_bar_body
@@ -130,7 +155,7 @@ func_bar_body
     ;
 
 def_class
-    : COLON CLASS class_args? (class_extends)? (class_satisfies)?  (ASSIGN class_body)? sep;
+    : COLON CLASS class_args? (class_extends)? (class_satisfies)?  ((nl)? ASSIGN class_body)? sep;
 
 class_args
     : class_arg (COMMA^ class_arg)?
@@ -142,17 +167,20 @@ class_arg
     ;
 
 class_extends
-    : GT^ generic_type ;
+    : (nl)? (GT|EXTENDS)^ generic_type ;
 
 class_satisfies
-    : TILDE^ type_expr ;
+    :  (nl)? (TILDE|SATISFIES)^ type_expr ;
       
 class_body
-    : block ;
+    : class_block ;
     
-block
-    : LCURLY (nl)? (stat)*  RCURLY
+
+class_block
+    :  LCURLY (nl)? (stat)*  RCURLY
     ;
+      
+
             
 def_trait
     : COLON TRAIT class_satisfies (ASSIGN trait_body)? ;
@@ -209,6 +237,9 @@ expr
     | for_expr
     | case_expr
     | let_expr
+    | do_expr
+    | try_expr
+    | yield_expr
     ;
 
 where_clause
@@ -236,6 +267,19 @@ if_expr
 
 for_expr
     : FOR LPAREN id IN expr RPAREN expr_block ;
+
+do_expr
+    : DO expr_block
+    ;
+
+yield_expr
+    : YIELD expr_block
+    ;
+
+try_expr
+    : TRY expr_block 
+    
+    ;
 
 case_expr
     : CASE LPAREN id_list RPAREN OF (nl)?
@@ -382,8 +426,10 @@ nl : (NL!)+ ;
 CASE : 'case';
 CLASS : 'class';
 DEF : 'def';
+DO : 'do';
 ELSE : 'else';
 ELSIF : 'elsif';
+EXTENDS: 'extends';
 FINALLY : 'finally';
 FOR : 'for';
 IF : 'if';
@@ -392,11 +438,13 @@ LET : 'let';
 
 OBJECT : 'object';
 OF : 'of' ;
+SATISFIES : 'satisfies';
 TRAIT : 'trait';
 TRY : 'try';
 VAR : 'var';
 VAL : 'val';
 WHERE : 'where';
+YIELD : 'yield';
 
 AND : '&&' ;
 OR  : '||' ;

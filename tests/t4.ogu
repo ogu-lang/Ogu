@@ -14,3 +14,16 @@ def MyClass : class () ~ Interface = {
 	inject
 	var variable : Int
 }
+
+
+def test : class () ~ Trait = {
+	
+	do call_a_function
+	var myVar : Int
+
+	def method () = {
+		no_annotations_inside_functions()
+
+		var variable : Int
+	}
+}

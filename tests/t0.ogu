@@ -70,7 +70,7 @@ pf (4)
 
 pf = factorial
 
-pf (5)
+pf (5) // <- parser try this as a annotation, semantic analysis should handle  this
 
 var pf2 : Int->Int
 
@@ -82,7 +82,7 @@ pf2 = fact
 val pf3 :  factorial
 
 
-pf3 (0) // <- error
+pf3 (0) // <- this is an error, catch it with semantic analysis
 
 val pf4 = factorial // es lo mismo que val pf4 : factorial = factorial
 

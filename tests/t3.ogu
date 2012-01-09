@@ -1,4 +1,4 @@
-def A : class = {
+def A : class > Nullable ~ Comparable = {
 	
 	def methodA() = println "a"
 }
@@ -8,15 +8,15 @@ def B : class > A = {
 	def methodB(a:A) = a.methodA()
 }
 
-val q := 2.+(2)
 
-def List{A | A > Nullable ~ Comparable}  >> Collection ~~ Aggregate = {
+def List{A | A > Nullable, A ~ Comparable}  : class > Collection ~ Aggregate = {
 	
 }
 
-def List{A} : class extends Collection 
-                      implements Aggregate 
-			          where A extends Nullable implements Comparable 
-= {
+def List{A} : class 
+extends Collection satisfies Aggregate = {
 			         
 }
+
+
+def swap{A,B | A > Num, B>Num} : (a:A, b:B) = { (b, a) }
