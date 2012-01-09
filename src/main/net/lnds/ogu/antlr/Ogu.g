@@ -9,7 +9,7 @@ options {
     }
 
 tokens {
- 
+    ANNOTATION;
     EXPR;
 }
 
@@ -56,16 +56,16 @@ prog	: (opt_sep)  (stat)* ;
 stat
 options { backtrack = true;}
 @after { println($stat.tree.toStringTree()+"\n"); }
-    : expr sep
-    | decl 
-    | (annotation)=> annotated_decl
+    : decl { println ("decl"); }
+    | (annotated_decl)=> annotated_decl { println ("annotated_decl"); }
+    | expr sep { println ("expr"); }
     ;
 
 decl
     : def | var | val;   
     
 annotated_decl
-    : annotation (nl annotation)* decl;
+    : (annotation nl)+ decl;
 
 var
     : VAR id_list 
@@ -84,12 +84,13 @@ def
     : DEF^ id (def_func  | def_class | def_trait | def_object | ASSIGN^ class_body sep) ;
 
 annotation
-    : id 
-     ( literal 
-     | LPAREN expr_list RPAREN
-     | named_args
-     | LPAREN named_args RPAREN
+    : i=id 
+     ( l=literal -> ^(ANNOTATION $i $l)
+     | LPAREN expr_list RPAREN -> ^(ANNOTATION $i expr_list)
+     | named_args -> ^(ANNOTATION $i named_args)
+     | LPAREN named_args RPAREN -> ^(ANNOTATION $i named_args)
      )
+     
     ;
 
 expr_block

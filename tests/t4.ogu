@@ -11,4 +11,6 @@ implements (Interface)
 version 1.0
 def MyClass : class () ~ Interface = {
 	
+	inject
+	var variable : Int
 }
