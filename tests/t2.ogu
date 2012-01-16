@@ -1,7 +1,8 @@
 
+
 def qs [] = []
 
-def qs (h::t) = qs (l) + [h] + qs(g)
+def qs (h::t) = qs (l) ++ [h] ++ qs(g)
 	where 
 		l = [x | x <- t,  x <= h]
 		g = [x | x <- t, x > h]
@@ -20,16 +21,56 @@ def tail (_::t) = t
 def sign (x)
 	| (x > 0)= 1 
 	| (x == 0) = 0
-	| (c < 0) = -1
+	| (x < 0) = -1
 
 def sgn x = case (x) of
-			x > 0 => 1
-			x == 0 => 1
-			x < 0 => -1
+			x > 0 -> 1
+			x == 0 -> 1
+			x < 0 -> -1
 
 
 doc "esta es una funcion recursiva"
+def fib : Int -> Int
 def fib 0 = 1
 def fib 1 = 1
 def fib n = fib(n-1)+fib(n-2)
 
+doc "samples taken from the book You a haskell for great good"
+
+def bmiTell : height, weight:Real -> String
+
+def bmiTel(h,w)
+	| bmi <= 18.5 = "Your'e underweight, you emo, you!"  
+	| bmi <= 25.0 = "You're supposedly normal. Pffft, I bet you're ugly!"  
+	| bmi <= 30.0 = "You're fat! Lose some weight, fatty!"  
+	| otherwise   = "You're a whale, congratulations!"  
+	where bmi = w / h ^ 2  
+
+
+def describeList : [Any] -> String  
+def describeList xs = "The list is " ++ what xs 
+    where what [] = "empty."
+          what [x] = "a singleton list."  
+          what xs = "a longer list."
+
+
+def take{N|N ~ Num|Ord} : (i:N, a:[Any]) -> [Any]
+
+def take n, _
+	| n <= 0 = []
+def take _, [] = []
+def take n, (x::xs) = x :: take (n-1) xs
+
+def repeat : Any -> [Any]
+def repeat x = x :: repeat x
+
+def zip : [Any], [Any] -> [(Any, Any)]
+def zip _, [] = []
+def zip [], _ = []
+def zip (x::xs), (y::ys) = (x,y) :: zip xs ys
+
+def elem{A|A ~ Eq} : A, [A] -> Bool
+def elem a, [] = false
+def elem a, (x::xs)  
+    | a == x    = true
+    | otherwise = elem a xs 

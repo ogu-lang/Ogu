@@ -5,12 +5,12 @@ options {
     output = AST;
     ASTLabelType = CommonTree;
     tokenVocab=Ogu;
-
     }
 
 tokens {
     ANNOTATION;
     EXPR;
+    FUNCTION;
 }
 
 @header {
@@ -63,13 +63,27 @@ options { backtrack = true;}
 
 
 decl
-    : def | var | val;   
+    : def | var | val | import_decl | export_decl ;   
     
 annotated_decl
     : (annotation nl)+ decl;
 
+import_decl
+    : IMPORT^ path_list sep
+    ;
+export_decl
+    : EXPORT^ path_list sep
+    ;
+
+path_list
+    : path (COMMA path)* ;
+
+path
+    : id (DOT id)*
+    ;
+
 var
-    : VAR id_list 
+    : VAR^ id_list 
       ( COLON type (ASSIGN expr_list)? 
       | COLON ASSIGN expr_list
       | ASSIGN expr_list
@@ -78,11 +92,12 @@ var
     ;
 
 val
-    : VAL id_list (COLON (type)?)? (ASSIGN expr_list)? sep
+    : VAL^ id_list (COLON (type)?)? (ASSIGN expr_list)? sep
     ;
 
+
 def
-    : DEF^ id (def_gen_args)? (def_func  | def_class | def_trait | def_object | ASSIGN^ class_body sep) ;
+    : DEF^ id (def_gen_args)? (def_module | def_func  | def_class |  def_trait | def_object | ASSIGN^ class_body sep) ;
 
 annotation
     : i=id 
@@ -105,7 +120,7 @@ type_constraint
     ;
 
 type_constraint_expr
-    : id (GT|TILDE) id
+    : id (GT|TILDE) type_expr
     ;
 
 
@@ -123,9 +138,9 @@ block_stat
     ;
 
 def_func
-    : COLON! (func_args)=> func_args func_rets? func_body? sep
-    | (func_args)=> func_args func_rets?  func_body? sep
-    | func_expr_args  func_body? sep
+    : COLON (func_args)=> fa=func_args fr=func_rets? fb=func_body? sep ->^(FUNCTION $fa ($fr)? $fb?)
+    | (func_args)=> fa=func_args fr=func_rets?  fb=func_body? sep ->^(FUNCTION $fa ($fr)? $fb?)
+    | fea=func_expr_args  fb=func_body? sep ->^(FUNCTION $fea  $fb?)
     ;
 
 func_expr_args
@@ -147,15 +162,41 @@ func_rets
 
 func_body
     :( ASSIGN^ opt_sep expr_block
-    | func_bar_body+)
+     | func_bar_body+ (otherwise)?
+     )
+    (where_clause)?
     ;
 
 func_bar_body
     : (nl)?  BAR^ cond_expr ASSIGN expr_block 
     ;
+otherwise
+    : (nl)? BAR^ OTHERWISE ASSIGN expr_block
+    ;
+
+where_clause
+    : ((nl)=>nl)? WHERE^ (nl)? where_var_decl ((semi_sep where_var_decl)=>semi_sep where_var_decl)*;
+
+where_var_decl
+    : id 
+      (COLON (type)?
+      |(arg_list)=> arg_list
+      |(cond_expr_list)=> cond_expr_list
+      |)
+      ASSIGN expr_block
+    ;
+
+arg_list
+    : id_list
+    | id_list COLON type (COMMA id_list COLON type)*
+    ;
+
+def_module
+    : COLON! MODULE^ (nl)? ASSIGN expr_block sep ;
+
 
 def_class
-    : COLON CLASS class_args? (class_extends)? (class_satisfies)?  ((nl)? ASSIGN class_body)? sep;
+    : COLON! CLASS^ class_args? (class_extends)? (class_satisfies)?  ((nl)? ASSIGN class_body)? sep;
 
 class_args
     : class_arg (COMMA^ class_arg)?
@@ -183,18 +224,17 @@ class_block
 
             
 def_trait
-    : COLON TRAIT class_satisfies (ASSIGN trait_body)? ;
+    : COLON! TRAIT^ class_satisfies (ASSIGN trait_body)? ;
 
 trait_body : block ;
 
 def_object
-    : COLON OBJECT class_args? (class_extends)? (class_satisfies)?  (ASSIGN class_body)? sep;
+    : COLON! OBJECT^ class_args? (class_extends)? (class_satisfies)?  (ASSIGN class_body)? sep;
 
 type
 options { backtrack = true;}
-    : basic_type (COMMA basic_type)+ ARROW type 
-    | basic_type ARROW type
-    | basic_type
+    : basic_type (COMMA basic_type)* ARROW type 
+    | basic_type 
     ;
 
 type_expr
@@ -231,7 +271,7 @@ expr_list
 
 expr 
     :  
-     cond_expr ( (ASSIGN)=> ASSIGN^ expr_block | (where_clause)=>where_clause)?
+     cond_expr ( (ASSIGN)=> ASSIGN^ expr_block )?
     | lambda_expr
     | if_expr
     | for_expr
@@ -242,12 +282,7 @@ expr
     | yield_expr
     ;
 
-where_clause
-    : ((nl)=>nl)? WHERE (nl)? where_var_decl ((semi_sep where_var_decl)=>semi_sep where_var_decl)*;
 
-where_var_decl
-    : id (COLON (type)?)? ASSIGN expr_block
-    ;
 
 let_expr
     : LET (nl)? let_var_decl ((semi_sep let_var_decl)=> semi_sep let_var_decl)* 
@@ -283,7 +318,7 @@ try_expr
 
 case_expr
     : CASE LPAREN id_list RPAREN OF (nl)?
-        expr BIG_ARROW expr ((sep expr BIG_ARROW)=>sep expr BIG_ARROW expr)*
+        expr ARROW expr ((sep expr ARROW)=>sep expr ARROW expr)*
         ;
 
 cond_expr_list
@@ -314,7 +349,7 @@ add_expr
     ;
 
 add_op
-    : PLUS | MINUS
+    : PLUS | MINUS | PLUSPLUS
     ;
 
 mult_expr
@@ -429,15 +464,18 @@ DEF : 'def';
 DO : 'do';
 ELSE : 'else';
 ELSIF : 'elsif';
+EXPORT: 'export';
 EXTENDS: 'extends';
 FINALLY : 'finally';
 FOR : 'for';
 IF : 'if';
+IMPORT : 'import';
 IN : 'in' ;
 LET : 'let';
-
+MODULE : 'module' ;
 OBJECT : 'object';
 OF : 'of' ;
+OTHERWISE : 'otherwise' ;
 SATISFIES : 'satisfies';
 TRAIT : 'trait';
 TRY : 'try';
@@ -459,6 +497,7 @@ CONS : '::' ;
 COMMA : ',' ;
 DOT : '.' ;
 DOT2 : '..';
+PLUSPLUS : '++';
 PLUS : '+' ;
 MINUS : '-';
 SEMI : ';' ;
@@ -514,7 +553,8 @@ WS  :   ( ' '
     
     
 STRING
-    :  ('"'|'\'') ( ESC_SEQ | ~('\\'|'"'|'\'') )* ('"'|'\'')
+    :  '"' ( ESC_SEQ | ~('\\'|'"' )* '"')
+    |  '\'' ( ESC_SEQ | ~('\\'|'\'' )* '\'')
     ;
     
 fragment
