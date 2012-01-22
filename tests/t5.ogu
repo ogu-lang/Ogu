@@ -1,0 +1,10 @@
+def M : module = {
+	
+	def C : class = {
+		
+		def m : () = { println "hello world"}
+	}
+
+	export C
+	
+}
