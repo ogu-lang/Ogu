@@ -355,14 +355,14 @@ yield_expr
 fail_expr
     : FAIL 
     ;
-    
+
 retry_expr
     : RETRY
     ;
 
 
 try_expr
-    : TRY expr_block RESCUE expr_block
+    : TRY (nl)? expr_block RESCUE expr_block
     ;
 
 case_expr
@@ -425,7 +425,7 @@ post_fix_expr
 options { backtrack= true;}
     : primary (DOT method_id)*
         ( (expr)=> expr
-        | call
+        | call 
         | IS type
         | AS type
         | arg_block
@@ -451,7 +451,7 @@ method_id
     ;
 
 literal
-    : INT | FLOAT | STRING
+    : INT | FLOAT | STRING | SELF | SUPER | NIL
     ;
 
 call_args
