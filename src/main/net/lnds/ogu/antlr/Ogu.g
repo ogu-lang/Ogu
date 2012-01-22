@@ -433,8 +433,12 @@ options { backtrack= true;}
         )
     ;
 
+method_call
+    : (DOT method_id)+ (call)?
+    ;
+
 call
-    : LPAREN (call_args)? RPAREN
+    : LPAREN (call_args)? RPAREN (method_call)?
     | (named_args)=> named_args
     ;
 
