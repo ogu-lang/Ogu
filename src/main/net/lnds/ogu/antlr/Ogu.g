@@ -97,7 +97,7 @@ val
 
 
 def
-    : DEF^ id (def_gen_args)? (def_module | def_func  | def_class |  def_trait | def_object | ASSIGN^ class_body sep) ;
+    : DEF^ id (def_gen_args)? (def_module | def_func  | def_class |  def_trait | def_object | ASSIGN^ (type_expr|class_body) sep) ;
 
 annotation
     : i=id 
@@ -175,11 +175,20 @@ func_rets
     : ARROW (type_expr | LPAREN id COLON type_expr RPAREN) ;
 
 func_body
-    :( ASSIGN^ opt_sep expr_block
+    : (func_require)? (func_ensure)?
+    
+    ( ASSIGN^ opt_sep expr_block
      | (func_bar_body)=>func_bar_body+ (otherwise)?
      )
     (where_clause)?
     ;
+
+func_require
+    : (nl)? REQUIRE expr_block;
+
+func_ensure
+    : (nl)? ENSURE expr_block;
+
 
 func_bar_body
     : nl  BAR^ cond_expr ASSIGN expr_block 
@@ -189,7 +198,12 @@ otherwise
     ;
 
 where_clause
-    : ((nl)=>nl)? WHERE^ (nl)? where_var_decl ((semi_sep where_var_decl)=>semi_sep where_var_decl)*;
+    : ((nl)=>nl)? WHERE^ (nl)? 
+        (where_decls | LCURLY where_decls RCURLY)
+    ;
+
+where_decls:        
+        where_var_decl ((semi_sep where_var_decl)=>semi_sep where_var_decl)*;
 
 where_var_decl
     : id 
@@ -294,11 +308,15 @@ expr
     | let_expr
     | do_expr
     | try_expr
+    | fail_expr
+    | retry_expr
     | yield_expr
-    | throw_expr
+    | assert_expr
     ;
 
-
+assert_expr
+    : ASSERT expr
+    ;
 
 let_expr
     : LET (nl)? let_var_decl ((semi_sep let_var_decl)=> semi_sep let_var_decl)* 
@@ -312,12 +330,19 @@ let_var_decl
 
 if_expr
     : IF LPAREN expr RPAREN (nl)? expr_block
-      ( (nl)? ELSIF LPAREN expr RPAREN (nl)? expr_block )*
-      (nl)? ELSE (nl)? expr_block
+      (elsif_part)*
+      else_part
+      
     ;
 
+elsif_part
+    : (nl)? ELSIF LPAREN expr RPAREN (nl)? expr_block 
+    ;
+else_part
+    : (nl)? ELSE (nl)? expr_block ;
+
 for_expr
-    : FOR LPAREN id IN expr RPAREN expr_block ;
+    : FOR LPAREN id (IN|LT_MINUS) expr RPAREN (nl)? expr_block ;
 
 do_expr
     : DO expr_block
@@ -327,16 +352,18 @@ yield_expr
     : YIELD expr_block
     ;
 
-try_expr
-    : TRY expr_block 
+fail_expr
+    : FAIL 
+    ;
     
-    ;
-throw_expr
-    : THROW post_fix_expr 
-     
+retry_expr
+    : RETRY
     ;
 
 
+try_expr
+    : TRY expr_block RESCUE expr_block
+    ;
 
 case_expr
     : CASE LPAREN id_list RPAREN OF (nl)?
@@ -363,7 +390,7 @@ rel_expr
     ;
 
 rel_op
-    : LT | GT | LE | GE | LT_MINUS;
+    : LT | GT | LE | GE | LT_MINUS | IN | NOT IN ;
 
 
 add_expr
@@ -392,7 +419,7 @@ unary_expr
     ;
 
 unary_op
-    : PLUS | MINUS | NOT ;    
+    : PLUS | MINUS | NOT | BANG;    
 
 post_fix_expr
 options { backtrack= true;}
@@ -459,6 +486,7 @@ lambda_arg
 bracket_inner_expr
     : expr_list (DOT2 (expr_list))?
     | id BAR expr_list
+    | LPAREN id_list RPAREN BAR expr_list
     | id COLON expr (COMMA id COLON expr)*
     ;
 
@@ -484,15 +512,17 @@ opt_sep : (sep)? ;
 nl : (NL!)+ ;
 
 AS : 'as';
+ASSERT : 'assert';
 CASE : 'case';
 CLASS : 'class';
 DEF : 'def';
 DO : 'do';
 ELSE : 'else';
 ELSIF : 'elsif';
+ENSURE : 'ensure';
 EXPORT: 'export';
 EXTENDS: 'extends';
-FINALLY : 'finally';
+FAIL : 'fail';
 FOR : 'for';
 IF : 'if';
 IMPORT : 'import';
@@ -500,12 +530,19 @@ IN : 'in' ;
 IS : 'is';
 LET : 'let';
 MODULE : 'module' ;
+NIL : 'nil';
+NOT : 'not';
+
 OBJECT : 'object';
 OF : 'of' ;
 OTHERWISE : 'otherwise' ;
+REQUIRE : 'require';
+RESCUE : 'rescue';
+RETRY : 'retry';
 SATISFIES : 'satisfies';
 SELF : 'self';
 SUPER : 'super';
+
 THROW : 'throw';
 TRAIT : 'trait';
 TRY : 'try';
@@ -523,6 +560,7 @@ ASSIGN : '=';
 LAMBDA : '\\';
 ARROW : '->';
 BIG_ARROW : '=>';
+
 COLON : ':' ;
 CONS : '::' ;
 COMMA : ',' ;
@@ -550,7 +588,7 @@ LE : '<=';
 GE : '>=';
 EQ : '==';
 NE : '!=';
-NOT : '!' ;
+BANG : '!' ;
 POWER : '^';
 BAR : '|' ;
 AMPERSAND : '&' ;
