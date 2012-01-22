@@ -84,7 +84,7 @@ path
 
 var
     : VAR^ id_list 
-      ( COLON type (ASSIGN expr_list)? 
+      ( COLON type_expr (ASSIGN expr_list)? 
       | COLON ASSIGN expr_list
       | ASSIGN expr_list
       )
@@ -92,7 +92,7 @@ var
     ;
 
 val
-    : VAL^ id_list (COLON (type)?)? (ASSIGN expr_list)? sep
+    : VAL^ id_list (COLON (type_expr)?)? (ASSIGN expr_list)? sep
     ;
 
 
@@ -138,10 +138,11 @@ block_stat
     ;
 
 def_func
-    : COLON (func_args)=> fa=func_args fr=func_rets? fb=func_body? sep ->^(FUNCTION $fa ($fr)? $fb?)
+    : COLON (func_args)=> fa=func_args ((func_rets)=> fr=func_rets)? fb=func_body? sep ->^(FUNCTION $fa ($fr)? $fb?)
     | (func_args)=> fa=func_args fr=func_rets?  fb=func_body? sep ->^(FUNCTION $fa ($fr)? $fb?)
-    | fea=func_expr_args  fb=func_body? sep ->^(FUNCTION $fea  $fb?)
+    | fea=func_expr_args  fb=func_body sep ->^(FUNCTION $fea  $fb?)
     ;
+
 
 func_expr_args
     : (cond_expr_list)=>cond_expr_list
@@ -149,29 +150,35 @@ func_expr_args
     ;
 
 func_args
-    : (func_arg)=> func_arg (COMMA func_arg)*
-    | LPAREN (func_args)? RPAREN 
+    : (func_arg_list)=> func_arg_list
+    | LPAREN (func_arg_list)? RPAREN 
     ;
+
+func_arg_list
+    : func_arg (COMMA func_arg)*
+    ;
+
 
 func_arg
-    : ((id_list COLON)=> id_list COLON^)? type
+    : ((id_list COLON)=> id_list COLON^)? type_expr (MULT|PLUS)?
     ;
 
+
 func_rets
-    : ARROW (type | LPAREN id COLON RPAREN) ;
+    : ARROW (type_expr | LPAREN id COLON type_expr RPAREN) ;
 
 func_body
     :( ASSIGN^ opt_sep expr_block
-     | func_bar_body+ (otherwise)?
+     | (func_bar_body)=>func_bar_body+ (otherwise)?
      )
     (where_clause)?
     ;
 
 func_bar_body
-    : (nl)?  BAR^ cond_expr ASSIGN expr_block 
+    : nl  BAR^ cond_expr ASSIGN expr_block 
     ;
 otherwise
-    : (nl)? BAR^ OTHERWISE ASSIGN expr_block
+    : nl BAR^ OTHERWISE ASSIGN expr_block
     ;
 
 where_clause
@@ -238,7 +245,8 @@ options { backtrack = true;}
     ;
 
 type_expr
-    : type ((BAR | AMPERSAND) type)*
+    : type (((BAR)=>BAR | AMPERSAND) type)*
+
     ;
 
 type_expr_list
@@ -280,6 +288,7 @@ expr
     | do_expr
     | try_expr
     | yield_expr
+    | throw_expr
     ;
 
 
@@ -315,6 +324,12 @@ try_expr
     : TRY expr_block 
     
     ;
+throw_expr
+    : THROW post_fix_expr 
+     
+    ;
+
+
 
 case_expr
     : CASE LPAREN id_list RPAREN OF (nl)?
@@ -377,6 +392,8 @@ options { backtrack= true;}
     : primary (DOT method_id)*
         ( (expr)=> expr
         |call
+        | IS type
+        | AS type
         |
         )
     ;
@@ -458,6 +475,7 @@ opt_sep : (sep)? ;
 
 nl : (NL!)+ ;
 
+AS : 'as';
 CASE : 'case';
 CLASS : 'class';
 DEF : 'def';
@@ -471,12 +489,14 @@ FOR : 'for';
 IF : 'if';
 IMPORT : 'import';
 IN : 'in' ;
+IS : 'is';
 LET : 'let';
 MODULE : 'module' ;
 OBJECT : 'object';
 OF : 'of' ;
 OTHERWISE : 'otherwise' ;
 SATISFIES : 'satisfies';
+THROW : 'throw';
 TRAIT : 'trait';
 TRY : 'try';
 VAR : 'var';

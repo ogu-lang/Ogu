@@ -1,3 +1,4 @@
+var p : String|Error
 
 
 def qs [] = []
@@ -35,6 +36,12 @@ def fib 0 = 1
 def fib 1 = 1
 def fib n = fib(n-1)+fib(n-2)
 
+
+def fibo : n:Num -> Num
+    | n == 0 = 1
+    | n == 1 = 1
+    | otherwise = fibo(n-1)+fibo(n-2)
+
 doc "samples taken from the book You a haskell for great good"
 
 def bmiTell : height, weight:Real -> String
@@ -42,8 +49,8 @@ def bmiTell : height, weight:Real -> String
 def bmiTel(h,w)
 	| bmi <= 18.5 = "Your'e underweight, you emo, you!"  
 	| bmi <= 25.0 = "You're supposedly normal. Pffft, I bet you're ugly!"  
-	| bmi <= 30.0 = "You're fat! Lose some weight, fatty!"  
-	| otherwise   = "You're a whale, congratulations!"  
+	when bmi <= 30.0 = "You're fat! Lose some weight, fatty!"  
+	otherwise = "You're a whale, congratulations!"  
 	where bmi = w / h ^ 2  
 
 
@@ -72,5 +79,5 @@ def zip (x::xs), (y::ys) = (x,y) :: zip xs ys
 def elem{A|A ~ Eq} : A, [A] -> Bool
 def elem a, [] = false
 def elem a, (x::xs)  
-    | a == x    = true
+    | a == x = true
     | otherwise = elem a xs 
