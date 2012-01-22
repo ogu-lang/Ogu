@@ -92,7 +92,7 @@ var_val
           | COLON ASSIGN! expr_list
           | ASSIGN! expr_list
           )
-      | LPAREN id_list RPAREN
+      | LPAREN id_list RPAREN ASSIGN! expr_list
       )
       sep
     ;
