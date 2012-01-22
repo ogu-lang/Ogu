@@ -11,6 +11,9 @@ tokens {
     ANNOTATION;
     EXPR;
     FUNCTION;
+    INT_LITERAL;
+    FLOAT_LITERAL;
+    STRING_LITERAL;
 }
 
 @header {
@@ -63,7 +66,7 @@ options { backtrack = true;}
 
 
 decl
-    : def | var | val | import_decl | export_decl ;   
+    : def | var_val | import_decl | export_decl ;   
     
 annotated_decl
     : (annotation nl)+ decl;
@@ -82,17 +85,16 @@ path
     : id (DOT id)*
     ;
 
-var
-    : VAR^ id_list 
-      ( COLON type_expr (ASSIGN expr_list)? 
-      | COLON ASSIGN expr_list
-      | ASSIGN expr_list
+var_val
+    : (VAR|VAL)^ 
+      (id_list 
+          ( COLON type_expr (ASSIGN! expr_list)? 
+          | COLON ASSIGN! expr_list
+          | ASSIGN! expr_list
+          )
+      | LPAREN id_list RPAREN
       )
       sep
-    ;
-
-val
-    : VAL^ id_list (COLON (type_expr)?)? (ASSIGN expr_list)? sep
     ;
 
 
@@ -311,11 +313,16 @@ expr
     | fail_expr
     | retry_expr
     | yield_expr
+    | return_expr
     | assert_expr
     ;
 
 assert_expr
     : ASSERT expr
+    ;
+
+return_expr
+    : RETURN expr
     ;
 
 let_expr
@@ -455,7 +462,12 @@ method_id
     ;
 
 literal
-    : INT | FLOAT | STRING | SELF | SUPER | NIL
+    : i=INT->^(INT_LITERAL $i) 
+    | f=FLOAT->^(FLOAT_LITERAL $f) 
+    | s=STRING->^(STRING_LITERAL $s)
+    | SELF
+    | SUPER
+    | NIL
     ;
 
 call_args
@@ -488,7 +500,7 @@ lambda_arg
     ;
 
 bracket_inner_expr
-    : expr_list (DOT2 (expr_list))?
+    : expr_list (DOT2^ (expr_list))?
     | id BAR expr_list
     | LPAREN id_list RPAREN BAR expr_list
     | id COLON expr (COMMA id COLON expr)*
@@ -543,6 +555,7 @@ OTHERWISE : 'otherwise' ;
 REQUIRE : 'require';
 RESCUE : 'rescue';
 RETRY : 'retry';
+RETURN : 'return';
 SATISFIES : 'satisfies';
 SELF : 'self';
 SUPER : 'super';
@@ -568,8 +581,6 @@ BIG_ARROW : '=>';
 COLON : ':' ;
 CONS : '::' ;
 COMMA : ',' ;
-DOT2 : '..';
-DOT : '.' ;
 
 PLUSPLUS : '++';
 PLUS : '+' ;
@@ -601,15 +612,34 @@ TILDE : '~' ;
 ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 
 
-INT :   '0'..'9'+
-    ;
+fragment INT :  ; //:   '0'..'9'+
+    
+
+fragment DOT2 : ;
+fragment DOT : ;
+
 
 FLOAT
-    :   ('0'..'9')+ DOT ('0'..'9')+ EXPONENT?
+    : Digits ( 
+        { input.LA(2) != '.'}?=> '.' Digits EXPONENT?  { $type = FLOAT; }
+        | EXPONENT { $type= FLOAT; }
+        | {$type=INT;}
+        )
+    | '.' 
+       (Digits EXPONENT? {$type = FLOAT; } 
+       | '.' {$type = DOT2; } 
+       | {$type=DOT;} 
+       )
+    
+    ;
+/*
+    
+     ('0'..'9')+ DOT ('0'..'9')+ EXPONENT?
     |   DOT ('0'..'9')+ EXPONENT?
     |   ('0'..'9')+ EXPONENT
     ; 
-
+*/
+fragment Digits : ('0'..'9')+;
 
 COMMENT
     :   '//' ~('\n'|'\r')* '\r'? '\n' {$channel=HIDDEN;}

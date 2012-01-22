@@ -1,3 +1,5 @@
 var bug = a.b().c()
 var bug2 = a.b.c.d.e.f()
 var bug3 = a.b(x).c(y,z).d().e.f().g().h.i()
+
+var pathologic = a+b.c+43+f.+4
