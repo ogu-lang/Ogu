@@ -132,6 +132,13 @@ block
     : LCURLY (nl)? (block_stat)*  RCURLY
     ;
 
+arg_block
+    : LCURLY (nl)? 
+        (id_list ARROW (nl)?)?
+        (block_stat)*  
+        RCURLY
+    ;
+
 block_stat
     : decl 
     | expr sep
@@ -391,9 +398,10 @@ post_fix_expr
 options { backtrack= true;}
     : primary (DOT method_id)*
         ( (expr)=> expr
-        |call
+        | call
         | IS type
         | AS type
+        | arg_block
         |
         )
     ;
@@ -496,9 +504,12 @@ OBJECT : 'object';
 OF : 'of' ;
 OTHERWISE : 'otherwise' ;
 SATISFIES : 'satisfies';
+SELF : 'self';
+SUPER : 'super';
 THROW : 'throw';
 TRAIT : 'trait';
 TRY : 'try';
+
 VAR : 'var';
 VAL : 'val';
 WHERE : 'where';
@@ -515,8 +526,9 @@ BIG_ARROW : '=>';
 COLON : ':' ;
 CONS : '::' ;
 COMMA : ',' ;
-DOT : '.' ;
 DOT2 : '..';
+DOT : '.' ;
+
 PLUSPLUS : '++';
 PLUS : '+' ;
 MINUS : '-';
