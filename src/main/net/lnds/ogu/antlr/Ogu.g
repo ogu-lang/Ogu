@@ -315,6 +315,7 @@ expr
     | yield_expr
     | return_expr
     | assert_expr
+    | while_expr
     ;
 
 assert_expr
@@ -359,6 +360,9 @@ yield_expr
     : YIELD expr_block
     ;
 
+while_expr
+    : WHILE LPAREN cond_expr RPAREN (nl)? expr_block ;
+
 fail_expr
     : FAIL 
     ;
@@ -393,12 +397,24 @@ eq_expr
 eq_op : EQ | NE ;
 
 rel_expr
-    : add_expr ((rel_op)=> rel_op^ add_expr)*
+    : in_expr ((rel_op)=> rel_op^ in_expr)*
     ;
 
 rel_op
-    : LT | GT | LE | GE | LT_MINUS | IN | NOT IN ;
+    : LT | GT | LE | GE ;
 
+in_expr
+    : is_expr ((in_op)=> in_op is_expr)*
+    ;
+
+in_op
+    : LT_MINUS | ((NOT)=> NOT)? IN ;
+
+is_expr
+    : add_expr ((is_op)=> is_op^  add_expr)* ;
+
+is_op
+    : ((NOT)=> NOT)? IS ;
 
 add_expr
     : mult_expr ((add_op)=> add_op^ mult_expr)*
@@ -433,7 +449,6 @@ options { backtrack= true;}
     : primary (DOT method_id)*
         ( (expr)=> expr
         | call 
-        | IS type
         | AS type
         | arg_block
         |
@@ -500,10 +515,9 @@ lambda_arg
     ;
 
 bracket_inner_expr
-    : expr_list (DOT2^ (expr_list))?
-    | id BAR expr_list
-    | LPAREN id_list RPAREN BAR expr_list
-    | id COLON expr (COMMA id COLON expr)*
+    : expr_list (DOT2^ (expr_list))? (BAR expr_list)?
+    | (id COLON)=>id COLON expr (COMMA id COLON expr)*
+    
     ;
 
 
@@ -567,6 +581,7 @@ TRY : 'try';
 VAR : 'var';
 VAL : 'val';
 WHERE : 'where';
+WHILE : 'while';
 YIELD : 'yield';
 
 AND : '&&' ;
@@ -632,13 +647,7 @@ FLOAT
        )
     
     ;
-/*
-    
-     ('0'..'9')+ DOT ('0'..'9')+ EXPONENT?
-    |   DOT ('0'..'9')+ EXPONENT?
-    |   ('0'..'9')+ EXPONENT
-    ; 
-*/
+
 fragment Digits : ('0'..'9')+;
 
 COMMENT
@@ -657,8 +666,8 @@ WS  :   ( ' '
     
     
 STRING
-    :  '"' ( ESC_SEQ | ~('\\'|'"' )* '"')
-    |  '\'' ( ESC_SEQ | ~('\\'|'\'' )* '\'')
+    :  '"' ( ESC_SEQ | ~('\\'|'"' ))* '"'
+    |  '\'' ( ESC_SEQ | ~('\\'|'\'' ))* '\''
     ;
     
 fragment
