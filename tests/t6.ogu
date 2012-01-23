@@ -1,0 +1,33 @@
+var t0 : Type
+
+var t1 : []
+
+var t2 : [:]
+
+var t3 : (String,Int)
+
+var t4 : [String]
+
+var t5 : [String:String]
+
+var t6 : List{String}
+
+var t7 : List{String|Any}
+
+var t8 : Error|String
+
+var t9 : List{String&Ord}
+
+var t10 : [Any]
+
+var t11 : [Any:Any]
+
+var f : Float,Int->String
+
+var t2 : Int[10]
+
+var matrix : Int[10,10]
+
+var listMatrix : [Int][10]
+
+var f2 : A.B.C, D.E.F -> G.H.I

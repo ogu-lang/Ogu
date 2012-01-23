@@ -30,3 +30,6 @@ val pi = 3.15
 var a,b = 2, 3
 
 var (a,b) = if (cond) (2,3) else (3,4)
+
+var map = [:]
+var list = []

@@ -14,6 +14,17 @@ tokens {
     INT_LITERAL;
     FLOAT_LITERAL;
     STRING_LITERAL;
+
+    T_TUPLE;
+    T_MAP;
+    T_LIST;
+    PATH;
+    TYPE;
+    TYPE_EXPR;
+    TYPE_FUNC;
+    GEN_TYPE;
+    ARRAY;
+    DIM;
 }
 
 @header {
@@ -82,7 +93,7 @@ path_list
     : path (COMMA path)* ;
 
 path
-    : id (DOT id)*
+    : i+=id (DOT i+=id)* ->^(PATH ($i)*)
     ;
 
 var_val
@@ -263,34 +274,45 @@ def_object
 
 type
 options { backtrack = true;}
-    : basic_type (COMMA basic_type)* ARROW type 
-    | basic_type 
+    : basic_type (COMMA! basic_type)* ARROW^ type
+    | basic_type
     ;
 
 type_expr
-    : type (((BAR)=>BAR | AMPERSAND) type)*
-
+    : t1=type ((e+=BAR|e+=AMPERSAND) t2+=type)* ->^(TYPE_EXPR ($e)* $t1 ($t2)*)
+    
     ;
 
 type_expr_list
-    : type_expr (COMMA type_expr) 
+    : type_expr (COMMA type_expr)* 
     ;
 
 
-generic_type : id (DOT id)* (LCURLY type_list RCURLY)?  ;
+generic_type : path 
+             | p=path (LCURLY tel=type_expr_list RCURLY) ->^(GEN_TYPE $p $tel) ;
 
-type_list    : type (COMMA type)*    ;
+type_list    : type (COMMA! type)*    ;
 
-bracket_type : LBRACKET type (COLON type)? RBRACKET;
+bracket_type 
+    : LBRACKET t1+=type (COLON t2=type ->^(T_MAP $t1 $t2) | ->^(T_LIST $t1*) )    RBRACKET
+    | LBRACKET RBRACKET ->^(T_LIST)
+    | LBRACKET COLON RBRACKET ->^(T_MAP)
+     ;
 
-tuple_type : LPAREN type_list RPAREN;
+   
 
-basic_type : (generic_type | bracket_type | tuple_type) ((array_def)=> array_def)? ;
+tuple_type : LPAREN tl=type_list RPAREN ->^(T_TUPLE $tl);
 
-basic_type_list : basic_type (COMMA basic_type)* ;
+basic_type : pt=primary_type 
+            ((array_def)=>ad=array_def ->^(ARRAY $ad $pt)
+            | ->^(TYPE $pt)) ;
+
+primary_type
+    : generic_type | bracket_type | tuple_type
+    ;
 
 array_def
-    : LBRACKET INT (COMMA INT)* RBRACKET ;
+    : LBRACKET i+=INT (COMMA i+=INT)* RBRACKET ->^(DIM ($i)*);
 
 id : ID ;
 
@@ -517,7 +539,7 @@ lambda_arg
 bracket_inner_expr
     : expr_list (DOT2^ (expr_list))? (BAR expr_list)?
     | (id COLON)=>id COLON expr (COMMA id COLON expr)*
-    
+    | COLON^
     ;
 
 
