@@ -49,7 +49,7 @@ $Date$
  <!-- Use wildcards in pattern definition -->
     <!-- to be independent of antlr versions -->
     <patternset id="antlr.libs">
-        <include name="antlr-*.jar" />
+        <include name="antlr*.jar" />
         <include name="stringtemplate-*.jar" />
         <include name="runtime-*.jar" />
     </patternset>

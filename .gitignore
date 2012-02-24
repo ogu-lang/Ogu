@@ -1,0 +1,8 @@
+
+src/main/net/lnds/ogu/antlr/parser/Ogu.tokens
+
+src/main/net/lnds/ogu/antlr/parser/OguLexer.java
+
+src/main/net/lnds/ogu/antlr/parser/OguParser.java
+
+antlr.jar
