@@ -1,40 +1,40 @@
 grammar Ogu;
 
-
 options {
-    output = AST;
-    ASTLabelType = CommonTree;
-    tokenVocab=Ogu;
-    }
+	output = AST;
+	ASTLabelType = CommonTree;
+	tokenVocab=Ogu;
+}
 
 tokens {
-    ANNOTATION;
-    EXPR;
-    FUNCTION;
-    INT_LITERAL;
-    FLOAT_LITERAL;
-    STRING_LITERAL;
-
-    T_TUPLE;
-    T_MAP;
-    T_LIST;
-    PATH;
-    TYPE;
-    TYPE_EXPR;
-    TYPE_FUNC;
-    GEN_TYPE;
-    ARRAY;
-    DIM;
+	BLOCK;
+	EXPR;
 }
 
 @header {
-    package net.lnds.ogu.antlr.parser;
-
+	package net.lnds.ogu.antlr.parser;
 }
 
 @lexer::header {
     package net.lnds.ogu.antlr.parser;    
 }
+
+@lexer::members {
+   int parenLevel = 0;
+   int curlyLevel = 0;
+   int bracketLevel = 0;
+ 
+   boolean ignoreNewLines() {
+        if (curlyLevel > 0)
+            return false;
+        if (parenLevel > 0 || bracketLevel > 0)
+            return true;
+        return false;
+   }
+
+
+}
+
 @members {
 
     public static void println(String str) {
@@ -51,497 +51,315 @@ tokens {
     }
 }
 
-@lexer::members {
-   int parenLevel = 0;
-   int curlyLevel = 0;
-   int bracketLevel = 0;
-   boolean ignoreNewLines() {
-        if (curlyLevel > 0)
-            return false;
-        if (parenLevel > 0 || bracketLevel > 0)
-            return true;
-        return false;
-   }
-}
+prog 
+@after { println("PROG: "+$prog.tree.toStringTree()+"\n"); }
+: (nl)? preamble (top_level_decl)*;
 
-prog	: (opt_sep)  (stat)* ;
+preamble
+	: package_header? (import_package)*;
 
+package_header
+	: (annotation)* PACKAGE^ path sep? ;
 
-stat
-options { backtrack = true;}
-@after { println($stat.tree.toStringTree()+"\n"); }
-    : decl 
-    | (annotated_decl)=> annotated_decl 
-    | expr sep 
-    ;
+import_package
+	: (annotation)* IMPORT^ path (DOT! MULT | AS^ T_ID) sep? ;
+
+top_level_decl
+	: (annotation)*
+	(visibility nl?)?
+	(func_decl | class_decl | object_decl | type_def) ;
+
+visibility
+	: SHARED | HIDDEN ;
 
 
-decl
-    : def | var_val | import_decl | export_decl ;   
-    
-annotated_decl
-    : (annotation nl)+ decl;
 
-import_decl
-    : IMPORT^ path_list sep
-    ;
-export_decl
-    : EXPORT^ path_list sep
-    ;
+class_decl : CLASS T_ID;
+object_decl : OBJECT (V_ID|T_ID);
 
-path_list
-    : path (COMMA path)* ;
+type_def : TYPE^ T_ID type_parameters? ASSIGN^ type sep;
 
-path
-    : i+=id (DOT i+=id)* ->^(PATH ($i)*)
-    ;
-
-var_val
-    : (VAR|VAL)^ 
-      (id_list 
-          ( COLON type_expr (ASSIGN! expr_list)? 
-          | COLON ASSIGN! expr_list
-          | ASSIGN! expr_list
-          )
-      | LPAREN id_list RPAREN ASSIGN! expr_list
-      )
-      sep
-    ;
-
-
-def
-    : DEF^ id (def_gen_args)? (def_module | def_func  | def_class |  def_trait | def_object | ASSIGN^ (type_expr|class_body) sep) ;
+type_parameters
+	: LCURLY t_id_list RCURLY
+	;
 
 annotation
-    : i=id 
-     ( l=literal -> ^(ANNOTATION $i $l)
-     | LPAREN expr_list RPAREN -> ^(ANNOTATION $i expr_list)
-     | named_args -> ^(ANNOTATION $i named_args)
-     | LPAREN named_args RPAREN -> ^(ANNOTATION $i named_args)
-     | -> ^(ANNOTATION $i)
-     )
-     
-    ;
-
-def_gen_args
-    : LCURLY type_constraint  RCURLY
-    ;
-
-type_constraint
-    : id_list 
-      (BAR type_constraint_expr (COMMA type_constraint_expr)*)?
-    ;
-
-type_constraint_expr
-    : id (GT|TILDE) type_expr
-    ;
+	: ARROBA (V_ID|T_ID) 
+	  ( literal
+	  | LPAREN annotation_args RPAREN
+	  | LCURLY annotation_args RCURLY
+	  )
+	  nl?
+	;
+annotation_args
+	: annotation_arg (COMMA annotation_arg)*
+	;
 
 
-expr_block
-    : expr | block
-    ;
+annotation_arg
+	: (V_ID COLON)? literal
+	;
 
-block
-    : LCURLY (nl)? (block_stat)*  RCURLY
-    ;
+func_decl : DEF^ V_ID (type_arguments)? func_body sep;
 
-arg_block
-    : LCURLY (nl)? 
-        (id_list ARROW (nl)?)?
-        (block_stat)*  
-        RCURLY
-    ;
+func_body 
+options { backtrack = true;}
+	: (simple_expr_list)* func_value
+	| type_list ARROW type (func_value)?
+	| LPAREN (func_args)? RPAREN (nl? block | ARROW func_ret (func_value)?)?
+	| COLON type (func_value | (COMMA type)* ARROW type )?
+	;
 
-block_stat
-    : decl 
-    | expr sep
-    ;
+func_value
+	: 
+	( ((nl)=> nl)? ASSIGN nl? expr 
+	| (func_guard)=> func_guard+ func_otherwise?
+	)
+	(where_clause)?	
+	;
 
-def_func
-    : COLON (func_args)=> fa=func_args ((func_rets)=> fr=func_rets)? fb=func_body? sep ->^(FUNCTION $fa ($fr)? $fb?)
-    | (func_args)=> fa=func_args fr=func_rets?  fb=func_body? sep ->^(FUNCTION $fa ($fr)? $fb?)
-    | fea=func_expr_args  fb=func_body sep ->^(FUNCTION $fea  $fb?)
-    ;
+func_guard
+	: nl BAR cond_expr ASSIGN nl? expr	 ;
 
+func_otherwise
+	: nl BAR OTHERWISE  ASSIGN nl? expr ;
+	
+where_clause
+	: ((nl)=>nl)? WHERE^ nl?
+	(  where_decls 
+	| LCURLY! where_decls RCURLY!
+	)
+	;
 
-func_expr_args
-    : (cond_expr_list)=>cond_expr_list
-    | LPAREN! (cond_expr_list)? RPAREN!
+where_decls
+	: where_var_decl (sep where_var_decl)* 
+	;
+
+where_var_decl
+	: V_ID
+	 (COLON (type)?
+     |(w_arg_list)=> w_arg_list
+     |(simple_expr_list)=> simple_expr_list
+     |)
+      ASSIGN^ expr
+     ;
+
+w_arg_list
+    : v_id_list
+    | v_id_list COLON type (COMMA v_id_list COLON type)*
     ;
 
 func_args
-    : (func_arg_list)=> func_arg_list
-    | LPAREN (func_arg_list)? RPAREN 
-    ;
+	: (type_list)=> type_list
+	| func_arg (COMMA func_arg)*
+	;
 
-func_arg_list
-    : func_arg (COMMA func_arg)*
-    ;
+func_ret
+	: type
+	| LPAREN func_ret_atom RPAREN 
+	;
 
+
+func_ret_atom
+	: V_ID COLON type
+	;
 
 func_arg
-    : ((id_list COLON)=> id_list COLON^)? type_expr (MULT|PLUS)?
-    ;
+	: v_id_list COLON type ;
 
-
-func_rets
-    : ARROW (type_expr | LPAREN id COLON type_expr RPAREN) ;
-
-func_body
-    : (func_require)? (func_ensure)?
-    
-    ( ASSIGN^ opt_sep expr_block
-     | (func_bar_body)=>func_bar_body+ (otherwise)?
-     )
-    (where_clause)?
-    ;
-
-func_require
-    : (nl)? REQUIRE expr_block;
-
-func_ensure
-    : (nl)? ENSURE expr_block;
-
-
-func_bar_body
-    : nl  BAR^ cond_expr ASSIGN expr_block 
-    ;
-otherwise
-    : nl BAR^ OTHERWISE ASSIGN expr_block
-    ;
-
-where_clause
-    : ((nl)=>nl)? WHERE^ (nl)? 
-        (where_decls | LCURLY where_decls RCURLY)
-    ;
-
-where_decls:        
-        where_var_decl ((semi_sep where_var_decl)=>semi_sep where_var_decl)*;
-
-where_var_decl
-    : id 
-      (COLON (type)?
-      |(arg_list)=> arg_list
-      |(cond_expr_list)=> cond_expr_list
-      |)
-      ASSIGN expr_block
-    ;
-
-arg_list
-    : id_list
-    | id_list COLON type (COMMA id_list COLON type)*
-    ;
-
-def_module
-    : COLON! MODULE^ (nl)? ASSIGN expr_block sep ;
-
-
-def_class
-    : COLON! CLASS^ class_args? (class_extends)? (class_satisfies)?  ((nl)? ASSIGN class_body)? sep;
-
-class_args
-    : class_arg (COMMA^ class_arg)?
-    | LPAREN! (class_args)? RPAREN!
-    ;
-
-class_arg
-    : id_list COLON^ type
-    ;
-
-class_extends
-    : (nl)? (GT|EXTENDS)^ generic_type ;
-
-class_satisfies
-    :  (nl)? (TILDE|SATISFIES)^ type_expr ;
-      
-class_body
-    : class_block ;
-    
-
-class_block
-    :  LCURLY (nl)? (stat)*  RCURLY
-    ;
-      
-
-            
-def_trait
-    : COLON! TRAIT^ class_satisfies (ASSIGN trait_body)? ;
-
-trait_body : block ;
-
-def_object
-    : COLON! OBJECT^ class_args? (class_extends)? (class_satisfies)?  (ASSIGN class_body)? sep;
+type_list
+	: type (COMMA type)*;
 
 type
 options { backtrack = true;}
-    : basic_type (COMMA! basic_type)* ARROW^ type
-    | basic_type
-    ;
+	: func_type QUESTION?
+	| primary_type QUESTION?
+	;
 
-type_expr
-    : t1=type ((e+=BAR|e+=AMPERSAND) t2+=type)* ->^(TYPE_EXPR ($e)* $t1 ($t2)*)
-    
-    ;
-
-type_expr_list
-    : type_expr (COMMA type_expr)* 
-    ;
-
-
-generic_type : path 
-             | p=path (LCURLY tel=type_expr_list RCURLY) ->^(GEN_TYPE $p $tel) ;
-
-type_list    : type (COMMA! type)*    ;
-
-bracket_type 
-    : LBRACKET t1+=type (COLON t2=type ->^(T_MAP $t1 $t2) | ->^(T_LIST $t1*) )    RBRACKET
-    | LBRACKET RBRACKET ->^(T_LIST)
-    | LBRACKET COLON RBRACKET ->^(T_MAP)
-     ;
-
-   
-
-tuple_type : LPAREN tl=type_list RPAREN ->^(T_TUPLE $tl);
-
-basic_type : pt=primary_type 
-            ((array_def)=>ad=array_def ->^(ARRAY $ad $pt)
-            | ->^(TYPE $pt)) ;
+func_type
+	: primary_type (COMMA primary_type)* ARROW^ primary_type
+	;
 
 primary_type
-    : generic_type | bracket_type | tuple_type
-    ;
+	: sequence_type (array_sufix)?
+	;
 
-array_def
-    : LBRACKET i+=INT (COMMA i+=INT)* RBRACKET ->^(DIM ($i)*);
+sequence_type
+	: bracket_type
+	| tuple_type
+	| type_union
+	;
 
-id : ID ;
+type_union
+	: type_intersection (BAR^ type_intersection)*
+	;
 
-id_list : id (COMMA id)* ;
+type_intersection
+	: atom_type (AMPERSAND^ atom_type)*
+	;
+
+atom_type : generic_type  ;
+
+bracket_type : LBRACKET^ (type (COLON type)?)? RBRACKET! 	;
+
+tuple_type : LPAREN type_list RPAREN ;
+
+generic_type : T_ID (generic_sufix)? ;
+
+generic_sufix : LCURLY^ type_list RCURLY! ;
+
+
+array_sufix : LBRACKET^ (array_dim)? RBRACKET! ;
+
+array_dim : INT (COMMA INT) ;
+
+v_id_list : V_ID (COMMA V_ID)* ;
+
+t_id_list : T_ID (COMMA T_ID)* ;
+
+path
+	: V_ID (DOT V_ID)* (DOT T_ID)? ;
 
 expr_list
-    : expr (COMMA expr)*
-    ;
+options {backtrack = true; }
+	: expr ((COMMA)=> COMMA expr)*
+	;
 
-expr 
-    :  
-     cond_expr ( (ASSIGN)=> ASSIGN^ expr_block )?
-    | lambda_expr
-    | if_expr
-    | for_expr
-    | case_expr
-    | let_expr
-    | do_expr
-    | try_expr
-    | fail_expr
-    | retry_expr
-    | yield_expr
-    | return_expr
-    | assert_expr
-    | while_expr
-    ;
+expr :	e=cond_expr ;
 
-assert_expr
-    : ASSERT expr
-    ;
+cond_expr : or_expr ;
 
-return_expr
-    : RETURN expr
-    ;
+or_expr  : and_expr ((OR)=> OR and_expr)* ;
 
-let_expr
-    : LET (nl)? let_var_decl ((semi_sep let_var_decl)=> semi_sep let_var_decl)* 
-      (nl)?
-      IN (nl)? expr_block
-    ;
+and_expr : eq_expr ((AND)=> AND eq_expr)* ;
 
-let_var_decl
-    : id (COLON (type)?)? ASSIGN expr_block 
-    ;
-
-if_expr
-    : IF LPAREN expr RPAREN (nl)? expr_block
-      (elsif_part)*
-      else_part
-      
-    ;
-
-elsif_part
-    : (nl)? ELSIF LPAREN expr RPAREN (nl)? expr_block 
-    ;
-else_part
-    : (nl)? ELSE (nl)? expr_block ;
-
-for_expr
-    : FOR LPAREN id (IN|LT_MINUS) expr RPAREN (nl)? expr_block ;
-
-do_expr
-    : DO expr_block
-    ;
-
-yield_expr
-    : YIELD expr_block
-    ;
-
-while_expr
-    : WHILE LPAREN cond_expr RPAREN (nl)? expr_block ;
-
-fail_expr
-    : FAIL 
-    ;
-
-retry_expr
-    : RETRY
-    ;
-
-
-try_expr
-    : TRY (nl)? expr_block RESCUE expr_block
-    ;
-
-case_expr
-    : CASE LPAREN id_list RPAREN OF (nl)?
-        expr ARROW expr ((sep expr ARROW)=>sep expr ARROW expr)*
-        ;
-
-cond_expr_list
-    : cond_expr (COMMA cond_expr)* ;
-
-cond_expr
-    : and_expr ((OR)=> OR and_expr)* ;
-
-and_expr
-    : eq_expr ((AND)=> AND eq_expr)* ;
-
-eq_expr
-    : rel_expr ((eq_op)=> eq_op^ rel_expr)*
-    ;
+eq_expr  : comp_expr ((eq_op)=> eq_op comp_expr)* ;
 
 eq_op : EQ | NE ;
 
-rel_expr
-    : in_expr ((rel_op)=> rel_op^ in_expr)*
+comp_expr : named_infix ((LT|GT|LE|GE)=> (LT^ | GT^ | LE^ | GE^) named_infix)* ;
+
+named_infix
+options {backtrack = true;}
+	: elvis_expr ((LEFT_ARROW)=> (LEFT_ARROW) elvis_expr)* 
+	| elvis_expr ( (IS (NOT)?| BANGIS)=> (IS ((NOT)=>NOT)?| BANGIS) elvis_expr )* 	
+	;
+
+
+elvis_expr : infix_func_call ((ELVIS)=> ELVIS^ infix_func_call)* ;
+
+infix_func_call : range_expr ((simple_name)=> simple_name range_expr)* ;
+
+range_expr : cons_expr ((DOTDOT)=> DOTDOT^  cons_expr)* ;
+
+cons_expr : add_expr ((CONS )=> CONS^ add_expr)? ;
+
+add_expr : mult_expr ((PLUS|CONCAT|MINUS)=> (PLUS^|CONCAT^|MINUS^) mult_expr)* ;
+
+mult_expr : as_expr ((MULT|DIV)=> (MULT^|DIV^) as_expr)* ;
+
+as_expr : prefix_unary ((type_op)=> type_op prefix_unary)* ;
+
+type_op : AS | AS QUESTION ;
+
+prefix_unary 
+	: (PLUS^|MINUS^|BANG^|NOT^)* postfix_unary ;
+
+postfix_unary : atom ((postfix_op)=> postfix_op)* ;
+
+postfix_op 
+options { backtrack = true; }
+	: call_sufix
+	| array_access
+	| DOT postfix_unary
+	| QDOT postfix_unary
+	| QUESTION postfix_unary
+	| postfix_unary
+	| BAR expr_list
+	;
+
+call_sufix
+options { backtrack = true; }
+	: type_arguments value_arguments function_literal
+	| type_arguments function_literal
+	| value_arguments function_literal
+	| value_arguments
+	| function_literal
+	;
+
+function_literal
+	: LCURLY (nl? simple_name_list ARROW)? ((sep)=>sep)? statements RCURLY
+	;
+
+array_access : LBRACKET expr_list RBRACKET ;
+
+value_arguments : LPAREN! val_arg (COMMA val_arg)* RPAREN! ;
+
+val_arg : (name ASSIGN)? expr ;
+
+type_arguments	: LCURLY type_list RCURLY ;
+
+atom : simple_expr
+	 | function_literal
+	 | THIS
+	 | SUPER
+	 | if_expr
+	 | let_expr
+	 ;
+
+
+let_expr
+	: LET^ nl? let_var_decl ((semi let_var_decl)=> semi let_var_decl)* nl? IN^ nl? expr ;
+
+let_var_decl
+    : V_ID (COLON (type)?)? ASSIGN^ expr 
     ;
 
-rel_op
-    : LT | GT | LE | GE ;
+simple_expr_list
+	: simple_expr (COMMA simple_expr)* ;
 
-in_expr
-    : is_expr ((in_op)=> in_op is_expr)*
-    ;
+simple_expr
+	: name
+	| literal
+	| LPAREN! expr_list RPAREN!
+	| LBRACKET^ (expr_list)? RBRACKET!
+	;
+ 
 
-in_op
-    : LT_MINUS | ((NOT)=> NOT)? IN ;
+if_expr
+options { backtrack = true; }
+	: IF^ LPAREN! expr RPAREN! nl? expr nl? (ELSE! nl? expr)
+	| IF^ LPAREN! expr RPAREN! nl? expr
+	;
 
-is_expr
-    : add_expr ((is_op)=> is_op^  add_expr)* ;
+statements
+	:   (statement)*  ;
 
-is_op
-    : ((NOT)=> NOT)? IS ;
+statement
+	: expr sep
+	| decl
+	;
 
-add_expr
-    : mult_expr ((add_op)=> add_op^ mult_expr)*
-    ;
+decl
+	: VAR simple_name_list ;
 
-add_op
-    : PLUS | MINUS | PLUSPLUS
-    ;
+block : LCURLY sep? s=statements RCURLY ->^(BLOCK $s);
 
-mult_expr
-    : power_expr ((mul_op)=> mul_op^ power_expr)*
-    ;
-
-mul_op
-    : MULT | DIV | CONS | MOD
-    ;
-
-power_expr
-    : unary_expr ((POWER)=>POWER^ unary_expr)*
-    ;
-
-unary_expr
-    : (unary_op )=> unary_op unary_expr
-    | post_fix_expr
-    ;
-
-unary_op
-    : PLUS | MINUS | NOT | BANG;    
-
-post_fix_expr
-options { backtrack= true;}
-    : primary (DOT method_id)*
-        ( (expr)=> expr
-        | call 
-        | AS type
-        | arg_block
-        |
-        )
-    ;
-
-method_call
-    : (DOT method_id)+ (call)?
-    ;
-
-call
-    : LPAREN (call_args)? RPAREN (method_call)?
-    | (named_args)=> named_args
-    ;
-
-primary
-    : atom
-    | LPAREN expr_list RPAREN ((primary)=>primary)?
-    | LBRACKET (bracket_inner_expr)? RBRACKET
-    ;
-
-atom:    literal | id ;
-
-method_id
-    : id | PLUS | MINUS | MULT | DIV | MOD
-    ;
 
 literal
-    : i=INT->^(INT_LITERAL $i) 
-    | f=FLOAT->^(FLOAT_LITERAL $f) 
-    | s=STRING->^(STRING_LITERAL $s)
-    | SELF
-    | SUPER
-    | NIL
-    ;
+	: INT
+	| FLOAT
+	| STRING
+	| TRUE
+	| FALSE
+	| NULL
+	;
 
-call_args
-    : call_arg ((COMMA)=> COMMA call_arg)*
-    ;
+name : V_ID | T_ID;
 
-call_arg
-    : (named_arg)=> named_arg
-    | expr;
+simple_name : V_ID ;
 
-named_arg
-    : id COLON expr
-    ;
-
-named_args
-    : named_arg ((COMMA)=> COMMA named_arg)*
-    ;
-
-lambda_expr
-    : LAMBDA lambda_args ARROW expr
-    ;
-
-lambda_args
-    : lambda_arg (COMMA lambda_arg)*
-    | LPAREN lambda_args RPAREN
-    ;
-
-lambda_arg
-    : id_list COLON type
-    ;
-
-bracket_inner_expr
-    : expr_list (DOT2^ (expr_list))? (BAR expr_list)?
-    | (id COLON)=>id COLON expr (COMMA id COLON expr)*
-    | COLON^
-    ;
-
+simple_name_list : simple_name (COMMA simple_name)* ;
 
 
 // esto hay que mejorarlo, es un parche para ciertos bloques patológicos (ver test_block)
@@ -555,142 +373,142 @@ sep
 | EOF!
 ;
 
-semi_sep
+semi
     : SEMI! | (NL!)+
     ;
 
-opt_sep : (sep)? ;
-
 nl : (NL!)+ ;
 
-AS : 'as';
-ASSERT : 'assert';
-CASE : 'case';
-CLASS : 'class';
-DEF : 'def';
-DO : 'do';
-ELSE : 'else';
-ELSIF : 'elsif';
-ENSURE : 'ensure';
-EXPORT: 'export';
-EXTENDS: 'extends';
-FAIL : 'fail';
-FOR : 'for';
-IF : 'if';
-IMPORT : 'import';
-IN : 'in' ;
-IS : 'is';
-LET : 'let';
-MODULE : 'module' ;
-NIL : 'nil';
-NOT : 'not';
 
-OBJECT : 'object';
-OF : 'of' ;
-OTHERWISE : 'otherwise' ;
-REQUIRE : 'require';
-RESCUE : 'rescue';
-RETRY : 'retry';
-RETURN : 'return';
-SATISFIES : 'satisfies';
-SELF : 'self';
-SUPER : 'super';
+AS    		: 'as';
+CLASS 		
 
-THROW : 'throw';
-TRAIT : 'trait';
-TRY : 'try';
+: 'class' ;
 
-VAR : 'var';
-VAL : 'val';
-WHERE : 'where';
-WHILE : 'while';
-YIELD : 'yield';
+DEF 		
+: 'def' ;
 
-AND : '&&' ;
-OR  : '||' ;
+ELSE 		: 'else';
+ELSIF 		: 'elsif';
+FALSE       : 'false';
+FOR      	: 'for';
+HIDDEN		: 'hidden';
+IMPORT 		: 'import';
+IF 			: 'if';
+IN
+ 			: 'in' ;
+IS 			: 'is';
+LET 		: 'let';
+NOT			: 'not';
+NULL 		: 'null';
+OBJECT 		: 'object';
+OTHERWISE   : 'otherwise';
+PACKAGE 	: 'package';
+SHARED		: 'shared';
+SUPER		: 'super';
+THIS		: 'this';
+TRUE		: 'true';
+TYPE 		: 'type';
+VAL 		: 'val';
+VAR 		: 'var';
+WHERE 		: 'where' ;
 
-ARROBA : '@';
-ASSIGN : '=';
-LAMBDA : '\\';
-ARROW : '->';
-BIG_ARROW : '=>';
 
-COLON : ':' ;
-CONS : '::' ;
-COMMA : ',' ;
 
-PLUSPLUS : '++';
-PLUS : '+' ;
-MINUS : '-';
-SEMI : ';' ;
-LPAREN : '(' { ++parenLevel; }; 
-RPAREN : ')' { --parenLevel; };
-LCURLY : '{' { ++curlyLevel; };
-RCURLY : '}' { --curlyLevel; };
-LBRACKET : '[' { ++bracketLevel; };
-RBRACKET : ']' { --bracketLevel; };
-MULT : '*' ;
-DIV : '/' ;
-MOD : '%' ;
-LT : '<';
+AND 		: '&&';
+AMPERSAND 	: '&';
 
-LT_MINUS : '<-';
-GT : '>';
-LE : '<=';
-GE : '>=';
-EQ : '==';
-NE : '!=';
-BANG : '!' ;
-POWER : '^';
-BAR : '|' ;
-AMPERSAND : '&' ;
-TILDE : '~' ;
+ARROBA	: '@' ;
 
-ID  :	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
+MINUS		: '-';
+ARROW		: '->';
 
+EQ 			: '==';
+ASSIGN 		: '=';
+
+OR 			: '||';
+BAR			: '|';
+
+CONS		: '::';
+COLON  		: ':';
+COMMA  		: ',';
+DOLLAR		: '$';
+
+DIV			: '/';
+
+GE 			: '>=';
+GT     		: '>';
+
+LE 			: '<=';
+NE2         : '<>';
+LEFT_ARROW  : '<-';
+LT 			: '<';
+
+LBRACKET	: '[';
+LCURLY 		: '{' { ++curlyLevel; };
+LPAREN		: '(' { ++parenLevel; };
+MULT		: '*';
+
+BANG		: '!';
+
+NE 			: '!=';
+BANGIS		: '!is';
+BANGIN		: '!in';
+
+
+CONCAT		: '++';
+PLUS		: '+';
+QDOT        : '?.';
+ELVIS 		: '?:';
+QUESTION	: '?';
+RCURLY 		: '}' { --curlyLevel; };
+RBRACKET	: ']';
+RPAREN		: ')' { --parenLevel; };
+SEMI 		: ';';
+TILDE  		: '~';
+
+
+fragment LOWER : 'a'..'z' ;
+
+fragment UPPER : 'A'..'Z' ;
+
+fragment LETTERS : 'a'..'z' | 'A'..'Z' | '_' ;
+
+V_ID  :	('a'..'z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
+
+T_ID  :	('A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
+
+
+ESC_ID : '`' (LETTERS|DIGITS)+ '`' ;
+
+STRING
+    :  '"' ( ESC_SEQ | ~('\\'|'"' ))* '"'
+    |  '\'' ( ESC_SEQ | ~('\\'|'\'' ))* '\''
+    ;
 
 fragment INT :  ; //:   '0'..'9'+
     
 
-fragment DOT2 : ;
+fragment DOTDOT : ;
 fragment DOT : ;
 
 
 FLOAT
-    : Digits ( 
-        { input.LA(2) != '.'}?=> '.' Digits EXPONENT?  { $type = FLOAT; }
+    : DIGITS ( 
+        { input.LA(2) != '.'}?=> '.' DIGITS EXPONENT?  { $type = FLOAT; }
         | EXPONENT { $type= FLOAT; }
         | {$type=INT;}
         )
     | '.' 
-       (Digits EXPONENT? {$type = FLOAT; } 
-       | '.' {$type = DOT2; } 
+       (DIGITS EXPONENT? {$type = FLOAT; } 
+       | '.' {$type = DOTDOT; } 
        | {$type=DOT;} 
        )
     
     ;
 
-fragment Digits : ('0'..'9')+;
+fragment DIGITS : ('0'..'9')+;
 
-COMMENT
-    :   '//' ~('\n'|'\r')* '\r'? '\n' {$channel=HIDDEN;}
-    |   '/*' ( options {greedy=false;} : . )* '*/' { $channel=HIDDEN;}
-    ;
-
-  
-NL : ('\r\n'| '\r'     | '\n') { if (ignoreNewLines()) $channel=HIDDEN; }
-    ;
-WS  :   ( ' '
-        | '\t'
-        | '\f'
-        ) { $channel=HIDDEN;}
-    ;
-    
-    
-STRING
-    :  '"' ( ESC_SEQ | ~('\\'|'"' ))* '"'
-    |  '\'' ( ESC_SEQ | ~('\\'|'\'' ))* '\''
-    ;
     
 fragment
 EXPONENT : ('e'|'E') (PLUS|MINUS)? ('0'..'9')+ ;    
@@ -719,4 +537,16 @@ UNICODE_ESC
 
 
 
+COMMENT
+    :   '//' ~('\n'|'\r')* '\r'? '\n' {$channel=HIDDEN;}
+    |   '/*' ( options {greedy=false;} : . )* '*/' { $channel=HIDDEN;}
+    ;
+
+NL : ('\r\n'| '\r'     | '\n') { if (ignoreNewLines()) $channel=HIDDEN; } ;
+
+WS  :   ( ' '
+        | '\t'
+        | '\f'
+        ) { $channel=HIDDEN;}
+    ;
 
