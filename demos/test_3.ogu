@@ -1,0 +1,7 @@
+def dummy = a 4 2
+
+def foo = f a b c
+
+def bar = ((f a) b) c
+
+def moo = (f a) (b c)
