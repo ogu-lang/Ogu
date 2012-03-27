@@ -64,6 +64,9 @@ def f : Int -> Int -> Int
 
 def f a b = a + b
 
+def g : Int, Int -> Int
+
+def g a,b = a + b
 
 def inc x = x + 1
 

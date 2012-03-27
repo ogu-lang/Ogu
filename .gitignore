@@ -6,3 +6,13 @@ src/main/net/lnds/ogu/antlr/parser/OguLexer.java
 src/main/net/lnds/ogu/antlr/parser/OguParser.java
 
 antlr.jar
+
+classes
+
+*.class
+
+dist/ogu.jar
+
+ogu.jar
+
+classes/net/lnds/ogu/antlr/parser/*.class

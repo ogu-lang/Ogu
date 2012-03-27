@@ -20,3 +20,44 @@ def fibo (n:Num) -> Num
     | n == 1 = 1
     | otherwise = fibo(n-1)+fibo(n-2)
     
+
+def calcIMC xs = 
+	let bmi weight height  = weight / height ^ 2
+	in [bmi w h | (w, h) <- xs]
+
+
+
+def calcIMC : [(Double, Double)] -> [Double]
+def calcIMC xs = [bmi w h | (w, h) <- xs]
+	where bmi weight height = weight / height ^ 2
+
+
+def calcBmis : [(Double, Double)] -> [Double]
+def calcBmis xs = [bmi | (w,h) <- xs, let bmi = w / h^2]
+
+def bmiTell : Double -> Double -> String
+def bmiTell w h 
+	| bmi <= skinny = "emo"
+	| bmi <= normal = "ugly"
+	| bmi <= fat =  "whale"
+	where bmi = w / h ^ 2
+	      skinny = 18.5
+	      normal = 25.0 ; fat = 30.0
+
+def bmiTell2 : Double -> Double -> String
+def bmiTell2 w h 
+	| bmi <= skinny = "emo"
+	| bmi <= normal = "ugly"
+	| bmi <= fat =  "whale"
+	where bmi = w / h ^ 2
+	      (skinny, normal, fat) = (18.5, 25.0, 30.0)
+
+def initials : String -> String -> String
+def initials firtname lastname = [f] ++ ". " ++ [l] "."
+	where (f::_) = firstname
+	      (l::_) = lastname
+
+def q = [let square x = x * x in (square 5, square 3, square 2)]
+
+def r = (let (a, b, c) = (1, 2, 3) in a+b+c) * 100
+
