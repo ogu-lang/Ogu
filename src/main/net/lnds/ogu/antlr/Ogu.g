@@ -12,6 +12,9 @@ tokens {
     PFU;
     ATOM;
     FC;
+    ANNOTATION;
+    ANNOTATION_ARG;
+    LITERAL;
 }
 
 @header {
@@ -69,41 +72,37 @@ import_package
 
 top_level_decl
 	: (annotation)*
-	(visibility nl?)?
-	(func_decl | class_decl | object_decl | type_def) ;
-
-visibility
-	: SHARED | HIDDEN ;
+	(func_decl | class_decl | object_decl | type_def | v_decl) 
+    sep?;
 
 
 
-class_decl : CLASS T_ID;
+class_decl : CLASS T_ID ((type_parameters)=> type_arguments)?;
 object_decl : OBJECT (V_ID|T_ID);
 
-type_def : TYPE^ T_ID type_parameters? ASSIGN^ type sep;
+type_def : TYPE^ T_ID type_parameters? ASSIGN^ type ;
 
 type_parameters
 	: LCURLY t_id_list RCURLY
 	;
 
 annotation
-	: ARROBA (V_ID|T_ID) 
-	  ( literal
-	  | LPAREN annotation_args RPAREN
-	  | LCURLY annotation_args RCURLY
-	  )
-	  nl?
-	;
-annotation_args
-	: annotation_arg (COMMA annotation_arg)*
-	;
+	: n=name
+	  ( l=literal ->^(ANNOTATION $n $l)
+	  | LPAREN a+=annotation_arg (COMMA a+=annotation_arg)* RPAREN ->^(ANNOTATION $n $a+)
+	  | LCURLY nl? a+=annotation_arg (sep a+=annotation_arg)* sep? RCURLY ->^(ANNOTATION $n $a+)
+	  )?
+	  nl? 
+    ;
+
+    
 
 
 annotation_arg
-	: (V_ID COLON)? literal
+	: (v=V_ID (ASSIGN|COLON))? l=literal -> ^(ANNOTATION_ARG $v? $l)
 	;
 
-func_decl : DEF^ V_ID (type_arguments)? func_body sep;
+func_decl : DEF^ V_ID ((type_parameters)=> type_arguments)? func_body ;
 
 func_body 
 options { backtrack = true;}
@@ -111,21 +110,21 @@ options { backtrack = true;}
 	|  type_list ARROW type (func_value)?
 	| LPAREN (func_args)? RPAREN ( (block| func_value) | ARROW func_ret (func_value)?)?
 	| COLON type (func_value | (COMMA type)* ARROW type )?
-	;
+    ;
 
 func_value
 	: 
-	( ((nl)=> nl)? ASSIGN nl? (LAZY)? expr 
+	( ((nl)=> nl)? ASSIGN nl?  expr 
 	| (func_guard)=> func_guard+ func_otherwise?
 	)
 	(where_clause)?	
 	;
 
 func_guard
-	: nl BAR expr ASSIGN nl? (LAZY)? expr	 ;
+	: nl BAR expr ASSIGN nl? expr	 ;
 
 func_otherwise
-	: nl BAR OTHERWISE  ASSIGN nl? (LAZY)? expr ;
+	: nl BAR OTHERWISE  ASSIGN nl?  expr ;
 	
 where_clause
 	: ((nl)=>nl)? WHERE^ nl?
@@ -189,7 +188,7 @@ tuple_type : LPAREN type_list RPAREN ;
 
 generic_type : T_ID (generic_sufix)? ;
 
-generic_sufix : LT^ type_list GT! ;
+generic_sufix : LCURLY^ type_list RCURLY! ;
 
 
 array_sufix : LBRACKET^ (array_dim)? RBRACKET! ;
@@ -208,13 +207,13 @@ options {backtrack = true; }
 	: expr ((COMMA)=> COMMA expr)*
 	;
 
-expr :	or_expr -> ^(EXPR or_expr);
+expr :	or_expr ;
 
-or_expr  : and_expr ((OR)=> OR and_expr)* ;
+or_expr  : and_expr ((OR)=> OR^ and_expr)* ;
 
-and_expr : eq_expr ((AND)=> AND eq_expr)* ;
+and_expr : eq_expr ((AND)=> AND^ eq_expr)* ;
 
-eq_expr  : comp_expr ((eq_op)=> eq_op comp_expr)* ;
+eq_expr  : comp_expr ((EQ|NE)=> (EQ|NE)^ comp_expr)* ;
 
 eq_op : EQ | NE ;
 
@@ -251,7 +250,7 @@ prefix_unary
 
 postfix_unary 
 options {backtrack=true;}
-    : atom ((postfix_op)=> postfix_op)*
+    : (a=atom->atom) ((postfix_op)=> p=postfix_op ->^(FC $a $p*))* 
     ;
 
 
@@ -264,8 +263,13 @@ options { backtrack = true; }
 	| QDOT postfix_unary 
 	| QUESTION postfix_unary 
 	| postfix_unary 
-	| BAR expr_list 
-   ;
+    | named_arg ((COMMA named_arg)=>COMMA named_arg)*
+    | BAR expr_list 
+    ;
+
+named_arg
+    : simple_name (ASSIGN|COLON) postfix_unary
+    ;
 
 call_sufix
 options { backtrack = true; }
@@ -277,16 +281,18 @@ options { backtrack = true; }
 	;
 
 function_literal
-	: LCURLY (nl? simple_name_list ARROW)? ((sep)=>sep)? statements RCURLY
+	: LCURLY    statements  RCURLY
 	;
 
 array_access : LBRACKET expr_list RBRACKET ;
 
-value_arguments : LPAREN! val_arg (COMMA val_arg)* RPAREN! ;
+value_arguments : LPAREN! val_args? RPAREN! ;
 
-val_arg : (name ASSIGN)? expr ;
+val_args : val_arg (COMMA val_arg)* ;
 
-type_arguments	: LT type_list GT ;
+val_arg : (name (ASSIGN|COLON))? expr ;
+
+type_arguments	: LCURLY type_list RCURLY ;
 
 atom : name
      | literal
@@ -299,8 +305,12 @@ atom : name
 	 | let_expr
      | case_expr
      | lambda_expr
+     | for_expr
+     | lazy_expr
 	 ;
 
+lazy_expr
+    : LAZY expr ;
 
 let_expr
 options { backtrack = true; }
@@ -330,6 +340,10 @@ options { backtrack = true; }
 	| IF^ LPAREN! expr RPAREN! nl? expr
 	;
 
+for_expr
+    : FOR^ LPAREN! (VAR^|VAL^)? simple_name (COLON^ type)? IN^ expr RPAREN! expr 
+    ;
+
 lambda_expr
     : LAMBDA lambda_args ARROW expr ;
 
@@ -342,26 +356,38 @@ lambda_arg
     ;
 
 statements
-	:   (statement)*  ;
+options { backtrack = true; }
+	: semi? statement (semi statement)* semi?
+    | semi?;
 
 statement
-	: expr sep
-	| decl
-	;
+	: expr (ASSIGN expr)?
+	| v_decl
+   ;
 
-decl
-	: VAR simple_name_list ;
 
-block : nl? LCURLY sep? s=statements RCURLY ->^(BLOCK $s);
+v_decl
+	: (VAR^|VAL^) var_list 
+     (COLON ASSIGN expr
+     |COLON type (ASSIGN expr)?
+     )
+    ;
+
+var_list
+    : LPAREN v_id_list RPAREN
+    | v_id_list
+    ;
+
+block : nl? LCURLY s=statements RCURLY ->^(BLOCK $s);
 
 
 literal
-	: INT
-	| FLOAT
-	| STRING
-	| TRUE
-	| FALSE
-	| NULL
+	: INT^
+	| FLOAT^
+	| STRING^
+	| TRUE^
+	| FALSE^
+	| NULL^
 	;
 
 name : V_ID | T_ID;
@@ -376,7 +402,7 @@ sep
 @init {
     int marker = input.mark();
 }
-: SEMI! (NL!)* 
+: (SEMI!)+ (NL!)* 
 | (NL!)+
 | RCURLY { input.rewind(marker); }
 | EOF!
@@ -398,7 +424,6 @@ ELSE 		: 'else';
 ELSIF 		: 'elsif';
 FALSE       : 'false';
 FOR      	: 'for';
-HIDDEN		: 'hidden';
 IMPORT 		: 'import';
 IF 			: 'if';
 IN
@@ -412,7 +437,6 @@ OBJECT 		: 'object';
 OF          : 'of';
 OTHERWISE   : 'otherwise';
 PACKAGE 	: 'package';
-SHARED		: 'shared';
 SUPER		: 'super';
 THIS		: 'this';
 TRUE		: 'true';

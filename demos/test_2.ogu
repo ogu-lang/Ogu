@@ -1,8 +1,8 @@
 
-def swap<T> : (T,T) -> (T,T)
+def swap{T} : (T,T) -> (T,T)
 def swap (x,y) = (y,x)
 
-def swap2<T> (x,y:T) -> (T,T) = (y,x)
+def swap2{T} (x,y:T) -> (T,T) = (y,x)
 
 def max x   y i = if (x > y) x else y
 
