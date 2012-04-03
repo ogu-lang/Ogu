@@ -77,8 +77,25 @@ top_level_decl
 
 
 
-class_decl : CLASS T_ID ((type_parameters)=> type_arguments)?;
+class_decl : CLASS^ T_ID ((type_arguments)=> type_arguments)? value_arguments?
+             class_body?;
+
+
 object_decl : OBJECT (V_ID|T_ID);
+
+
+class_body : ASSIGN! LCURLY! 
+    class_elements
+    RCURLY! ; 
+
+
+class_elements 
+    : semi? class_element (semi class_element)* semi?
+    | semi? 
+    ;
+
+class_element
+    : (annotation)* (func_decl|v_decl) ;
 
 type_def : TYPE^ T_ID type_parameters? ASSIGN^ type ;
 
@@ -87,7 +104,7 @@ type_parameters
 	;
 
 annotation
-	: n=name
+	:  n=name
 	  ( l=literal ->^(ANNOTATION $n $l)
 	  | LPAREN a+=annotation_arg (COMMA a+=annotation_arg)* RPAREN ->^(ANNOTATION $n $a+)
 	  | LCURLY nl? a+=annotation_arg (sep a+=annotation_arg)* sep? RCURLY ->^(ANNOTATION $n $a+)
@@ -102,7 +119,7 @@ annotation_arg
 	: (v=V_ID (ASSIGN|COLON))? l=literal -> ^(ANNOTATION_ARG $v? $l)
 	;
 
-func_decl : DEF^ V_ID ((type_parameters)=> type_arguments)? func_body ;
+func_decl : DEF^ V_ID ((type_arguments)=> type_arguments)? func_body ;
 
 func_body 
 options { backtrack = true;}
@@ -180,7 +197,7 @@ type_intersection
 	: atom_type (AMPERSAND^ atom_type)*
 	;
 
-atom_type : generic_type  ;
+atom_type : generic_type  ((ISA|TILDE) generic_type)?;
 
 bracket_type : LBRACKET^ (type (COLON type)?)? RBRACKET! 	;
 
@@ -250,7 +267,7 @@ prefix_unary
 
 postfix_unary 
 options {backtrack=true;}
-    : (a=atom->atom) ((postfix_op)=> p=postfix_op ->^(FC $a $p*))* 
+    : (a=atom) ((postfix_op)=> p=postfix_op)* 
     ;
 
 
@@ -263,7 +280,7 @@ options { backtrack = true; }
 	| QDOT postfix_unary 
 	| QUESTION postfix_unary 
 	| postfix_unary 
-    | named_arg ((COMMA named_arg)=>COMMA named_arg)*
+    | named_arg ((COMMA named_arg)=>COMMA^ named_arg)*
     | BAR expr_list 
     ;
 
@@ -378,7 +395,7 @@ var_list
     | v_id_list
     ;
 
-block : nl? LCURLY s=statements RCURLY ->^(BLOCK $s);
+block : ((nl)=>nl)? LCURLY s=statements RCURLY ->^(BLOCK $s);
 
 
 literal
@@ -474,6 +491,7 @@ GT     		: '>';
 LE 			: '<=';
 NE2         : '<>';
 LEFT_ARROW  : '<-';
+ISA         : '<:';
 LT 			: '<';
 
 LBRACKET	: '[';
@@ -482,9 +500,8 @@ LPAREN		: '(' { ++parenLevel; };
 MULT		: '*';
 
 BANG		: '!';
-
+BANGIS      : '!is';
 NE 			: '!=';
-BANGIS		: '!is';
 
 
 CONCAT		: '++';

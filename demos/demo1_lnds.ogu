@@ -28,20 +28,22 @@ def suma2 (a, b : Int) -> (resultado: Int) =
         println "el resultado es " + resultado // el valor de suma es resultado 
 }
 
-/*
 
-class Persona (nombre: String, edadInicial: Int) {
 
-     hidden var _edad = edadInicial
+class Persona (nombre: String, edadInicial: Int) = {
+
+
+     hidden var _edad := edadInicial
 
      def saludar  () = println "hola " + nombre 
 
-     def celebrarCumpleaños ()  { 
+     def celebrarCumpleaÃ±os ()  { 
           _edad = _edad + 1 
-          println "¡¡ feliz cumpleaños " + nombre + "!!"
+          println "Â¡Â¡ feliz cumpleaÃ±os " + nombre + "!!"
     } 
 }
 
+/*
 
 def Cavernicola (nombre:String) = Cavernicola(nombre, "akarru!!!" )
 
