@@ -1,0 +1,35 @@
+doc "este es un ejemplo de anotaciones"
+
+shared def func(x,y:Int) = x + y
+
+doc {
+	description : "factorial"
+	author: "eduardo diaz"
+} def factorial (n:Int) = if (n <= 1) 1
+else n * factorial(n-1)
+
+def p = q a:1, b:2
+
+def test0 = 
+	test expect : name.length() > 0 
+
+def testConstructor = 
+	{
+		p = Class.init(a,b)
+		}
+
+class Stack{T} () = {
+	
+	var _data := List{T}()
+
+	def pop() = {
+		val result := head _data
+		_data = tail _data
+		return result
+	}
+
+	def push(elem:T) {
+		_data = elem :: _data
+	}
+}
+	
