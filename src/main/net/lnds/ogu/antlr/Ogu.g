@@ -77,16 +77,33 @@ top_level_decl
 
 
 
-class_decl : CLASS^ T_ID ((type_arguments)=> type_arguments)? value_arguments?
+class_decl : CLASS^ T_ID ((type_arguments)=> type_arguments)? class_arguments?
+             class_extends?
              class_body?;
 
+
+class_extends : COLON base_ctor (COMMA base_ctor)* ;
+
+base_ctor : T_ID  value_arguments ;
+
+class_arguments
+    : LPAREN class_args? RPAREN ;
+
+class_args
+    : class_arg (COMMA class_arg)* ;
+
+class_arg
+    : v_id_list COLON type
+    ;
 
 object_decl : OBJECT (V_ID|T_ID);
 
 
-class_body : ASSIGN! LCURLY! 
-    class_elements
-    RCURLY! ; 
+class_body 
+    : ASSIGN! LCURLY! class_elements  RCURLY! 
+    | ASSIGN T_ID value_arguments
+    | PLUS_ASSIGN LCURLY! class_elements RCURLY!
+    | LCURLY! class_elements RCURLY; 
 
 
 class_elements 
@@ -125,7 +142,7 @@ func_body
 options { backtrack = true;}
 	: (expr_list)* func_value
 	|  type_list ARROW type (func_value)?
-	| LPAREN (func_args)? RPAREN ( (block| func_value) | ARROW func_ret (func_value)?)?
+	| LPAREN (func_args)? RPAREN ( ((block)=>block| func_value) | ARROW func_ret (func_value)?)?
 	| COLON type (func_value | (COMMA type)* ARROW type )?
     ;
 
@@ -217,7 +234,7 @@ v_id_list : V_ID ((COMMA V_ID)=> COMMA V_ID)* ;
 t_id_list : T_ID (COMMA T_ID)* ;
 
 path
-	: V_ID (DOT V_ID)* (DOT T_ID)? ;
+	: name (DOT name)*;
 
 expr_list
 options {backtrack = true; }
@@ -378,10 +395,17 @@ options { backtrack = true; }
     | semi?;
 
 statement
-	: expr (ASSIGN expr)?
+	: expr (assign_op expr)?
 	| v_decl
    ;
 
+assign_op
+    : ASSIGN
+    | PLUS_ASSIGN
+    | MINUS_ASSIGN
+    | MULT_ASSIGN
+    | DIV_ASSIGN
+    ;
 
 v_decl
 	: (VAR^|VAL^) var_list 
@@ -471,6 +495,7 @@ ARROBA	: '@' ;
 
 MINUS		: '-';
 ARROW		: '->';
+MINUS_ASSIGN:'-=';
 
 EQ 			: '==';
 ASSIGN 		: '=';
@@ -484,6 +509,8 @@ COMMA  		: ',';
 DOLLAR		: '$';
 
 DIV			: '/';
+DIV_ASSIGN  : '/=';
+
 
 GE 			: '>=';
 GT     		: '>';
@@ -498,6 +525,8 @@ LBRACKET	: '[';
 LCURLY 		: '{' { ++curlyLevel; };
 LPAREN		: '(' { ++parenLevel; };
 MULT		: '*';
+MULT_ASSIGN : '*=';
+
 
 BANG		: '!';
 BANGIS      : '!is';
@@ -506,6 +535,7 @@ NE 			: '!=';
 
 CONCAT		: '++';
 PLUS		: '+';
+PLUS_ASSIGN : '+=';
 QDOT        : '?.';
 ELVIS 		: '?:';
 QUESTION	: '?';
@@ -523,11 +553,11 @@ fragment LOWER : 'a'..'z' ;
 
 fragment UPPER : 'A'..'Z' ;
 
-fragment LETTERS : 'a'..'z' | 'A'..'Z' | '_' ;
+fragment LETTERS : 'a'..'z' | 'A'..'Z' | '_' | '\u00c0'..'\ufffe' ;
 
-V_ID  :	('a'..'z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
+V_ID  :	('a'..'z'|'_') (LETTERS|'0'..'9')* ;
 
-T_ID  :	('A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
+T_ID  :	('A'..'Z') (LETTERS|'0'..'9')* ;
 
 
 ESC_ID : '`' (LETTERS|DIGITS)+ '`' ;

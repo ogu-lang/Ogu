@@ -11,7 +11,7 @@ public class Ogu {
     		System.out.println("Ogu version 0.1-alpha");
     		System.out.println("Parsing: "+args[0]);
 
-	        ANTLRFileStream in = new ANTLRFileStream(args[0]);
+	        ANTLRFileStream in = new ANTLRFileStream(args[0], "UTF8");
 	        OguLexer lexer = new OguLexer(in);
 	        CommonTokenStream tokens = new CommonTokenStream(lexer);
 	        OguParser parser = new OguParser(tokens);

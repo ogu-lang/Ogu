@@ -37,17 +37,18 @@ class Persona (nombre: String, edadInicial: Int) = {
 
      def saludar  () = println "hola " + nombre 
 
-     def celebrarCumpleaños ()  { 
-          _edad = _edad + 1 
-          println "¡¡ feliz cumpleaños " + nombre + "!!"
-    } 
+     def celebrarCumpleaños ()    { 
+        _edad = _edad + 1 
+          println " feliz cumpleanos " + nombre + "!!"
+    }
+
+    var x := 1
 }
 
-/*
 
-def Cavernicola (nombre:String) = Cavernicola(nombre, "akarru!!!" )
+class Cavernicola (nombre:String) = Cavernicola(nombre, "akarru!!!" )
 
-def Cavernicola : class (nombre, grito : String) = {
+class Cavernicola (nombre, grito : String) : Persona(nombre, 0) = {
 
      def pelear  () = { 
         println "yiko pelea!"
@@ -58,5 +59,3 @@ def Cavernicola : class (nombre, grito : String) = {
 def main () {
   println "Akarru!!!"
 }
-
-*/
