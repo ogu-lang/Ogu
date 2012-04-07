@@ -96,7 +96,7 @@ class_arg
     : v_id_list COLON type
     ;
 
-object_decl : OBJECT (V_ID|T_ID);
+object_decl : OBJECT (V_ID|T_ID) class_extends? class_body?;
 
 
 class_body 
