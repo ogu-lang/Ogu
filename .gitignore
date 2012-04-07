@@ -16,3 +16,4 @@ dist/ogu.jar
 ogu.jar
 
 classes/net/lnds/ogu/antlr/parser/*.class
+test.txt
