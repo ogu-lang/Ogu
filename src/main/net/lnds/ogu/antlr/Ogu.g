@@ -140,9 +140,9 @@ func_decl : DEF^ V_ID ((type_arguments)=> type_arguments)? func_body ;
 
 func_body 
 options { backtrack = true;}
-	: (expr_list)* func_value
+	: (or_expr_list)* func_value
 	|  type_list ARROW type (func_value)?
-	| LPAREN (func_args)? RPAREN ( ((block)=>block| func_value) | ARROW func_ret (func_value)?)?
+	| LPAREN! (func_args)? RPAREN! ( ((block)=>block| func_value) | ARROW func_ret (func_value)?)?
 	| COLON type (func_value | (COMMA type)* ARROW type )?
     ;
 
@@ -155,7 +155,7 @@ func_value
 	;
 
 func_guard
-	: nl BAR expr ASSIGN nl? expr	 ;
+	: nl BAR or_expr ASSIGN nl? expr	 ;
 
 func_otherwise
 	: nl BAR OTHERWISE  ASSIGN nl?  expr ;
@@ -181,19 +181,18 @@ func_ret_atom
 	;
 
 func_arg
-	: v_id_list COLON type ;
+	: v_id_list COLON^ type ;
 
 type_list
 	: type (COMMA type)*;
 
 type
-options { backtrack = true;}
-	: func_type QUESTION?
+	: (func_type)=> func_type QUESTION?
 	| primary_type QUESTION?
 	;
 
 func_type
-	: primary_type (COMMA primary_type)* ARROW^ primary_type
+	: primary_type (COMMA primary_type)* (ARROW^ primary_type)
 	;
 
 primary_type
@@ -237,11 +236,13 @@ path
 	: name (DOT name)*;
 
 expr_list
-options {backtrack = true; }
 	: expr ((COMMA)=> COMMA expr)*
 	;
 
-expr :	or_expr ;
+expr :	or_expr ((assign_op)=> assign_op expr)*;
+
+or_expr_list 
+    : or_expr ((COMMA)=> COMMA or_expr)* ;
 
 or_expr  : and_expr ((OR)=> OR^ and_expr)* ;
 
@@ -255,10 +256,14 @@ comp_expr : named_infix ((LT|GT|LE|GE)=> (LT^ | GT^ | LE^ | GE^) named_infix)* ;
 
 named_infix
 options {backtrack = true;}
-	: elvis_expr ((LEFT_ARROW)=> (LEFT_ARROW) elvis_expr)* 
-	| elvis_expr ( (IS (NOT)?| BANGIS)=> (IS ((NOT)=>NOT)?| BANGIS) elvis_expr )* 	
-	;
+	: elvis_expr ((is_in_op)=> is_in_op elvis_expr)*
+    ;
+    //(LEFT_ARROW|(NOT)? IN)=> (LEFT_ARROW| ((NOT)=> NOT)? IN) elvis_expr)* 
+	//| elvis_expr ( (IS (NOT)?| BANGIS)=> (IS ((NOT)=>NOT)?| BANGIS) elvis_expr )* 	
+	//;
 
+is_in_op
+    : LEFT_ARROW | ((NOT)=> NOT)? IN | BANGIN | IS ((NOT)=>NOT)? | BANGIS ;
 
 elvis_expr : infix_func_call ((ELVIS)=> ELVIS^ infix_func_call)* ;
 
@@ -283,7 +288,6 @@ prefix_unary
 
 
 postfix_unary 
-options {backtrack=true;}
     : (a=atom) ((postfix_op)=> p=postfix_op)* 
     ;
 
@@ -324,7 +328,7 @@ value_arguments : LPAREN! val_args? RPAREN! ;
 
 val_args : val_arg (COMMA val_arg)* ;
 
-val_arg : (name (ASSIGN|COLON))? expr ;
+val_arg : (name COLON)? expr ;
 
 type_arguments	: LCURLY type_list RCURLY ;
 
@@ -341,10 +345,18 @@ atom : name
      | lambda_expr
      | for_expr
      | lazy_expr
+     | yield_expr
+     | while_expr
 	 ;
 
 lazy_expr
     : LAZY expr ;
+
+yield_expr
+    : YIELD expr ;
+
+while_expr
+    : WHILE^ LPAREN! expr RPAREN! nl? expr ;
 
 let_expr
 options { backtrack = true; }
@@ -363,19 +375,26 @@ let_bindings
     : let_binding ((semi let_binding)=> semi let_binding)* ;
 
 let_binding
-options { backtrack = true; }
-    : expr_list ASSIGN^ expr
+    : or_expr_list ASSIGN^ expr
     ;
 
 
 if_expr
-options { backtrack = true; }
-	: IF^ LPAREN! expr RPAREN! nl? expr nl? (ELSE! nl? expr)
-	| IF^ LPAREN! expr RPAREN! nl? expr
-	;
+    : IF LPAREN! expr RPAREN! (nl)? expr
+      ((elsif_part)=> elsif_part)*
+      ((else_part)=> else_part)?
+      
+    ;
+
+elsif_part
+    : (nl)? ELSIF LPAREN! expr RPAREN! (nl)? expr 
+    ;
+
+else_part
+    : (nl)? ELSE (nl)? expr;
 
 for_expr
-    : FOR^ LPAREN! (VAR^|VAL^)? simple_name (COLON^ type)? IN^ expr RPAREN! expr 
+    : FOR^ LPAREN! (VAR|VAL)? simple_name (COLON! type)? IN! expr RPAREN! nl? expr 
     ;
 
 lambda_expr
@@ -395,7 +414,7 @@ options { backtrack = true; }
     | semi?;
 
 statement
-	: expr (assign_op expr)?
+	: expr 
 	| v_decl
    ;
 
@@ -411,6 +430,7 @@ v_decl
 	: (VAR^|VAL^) var_list 
      (COLON ASSIGN expr
      |COLON type (ASSIGN expr)?
+     | ASSIGN expr
      )
     ;
 
@@ -485,7 +505,8 @@ TYPE 		: 'type';
 VAL 		: 'val';
 VAR 		: 'var';
 WHERE 		: 'where' ;
-
+WHILE       : 'while';
+YIELD       : 'yield';
 
 
 AND 		: '&&';
@@ -530,6 +551,7 @@ MULT_ASSIGN : '*=';
 
 BANG		: '!';
 BANGIS      : '!is';
+BANGIN      : '!in';
 NE 			: '!=';
 
 
