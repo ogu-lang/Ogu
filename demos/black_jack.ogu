@@ -1,0 +1,155 @@
+import random.*
+
+type Naipe = (Char,Char)	
+
+def barajaMezclada() = lazy { 
+	val palos := ['C', 'D', 'T', 'P']  
+	val valores := ['A'] ++ [v | v <- [2..11]] ++ ['J', 'Q', 'K']  
+	val baraja := shuffle [(valor, palo) | palo <- palos,  valor <- valores]  
+	for (val c in baraja)
+	 	yield c
+}
+
+def valor_mano(cartas:[Naipe]) -> Int = {
+	var valor := 0
+	var ases := false
+	for (val carta in cartas) {
+			val valor_carta := carta[0]
+			if  (valor_carta in ['J','Q','K'])  
+		    	valor = valor + 10 
+		    else if (valor_carta == 'A') 
+			{ 
+				ases = true 
+				valor = valor + 1 
+			}
+			else 
+				valor =valor_carta
+	}
+	if (ases && (valor + 10) <= 21)
+		valor += 10
+	return valor
+}
+
+def solicitar_jugada(jugada:Char) = {
+		val (prompt, opciones) =	if (jugada == 'I')
+				("Jugada? ('R':Retirarse, 'D':Doblar, 'O':Otra carta, 'M': Mantener cartas) --> ", ['R','D','O','M'])
+			else
+			    ("Jugada? ('R':Retirarse, 'O':Otra carta, 'M': Mantener cartas) --> ", ['R','O','M'])
+
+		var opcion := input(prompt).strip().upper()
+		while (opcion not in opciones) {
+			print("opción incorrecta")
+			opcion = input(prompt).strip().upper()
+		}
+
+		print("Opción elegida: ", opcion, "\n")
+		return opcion	
+}
+
+def mostrar_mano(prompt:String, mano:[(Char,Char)]) {
+		print("\t", prompt,   " ".join ( str(carta[0])+"-"+carta[1] | carta <- mano),  " ( Valor: ", valor_mano(mano), ")\n")
+}
+
+def mostrar_manos(mano_jugador, mano_couprier : [(Char,Char)]) {
+		mostrar_mano("Cartas Jugador:  ", mano_jugador)
+		mostrar_mano("Cartas Couprier: ", mano_couprier)
+	}
+
+def jugar_couprier(mano, baraja : [(Char,Char)]) = {
+		var result = mano
+		while (valor_mano(result) < 17)
+			result = next baraja :: result
+		return result
+}
+
+def determinar_ganancia(mano_jugador, mano_couprier : [(Char,Char)], apuesta : Int, jugada : Char) = {
+		if (jugada == 'R')
+		   -apuesta
+		else {
+			val (jugador, couprier) = (valor_mano(mano_jugador), valor_mano(mano_couprier))
+			var ganancia = 	if (jugador <= 21 < couprier || couprier < jugador <= 21)
+				apuesta
+			elsif (couprier <= 21 < jugador || jugador < couprier <= 21)
+				 -apuesta
+			else 
+				0
+			if (jugada == 'D')
+				ganancia *= 2
+			return ganancia
+		}
+	}
+
+
+
+def jugar_mano(apuesta, pozo : Int) -> Int = {
+		print ("Nueva mano, apuesta $", apuesta, " pozo $", pozo-apuesta, "\n")
+		val baraja = baraja_mezclada()
+		val (mano_jugador, mano_couprier)  = ([next(baraja), next(baraja)], [next(baraja), next(baraja)])
+		var ganancia = 0
+		
+		if (valor_mano(mano_jugador) == 21) {
+			mostrar_manos(mano_jugador, mano_couprier)
+			print ("¡Jugador tienen black jack!")
+			ganancia = (3*apuesta)/2
+		} 
+		else {
+			var jugada = 'I'
+			while (jugada in ['I','O']) {
+				mostrar_manos(mano_jugador, mano_couprier)
+				jugada = solicitar_jugada(jugada)
+				if (jugada == 'M')
+					mano_couprier = jugar_couprier(mano_couprier, baraja)
+				elsif (jugada == 'D') {
+					mano_jugador.append(next(baraja))
+					mano_couprier = jugar_couprier(mano_couprier, baraja)
+				} 
+				elsif (jugada == 'O') {
+					mano_jugador.append(next(baraja))
+					if (valor_mano(mano_jugador) > 21)
+						jugada = 'R'
+				}
+			}
+			mostrar_manos(mano_jugador, mano_couprier)
+			ganancia = determinar_ganancia(mano_jugador, mano_couprier, apuesta, jugada)
+		}
+		
+		return ganancia
+	}
+
+def mostrar_resultado(resultado, pozo : Int) {
+		print if (resultado > 0) "Jugador gana $ "+resultado
+		      elsif (resultado < 0) "Jugador pierde $"+resultado
+		      else "Empate"
+		print ("Su pozo es: $", pozo, "\n")
+	}
+
+
+	def solicitar_apuesta(pozo, apuesta_minima : Int) -> Int = {
+		var valor = -1
+		if (pozo < apuesta_minima)	
+			print ("Su pozo no le alcanza para seguir jugando, inténtelo de nuevo en otra oportunidad")		
+		else {
+			prompt = "\nIngrese su apuesta (min: "+str(apuesta_minima)+", max: "+str(pozo)+", 0 para finalizar juego): "
+			while (valor != 0 && !(apuesta_minima <= valor <= pozo))
+				valor = int(input(prompt))
+		}
+		print ("")
+		return valor
+	}
+
+
+	def black_jack(pozo, apuesta_minima : Int) {
+		// ciclo principal del programa
+		print ("Bienvenido al juego de black jack")
+		var apuesta = solicitar_apuesta(pozo, apuesta_minima)
+		var resultado = 0
+		while (apuesta_minima <= apuesta <= pozo)
+			resultado = jugar_mano(apuesta, pozo)
+		pozo += resultado
+		mostrar_resultado(resultado, pozo)
+		apuesta = solicitar_apuesta(pozo, apuesta_minima)
+		print ("Gracias por participar, tu pozo final es: ", pozo)
+	}
+def main() = {
+	BlackJack.main(500, 10)
+}
