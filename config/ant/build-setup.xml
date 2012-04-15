@@ -54,7 +54,7 @@ $Date$
         <include name="runtime-*.jar" />
     </patternset>
 
-   <property name="antlrHome" value="${envList.ANTLR_HOME}"/>
+   <property name="antlrHome" value="lib"/>
 	   <!-- Looking for archives in ANTLR_HOME directory -->
     <path id="antlr.path">
         <fileset dir="${antlrHome}" casesensitive="yes">
