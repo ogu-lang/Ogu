@@ -33,13 +33,7 @@ $Date$
 	 	<mkdir dir="${classes}/META-INF" />
 	 	<mkdir dir="${dist}" />
 	 	 <!-- Check if environment variable ANTLR_HOME is set -->
-        <fail message="Environment variable ANTLR_HOME is not set!">
-           <condition>
-              <not>
-                 <isset property="envList.ANTLR_HOME"/>
-              </not>
-           </condition>
-        </fail>
+
 	 </target>
 
 	 <target name="Ogu" depends="antlr_classpath" description="Ensure all the Antlr generated files are up to date.">
