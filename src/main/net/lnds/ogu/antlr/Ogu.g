@@ -7,14 +7,13 @@ options {
 }
 
 tokens {
+  PATH;
 	BLOCK;
 	EXPR;
-    PFU;
-    ATOM;
-    FC;
-    ANNOTATION;
-    ANNOTATION_ARG;
-    LITERAL;
+  TYPE_PARAMS;  
+  ANNOTATION;
+  ANNOTATION_ARG;
+   
 }
 
 @header {
@@ -58,7 +57,6 @@ tokens {
 }
 
 prog 
-@after { println("PROG: "+$prog.tree.toStringTree()+"\n"); }
 : (nl)? preamble (top_level_decl)*;
 
 preamble
@@ -68,7 +66,7 @@ package_header
 	: (annotation)* PACKAGE^ path sep? ;
 
 import_package
-	: (annotation)* IMPORT^ path (DOT! MULT | AS^ T_ID) sep? ;
+	: (annotation)* IMPORT^ path (DOT MULT | AS T_ID) sep? ;
 
 top_level_decl
 	: (annotation)*
@@ -114,17 +112,17 @@ class_elements
 class_element
     : (annotation)* (func_decl|v_decl) ;
 
-type_def : TYPE^ T_ID type_parameters? ASSIGN^ type ;
+type_def : TYPE^ T_ID type_parameters? ASSIGN! type ;
 
 type_parameters
-	: LCURLY t_id_list RCURLY
+	: LCURLY t+=t_id_list RCURLY ->^(TYPE_PARAMS $t)
 	;
 
 annotation
-	:  n=name
-	  ( l=literal ->^(ANNOTATION $n $l)
-	  | LPAREN a+=annotation_arg (COMMA a+=annotation_arg)* RPAREN ->^(ANNOTATION $n $a+)
-	  | LCURLY nl? a+=annotation_arg (sep a+=annotation_arg)* sep? RCURLY ->^(ANNOTATION $n $a+)
+	:  n=simple_name
+	  ( l=literal ->^(ANNOTATION $n ^(ANNOTATION_ARG $l))
+	  | LPAREN a=annotation_arg (COMMA b+=annotation_arg)* RPAREN ->^(ANNOTATION $n $a $b*)
+	  | LCURLY nl? a=annotation_arg (sep b+=annotation_arg)* sep? RCURLY ->^(ANNOTATION $n $a $b*)
 	  )?
 	  nl? 
     ;
@@ -133,7 +131,7 @@ annotation
 
 
 annotation_arg
-	: (v=V_ID (ASSIGN|COLON))? l=literal -> ^(ANNOTATION_ARG $v? $l)
+	: (v=V_ID (ASSIGN|COLON))? l=literal -> ^(ANNOTATION_ARG $l $v?)
 	;
 
 func_decl : DEF^ V_ID ((type_arguments)=> type_arguments)? func_body ;
@@ -184,7 +182,7 @@ func_arg
 	: v_id_list COLON^ type ;
 
 type_list
-	: type (COMMA type)*;
+	: type (COMMA! type)*;
 
 type
 	: (func_type)=> func_type QUESTION?
@@ -192,7 +190,7 @@ type
 	;
 
 func_type
-	: primary_type (COMMA primary_type)* (ARROW^ primary_type)
+	: pa+=primary_type (COMMA pa+=primary_type)* (ARROW pr=primary_type) ->^(ARROW $pa+ $pr)
 	;
 
 primary_type
@@ -217,7 +215,7 @@ atom_type : generic_type  ((ISA|TILDE) generic_type)?;
 
 bracket_type : LBRACKET^ (type (COLON type)?)? RBRACKET! 	;
 
-tuple_type : LPAREN type_list RPAREN ;
+tuple_type : LPAREN^ type_list RPAREN! ;
 
 generic_type : T_ID (generic_sufix)? ;
 
@@ -226,14 +224,14 @@ generic_sufix : LCURLY^ type_list RCURLY! ;
 
 array_sufix : LBRACKET^ (array_dim)? RBRACKET! ;
 
-array_dim : INT (COMMA INT) ;
+array_dim : INT (COMMA! INT)* ;
 
 v_id_list : V_ID ((COMMA V_ID)=> COMMA V_ID)* ;
 
-t_id_list : T_ID (COMMA T_ID)* ;
+t_id_list : T_ID (COMMA! T_ID)* ;
 
 path
-	: name (DOT name)*;
+	: n1=name (DOT n2+=name)* -> ^(PATH $n1 $n2*);
 
 expr_list
 	: expr ((COMMA)=> COMMA expr)*
@@ -255,12 +253,8 @@ eq_op : EQ | NE ;
 comp_expr : named_infix ((LT|GT|LE|GE)=> (LT^ | GT^ | LE^ | GE^) named_infix)* ;
 
 named_infix
-options {backtrack = true;}
 	: elvis_expr ((is_in_op)=> is_in_op elvis_expr)*
     ;
-    //(LEFT_ARROW|(NOT)? IN)=> (LEFT_ARROW| ((NOT)=> NOT)? IN) elvis_expr)* 
-	//| elvis_expr ( (IS (NOT)?| BANGIS)=> (IS ((NOT)=>NOT)?| BANGIS) elvis_expr )* 	
-	//;
 
 is_in_op
     : LEFT_ARROW | ((NOT)=> NOT)? IN | BANGIN | IS ((NOT)=>NOT)? | BANGIS ;
@@ -312,11 +306,11 @@ named_arg
 call_sufix
 options { backtrack = true; }
 	: type_arguments value_arguments function_literal
-	| type_arguments function_literal
+    | type_arguments value_arguments
 	| value_arguments function_literal
-	| value_arguments
-	| function_literal
+    | value_arguments
 	;
+
 
 function_literal
 	: LCURLY    statements  RCURLY
@@ -328,11 +322,12 @@ value_arguments : LPAREN! val_args? RPAREN! ;
 
 val_args : val_arg (COMMA val_arg)* ;
 
-val_arg : (name COLON)? expr ;
+val_arg : (simple_name COLON)? expr ;
 
 type_arguments	: LCURLY type_list RCURLY ;
 
-atom : name
+atom : simple_name
+     | type_name 
      | literal
      | LPAREN! expr_list RPAREN!
      | LBRACKET^ (expr_list)? RBRACKET!
@@ -359,10 +354,8 @@ while_expr
     : WHILE^ LPAREN! expr RPAREN! nl? expr ;
 
 let_expr
-options { backtrack = true; }
-	: LET^ nl? let_bindings nl? IN^ nl? expr
-    | LET^ nl? let_bindings;
-
+	: LET^ nl? let_bindings ((nl? IN)=> nl? IN^ nl? expr)?
+    ;
 case_expr
     : CASE^ expr OF! nl? 
         expr ARROW expr ((sep expr ARROW)=> sep expr ARROW expr)* ;
@@ -410,7 +403,9 @@ lambda_arg
 
 statements
 options { backtrack = true; }
-	: semi? statement (semi statement)* semi?
+//	: semi? statement (sep statement)* ((sep)=>sep)? ;
+
+: semi? statement (semi statement)* semi?
     | semi?;
 
 statement
@@ -454,6 +449,8 @@ literal
 name : V_ID | T_ID;
 
 simple_name : V_ID ;
+
+type_name : T_ID ;
 
 simple_name_list : simple_name (COMMA simple_name)* ;
 

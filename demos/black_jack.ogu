@@ -2,13 +2,15 @@ import random.*
 
 type Naipe = (Char,Char)	
 
-def barajaMezclada() = lazy { 
+def barajaMezclada() -> [Naipe] = lazy { 
 	val palos := ['C', 'D', 'T', 'P']  
 	val valores := ['A'] ++ [v | v <- [2..11]] ++ ['J', 'Q', 'K']  
 	val baraja := shuffle [(valor, palo) | palo <- palos,  valor <- valores]  
 	for (val c in baraja)
 	 	yield c
 }
+
+def valor_carta (v,p) = v
 
 def valor_mano(cartas:[Naipe]) -> Int = {
 	var valor := 0
@@ -150,6 +152,7 @@ def mostrar_resultado(resultado, pozo : Int) {
 		apuesta = solicitar_apuesta(pozo, apuesta_minima)
 		print ("Gracias por participar, tu pozo final es: ", pozo)
 	}
-def main() = {
-	BlackJack.main(500, 10)
+
+def main() {
+	black_jack(500, 10)
 }

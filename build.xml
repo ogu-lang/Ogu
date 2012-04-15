@@ -45,7 +45,7 @@ $Date$
 	 <target name="Ogu" depends="antlr_classpath" description="Ensure all the Antlr generated files are up to date.">
         
         <antlr3 grammar.name="Ogu.g" package="parser" />
-            
+        <antlr3 grammar.name="OguWalker.g" package="parser" />    
      </target>
 
     <target name="compile" depends="init, Ogu" description="compile">

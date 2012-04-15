@@ -1,8 +1,14 @@
-package test
+package net.lnds.ogu.testing
 
 import ogu.lang.*
 
+import ogu.lang.Int64 as Long
+
 type Cardinal = Long | Int
+
+type FuncII = Int, Int -> Int
+
+type MapOfInt{Key} = Map{Key,Int}
 
 def factorial  : Int -> Int
 
