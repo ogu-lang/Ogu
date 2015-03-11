@@ -3,7 +3,19 @@ Este es Ogu, un nuevo lenguaje de programación
 COMPILACION
 -----------
 
-Vas a necesitar Java 1.5 o superior y ANTLR 4.5
+
+
+Necesitarás ANTLR v 4.5.
+
+Descarga antlr desde http://www.antlr.org/ y sigue las instrucciones para configurarlo desde ese sitio.
+
+Probar la gramatica:
+
+$ cd src
+$ antlr4 Ogu.g4
+$ javac *.java
+$ grun -tree ../test/test0.ogu
+
 
 
 LICENCIA

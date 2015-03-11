@@ -1,11 +1,20 @@
 This is the programming language Ogu
 
-BUILD
------
+TEST
+----
 
-You will need ANTLR v 4.5 and ANT 1.8+
+You will need ANTLR v 4.5.
 
-Just type ant to build the parser
+Download antlr from http://www.antlr.org/ and follow instructions.
+
+Test grammar:
+
+$ cd src
+$ antlr4 Ogu.g4
+$ javac *.java
+$ grun -tree ../test/test0.ogu
+
+
 
 
 This software is distributed under a BSD License, see LICENSE file for details
