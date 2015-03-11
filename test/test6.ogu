@@ -1,0 +1,7 @@
+// test 6
+
+ def multiplicar x: Num y: Num : Num = x * y
+
+def doblar : Num -> Num = multiplicar 2
+def diez : Num = doblar 5
+val doce := double 6

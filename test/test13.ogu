@@ -1,0 +1,9 @@
+// types
+
+type Bool = false | true
+
+type BasicColor = red | green | blue
+
+type String' = [Char]
+
+type IntVector = (Int,Int)
