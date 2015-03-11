@@ -1,0 +1,32 @@
+// clases
+
+class Circulo(val x, y: Int; val radius : Float)
+
+
+class Rectangulo(val x,y, alto, ancho:Int)
+
+var circulo := Circulo(0,0, 100.0)
+
+var cuadro := Rectangulo(0, 0, 50, 50)
+
+var box : Circulo = Circulo(0, 0, 50, 50)
+
+class Empresa (val rut:String, val razonSocial:String) = {
+    var cantidadEmpleados : Int = 0
+     var patrimonioInicial : Money = 1000000
+ }
+
+class Auto(val modelo:String; año:Int) = {
+     var bencina := 0
+
+     constructor Auto(modelo:String) : Auto(modelo, 0)
+     constructor Auto() : Auto("Sin modelo", 0)
+
+ }
+
+class Auto'(val modelo:String; val año:Int) =  {
+     var bencina := 0
+     constructor Auto'(modelo:String) : Auto'(modelo, 0) {
+         bencina = 0
+     }
+}

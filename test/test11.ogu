@@ -1,0 +1,25 @@
+// test 10 min max
+
+def minmax :: (x:Ord) => [x] -> (x,x)
+
+	minmax [] := error "debe contener al menos un elemento"
+
+	minmax xs = {
+ 		var cmin := head xs
+		var cmax := cmin
+		for x <- tail xs do { 
+		    when x < cmin do cmin = x
+    		when x > cmax do cmax = x
+ 		}
+ 		(cmin, cmax) 
+ 	}
+
+
+def minmax :: (x:Ord) => [x] -> (x,x)
+
+	minmax [] := error "debe contener al menos un elemento"
+	minmax xs := (minimun xs, maximun xs)
+	    where maximun [x] := x
+	    and   maximun [x::xs] := max x (maximun xs)
+	    and   minimun [x] := x
+	    and  minimum [x::xs] := min x (minimum xs)
