@@ -3,7 +3,7 @@ Este es Ogu, un nuevo lenguaje de programación
 COMPILACION
 -----------
 
-Vas a necesitar Java 1.5 o superior, ANTLR 3.4 y ANT 1.8 para construir el proyecto.
+Vas a necesitar Java 1.5 o superior y ANTLR 4.5
 
 
 LICENCIA

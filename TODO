@@ -1,9 +1,4 @@
 TODO LIST
 
-- test expressions
-- complete declarations of generic types
-- semantic analysis
-- accept this expression: 2.+(2) //<- is the same as 2+2 // today we need some whitespaces
-- stress test annotations
 - write instructions for building
-
+- semantic analysis

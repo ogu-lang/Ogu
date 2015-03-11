@@ -1,0 +1,50 @@
+// classes initialization
+
+class AutoInc() = {
+    var cont := 0
+    cont = cont + 1
+
+    def getCont self := cont
+
+}
+
+val a := AutoInc()
+
+val b := AutoInc()
+
+getCont a // <— retorna 1
+
+getCont b // <— retorna 1
+
+class Stack() = {
+    var _data : [Int] = []
+
+    def push! self x:Int := {
+               _data = cons x _data
+       }
+
+   def pop! self := {
+           val result := head _data
+           _data = tail _data
+           result
+   }
+
+   def empty? self := {
+           empty _data
+   }
+
+}
+
+var stack := Stack()
+push! stack 10
+  push! stack 20
+ pop! stack /// <- retorna 20
+
+ val auto := Auto()
+ auto.bencina
+
+ class Persona += {
+    def show self { println "nombre: $nombre, edad: $edad" }
+ }
+
+
