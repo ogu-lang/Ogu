@@ -1,0 +1,15 @@
+// test 3
+
+val maxIntentos := 10
+var intentosHastaAhora := 0
+val pi := 3.141516
+
+var vector : (Float, Float, Float) = (2.0, 3.0, 10.0)
+
+var perfil : (String,Char,Int,Date) = ("Juan", "M", 30, #19850101)
+
+var nombres : [String] = ["Pedro", "Juan", "Diego"]
+
+var (p:Int, q:Int) = frac(0.4)
+
+var (r, s) := frac(0,4)

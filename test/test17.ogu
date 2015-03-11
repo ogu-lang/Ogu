@@ -1,0 +1,53 @@
+class Number(val value:Int)
+
+ type Expression = Number
+                 | Add(Expression, Expression)
+                 | Minus(Expression, Expression)
+                 | Mult (Expression, Expression)
+                 | Divide(Expression, Expression)
+
+ def evaluate :: Expression -> Int
+def evaluate a:Number := a.value
+def evaluate Add (e1, e2) := evaluate e1 + evaluate e2
+def evaluate Minus(e1, e2) := evaluate e1 - evaluate e2
+ def evaluate Mult(e1, e2) := evaluate e1 * evaluate e2
+ def evaluate Divide(e1, e2) := evaluate e1 / evaluate e2
+
+ val e : Expression = Add(Number(3), Number(4))
+ evaluate e // = 7
+ val es := Multiply( Add(Number(3),Number(4)), Divide(Number(8), Number(2)) )
+
+
+class Stack{T}() = {
+
+  var _data : [T] = []
+
+   def push! self x:T := {
+              _data = cons x _data
+      }
+
+      def pop! self := {
+              val result := head _data
+              _data = tail _data
+              result
+      }
+
+      def empty? self := {
+              empty _data
+      }
+
+
+}
+
+type IntStack = Stack{Int}
+
+
+type Maybe{T} = Nothing | Some(T)
+
+val some : Maybe{String} = Nothing()
+
+val any  : Maybe{String} = Some("algo")
+
+class Stack{T : Ord => T }()
+
+class Sorter{T : Num => T}()
