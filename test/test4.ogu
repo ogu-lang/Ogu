@@ -1,5 +1,5 @@
 // test 4
-
+def test() {
 max 10 4
 
 (max 10 4)
@@ -9,3 +9,5 @@ max 4 5 + 2
 2 + max 4 5
 
 max 4 + 5 2
+
+}

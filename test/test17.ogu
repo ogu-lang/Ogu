@@ -13,8 +13,8 @@ def evaluate Minus(e1, e2) := evaluate e1 - evaluate e2
  def evaluate Mult(e1, e2) := evaluate e1 * evaluate e2
  def evaluate Divide(e1, e2) := evaluate e1 / evaluate e2
 
+
  val e : Expression = Add(Number(3), Number(4))
- evaluate e // = 7
  val es := Multiply( Add(Number(3),Number(4)), Divide(Number(8), Number(2)) )
 
 

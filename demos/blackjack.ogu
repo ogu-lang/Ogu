@@ -1,0 +1,136 @@
+uses Random
+
+type Carta = (Char,Char)
+
+def baraja_mezclada : lazy = {
+    val palos := ['C', 'D', 'T', 'P']
+    val valores := ['A' , 2 .. 11, 'J', 'Q', 'K']
+    var baraja := [(valor,palo) | palo <- palos, valor <- valores]
+    baraja = shuffle baraja
+    while (len baraja) > 0 do
+        yield (pop baraja)
+}
+
+def valor_mano cartas:[Carta] = {
+    var valor := 0
+    var ases  := false
+    for carta <- cartas do {
+        val valor_carta = fst carta
+        valor = if valor_carta in ['J','Q','K'] then valor + 10 else (if valor_carta == 'A' then valor + 1 else valor_carta)
+        when valor_carta == 'A' do ases = true
+    
+    }
+    if ases and (valor + 10) <= 21 then
+        valor + 10
+    else
+        valor
+}
+
+def solicitar_jugada jugada:Char := {
+    var prompt : String
+    var opciones : [Char] 
+    if jugada == 'I' then {
+        prompt = "Jugada? ('R':Retirarse, 'D':Doblar, 'O':Otra carta, 'M': Mantener cartas) --> "
+        opciones = ['R','D','O','M']
+    } else {
+        prompt = "Jugada? ('R':Retirarse, 'O':Otra carta, 'M': Mantener cartas) --> "
+        opciones = ['R','O','M']
+    }
+
+    var opcion := strip <| upper <| input! prompt
+    while opcion not in opciones do {
+        print "opción incorrecta"
+        opcion = strip <| upper <| input(prompt)
+    }
+    print! "Opción elegida: "++opcion++"\n"
+    opcion
+}
+
+def mostrar_mano prompt : String mano : [Carta] := {
+    print! ("\t" ++ prompt ++ (join " " [ (fst carta)++"-"++(snd carta) | carta <- mano]) ++ " ( Valor: " ++ (valor_mano mano) ++ "\n")
+}
+
+def mostrar_manos mano_jugador:[Carta] mano_couprier:[Carta] := {
+    mostrar_mano "Cartas Jugador:" mano_jugador
+    mostrar_mano "Cartas Couprier" mano_couprier
+}
+
+def jugar_couprier mano:[Carta] baraja:[Carta] := {
+    var result := mano
+    while (valor_mano result) < 17 do
+        result = result ++ (next baraja)
+    result
+}
+
+def determinar_ganancia mano_jugador:[Carta] mano_couprier:[Carta] apuesta:Int jugada:Char :=
+    if jugada == 'R' then
+        -apuesta
+    else {
+        val (jugador, couprier) := (valor_mano mano_jugador, valor_mano mano_couprier)
+        var ganancia := if foo then apuesta else (if couprier <= 21 < jugador or jugador < couprier <= 21 then -apuesta else 0)
+
+        if jugada == 'D' then 
+            ganancia * 2
+        else 
+            ganancia
+    }
+
+def jugar_mano apuesta:Int pozo:Int := {
+    print "Nueva mano, apuesta $" ++ apuesta ++ " pozo $" ++ (pozo - apuesta) ++ "\n"
+    var baraja := baraja_mezclada
+    var (mano_jugador, mano_couprier) := ([next baraja, next baraja], [next baraja, next baraja])
+
+    if (valor_mano mano_jugador) == 21 then {
+        mostar_manos mano_jugador mano_couprier
+        print "¡Jugador tiene black jack!"
+        (3 * apuesta) div 2
+    } else {
+        var jugada := 'I'
+        while jugada in ['I','O'] do
+            mostar_manos mano_jugador mano_couprier
+            jugada = solicitar_jugada jugada
+            when jugada == 'M' do
+                mano_couprier = jugar_couprier mano_couprier baraja
+            when jugada == 'D' do
+                mano_jugador = mano_jugador ++ (next baraja)
+                mano_couprier = jugar_couprier mano_couprier baraja
+            when jugada == 'O' do
+                mano_jugador = mano_jugador ++ (next baraja)
+                when (valor_mano mano_jugador) > 21 do
+                    jugada = 'R'
+        mostar_manos mano_jugador mano_couprier
+        determinar_ganancia mano_jugador mano_couprier apuesta jugada
+    }
+}
+
+def mostrar_resultado resultado:Int pozo:Int
+| resultado > 0 := alert ("Jugador gana $"++resultado) pozo
+| resultado < 0 := alert ("Jugador pierda $"++(-resultado)) pozo
+| otherwise := alert "Empate" pozo
+where alert msj pozo = print! msj ++ "\n" ++ "Su pozo es: $" ++ pozo 
+
+def solicitar_apuesta pozo apuesta_minima :=
+    if pozo < apuesta_minima then {
+        print! ("Su pozo no le alcanza para seguir jugando, inténtelo de nuevo en otra oportunidad") 
+        -1
+    } else {
+        val prompt := "\nIngrese su apuesta (min: "++apuesta_minima++", max: "++pozo++", 0 para finalizar juego): "
+        var valor := -1
+        while valor <> 0 and not (apuesta_minuma <= valor <= pozo) do
+            valor = toint (input prompt)
+        print! ""
+        valor
+    }
+
+def black_jack pozo:Int apuesta:Int minima:Int := {
+    print "Bienvenido al juego de black jack"
+    var apuesta := solicitar_apuesta pozo apuesta_minima
+    while apuesta_minima <= apuesta <= pozo do {
+        val resultado := jugar_mano apuesta pozo
+        pozo = pozo + resultado
+        mostrar_resultado resultado pozo
+        apuesta = solicitar_apuesta pozo apuesta_minima
+    }
+    print! "Gracias por participar, tu pozo final es:" ++ pozo
+}
+

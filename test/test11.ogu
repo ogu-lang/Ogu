@@ -1,8 +1,8 @@
-// test 10 min max
+// test 11 min max
 
 def minmax :: (x:Ord) => [x] -> (x,x)
 
-	minmax [] := error "debe contener al menos un elemento"
+	minmax [] = error "debe contener al menos un elemento"
 
 	minmax xs = {
  		var cmin := head xs

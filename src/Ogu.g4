@@ -38,7 +38,6 @@ decl :
     | val {println("val"); }
     | typedef { println("type"); }
     | def { println("def"); }
-    | expression { println("expression"); }
     ) (sep)*
     ;
 
@@ -169,14 +168,15 @@ prototype_arg
 prot_type	: type | ID ;
 
 func_def
-	: ID (func_arg (func_arg)*)?  (NL)* ( func_simple_body | func_guards ((NL)* func_guards)* | block_expression ) (func_where)? #FuncDef;
+	: ID (func_arg (func_arg)*)?  (NL)* ( func_simple_body | func_guards ((NL)* func_guards)* | block_expression ) (func_where)? { println("FUNCDEF"); } 
+	;
 
 func_simple_body : (':' ('lazy')? (type)?)? '=' (NL)* func_body  ;
 
 
 func_arg
 	: ID ':' type?
-	| '(' func_arg (',' func_arg)* ')'
+	| '(' (func_arg (',' func_arg)*)? ')'
 	| TID
 	| expression
 	;
@@ -187,7 +187,7 @@ func_guards
 	;
 
 
-func_body : 'abstract' | expression  ;
+func_body : 'abstract' | expression | block_expression ;
 
 
 func_where 
@@ -202,11 +202,11 @@ where_expr
 
 
 expression  
-	: 'if' expression (NL)? 'then'  (expression (NL)?|block_expression)  'else'  (expression|block_expression) { println("if");}
+	: 'if' expression (NL)? 'then' (NL)* (expression (NL)?|block_expression)  'else' (NL)* (expression|block_expression) { println("if");}
 	| 'for' (set_expr | list_expression) (NL)? 'do' (NL)? (expression | block_expression) { println("for"); }
-	| 'when' expression  'do' (expression|block_expression)
-	| 'unless' expression  'do' (expression|block_expression)
-	| 'while' {println("empieza while...");} expression  'do' (NL)? (expression|block_expression) {println("while");}
+	| 'when' expression  'do' (NL)* (expression|block_expression)
+	| 'unless' expression  'do' (NL)* (expression|block_expression)
+	| 'while' expression  'do' (NL)? (expression|block_expression) 
 	| case_expression
 	| let_expression
 	| 'not' expression
@@ -246,15 +246,13 @@ expression
 	| expression '++' expression
 	| ID ('.' ID)+
 	| ID (expression)*
+	| ID '=' expression
 	| constructor_call
-	| method_call
 	| INT
 	| FLOAT
 	| STRING
 	| CHAR 
 	| DATE
-	| block_expression
-	| assignment
 	;
 
 constructor_call
@@ -277,15 +275,10 @@ block_expression
 	  '}'{println("BLOCK");}
 	;
 
-assignment
-	: vid '=' expression 
-	;
-
 block_statement
 	: 
 	( var { println("var in block"); } 
 	| val { println("val in block"); } 
-	| assignment
 	| expression { println ("expression in block"); }
 	)
 	(sep)*
@@ -317,13 +310,7 @@ let_expr
 	| func_def
 	;
 
-method_call : '[' ( method_call ((ID ':')? expression)* 
-                  | (constructor_call)? (ID) ('as' TID |  'is' TID | ((ID ':')? expression)* ) 
-                  )
-              ']'
-			;
 list_expression : list_element (',' list_element)* ;
-
 
 list_element : expression ('|' set_expr (',' set_expr)*)? ;
 
@@ -332,8 +319,6 @@ set_expr : expression ('<-' expression)? ;
 expression_list : expression (',' expression)* ;
 
 idList : ID (',' ID)* ;
-
-
 
 
 ID : [_a-záéíóúñ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ('!'|'?')?;

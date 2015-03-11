@@ -12,7 +12,11 @@ def swap(a:Num, b:Num) : = (b,a)
 
 def sumarVectores (a:Num,b:Num) (c:Num,c:Num) := (a+c, b+d)
 
- sumarVectores (10,10) (20,20) // produce (30,30)
 
 
 def sumarVectores (a,b:Num) (c,d:Num) := (a+c, b+d)
+
+
+def test() {
+ sumarVectores (10,10) (20,20) // produce (30,30)
+}

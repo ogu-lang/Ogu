@@ -4,6 +4,7 @@ def	areaCilindro r h =
    and areaBase := pi * r ^ 2
    in areaLateral + 2 * areaBase 
 
+def test () {
  4 * (let a = 9 in a + 1) + 2 // = 42
 
  [let square = x * x in (square 5, square 3, square 2)]
@@ -11,3 +12,5 @@ def	areaCilindro r h =
  (let a = 100; b = 200; c = 300 in a*b*c)
 
  (let a = 100 and b = 200 and c = 300 in a*b*c)
+
+ }

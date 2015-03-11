@@ -12,9 +12,12 @@ val a := AutoInc()
 
 val b := AutoInc()
 
+def test() {
 getCont a // <— retorna 1
 
 getCont b // <— retorna 1
+
+}
 
 class Stack() = {
     var _data : [Int] = []
@@ -35,6 +38,7 @@ class Stack() = {
 
 }
 
+def test'() {
 var stack := Stack()
 push! stack 10
   push! stack 20
@@ -43,8 +47,9 @@ push! stack 10
  val auto := Auto()
  auto.bencina
 
- class Persona += {
-    def show self { println "nombre: $nombre, edad: $edad" }
- }
+}
 
+class Persona += {
+  def show self { println "nombre: $nombre, edad: $edad" }
+}
 

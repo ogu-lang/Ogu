@@ -18,3 +18,9 @@ ogu.jar
 classes/net/lnds/ogu/antlr/parser/*.class
 test.txt
 .idea
+src/Ogu.tokens
+src/OguBaseListener.java
+src/OguLexer.java
+src/OguLexer.tokens
+src/OguListener.java
+src/OguParser.java

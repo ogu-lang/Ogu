@@ -1,1 +1,3 @@
-println! "Hola Mundo"
+def main() {
+	println! "Hola Mundo"
+}
