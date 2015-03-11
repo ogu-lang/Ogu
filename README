@@ -3,7 +3,7 @@ This is the programming language Ogu
 BUILD
 -----
 
-You will need ANTLR v 3.4 and ANT 1.8+
+You will need ANTLR v 4.5 and ANT 1.8+
 
 Just type ant to build the parser
 
