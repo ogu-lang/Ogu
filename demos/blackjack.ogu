@@ -20,7 +20,7 @@ def valor_mano cartas:[Carta] = {
         when valor_carta == 'A' do ases = true
     
     }
-    if ases and (valor + 10) <= 21 then
+    if ases && (valor + 10) <= 21 then
         valor + 10
     else
         valor
@@ -116,7 +116,7 @@ def solicitar_apuesta pozo apuesta_minima :=
     } else {
         val prompt := "\nIngrese su apuesta (min: "++apuesta_minima++", max: "++pozo++", 0 para finalizar juego): "
         var valor := -1
-        while valor <> 0 and not (apuesta_minuma <= valor <= pozo) do
+        while valor <> 0 && not (apuesta_minuma <= valor <= pozo) do
             valor = toint (input prompt)
         print! ""
         valor

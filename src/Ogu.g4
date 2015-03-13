@@ -219,13 +219,11 @@ expression
 	| expression '^' expression
 	| expression '*' expression
 	| expression '/' expression
-	| expression 'mod' expression
-	| expression 'div' expression
+	| expression '%' expression
 	| expression '+' expression
 	| expression '-' expression
-	| expression 'and' expression
-	| expression 'or'  expression
-	| expression 'xor'expression
+	| expression '&&' expression
+	| expression '||'  expression
 	| expression 'in' expression
 	| expression 'not' 'in' expression
 	| expression ('==' expression)
