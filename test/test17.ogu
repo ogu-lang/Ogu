@@ -6,12 +6,12 @@ class Number(val value:Int)
                  | Mult (Expression, Expression)
                  | Divide(Expression, Expression)
 
- def evaluate :: Expression -> Int
-def evaluate a:Number := a.value
-def evaluate Add (e1, e2) := evaluate e1 + evaluate e2
-def evaluate Minus(e1, e2) := evaluate e1 - evaluate e2
- def evaluate Mult(e1, e2) := evaluate e1 * evaluate e2
- def evaluate Divide(e1, e2) := evaluate e1 / evaluate e2
+def evaluate :: Expression -> Int
+    evaluate a:Number = a.value
+    evaluate Add (e1, e2) = evaluate e1 + evaluate e2
+    evaluate Minus(e1, e2) = evaluate e1 - evaluate e2
+    evaluate Mult(e1, e2) = evaluate e1 * evaluate e2
+    evaluate Divide(e1, e2) = evaluate e1 / evaluate e2
 
 
  val e : Expression = Add(Number(3), Number(4))
@@ -22,17 +22,17 @@ class Stack{T}() = {
 
   var _data : [T] = []
 
-   def push! self x:T := {
+   def push! self x:T = {
               _data = cons x _data
       }
 
-      def pop! self := {
+      def pop! self = {
               val result := head _data
               _data = tail _data
               result
       }
 
-      def empty? self := {
+      def empty? self = {
               empty _data
       }
 

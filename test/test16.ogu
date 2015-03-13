@@ -5,16 +5,16 @@ trait Figura = {
 
 class Circulo(val x,y:Int; val radio:Int) ~ Figura = {
 
- def area self := pi * radio ^ 2
- def perimetro := 2 * pi * radio
+ def area self = pi * radio ^ 2
+ def perimetro = 2 * pi * radio
  
 }
 
 class Rectangulo(val x,y:Int; ancho,alto:Int) ~ Figura = {
 
-   def area self := ancho * alto
+   def area self = ancho * alto
 
-   def perimetro := 2 * (ancho + alto)
+   def perimetro = 2 * (ancho + alto)
 
 }
 
@@ -32,6 +32,6 @@ class Leaf(val data:Int)
 type Tree = Empty | Leaf | Node(Tree,Tree)
 
  def depth :: Tree -> Int
- def depth Empty := 0
- def depth Leaf := 1
- def depth Node(l,r) := 1 + max (depth l) (depth r)
+ 	 depth Empty = 0
+ 	 depth Leaf = 1
+ 	 depth Node(l,r) = 1 + max (depth l) (depth r)

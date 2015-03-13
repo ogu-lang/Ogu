@@ -119,21 +119,21 @@ Porque esta función recibe una dupla y retorna un valor.
 
 La función max se declara en Ogú de la siguiente manera:
 
-    def max a:Num b:Num : Num = **if** a > b **then** a **else** b
+    def max a:Num b:Num -> Num = **if** a > b **then** a **else** b
 
 en cambio la función max’ se declara en Ogú de esta manera
 
-    def max’ (a:Num, b:Num) : Num = if a > b then a else b
+    def max’ (a:Num, b:Num) -> Num = if a > b then a else b
 
 Aunque son similares, las dos funciones se evalúan de manera diferente. La primera función max permite hacer currying.
 
 Por ejemplo:
 
-    def from5 : Num -> Num = max 5
+    def from5 -> (Num -> Num) = max 5
 
 define una función que retorna 5 o cualquier número mayor que 5.
 
-La notación Num -> Num define un tipo lambda (ver más adelante).
+La notación (Num -> Num) define un tipo lambda (ver más adelante).
 
 Con lo anterior tendremos lo siguiente:
 
@@ -146,9 +146,9 @@ En Ogú se puede usar Currying igual que en Haskell.
 
 Ejemplos:
 
-    def multiplicar x: Num y: Num : Num = x * y
-    def doblar : Num -> Num = multiplicar 2
-    def diez : Num = doblar 5
+    def multiplicar x: Num y: Num -> Num = x * y
+    def doblar -> (Num -> Num) = multiplicar 2
+    def diez -> Num = doblar 5
     val doce = double 6
 
 El primer caso **def**ine una función multiply, que recibe un número, *se aplica* sobre otro número para retornar un tercer número.
@@ -161,25 +161,25 @@ La función diez es una función que retorna siempre el mismo valor. En estos ca
 
 La forma de declarar una función es la siguiente
 
-    def nombreDeLaFuncion parametros_curry : TipoRetorno = cuerpoDeLaFuncion
+    def nombreDeLaFuncion parametros_curry -> TipoRetorno = cuerpoDeLaFuncion
 
 Ejemplos:
 
-    def factorial n:Num : Num = if n == 0 then 1 else n * factorial (n-1)
+    def factorial n:Num -> Num = if n == 0 then 1 else n * factorial (n-1)
 
 El parámetro debe tener un nombre y un tipo, como en el caso anterior, n es el parámetro de tipo Num.
 
 El parámetro puede ser una tupla como en este ejemplo:
 
-    def min’(a:Num, b:Num) : Num = if a < b then a else b
+    def min’(a:Num, b:Num) -> Num = if a < b then a else b
 
 Por supuesto el valor de retorno puede también ser una tupla:
 
-    def swap’(a:Num, b:Num) : (Num, Num) = (b,a)
+    def swap’(a:Num, b:Num) -> (Num, Num) = (b,a)
 
 El tipo de retorno de la función se puede omitir y Ogú lo deduce del cuerpo de la función, siguiendo una notación a la inferencia de tipos de las variables:
 
-    def min(a:Num, b:Num) := if a < b then a else b
+    def min(a:Num, b:Num) = if a < b then a else b
 
     def swap (a:Num, b:Num) = (b, a) // también se puede omitir el : antes del signo =
 
@@ -188,7 +188,7 @@ El tipo de retorno de la función se puede omitir y Ogú lo deduce del cuerpo de
     doblar 10 // retorna 20
     def diez = doblar 5
 
-    def max’ (a:Num, b:Num) := if a > b then a else b
+    def max’ (a:Num, b:Num) = if a > b then a else b
 
 
 El uso de tuplas y currying permite hacer cosas interesantes como lo siguiente:
@@ -586,7 +586,7 @@ Dentro de una clase puede ejecutarse código que se invocará cada vez que se cr
         var cont = 0
         cont = cont + 1
 
-        def getCont self := cont
+        def getCont self = cont
     }
     
     val a := AutoInc()
@@ -606,17 +606,17 @@ Veamos un ejemplo:
     class Stack() = {
         var _data : [Int] = []
 
-        def push! self x:Int := {
+        def push! self x:Int = {
             _data = cons x _data
         }
 
-        def pop! self := {
-            val result := head _data
+        def pop! self = {
+            val result = head _data
             _data = tail _data
             result
         }
 
-        def empty? self := {
+        def empty? self = {
             empty _data
         }
     }
@@ -756,13 +756,13 @@ Los traits son similares a las clases pero:
 Con esto podemos crear clases que implementan el trait Figura
 
     class Circulo(val x,y:Int; val radio:Int) ~ Figura = {
-        def area self := pi * radio ^ 2
-        def perimetro := 2 * pi * radio
+        def area self = pi * radio ^ 2
+        def perimetro = 2 * pi * radio
     }
     
     class Rectangulo(val x,y, ancho,alto:Int) ~ Figura = {
-        def area self := ancho * alto
-        def perimetro := 2 * (ancho + alto)
+        def area self = ancho * alto
+        def perimetro = 2 * (ancho + alto)
     }
 
 # Tipos de datos algebraicos
@@ -790,9 +790,9 @@ También podemos hacer esto:
     type Tree = Empty | Leaf | Node(Tree,Tree)
     
     def depth :: Tree -> Int
-    def depth Empty := 0
-    def depth Leaf := 1
-    def depth Node(l,r) := 1 + max (depth l) (depth r)
+    def depth Empty = 0
+    def depth Leaf = 1
+    def depth Node(l,r) = 1 + max (depth l) (depth r)
 
 Otro ejemplo:
 
@@ -806,11 +806,11 @@ Otro ejemplo:
     
     
     def evaluate :: Expression -> Int
-    def evaluate a:Number := a.value
-    def evaluate Add (e1, e2) := evaluate e1 + evaluate e2
-    def evaluate Minus(e1, e2) := evaluate e1 - evaluate e2
-    def evaluate Mult(e1, e2) := evaluate e1 * evaluate e2
-    def evaluate Divide(e1, e2) := evaluate e1 / evaluate e2
+        evaluate a:Number = a.value
+        evaluate Add (e1, e2) = evaluate e1 + evaluate e2
+        evaluate Minus(e1, e2) = evaluate e1 - evaluate e2
+        evaluate Mult(e1, e2) = evaluate e1 * evaluate e2
+        evaluate Divide(e1, e2) = evaluate e1 / evaluate e2
 
     val e : Expression = Add(Number(3), Number(4))
     evaluate e // = 7
@@ -818,12 +818,6 @@ Otro ejemplo:
     evaluate es // =
 
 
-    def evaluate :: Expression -> Int
-    def evaluate a:Number := a.value
-    def evaluate Add (e1, e2) := evaluate e1 + evaluate e2
-    def evaluate Minus(e1, e2) := evaluate e1 - evaluate e2
-    def evaluate Mult(e1, e2) := evaluate e1 * evaluate e2
-    def evaluate Divide(e1, e2) := evaluate e1 / evaluate e2
 
 # Tipos Paramétricos
 
@@ -832,17 +826,17 @@ Las clases pueden ser paramétricas (como los templates en C++)
     class Stack{T}() = {
         var _data : [T] = []
     
-        def push! self x:T := {
+        def push! self x:T = {
             _data = cons x _data
         }
 
-        def pop! self := {
+        def pop! self = {
             val result := head _data
             _data = tail _data
             result
         }
     
-        def empty? self := {
+        def empty? self = {
             empty _data
         }
     }

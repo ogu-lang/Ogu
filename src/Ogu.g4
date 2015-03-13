@@ -38,6 +38,8 @@ decl :
     | val {println("val"); }
     | typedef { println("type"); }
     | def { println("def"); }
+    | expression { println("decl expression"); }
+    | block_expression { println("decl block expression"); }
     ) (sep)*
     ;
 
@@ -84,7 +86,8 @@ class_decl
 	|  val { println ("class val"); }
 	|  var { println ("class var"); }
 	|  expression { println ("class statement"); }
-	|  constructor_def
+	|  block_expression { println ("class statement"); }
+	|  constructor_def { println ("class constructor"); }
 	) 
 	(sep)*
 	;
@@ -171,19 +174,19 @@ func_def
 	: ID (func_arg (func_arg)*)?  (NL)* ( func_simple_body | func_guards ((NL)* func_guards)* | block_expression ) (func_where)? { println("FUNCDEF"); } 
 	;
 
-func_simple_body : (':' ('lazy')? (type)?)? '=' (NL)* func_body  ;
+func_simple_body : ('->' ('lazy')? (type)?)? '=' (NL)* func_body  ;
 
 
 func_arg
-	: ID ':' type?
+	: ID ':' type
 	| '(' (func_arg (',' func_arg)*)? ')'
 	| TID
 	| expression
 	;
 
 func_guards
-	: '|' expression (':' ('lazy')? (type)?)? '=' func_body
-	| '|' 'otherwise' (':' ('lazy')? (type)?)? '=' func_body
+	: '|' expression '=' func_body
+	| '|' 'otherwise' '=' func_body
 	;
 
 

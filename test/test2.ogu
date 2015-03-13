@@ -2,14 +2,14 @@
 
 def first :: (a, b, c) -> a
 
-    first (a,_,_) := a
+    first (a,_,_) = a
 
 def second :: (a,b,c) -> b
 
-    second (_,b_,c) := b
+    second (_,b_,c) = b
 
 
 def third :: (a, b, c) -> c
 
-    third (_,_,c) := c
+    third (_,_,c) = c
 

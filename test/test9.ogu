@@ -15,7 +15,6 @@ def tell :: (a:Show) => [a] -> String
 	tell [x,y] = "la lista tiene dos elementos: " ++ show x ++ show y
 	tell (x::y::_) = "la lista es larga. Los primeros dos elementos son:" ++ show x ++ show y
 
-
 def discard2 :: [x] -> [x]
 	discard2 [] = error "lista vacia"
 	discard2 [a] = error "debe tener más de 2 elementos"
@@ -24,4 +23,4 @@ def discard2 :: [x] -> [x]
 
 val even = [2*x | x <- 1..100]
 
-def evenNumbers : lazy = [2 * x | x <- 1..]
+def evenNumbers -> lazy =  [2 * x | x <- 1..]
