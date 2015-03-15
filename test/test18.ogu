@@ -1,0 +1,25 @@
+trait YesNo a = {
+  def yesno :: a -> Bool
+}
+
+instance YesNo Int = { 
+  def yesno 0 = false
+  def yesno _ = true
+}
+
+instance YesNo [a] = {
+  def yesno [] = false
+  def yesno _ = true
+}
+
+instance YesNo Bool = {
+  def yesno = id
+}
+
+type Maybe s = Nothing | Some(s)
+
+instance YesNo Maybe T = {
+  def yesno Just(_) = true
+  def yesno Nothing = False
+}
+

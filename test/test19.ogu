@@ -1,0 +1,17 @@
+
+type LockerStat = Taken | Free deriving (Show, Eq)
+
+type Code = String
+
+type LockerMap = [Int:(LockerState,Code)]
+
+type Either a b = Left | Right b deriving (Eq, Ord, Read, Show)
+
+
+def lockerLookup :: Int -> LockerMap -> Either String Code
+
+    lockerLookup lockerNumber map = case map[lockerNumber] of 
+    	Nothing -> Left ("Locker number" ++  show lockerNumber ++ " doesn't exist!")
+        Just (state,code) -> if state /= Taken 
+        						then Right code 
+        						else Left ("Locker " ++ show lockerNumber ++ "is already taken")

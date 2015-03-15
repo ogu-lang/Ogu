@@ -1,9 +1,45 @@
 // types
 
-type Bool = false | true
+type Bool = false | true 
 
-type BasicColor = red | green | blue
+type BasicColor = red | green | blue 
 
-type String' = [Char]
+type String = [Char]
 
 type IntVector = (Int,Int)
+
+type StrMap v = [String:v]
+
+type Stack a = Stk [a] 
+
+val b : Bool = false
+val color : BasicColor = red
+val s : String = ""
+val iv = (10,10)
+val edades : (StrMap Int) = ["Pedro":25, "Juan":30, "Diego":40]
+
+def	create               = Stk []
+def	push x (Stk xs)      = Stk (x::xs)
+def	pop    (Stk (x::xs)) = Stk xs
+def	top    (Stk (x::xs)) = xd
+def	empty? (Stk xs)      = null xs
+
+class Bool = false | true {
+	def not value:Bool = if value = false then true else false
+}
+
+trait Ord x = {
+	def succ :: x -> x
+	def prev :: x -> x
+}
+
+instance Ord BasicColor = {
+	def succ x 
+	    | x == red = green
+	    | x == green = blue
+	    | x == blue = red
+	def prev x
+		| x == red = blue
+		| x == green = red
+		| x == blue = green
+}

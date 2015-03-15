@@ -1,32 +1,47 @@
-// clases
+// type clases
 
-class Circulo(val x, y: Int; val radius : Float)
+type Shape = Circle Float Float Float Float | Rectangle Float Float Float Float
 
 
-class Rectangulo(val x,y, alto, ancho:Int)
+val circle = Circle 10 20 5
+val rect   = Rectangle 50 230 60 90
 
-var circulo := Circulo(0,0, 100.0)
 
-var cuadro := Rectangulo(0, 0, 50, 50)
+type Point = Point Float Float deriving Show
 
-var box : Circulo = Circulo(0, 0, 50, 50)
+type Shape = Circle Point Float | Rectangle Point Point 
+     deriving Show
 
-class Empresa (val rut:String, val razonSocial:String) = {
+def surface :: Shape -> Float
+    surface (Circle _ r) = pi * r ^ 2
+    surface (Rectangle (Point x1 y1) Point (x2 y2)) = (abs (x2 - x1)) * (abs (y2 - y1))
+
+
+class Circulo (val x, y: Int; val radius : Float)
+
+class Rectangulo(val x,y, alto, ancho:Int) = {
+	var circulo := Circulo(0,0, 100.0)
+
+	var cuadro := Rectangulo(0, 0, 50, 50)
+
+	var box : Circulo = Circulo(0, 0, 50, 50)
+}
+
+class Empresa (val rut:String; val razonSocial:String) = {
     var cantidadEmpleados : Int = 0
-     var patrimonioInicial : Money = 1000000
- }
+    var patrimonioInicial : Money = 1000000
+}
 
 class Auto(val modelo:String; año:Int) = {
      var bencina := 0
+}
 
-     constructor Auto(modelo:String) : Auto(modelo, 0)
-     constructor Auto() : Auto("Sin modelo", 0)
-
- }
+class Auto() = Auto("Sin modelo", 0)
+class Auto(modelo:String) = Auto(modelo, 0)
 
 class Auto'(val modelo:String; val año:Int) =  {
      var bencina := 0
-     constructor Auto'(modelo:String) : Auto'(modelo, 0) {
-         bencina = 0
-     }
 }
+
+class Auto'(modelo:String) = Auto'(modelo, 0) {
+     }

@@ -1,37 +1,47 @@
-trait Figura = {
+// traits
+trait Figura x = {
    def area :: self -> Float
-       def perimetro :: self -> Perimetro
+
+   def perimetro :: self -> Float
 }
 
-class Circulo(val x,y:Int; val radio:Int) ~ Figura = {
+class Circulo (val x,y:Int; val radio:Int) 
+class Rectangulo(val x,y:Int; ancho,alto:Int) 
 
- def area self = pi * radio ^ 2
- def perimetro = 2 * pi * radio
+instance Figura self:Circulo = {
+
+ def area self = pi * self.radio ^ 2
+ def perimetro self = 2 * pi * self.radio
  
 }
 
-class Rectangulo(val x,y:Int; ancho,alto:Int) ~ Figura = {
+instance Figura self:Rectangulo = {
 
-   def area self = ancho * alto
-
-   def perimetro = 2 * (ancho + alto)
-
+   def area self = self.ancho * self.alto
+   def perimetro = 2 * (self.ancho + self.alto)
 }
 
 class Circulo(x,y,r:Int)
 class Rectangulo(x,y,w,h:Int)
-class Cuadrado(x,y,l:Int) > Rectangulo(x,y,l,l) 
-
+class Cuadrado(x,y,l:Int) = Rectangulo(x,y,l,l) 
 class Triangulo(x1,y1,x2,y2,x3,y3:Int) 
 
 type Figura = Circulo | Rectangulo | Cuadrado | Triangulo
-
 
 class Leaf(val data:Int)
 
 type Tree = Empty | Leaf | Node(Tree,Tree)
 
- def depth :: Tree -> Int
+def depth :: Tree -> Int 
+
  	 depth Empty = 0
+ 
  	 depth Leaf = 1
+ 
  	 depth Node(l,r) = 1 + max (depth l) (depth r)
+
+type List a = Empty | Cons a (List a) deriving (Show, Read, Eq, Ord) 
+
+val empty = Empty
+val l1 = Cons 5 Empty
+

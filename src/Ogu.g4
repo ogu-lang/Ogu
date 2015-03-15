@@ -32,14 +32,16 @@ module_decl
 decl :
     ( import_module { println("import module"); }
     | alias_decl { println("alias"); }
-    | classdef { println("class"); }
-    | traitdef { println("trait"); }
+    | instancedef { println("instance"); }
     | var {println("var"); }
     | val {println("val"); }
     | typedef { println("type"); }
+    | classdef { println("class");}
+    | traitdef { println("trait"); }
     | def { println("def"); }
     | expression { println("decl expression"); }
-    | block_expression { println("decl block expression"); }
+    | do_expression { println ("decl do expression"); }
+	| block_expression { println ("decl block expression"); }
     ) (sep)*
     ;
 
@@ -59,61 +61,25 @@ tid : TID ('.' TID)* ;
 
 id : (TID '.')* ID ;
 
-classdef : 'class' TID  
-( (gen_class_args)? '(' (class_args)? ')'  (class_extends)? (class_traits)? ('=' (NL)* class_decls)? 
-| '+=' (NL)* class_decls
-);
 
-gen_class_args : '{' (gen_class_constraints)? TID (',' TID)* '}' ;
+instancedef
+	: 'instance' TID instance_args instance_decls ;
 
-gen_class_constraints :  gen_class_constraint (',' gen_class_constraint)* '=>' ;
+instance_args
+	: instance_arg (',' instance_arg)* ;
 
-gen_class_constraint : TID ':' tid ;
 
-class_args: class_simple_arg ((';'|',') class_simple_arg)* ;	
-
-class_simple_arg : ('val'|'var')? ID (',' ID)*  ':' type ;
-
-class_extends : '>' constructor_call ;
-
-class_traits : '~' tid ('~' tid)* ;
-
-class_decls : '{' (NL)* (class_decl)* '}' ;
-
-class_decl
-	:
-	(  def { println ("class def"); }
-	|  val { println ("class val"); }
-	|  var { println ("class var"); }
-	|  expression { println ("class statement"); }
-	|  block_expression { println ("class statement"); }
-	|  constructor_def { println ("class constructor"); }
-	) 
-	(sep)*
+instance_arg
+	: (tid | expression)
+	| ID ':' (tid|expression)
 	;
 
-constructor_def
-	: 'constructor' TID '(' (class_args)? ')' ':' constructor_call (NL)* (block_expression)?
+instance_decls
+	: (NL)* '=' '{' (NL)* (instance_decl)* '}'
 	;
 
-traitdef : 'trait' TID (trait_extends)? (trait_traits)? ('=' (NL)* trait_decls)? ; 
-
-trait_extends : '>' tid ;
-
-trait_traits : '~' tid ('~' tid)* ;
-
-
-trait_decls
-	: '{' (NL)* trait_decl* '}'
-	;
-
-trait_decl
-	:
-	(  def { println ("trait def"); }
-	|  val { println ("trait val"); }
-	|  var { println ("trait var"); }
-	) 
-	(sep)*
+instance_decl
+	: def sep*
 	;
 
 var : 'var' vid  
@@ -128,27 +94,79 @@ vid : ID | '(' vidt (',' vidt)* ')' ;
 vidt : ID (':' type)? ;
 
 type
-	: '[' type ']'
-	| '('  type (',' type)* ')'
-	| TID '(' type (',' type)* ')'
+	: '[' type ((':') type )? ']'
+	| '('  (type (',' type)*)? ')'
+	| tid '(' type (',' type)* ')'
+	| tid tid*
 	| type ('|' type)+
 	| type '->' type
 	| basic_type 
+	| ID
 	;
 
 basic_type
 	: tid ('{' tid (',' tid)* '}')?
 	;
 
-typedef : 'type' TID (gen_class_args)? '=' (type | enum_values) ((NL)* '|' type)*;
+typedef : 'type' TID (typedef_args)? '=' 
+		( enum_values 
+		| type ((NL)* '|' type)*
+		);
 
-enum_values : ID ('|' ID)* ;
+traitdef : 'trait' TID typedef_args ('=' traitdef_body)? ;
 
-def :  'def' (func_prototype ((NL)* func_def)* | func_def ) ;
+traitdef_body : '{' (NL)* traitdef_method* '}' ;
 
-func_prototype
-	: ID '::' (prototype_constraints)? prototype_arg '->'  prototype_arg ('->' prototype_arg)* # FuncProt 
+traitdef_method
+	: func_proto_def_header sep*;
+
+classdef : 'class' TID typedef_args? class_constructor_args? 
+		('=' 
+		( enum_values 
+		| type ((NL)* '|' type)*
+		| TID '(' ctor_args? ')'
+		|
+		)
+		classdef_body?)?;
+
+class_constructor_args : '(' (class_ctor_arg (';' class_ctor_arg)*)? ')' ;
+
+class_ctor_arg : ('val'|'var')? ID (',' ID)* ':' type ;
+
+classdef_body : '{' (NL)* (classdef_body_decl)* '}' ;
+
+classdef_body_decl
+	: (def|var|val) sep*
 	;
+
+
+typedef_args
+	: (typedef_args_constraints)? ID (ID)*
+	;
+
+typedef_args_constraints
+	: typedef_arg_constraint_list '=>'
+	| '(' typedef_arg_constraint_list ')' '=>'
+	;
+
+typedef_arg_constraint_list
+	: typedef_arg_constraint (';' typedef_arg_constraint)*
+	;
+
+typedef_arg_constraint
+	: ID (',' ID)* ':' type
+	;
+
+enum_values : ID ((NL)* '|' ID)* ;
+
+def :  func_proto_def | func_clasic_def;
+
+func_proto_def : func_proto_def_header
+	
+	((NL)* func_def_proto)* 
+	;
+
+func_proto_def_header : 'def' func_id '::' (prototype_constraints)? prototype_arg '->'  prototype_arg ('->' prototype_arg)* ;
 
 prototype_constraints
 	: '(' prototype_constraint_list ')' '=>' 
@@ -156,10 +174,10 @@ prototype_constraints
 	;
 
 prototype_constraint_list
-	: prototype_constraint (',' prototype_constraint)* ;
+	: prototype_constraint (';' prototype_constraint)* ;
 
 prototype_constraint
-	: ID ':' type
+	: ID (',' ID)* ':' type
 	;
 
 prototype_arg
@@ -170,12 +188,23 @@ prototype_arg
 
 prot_type	: type | ID ;
 
-func_def
-	: ID (func_arg (func_arg)*)?  (NL)* ( func_simple_body | func_guards ((NL)* func_guards)* | block_expression ) (func_where)? { println("FUNCDEF"); } 
+func_def_proto
+	: func_id (expression|func_arg)* 
+	     ('=' (NL)* func_body 
+	     | (NL)* func_guards ((NL)* func_guards)*
+	     )
+	     (func_where)?
 	;
 
-func_simple_body : ('->' ('lazy')? (type)?)? '=' (NL)* func_body  ;
+func_clasic_def
+	: 'def' func_id (func_arg (func_arg)*)?  (NL)* ( func_simple_body | func_guards ((NL)* func_guards)* | block_expression | do_expression ) func_where? 
+	;
 
+func_simple_body : ('->' ('lazy')? (type)?)? '=' (NL)* func_body ;
+
+func_body : ( 'abstract' | expression | block_expression ) ;
+
+func_id : ID | binop | unop ;
 
 func_arg
 	: ID ':' type
@@ -190,61 +219,32 @@ func_guards
 	;
 
 
-func_body : 'abstract' | expression | block_expression ;
-
-
 func_where 
-	: (NL)? 'where' where_expr ( (';' | (NL)* 'and') (NL)* where_expr)* { println("where"); }
+	: (NL)* 'where' (NL)*  where_expr ((sep)* where_expr)* 
 	;
 
 where_expr
 	: vid (':' (type)?)? '=' expression
-	| func_def
+	| func_def_proto
 	;
 
 
 
 expression  
-	: 'if' expression (NL)? 'then' (NL)* (expression (NL)?|block_expression)  'else' (NL)* (expression|block_expression) { println("if");}
-	| 'for' (set_expr | list_expression) (NL)? 'do' (NL)? (expression | block_expression) { println("for"); }
-	| 'when' expression  'do' (NL)* (expression|block_expression)
-	| 'unless' expression  'do' (NL)* (expression|block_expression)
-	| 'while' expression  'do' (NL)? (expression|block_expression) 
+	: 'if' expression (NL)? 'then' (NL)* (expression (NL)?|block_expression)  'else' (NL)* (expression|block_expression) 
+	| 'for' (set_expr | list_expression) (NL)? do_expression 
+	| 'when' expression  do_expression
+	| 'unless' expression  do_expression
+	| 'while' expression  do_expression 
 	| case_expression
 	| let_expression
-	| 'not' expression
-	| 'yield' expression
-	| '-' expression
-	| '+' expression
-	| expression '|>' expression
-	| expression '<|' expression
-	| expression '@' expression // at for array access
-	| expression '^' expression
-	| expression '*' expression
-	| expression '/' expression
-	| expression '%' expression
-	| expression '+' expression
-	| expression '-' expression
-	| expression '&&' expression
-	| expression '||'  expression
-	| expression 'in' expression
-	| expression 'not' 'in' expression
-	| expression ('==' expression)
-	| expression ('<>' expression)
-	| expression '>' expression
-	| expression '<' expression
-	| expression '>=' expression
-	| expression ('<=' expression)
-	| expression '..' (expression)?
-	| expression 'shl' expression
-	| expression 'shr' expression
-	| expression 'bitand' expression
-	| expression 'bitor' expression
-	| expression 'bitxor' expression
+	| unop expression
+	| expression binop expression
+	| '(' binop (expression)* ')'
 	| '(' expression_list ')'
-	| '[' (list_expression)? ']'
-	| expression '::' expression
-	| expression '++' expression
+	| '[' (list_expression|map_expressions)? ']'
+	| expression '[' expression ']'
+	| expression '..' (expression)?
 	| ID ('.' ID)+
 	| ID (expression)*
 	| ID '=' expression
@@ -256,8 +256,18 @@ expression
 	| DATE
 	;
 
+unop : '+' | '-' | 'not' | 'yield' ;
+
+binop : '+' | '-' | '*' | '/' | '%' | '>>' | '^' | '|>' | '<|'
+	| '&&' 	| '||' 	| 'in' | 'not' 'in' | '==' | '/='
+	| '::' | '++'
+	| '<>' 	| '>' 	| '<' | '>=' | '<=' | 'shl'  | 'shr' 
+	| 'bitand'  | 'bitor'  	| 'bitxor' 
+	;
+
 constructor_call
 	: tid '(' (ctor_args)? ')'
+	| tid expression*
 	;
 
 ctor_arg
@@ -271,47 +281,53 @@ ctor_args
 block_expression
 	: '{' 
 	  (sep)*
-	  block_statement{println("block_statment 1");} 
-	  ( block_statement{println("block statement*");})* 
-	  '}'{println("BLOCK");}
+	  block_statement 
+	  block_statement* 
+	  '}'
+	| 'do' expression
+	;
+do_expression
+	: 'do' (NL)* (expression|block_expression)
 	;
 
 block_statement
 	: 
-	( var { println("var in block"); } 
-	| val { println("val in block"); } 
-	| expression { println ("expression in block"); }
+	( var 
+	| val 
+	| expression 
 	)
 	(sep)*
 	;
 
 case_expression
-	: 'case' expression 'of' (case_block | (NL)? case_selector_list) { println ("case expression"); }
+	: 'case' expression 'of' (NL)* case_selector_list { println ("case expression"); }
 	;
 
-case_block
-	: case_selector (sep case_selector)* (sep)*  ;
-
-case_selector
-	: expression_list '->' expression
-	;
 
 case_selector_list
-	: case_selector ((sep case_selector)* | case_block)
+	: case_selector (sep+ case_selector)* ;
+
+
+case_selector
+	: expression '->' expression
 	;
 
+
 let_expression
-	: 'let' (NL)* let_expr ( (';' | (NL)* 'and') (NL)* let_expr)* 
+	: 'let' (NL)* let_expr ( sep* let_expr)* 
       (NL)* 'in' expression
-	{ println("let"); }
 	;
 
 let_expr
 	: vid (':' (type)?)? '=' expression
-	| func_def
+	| func_def_proto
 	;
 
 list_expression : list_element (',' list_element)* ;
+
+map_expressions : map_expression (',' map_expression)* ;
+
+map_expression : expression ':' expression ;
 
 list_element : expression ('|' set_expr (',' set_expr)*)? ;
 

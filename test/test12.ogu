@@ -1,7 +1,7 @@
 def	areaCilindro :: a:Float => a -> a -> a
 def	areaCilindro r h = 
    let areaLateral := 2 * pi * r * h
-   and areaBase := pi * r ^ 2
+   	   areaBase := pi * r ^ 2
    in areaLateral + 2 * areaBase 
 
 def test () {

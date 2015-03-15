@@ -10,6 +10,8 @@ var perfil : (String,Char,Int,Date) = ("Juan", "M", 30, #19850101)
 
 var nombres : [String] = ["Pedro", "Juan", "Diego"]
 
+var edades : [String:Int] = ["Pedro":25, "Juan":30, "Diego":40]
+
 var (p:Int, q:Int) = frac(0.4)
 
 var (r, s) := frac(0,4)

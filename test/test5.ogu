@@ -1,8 +1,6 @@
 // test 5
 
-
 def cero = 0
-
 
 def max a:Num b:Num -> Num = if  a > b then a else b
 
