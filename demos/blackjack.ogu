@@ -2,7 +2,7 @@ uses Random
 
 type Carta = (Char,Char)
 
-def baraja_mezclada  -> lazy = {
+def baraja_mezclada   = {
     val palos := ['C', 'D', 'T', 'P']
     val valores := ['A' , 2 .. 11, 'J', 'Q', 'K']
     var baraja := [(valor,palo) | palo <- palos, valor <- valores]

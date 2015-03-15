@@ -23,4 +23,4 @@ def discard2 :: [x] -> [x]
 
 val even = [2*x | x <- 1..100]
 
-def evenNumbers -> lazy =  [2 * x | x <- 1..]
+def evenNumbers  =  [2 * x | x <- 1..]

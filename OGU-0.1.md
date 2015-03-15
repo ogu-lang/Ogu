@@ -38,13 +38,14 @@ Pero se pueden crear tipos vectoriales como tuplas y listas usando la siguiente 
 
 [T] : Declara una lista de elementos de tipo T.
 (T1,T2,T3) : declara una dupla de elementos de tipos T1, T2, T3.
-
+[K:V] : declara un mapa con llave K y valores V
 
 Ejemplos:
 
     var vector : (Float, Float, Float) = (2.0, 3.0, 10.0)
     var perfil : (String,Char,Int,Date) = (“Juan”, “M”, 30, #19850101)
     var nombres : [String] = [“Pedro”, “Juan”, “Diego”]
+    var edades : [String:Int] = ["Pedro":25, "Juan":30, "Diego":40]
 
 En Ogú las tuples son usadas en varios contextos. Por ejemplo, hay funciones que retornan tuplas. En ese caso si se quiere rescatar los valores de retorno de la tupla en forma separada se debe usar la siguiente notación:
 
@@ -234,15 +235,21 @@ Si queremos usar otro tipo debemos declarar previamente el tipo de la función.
     def factorial 1 = 1
     def factorial n = n * factorial(n-1)
 
+
+El formato de una predefinición de tipo de una función es:
+
+    def nombreDelaFuncion :: Tipo -> Tipo
+
+A esto lo llamamos prototipo de función.
+
 Cuando declaramos un prototipo, podemos colocar las demás definiciones de este modo:
 
-    def factorial :: Num -> Num
+    def factorial :: Num -> Num 
         factorial 0 = 1
         factorial 1 = 1
         factorial n = n * factorial(n-1)
 
-En este caso las definiciones deben ir una tras otra después del prototipo. La indentación es opcional, pero es un estilo usado en Ogú.
-
+En este caso las definiciones deben ir una tras otra inmediatamente después del prototipo.
 
 
 Podemos re declarar sumarVectores así:
@@ -253,20 +260,15 @@ Podemos re declarar sumarVectores así:
 Esto es muy similar a Haskell. La ventaja es que le indicamos al compilador que es lo que necesitamos precisamente.
 
 
-    **def** radioAlfa :: Char -> String
-            radioAlfa ‘a’ = “Alfa”
-            radioAlfa ‘b’ = “Bravo”
+    def radioAlfa :: Char -> String
+        radioAlfa ‘a’ = “Alfa”
+        radioAlfa ‘b’ = “Bravo”
             .... etc...
 
-El formato de una predefinición de tipo de una función es:
-
-    def nombreDelaFuncion :: Tipo -> Tipo
-
-A esto lo llamamos prototipo de función.
 
 Para declarar un prototipo de una función con currying usamos el operador flecha tantas veces como sea necesario:
 
-    **def** nombreDeLafuncion :: Tipo -> Tipo -> Tipo …
+    def nombreDeLafuncion :: Tipo -> Tipo -> Tipo …
 
 Ejemplos:
 
@@ -311,11 +313,11 @@ Veamos algunos ejemplos:
         head’ [] = error “Lista vacía”
         head’ [x::_] = x
 
-    def length’ :: (l: Num) => [x] -> l
+    def length’ :: (l: Num) => [x] -> l 
         length’ [] := 0
         length’ [x::xs] := 1 + length’ xs
 
-    def tell :: (a:Show) => [a] -> String
+    def tell :: (a:Show) => [a] -> String 
         tell [] = “lista vacía”
         tell [x] = “la lista tiene un elemento “ ++ show x
         tell [x,y] = “la lista tiene dos elementos: “ ++ show x ++ show y
@@ -333,7 +335,7 @@ A veces una función se puede expresar mejor en función de varias condiciones q
 Por ejemplo, supongamos que queremos una función que nos clasifique según nuestro indice de masa corporal (imc).
 
     def strIMC :: (a:Float) => a -> String
-        strIMC imc
+    def strIMC imc
         | imc <= 18.5 = “estas bajo el peso normal”
         | imc <= 25.0 = “tu peso es normal”
         | imc <= 30.0 = “estas con sobrepeso”
@@ -354,7 +356,7 @@ Otro ejemplo, en este caso calculamos el IMC en base a la estatura y el peso.
 
 ## **where** 
 
-La función anterior calcula una y otra vez el IMC. Podemos simplificar esto usando el operador **where** :
+La función anterior calcula una y otra vez el IMC. Podemos simplificar esto usando  **where** :
 
     def strIMC’ :: (a:Float) => a -> a -> String
         strIMC’ peso altura 
@@ -362,32 +364,34 @@ La función anterior calcula una y otra vez el IMC. Podemos simplificar esto usa
         | imc <= 25.0 = “tu peso es normal”
         | imc <= 30.0 = “estas con sobrepeso”
         | otherwise = “estas obeso, cuidado!”
-        where val imc := peso / altura ^ 2
+        where  imc := peso / altura ^ 2
 
 Si queremos documentar un poco más esta función podemos hacer lo siguiente
 
     def strIMC’ :: (a:Float) => a -> a -> String
-        strIMC’ peso altura 
+    def strIMC’ peso altura 
         | imc <= delgado = “estas bajo el peso normal”
         | imc <= normal = “tu peso es normal”
         | imc <= gordo = “estas con sobrepeso”
         | otherwise = “estas obeso, cuidado!”
-        where imc = peso / altura ^ 2 
-          and delgado = 18.5
-           and normal = 25,0
-           and gordo = 30.0.
+        where 
+          imc = peso / altura ^ 2 
+          delgado = 18.5
+          normal = 25,0
+          gordo = 30.0.
 
 Una forma más simplificada es:
     def strIMC’ :: (a:Float) => a -> a -> String
-        strIMC’ peso altura 
+     strIMC’ peso altura 
         | imc <= delgado = “estas bajo el peso normal”
         | imc <= normal = “tu peso es normal”
         | imc <= gordo = “estas con sobrepeso”
         | otherwise = “estas obeso, cuidado!”
         where  imc = peso / altura ^ 2
-        and (delgado,normal,gordo) = (18.5, 25,0, 30.0)
+         (delgado,normal,gordo) = (18.5, 25,0, 30.0)
 
-La cláusula **where**  permite definir variables o funciones. Las variables declaradas on inmutables. 
+La cláusula **where**  despues del cuerpo de una función permite definir variables o funciones. 
+Las variables declaradas son inmutables. 
 
 Una función se puede definir del siguiente modo:
 
@@ -417,9 +421,9 @@ Consideremos la función minmax, que retorna una dupla con los valores máximos 
           for x <- tail xs do { 
             when x < cmin do cmin = x
             when x > cmax do cmax = x
-         }
-        (cmin, cmax)
-    }
+          }
+          (cmin, cmax)
+        }
 
 Esta es una implementación imperativa de este problema. No es la mejor manera de implementar esta solución en Ogú. Pero sirve para introducir varios conceptos.
 
@@ -445,9 +449,9 @@ Esta es otra manera de definir esta función
         minmax [] = error “debe contener al menos un elemento”
         minmax xs = (minimun xs, maximun xs)
         where  maximun [x] = x
-          and  maximun [x,x] = max x (maximun xs)
-          and  minimun [x] = x
-          and  minimum [x,xs…] = min x (minimum xs) 
+               maximun [x,x] = max x (maximun xs)
+               minimun [x] = x
+               minimum [x,xs…] = min x (minimum xs) 
 
 No es la forma más eficiente, pero refleja el espíritu de Ogú. 
 En general usar loops, when en Ogú no es buen estilo.
@@ -498,7 +502,7 @@ Pero hay que tener cuidado, no se debe colocar un ';' después de la última def
 
 * (TODO LO ANTERIOR CON RESPECTO A WHERE e IN PUEDE CAMBIAR)
 
-# clases y tipos en Ogú
+# Tipos en Ogú
 
 En Ogú un tipo se introduce con la keyword type
 
@@ -524,13 +528,80 @@ Todos estos son tipos escalare, porque sólo tienen un valor.
 
 Se pueden definir tipos vectoriales que son agregaciones de tipos, por ejemplo:
 
-    type String’ = [Char]
+    type String = [Char]
 
 O por ejemplo
 
     type IntVector = (Int,Int)
 
+Tambien se pueden definir mapas del siguiente modo:
+
+    type StrMap v = [String:v]
+
 Los nombres de los tipos en Ogú empiezan con mayúsculas
+
+De este modo podemos declarar así:
+
+    val b : Bool = false
+    val color : BasicColor = red
+    val s : String = ""
+    val iv = (10,10)
+    val edades : (StrMap Int) = ["Pedro":25, "Juan:30, "Diego":40]
+
+
+## Clases
+
+A los tipos se les puede definir un comportamiento predefinido especifico para el tipo del siguiente modo:
+
+    class Bool = false | true {
+        def not value:Bool = if value = false then true else false
+    }
+
+A diferencia de la declaración de Bool anterior, ahora hemos definido un método que se aplica sobre todas instancias de Bool.
+
+Las clases en Ogú son similares a los type classes en Haskell, pero pueden tener variables de instancia, es decir, se pueden crear clases mutables.
+
+Las funciones de una clase se conocen como métodos.
+
+## Traits genéricas
+
+Las clases pueden tener parámetros, por ejemplo:
+
+    trait YesNo a = {
+        def yesno :: a -> Bool
+    }
+
+esta type class genérica con un método llamado yesno que recibe el argumento y debe retornar Bool.
+
+
+Una vez que tenemos definida una type class podemos usarla para instanciarla en otros tipos del siguiente modo:
+
+    class YesNo Int = {
+        def yesno 0 = false
+        def yesno _ = true
+    }
+
+    instance YesNo [x] = {
+        def yesno [] = false
+        def yesno _  = true
+    }
+
+
+# Tipos algebraicos
+
+
+    type Shape = Circle Float Float Float Float | Rectangle Float Float Float Float
+
+Esto define una clase algebraica Shape.
+La clase Shape puede ser un Circle o un Rectangle.
+(Esto es conoce como sum types).
+
+Con esto podemos hacer
+
+    val circle = Circle 10 20 5
+    val rect   = Rectangle 50 230 60 90
+
+
 
 ## Clases
 
@@ -557,11 +628,11 @@ Para crear un elemento de estas clases se invoca su constructor
 La sintaxis presentada permite crear una clase con variables de instancia que estarán en su constructor.
 Se pueden agregar más atributos a una clase que no necesariamente son inicializados en el constructor
 
-    class Empresa (val rut:String, val razonSocial:String) {
+    class Empresa (val rut:String, val razonSocial:String) 
+    {
         var cantidadEmpleados : Int = 0
         var patrimonioInicial : Money = 1000000
     }
-
 Una clase puede tener varios constructores, estos se declaran del siguiente modo:
 
     class Auto(val modelo:String; año:Int) = {
@@ -653,15 +724,6 @@ Ogú soporta herencia simple.
     class Persona(rut:String, nombre:String, edad:Int)
     class Empleado(rut:String, nombre:String, edad:Int, empresa:String) > Persona(rut, nombre, edad)
 
-## Extensión de clases
-
-Una clase puede ser extendida usando la notación +=
-
-Ejemplo:
-
-    class Persona += {
-        def show self { println “nombre: $nombre, edad: $edad" }
-    }
 
 # Módulos
 

@@ -97,15 +97,14 @@ type
 	: '[' type ((':') type )? ']'
 	| '('  (type (',' type)*)? ')'
 	| tid '(' type (',' type)* ')'
-	| tid tid*
 	| type ('|' type)+
 	| type '->' type
-	| basic_type 
+	| basic_type (basic_type)*
 	| ID
 	;
 
 basic_type
-	: tid ('{' tid (',' tid)* '}')?
+	: tid | ID  
 	;
 
 typedef : 'type' TID (typedef_args)? '=' 
@@ -118,7 +117,7 @@ traitdef : 'trait' TID typedef_args ('=' traitdef_body)? ;
 traitdef_body : '{' (NL)* traitdef_method* '}' ;
 
 traitdef_method
-	: func_proto_def_header sep*;
+	: func_proto_def sep*;
 
 classdef : 'class' TID typedef_args? class_constructor_args? 
 		('=' 
@@ -136,7 +135,7 @@ class_ctor_arg : ('val'|'var')? ID (',' ID)* ':' type ;
 classdef_body : '{' (NL)* (classdef_body_decl)* '}' ;
 
 classdef_body_decl
-	: (def|var|val) sep*
+	: (def|var|val|expression|do_expression|block_expression) sep*
 	;
 
 
@@ -200,7 +199,7 @@ func_clasic_def
 	: 'def' func_id (func_arg (func_arg)*)?  (NL)* ( func_simple_body | func_guards ((NL)* func_guards)* | block_expression | do_expression ) func_where? 
 	;
 
-func_simple_body : ('->' ('lazy')? (type)?)? '=' (NL)* func_body ;
+func_simple_body : ('->' (type)?)? '=' (NL)* func_body ;
 
 func_body : ( 'abstract' | expression | block_expression ) ;
 

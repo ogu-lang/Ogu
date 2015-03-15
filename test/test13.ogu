@@ -43,3 +43,15 @@ instance Ord BasicColor = {
 		| x == green = red
 		| x == blue = green
 }
+
+trait Eq a = {
+
+        def == :: a a -> Bool
+        def /= :: a a -> Bool
+            /= a a = not (a == a)
+
+    }
+
+instance Eq Int = {
+    def == x y = (a-a) == 0
+} 

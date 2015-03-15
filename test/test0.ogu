@@ -1,1 +1,1 @@
-	println "Hola Mundo"
+	print! "Hola Mundo"
