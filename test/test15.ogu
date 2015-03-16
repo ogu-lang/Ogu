@@ -6,9 +6,9 @@ class Stack() = {
 
     def push! self x:Int do _data = cons x _data
 
-   def pop! self = {
-           val result := head _data
-           _data = tail _data
+   def pop! self = 
+           let result = head _data in {
+           set _data = tail _data // assignment begin with set
            result
    }
 
@@ -24,7 +24,7 @@ def test'() {
   pop! stack /// <- retorna 20
 
   val auto := Auto()
-  auto.bencina
+    auto.bencina
 
 }
 

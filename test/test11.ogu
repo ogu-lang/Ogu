@@ -20,6 +20,13 @@ def minmax :: (x:Ord) => [x] -> (x,x)
 	minmax [] = error "debe contener al menos un elemento"
 	minmax xs = (minimun xs, maximun xs)
 	    where maximun [x] = x
-	    and   maximun [x::xs] = max x (maximun xs)
-	    and   minimun [x] = x
-	    and  minimum [x::xs] = min x (minimum xs)
+	          maximun [x::xs] = max x (maximun xs)
+	          minimun [x] = x
+	          minimum [x::xs] = min x (minimum xs)
+
+// acá se abre una ambiguedad:
+// f está ligada a minmax o es la asignación a la variable f?
+// (suponiendo que f está declarada arriba.)
+// por eso que un assignment suelto es algo que debemos analizar con más calma.
+
+f  = 10

@@ -25,7 +25,7 @@ def strIMC'' :: (a:Float) => a -> a -> String
         imc = peso / altura ^ 2
         delgado = 18.5
         normal = 25.0
-        gordo = 30.0
+        gordo = 30.0        
 
 def strIMC''' :: (a:Float) => a -> a -> String
     strIMC''' peso altura 

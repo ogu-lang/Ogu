@@ -36,12 +36,12 @@ instance Stackable s:Stack = {
 
   def pop! self = {
               val result := head _data
-              _data = tail _data
+              set _data = tail _data
               result
       }
 
   def empty? self = 
-              empty _data
+              null _data
 
 }
 

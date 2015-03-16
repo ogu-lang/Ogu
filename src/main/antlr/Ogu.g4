@@ -20,34 +20,38 @@ import java.lang.Math;
 }
 
 module : (NL)*
-        ( module_decl
-        | (decl)*
-        );
+		module_header?
+		decl (sep decl)* sep*
+		;
 
-module_decl
-	: 'module' TID ('.' TID)* (NL)* 
-	(  '{' (NL)? (decl) * '}'
- 	|  (decl)*
- 	)
+module_header
+	: 'module' TID ('.' TID)* (NL)* { println("module header"); }
 	;
+
+local_module
+	: module_header '{' (NL)* decl* '}'
+	;
+
 
 decl :
     ( import_module { println("import module"); }
+    | local_module { println("local module"); }
     | alias_decl { println("alias"); }
     | instancedef { println("instance"); }
     | var {println("var"); }
     | val {println("val"); }
+    | assignment { println("decl assignment"); }
     | typedef { println("type"); }
     | classdef { println("class");}
     | traitdef { println("trait"); }
     | def { println("def"); }
-    | expression { println("decl expression"); }
-    | do_expression { println ("decl do expression"); }
+	| do_expression { println ("decl do expression"); }
 	| block_expression { println ("decl block expression"); }
-    ) (sep)*
+    | expression { println("decl expression"); }
+    ) 
     ;
 
-sep : ';' | NL;
+sep : ';' (NL)* | (NL)+;
 
 
 import_module
@@ -102,7 +106,6 @@ type
 	| type ('|' type)+
 	| type '->' type
 	| basic_type (basic_type)*
-	| ID
 	;
 
 basic_type
@@ -112,6 +115,7 @@ basic_type
 typedef : 'type' TID (typedef_args)? '=' 
 		( enum_values 
 		| type ((NL)* '|' type)*
+		| type type+
 		);
 
 traitdef : 'trait' TID typedef_args ('=' traitdef_body)? ;
@@ -229,9 +233,7 @@ where_expr
 	| func_def_proto
 	;
 
-assignment
-	: ID '=' expression
-	; 
+
 
 expression  
 	: 'if' expression (NL)? 'then' (NL)* (expression (NL)?|block_expression)  'else' (NL)* (expression|block_expression) 
@@ -250,8 +252,10 @@ expression
 	| expression '*' expression
 	| expression '/' expression
 	| expression '%' expression
-	|<assoc=right> expression '::' expression
-	|<assoc=right> expression '++' expression
+	| <assoc=right> expression '::' expression
+	| <assoc=right> expression '++' expression
+	| <assoc=right> expression '|>' expression
+	| <assoc=right> expression '<|' expression
 	| expression '+' expression
 	| expression '-' expression
 	| expression '==' expression
@@ -265,7 +269,7 @@ expression
 	| expression '&&' expression
 	| expression '||' expression
 	| '(' op (expression)* ')'
-	| '(' expression_list ')'
+	| '(' expression_list ')' 
 	| '[' (list_expression|map_expressions)? ']'
 	| expression '[' expression ']'
 	| ID ('.' ID)+
@@ -282,7 +286,7 @@ op : '+' | '-' | 'not' | 'yield'  | '*' | '/' | '%' | '>>' | '^' | '|>' | '<|'
 	| '&&' 	| '||' 	| 'in' | 'not' 'in' | '==' | '/='
 	| '::' | '++'
 	| '<>' 	| '>' 	| '<' | '>=' | '<=' 
-	| '..' 
+	| '<|' | '|>'  | '..' 
 	;
 
 constructor_call
@@ -299,26 +303,34 @@ ctor_args
 	;
 
 block_expression
-	: '{' 
-	  (sep)*
-	  block_statement 
-	  block_statement* 
+	: '{' (NL)*
+	   (block_statement (sep block_statement)* sep*)?
 	  '}'
-	| 'do' expression
 	;
+
+	
+assignment
+	: 'set' assign_expr
+	; 
+
+assign_expr
+	: ID ('.' ID)* ('[' expression ']')* '=' expression
+	;
+
 do_expression
-	: 'do' (NL)* (expression|block_expression|assignment)
+	: 'do' (NL)* (expression|block_expression|assign_expr)
 	;
 
 block_statement
 	: 
 	( var 
 	| val 
-	| expression 
 	| assignment
-	)
-	(sep)*
+	| expression 	
+	)	
+
 	;
+
 
 case_expression
 	: 'case' expression 'of' (NL)* case_selector_list { println ("case expression"); }
@@ -335,8 +347,8 @@ case_selector
 
 
 let_expression
-	: 'let' (NL)* let_expr ( sep* let_expr)* 
-      (NL)* 'in' expression
+	: 'let' (NL)* let_expr ( sep let_expr)* sep?
+      (NL)* 'in' (expression|block_expression)
 	;
 
 let_expr
