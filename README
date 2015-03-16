@@ -13,7 +13,7 @@ A .jar file is generated in ./buid/libs with name Ogu-{version}-all.jar, where {
 
 Test the compiler doing:
 
-	$ java -jar ./build/libs/Ogu-{version}-all.jar < ./test/test0.ogu
+	$ java -jar ./build/libs/Ogu-{version}-all.jar ./test/test0.ogu
 
 After that you should see the following on your console:
 

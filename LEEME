@@ -15,7 +15,7 @@ Donde {version} es el numero de version del compilador.
 
 Puedes probarlo haciendo
 
-	$ java -jar ./build/libs/Ogu-{version}-all.jar < ./test/test0.ogu
+	$ java -jar ./build/libs/Ogu-{version}-all.jar ./test/test0.ogu
 
 Esto debería arrojar el siguiente resultado:
 
