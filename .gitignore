@@ -24,3 +24,5 @@ src/OguLexer.java
 src/OguLexer.tokens
 src/OguListener.java
 src/OguParser.java
+.gradle
+build
