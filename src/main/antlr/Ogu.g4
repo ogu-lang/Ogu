@@ -116,7 +116,16 @@ typedef : 'type' TID (typedef_args)? '='
 		( enum_values 
 		| type ((NL)* '|' type)*
 		| type type+
-		);
+		)
+		deriving?
+		;
+
+
+deriving : (NL)* 'deriving' deriving_types ;
+deriving_types
+	: tid
+	| '(' tid (',' tid)* ')'
+	;		
 
 traitdef : 'trait' TID typedef_args ('=' traitdef_body)? ;
 
@@ -125,13 +134,14 @@ traitdef_body : '{' (NL)* traitdef_method* '}' ;
 traitdef_method
 	: func_proto_def sep*;
 
-classdef : 'class' TID typedef_args? class_constructor_args? 
+classdef : 'class' TID typedef_args? class_constructor_args? deriving?
 		('=' 
 		( enum_values 
 		| type ((NL)* '|' type)*
 		| TID '(' ctor_args? ')'
 		|
 		)
+
 		classdef_body?)?;
 
 class_constructor_args : '(' (class_ctor_arg (';' class_ctor_arg)*)? ')' ;

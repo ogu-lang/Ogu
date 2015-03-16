@@ -9,4 +9,4 @@ def chain :: (a:Int) => a -> [a]
 	
 // for all starting numbers between 1 and 100, how many chains have a length greater than 15? 
 def numLongChains :: Int
-	numLongChains = length (filter (\xs -> length xs > 15) (map chain [1..100])
+	numLongChains = length (filter (\xs -> length xs > 15) (map chain [1..100]))
