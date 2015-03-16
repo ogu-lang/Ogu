@@ -45,7 +45,7 @@ public class Ogu {
 		System.err.println(msg);
 	}
 
-	static final String VERSION = "Ogu version 0.1.0";
+	static final String VERSION = "Ogu version 0.1.1";
 	static final String WELCOME = "Hola amiko mio de mi.";
 	static final String GOODBYE = "Ke kapo el kompilador, nosierto?\n\nChau, chau amiko mio de mi.";
 	static final String COMPILING_FILE = "Yiko Peleita!\n(compilando archivo '%s')";
