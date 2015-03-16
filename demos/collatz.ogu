@@ -1,0 +1,12 @@
+// collatz sequences
+
+def chain :: (a:Int) => a -> [a]
+	chain 1 = [1]
+	chain n
+		| even n = n :: chain (n / 2)
+		| odd  n = n :: chain (n*3 + 1)
+
+	
+// for all starting numbers between 1 and 100, how many chains have a length greater than 15? 
+def numLongChains :: Int
+	numLongChains = length (filter (\xs -> length xs > 15) (map chain [1..100])
