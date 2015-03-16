@@ -3,21 +3,26 @@ This is the programming language Ogu
 TEST
 ----
 
-You will need ANTLR v 4.5.
+You will need Gradle 2.3 to build this project (download from http://gradle.org).
 
-Download antlr from http://www.antlr.org/ and follow instructions.
+To build the compiler just do the following:
 
-Test grammar:
+	$ gradle
 
-$ cd src
-$ antlr4 Ogu.g4
-$ javac *.java
-$ grun -tree ../test/test0.ogu
+A .jar file is generated in ./buid/libs with name Ogu-{version}-all.jar, where {version} is the current compiler version number.
 
+Test the compiler doing:
+
+	$ java -jar ./build/libs/Ogu-{version}-all.jar < ./test/test0.ogu
+
+After that you should see the following on your console:
+
+	decl expression
+	(module (decl (expression print! (expression "Hola Mundo")) (sep \n)))
 
 
 
 This software is distributed under a BSD License, see LICENSE file for details
 
-(c) 2011 Eduardo Diaz
+(c) 2011-2015 Eduardo Diaz
 www.lnds.net

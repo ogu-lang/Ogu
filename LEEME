@@ -4,17 +4,24 @@ COMPILACION
 -----------
 
 
+Necesitarás  Gradle 2.3 (http://gradle.org) para compilar.
 
-Necesitarás ANTLR v 4.5.
+Una vez instalado Gradle debes ejecutar lo siguiente:
 
-Descarga antlr desde http://www.antlr.org/ y sigue las instrucciones para configurarlo desde ese sitio.
+	$ gradle
 
-Probar la gramatica:
+Esto generará un archivo .jar en ./build/libs/Ogu-{version}-all.jar.
+Donde {version} es el numero de version del compilador.
 
-$ cd src
-$ antlr4 Ogu.g4
-$ javac *.java
-$ grun -tree ../test/test0.ogu
+Puedes probarlo haciendo
+
+	$ java -jar ./build/libs/Ogu-{version}-all.jar < ./test/test0.ogu
+
+Esto debería arrojar el siguiente resultado:
+
+	decl expression
+	(module (decl (expression print! (expression "Hola Mundo")) (sep \n)))
+
 
 
 
@@ -24,5 +31,5 @@ LICENCIA
 Este código es opensource, se distribuye bajo una licencias BSD, ver el archivo LICENSE para los detalles.
 
 
-(c) 2011 Eduardo Diaz
+(c) 2011-2015 Eduardo Diaz
 www.lnds.net

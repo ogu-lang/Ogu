@@ -1,8 +1,10 @@
 grammar Ogu;
 
 @header {
-	import java.util.*;
-	import java.lang.Math;
+package org.ogu.lang.antlr;
+
+import java.util.*;
+import java.lang.Math;
 }
 
 
@@ -17,7 +19,7 @@ grammar Ogu;
 
 }
 
-program : (NL)*
+module : (NL)*
         ( module_decl
         | (decl)*
         );

@@ -1,0 +1,24 @@
+
+plugins {
+  id 'java' 
+  id 'antlr'
+  id 'com.github.johnrengelman.shadow' version '1.2.0'
+}
+
+defaultTasks 'shadowJar'
+
+version = "0.1.0"
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.ogu.lang.compiler.Ogu'
+    }
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  antlr "org.antlr:antlr4-maven-plugin:4.5"
+}
