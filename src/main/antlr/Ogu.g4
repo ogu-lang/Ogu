@@ -171,7 +171,7 @@ func_proto_def : func_proto_def_header
 	((NL)* func_def_proto)* 
 	;
 
-func_proto_def_header : 'def' func_id '::' (prototype_constraints)? prototype_arg '->'  prototype_arg ('->' prototype_arg)* ;
+func_proto_def_header : 'def' func_id '::' (prototype_constraints)? prototype_arg '->'  ('!' | prototype_arg ('->' prototype_arg)* ('->' '!')?);
 
 prototype_constraints
 	: '(' prototype_constraint_list ')' '=>' 
@@ -254,7 +254,7 @@ expression
 	| expression '%' expression
 	| <assoc=right> expression '::' expression
 	| <assoc=right> expression '++' expression
-	| <assoc=right> expression '|>' expression
+	| <assoc=left> expression '|>' expression
 	| <assoc=right> expression '<|' expression
 	| expression '+' expression
 	| expression '-' expression
