@@ -1,0 +1,11 @@
+// lambdas
+
+let mul2 = \ x-> x * 2
+
+let mul3 = \ y:Int -> y * 3
+
+let max = \ x y -> if x < y then x else y
+
+val fst' = \ (x, y) -> x
+
+val snd' = \ (x, y) -> y

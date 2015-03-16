@@ -15,12 +15,30 @@ Donde {version} es el numero de version del compilador.
 
 Puedes probarlo haciendo
 
-	$ java -jar ./build/libs/Ogu-{version}-all.jar < ./test/test0.ogu
+	$ java -jar ./build/libs/Ogu-0.1.1-all.jar ./test/test0.ogu
 
 Esto debería arrojar el siguiente resultado:
 
+	Ogu version 0.1.1
+
+	Hola amiko mio de mi.
+
+	Yiko Peleita!
+	(compilando archivo 'test\test0.ogu')
+
+	Akarruuuu!
+
 	decl expression
-	(module (decl (expression print! (expression "Hola Mundo")) (sep \n)))
+	(module (decl (expression print! (expression "Hola Mundo"))) (sep \r\n))
+
+	Mi soi kapo.
+	(archivo 'test\test0.ogu' compilado)
+
+
+	Ke kapo el kompilador, nosierto?
+
+	Chau, chau amiko mio de mi.
+
 
 
 

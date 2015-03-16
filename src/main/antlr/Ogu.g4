@@ -93,7 +93,7 @@ var : 'var' vid
     | (':' (type)?)? ('=' expression)
     );
 
-val : 'val' vid (':' (type)?)? '=' expression;
+val : ('val'|'let') vid (':' (type)?)? '=' expression;
 
 vid : ID | '(' vidt (',' vidt)* ')' ;
 
@@ -171,7 +171,7 @@ func_proto_def : func_proto_def_header
 	((NL)* func_def_proto)* 
 	;
 
-func_proto_def_header : 'def' func_id '::' (prototype_constraints)? prototype_arg '->'  ('!' | prototype_arg ('->' prototype_arg)* ('->' '!')?);
+func_proto_def_header : 'def' func_id '::' (prototype_constraints)? prototype_arg (<assoc=right> '->' prototype_arg)* ('->' '!')? ;
 
 prototype_constraints
 	: '(' prototype_constraint_list ')' '=>' 
@@ -243,6 +243,7 @@ expression
 	| 'while' expression  do_expression 
 	| case_expression
 	| let_expression
+	| '\\' lambda_args? '->' (expression|block_expression)
 	| 'yield' expression
 	| '-' expression
 	| '+' expression
@@ -280,6 +281,15 @@ expression
 	| STRING
 	| CHAR 
 	| DATE
+	;
+
+lambda_args
+	: lambda_arg lambda_arg*
+	;
+
+lambda_arg
+	: ID (':' type)?
+	| '(' (lambda_arg (',' lambda_arg)*)? ')'
 	;
 
 op : '+' | '-' | 'not' | 'yield'  | '*' | '/' | '%' | '>>' | '^' | '|>' | '<|'
