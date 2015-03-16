@@ -203,7 +203,7 @@ func_simple_body : ('->' (type)?)? '=' (NL)* func_body ;
 
 func_body : ( 'abstract' | expression | block_expression ) ;
 
-func_id : ID | binop | unop ;
+func_id : ID | op ;
 
 func_arg
 	: ID ':' type
@@ -227,7 +227,9 @@ where_expr
 	| func_def_proto
 	;
 
-
+assignment
+	: ID '=' expression
+	; 
 
 expression  
 	: 'if' expression (NL)? 'then' (NL)* (expression (NL)?|block_expression)  'else' (NL)* (expression|block_expression) 
@@ -237,16 +239,35 @@ expression
 	| 'while' expression  do_expression 
 	| case_expression
 	| let_expression
-	| unop expression
-	| expression binop expression
-	| '(' binop (expression)* ')'
+	| 'yield' expression
+	| '-' expression
+	| '+' expression
+	| 'not' expression
+	| expression '..' (expression)?
+	|<assoc=right> expression '^' expression
+	| expression '*' expression
+	| expression '/' expression
+	| expression '%' expression
+	|<assoc=right> expression '::' expression
+	|<assoc=right> expression '++' expression
+	| expression '+' expression
+	| expression '-' expression
+	| expression '==' expression
+	| expression '/=' expression
+	| expression '<'  expression
+	| expression '<=' expression
+	| expression '>'  expression
+	| expression '>=' expression
+	| expression 'in' expression
+	| expression 'not' 'in' expression
+	| expression '&&' expression
+	| expression '||' expression
+	| '(' op (expression)* ')'
 	| '(' expression_list ')'
 	| '[' (list_expression|map_expressions)? ']'
 	| expression '[' expression ']'
-	| expression '..' (expression)?
 	| ID ('.' ID)+
 	| ID (expression)*
-	| ID '=' expression
 	| constructor_call
 	| INT
 	| FLOAT
@@ -255,13 +276,11 @@ expression
 	| DATE
 	;
 
-unop : '+' | '-' | 'not' | 'yield' ;
-
-binop : '+' | '-' | '*' | '/' | '%' | '>>' | '^' | '|>' | '<|'
+op : '+' | '-' | 'not' | 'yield'  | '*' | '/' | '%' | '>>' | '^' | '|>' | '<|'
 	| '&&' 	| '||' 	| 'in' | 'not' 'in' | '==' | '/='
 	| '::' | '++'
-	| '<>' 	| '>' 	| '<' | '>=' | '<=' | 'shl'  | 'shr' 
-	| 'bitand'  | 'bitor'  	| 'bitxor' 
+	| '<>' 	| '>' 	| '<' | '>=' | '<=' 
+	| '..' 
 	;
 
 constructor_call
@@ -286,7 +305,7 @@ block_expression
 	| 'do' expression
 	;
 do_expression
-	: 'do' (NL)* (expression|block_expression)
+	: 'do' (NL)* (expression|block_expression|assignment)
 	;
 
 block_statement
@@ -294,6 +313,7 @@ block_statement
 	( var 
 	| val 
 	| expression 
+	| assignment
 	)
 	(sep)*
 	;

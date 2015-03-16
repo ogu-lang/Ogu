@@ -25,7 +25,7 @@ def	top    (Stk (x::xs)) = xd
 def	empty? (Stk xs)      = null xs
 
 class Bool = false | true {
-	def not value:Bool = if value = false then true else false
+	def not value:Bool = if value == false then true else false
 }
 
 trait Ord x = {
