@@ -1,47 +1,39 @@
-// type clases
+;; type clases
 
-type Shape = Circle Float Float Float Float | Rectangle Float Float Float Float
+data Shape = Circle Float Float Float Float | Rectangle Float Float Float Float
 
-
-val circle = Circle 10 20 5
-val rect   = Rectangle 50 230 60 90
-
-
-type Point = Point Float Float deriving Show
-
-type Shape = Circle Point Float | Rectangle Point Point 
-     deriving Show
-
-def surface :: Shape -> Float
-    surface (Circle _ r) = pi * r ^ 2
-    surface (Rectangle (Point x1 y1) Point (x2 y2)) = (abs (x2 - x1)) * (abs (y2 - y1))
+let circle = Circle 10 20 5
+let rect   = Rectangle 50 230 60 90
 
 
-class Circulo (val x, y: Int; val radius : Float)
+data Point = Point Float Float deriving (Show)
 
-class Rectangulo(val x,y, alto, ancho:Int) = {
-	var circulo := Circulo(0,0, 100.0)
+data Shape = Circle Point Float | Rectangle Point Point
+     deriving (Show)
 
-	var cuadro := Rectangulo(0, 0, 50, 50)
+def surface : Shape -> Float
+let surface (Circle _ r) = pi * r ^ 2
+let surface (Rectangle (Point x1 y1) (Point x2 y2)) = (abs (x2 - x1)) * (abs (y2 - y1))
 
-	var box : Circulo = Circulo(0, 0, 50, 50)
-}
 
-class Empresa (val rut:String; val razonSocial:String) = {
-    var cantidadEmpleados : Int = 0
-    var patrimonioInicial : Money = 1000000
-}
+data Circulo = Circulo{x:Int, y: Int, radius : Float}
 
-class Auto(val modelo:String; año:Int) = {
-     var bencina := 0
-}
+data Rectangulo = Rectangulo{ x:Int , y:int, alto:Int, ancho:Int }
 
-class Auto() = Auto("Sin modelo", 0)
-class Auto(modelo:String) = Auto(modelo, 0)
+;; estas son estructuras mutables
 
-class Auto'(val modelo:String; val año:Int) =  {
-     var bencina := 0
-}
+var circulo = Circulo{x=0, y=0, radius=100.0}
 
-class Auto'(modelo:String) = Auto'(modelo, 0) {
-     }
+var cuadro = Rectangulo{x=0, y=0, alto=50, ancho=50}
+
+let xc = x cuadro
+let yc = y cuadro
+
+;; abominación! sólo funciona con var
+set x cuadro = xc + 10
+set y cuadro = yc + 10
+
+;; forma corta
+
+cuadro @ y <- 10
+cuadro @ x <- 10

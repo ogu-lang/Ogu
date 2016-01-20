@@ -1,32 +1,22 @@
-// test 11 min max
+;; test 11 min max
 
-def minmax :: (x:Ord) => [x] -> (x,x)
+def minmax : (x:Ord) => [x] -> (x,x)
 
-	minmax [] = error "debe contener al menos un elemento"
+let minmax [] = error "debe contener al menos un elemento"
+let minmax xs = 
+    var cmin = head xs
+    var cmax = cmin
+    for x <- tail xs do
+        when x < cmin do cmin <- x
+        when x > cmax do cmax <- x
+    (cmin, cmax)
 
-	minmax xs = {
- 		var cmin := head xs
-		var cmax := cmin
-		for x <- tail xs do { 
-		    when x < cmin do cmin = x
-    		when x > cmax do cmax = x
- 		}
- 		(cmin, cmax) 
- 	}
+def minmax : (x:Ord) => [x] -> (x,x)
 
+let minmax [] = error "debe contener al menos un elemento"
+let minmax xs = (minimun xs, maximun xs)
+    where maximun [x] = x
+          maximun (x::xs) = max x (maximun xs)
+          minimun [x] = x
+          minimum (x::xs) = min x (minimum xs)
 
-def minmax :: (x:Ord) => [x] -> (x,x)
-
-	minmax [] = error "debe contener al menos un elemento"
-	minmax xs = (minimun xs, maximun xs)
-	    where maximun [x] = x
-	          maximun [x::xs] = max x (maximun xs)
-	          minimun [x] = x
-	          minimum [x::xs] = min x (minimum xs)
-
-// acá se abre una ambiguedad:
-// f está ligada a minmax o es la asignación a la variable f?
-// (suponiendo que f está declarada arriba.)
-// por eso que un assignment suelto es algo que debemos analizar con más calma.
-
-f  = 10

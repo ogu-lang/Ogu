@@ -1,7 +1,8 @@
-// test 6
+;; test 6
 
- def multiplicar x: Num y: Num -> Num = x * y
+def multiplicar : Num -> Num -> Num
+let multiplicar x y = x * y
 
-def doblar -> (Num -> Num) = multiplicar 2
-def diez -> Num = doblar 5
-val doce := double 6
+let doblar = multiplicar 2
+let diez  = doblar 5
+var doce = doblar 6

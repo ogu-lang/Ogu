@@ -1,68 +1,98 @@
-Notas sobre el lenguaje Ogu.
+# Notas sobre el lenguaje Ogu.
+
 Ideas para el diseño del lenguaje
+
 Estos son apuntes, no constituyen una guia para el lenguaje, muchas cosas pueden cambiar.
 
 Autor: Eduardo Díaz
 
+# Comentarios
+
+En Ogú los comentarios empiezan con ';' (punto y coma) y terminan con el fin de linea
+
+    ; este es un comentario
+
 
 # Constantes y Variables
 
-Los valores se pueden almacenar en variables inmutables, o constantes, que se indican con la palabra reservada **val** .
-Las variables mutables se declaran con la palabra reservada **var**.
+Los valores se pueden almacenar en variables inmutables, o constantes, que se indican con la palabra reservada **let** .
+Las variables mutables se declaran con la palabra reservada **var**. 
+La palabra reservada **val** es sinónimo de let, pero sólo para valores inmutables (no se usa para definir funciones)
 
 Ejemplos:
 
-   |val  maxIntentos : Int = 10
-    var intentosHastaAhora : Int = 0
+    let  maxIntentos : Int = 10 ; una constante de tipo Int
+    var intentosHastaAhora : Int = 0 ; una variable
+    var contador = 0 ; una variable mutable, es igual que var. Es probable que deprequemos var
+    val inmutable = 1 ; no se puede cambiar el valor 
 
-Cuando se declara una variable se debe **def**inir su tipo, usando dos puntos y el nombre del tipo. Los tipos en Ogú siempre empiezan con mayúsculas (Los tipos privados empiezan por _ y una mayúscula). Los nombres de variables siempre empiezan en minúsculas. 
+Cuando se declara una variable se debe definir su tipo, usando dos puntos y el nombre del tipo. 
+
+Los tipos en Ogú siempre empiezan con mayúsculas (Los tipos privados empiezan por _ y una mayúscula). 
+
+Los nombres de variables siempre empiezan en minúsculas. 
 
 Además siempre se debe colocar su valor inicial usando el operador =.
 
-Ogú aplica inferencia de tipos, basta con omitir el tipo entre el : y la asignación.
+Ogú aplica inferencia de tipos, basta con omitir el ':' más el nombre del tipo.
 
 Ejemplos:
 
-    val maxIntentos := 10
-    var intentosHastaAhora := 0
-    val pi = 3.141516
+    let maxIntentos : Int = 10
+    var intentosHastaAhora = 0
+    let pi : Float= 3.141516
+    let alpha = 1231.543
     var e = 2.71828
     
 
-(Pueden escribir := ó = cuando se hace inferencia de tipos, es cuestión de gustos)
-(Por convención colocamos el operador = pegado al :, pero pueden haber espacios entre ellos, es decir, en Ogú no existe el operador “:=“).
+La biblioteca estándar de Ogú definirá los tipos básicos (como Int, Float, String, Bool), esto aún no está claro.
 
-Hay varios tipos escalares, como Int, Float, String, Bool.
-
-Pero se pueden crear tipos vectoriales como tuplas y listas usando la siguiente notación:
+Se pueden crear tipos vectoriales como tuplas y listas usando la siguiente notación:
 
 [T] : Declara una lista de elementos de tipo T.
 (T1,T2,T3) : declara una dupla de elementos de tipos T1, T2, T3.
-[K:V] : declara un mapa con llave K y valores V
-
+{K->V} : declara un mapa con llave K y valores V
+{id:T,id2:T2,...} : declara una estructura.
 Ejemplos:
 
     var vector : (Float, Float, Float) = (2.0, 3.0, 10.0)
-    var perfil : (String,Char,Int,Date) = (“Juan”, “M”, 30, #19850101)
+    var perfil : (String,Char,Int,Date) = (“Juan”, “M”, 30, #1985-01-01)
     var nombres : [String] = [“Pedro”, “Juan”, “Diego”]
-    var edades : [String:Int] = ["Pedro":25, "Juan":30, "Diego":40]
+    var edades : {String->Int} = {"Pedro" -> 25, "Juan" -> 30, "Diego" -> 40}
+    var perfil2 : {nombre:String, sexo:String, grado:Int, cumpleaños:Date} = {nombre="Juan", sexo="M", grado=30, cumpleaños=#1985-01-01}
+    
+Las fechas se pueden ingresar usando el símbolo #  seguido de la fecha expresada en un subconjunto del formato ISO8601.
 
-En Ogú las tuples son usadas en varios contextos. Por ejemplo, hay funciones que retornan tuplas. En ese caso si se quiere rescatar los valores de retorno de la tupla en forma separada se debe usar la siguiente notación:
+    let timestamp = #2016-01-19T20:30:01.245
+    let horazulu = #2016-01-19T16:40:01.s45Z
+    let horasantiago = #2016-01-19T16:40:01.s45-03:00
+    
+Los números se expresan de la manera tradicional, incluyendo notación exponencial.
 
-    var (p:Int, q:Int) = frac(0.4) // x = 4, y = 10
-    var (p,q) := frac(0.4)
-    var (p,q) : (Int,Int) = frac(0.4)
+    let pi = 3.14.15
+    let avogadro = 6.022e23
+    let un_millon = 1_000_000.00
+     
+Se puede usar _ para separar miles (en los numeros normales también). 
+
+En Ogú las tuplas son usadas en varios contextos. 
+Por ejemplo, hay funciones que retornan tuplas. 
+En ese caso si se quiere rescatar los valores de retorno de la tupla en forma separada se debe usar la siguiente notación:
+
+    let (p:Int, q:Int) = frac(0.4) ; x = 4, y = 10
+    let (p,q) = frac(0.4)
+    let (p,q) : (Int,Int) = frac(0.4)
 
 (Acá suponemos que frac(x) retorna un número real como una fracción)
 
 Por supuesto se pudo hacer lo siguiente:
 
-    var f : (Int, Int) = frac(0.4) // f = (4,10)
+    let f : (Int, Int) = frac(0.4) // f = (4,10)
 
 
 # Funciones
 
-Ogú es un lenguaje con una fuerte influencia del paradigma funcional y del lenguaje Haskell en particular. 
+Ogú es un lenguaje principalmente funcional, con gran influencia de Haskell. 
 
 Una función en Ogú sólo recibe un parámetro. Esto parece bien extraño, pero permite usar Currying, una técnica del paradigma funcional muy útil.
 
@@ -70,7 +100,7 @@ Consideremos la función max, que entrega el máximo entre dos número, en Ogú 
 
     max 10 4
 
-Con esto Ogú retornará 10.
+El valor de retorno es 10. 
 
 Otra manera de invocar esta función es:
 
@@ -92,11 +122,13 @@ En el primer caso el resultado es 7. En el segundo caso también es 7. Sin embar
     2 + max 4 5 // (+ 2 (max 4 5)
     max 4 + 5 2 // error
 
-El tercer caso es un error porque se interpreta como ((max 4) + 5 2), (max 4) es una función parcial cuyo segundo argumento debería ser otro número o una función, pero el argumento recibido es + 5 2, esa es una expresión sin sentido en Ogú.
+El tercer caso es un error porque se interpreta como ((max 4) + 5 2), (max 4) es una función parcial cuyo segundo argumento debería ser otro número o una función, 
+pero el argumento recibido es + 5 2, esa es una expresión sin sentido en Ogú.
 
 Sin embargo se puede hacer lo siguiente:
 
-    max 4 (+ 5 2) // (max 4 (+ 5 2)) el resultado sería 7.
+    max 4 (+ 5 2) ; (max 4 (+ 5 2)) el resultado sería 7.
+    max (4 + 5) 2 ; max 9 2 el resultado sería 9
 
 Al principio de esta sección dijimos que una función en Ogú recibe sólo un parámetro, pero en los ejemplos hemos visto dos argumentos.
 
@@ -112,7 +144,8 @@ Esto es importante por eso que en Ogú a veces preferimos usar tuplas como pará
 
 ## Invocando funciones con tuplas
 
-Supongamos ahora que existe otra función que llamaremos max’ que en este caso ha sido **def**inida para recibir una tupla de dos elementos (dupla). En este caso para invocarla se deben usar paréntesis y comas en su invocación.
+Supongamos ahora que existe otra función que llamaremos max’ que en este caso ha sido definida para recibir una tupla de dos elementos (dupla). 
+En este caso para invocarla se deben usar paréntesis y comas en su invocación.
 
     max’ (4, 5)
 
@@ -120,26 +153,27 @@ Porque esta función recibe una dupla y retorna un valor.
 
 La función max se declara en Ogú de la siguiente manera:
 
-    def max a:Num b:Num -> Num = **if** a > b **then** a **else** b
+    def max : Num -> Num -> Num 
+    let max a b = if a > b then a else b
 
 en cambio la función max’ se declara en Ogú de esta manera
 
-    def max’ (a:Num, b:Num) -> Num = if a > b then a else b
+    def max’ : (Num, Num) -> Num 
+    let max' (a,b) = if a > b then a else b
 
-Aunque son similares, las dos funciones se evalúan de manera diferente. La primera función max permite hacer currying.
+Aunque parecen similares, las dos funciones se evalúan de manera diferente. La primera función max permite hacer currying.
 
 Por ejemplo:
 
-    def from5 -> (Num -> Num) = max 5
+    def from5 : Num -> Num
+    let from5 = max 5
 
 define una función que retorna 5 o cualquier número mayor que 5.
 
-La notación (Num -> Num) define un tipo lambda (ver más adelante).
-
 Con lo anterior tendremos lo siguiente:
 
-    from5 3 // retorna 5
-    from5 8 // retorna 8
+    from5 3 ; retorna 5
+    from5 8 ; retorna 8
 
 ## Currying
 
@@ -147,147 +181,112 @@ En Ogú se puede usar Currying igual que en Haskell.
 
 Ejemplos:
 
-    def multiplicar x: Num y: Num -> Num = x * y
-    def doblar -> (Num -> Num) = multiplicar 2
-    def diez -> Num = doblar 5
-    val doce = double 6
+    let multiplicar x y = x * y
+    let doblar  = multiplicar 2
+    let diez  = doblar 5
+    let doce = double 6
 
-El primer caso **def**ine una función multiply, que recibe un número, *se aplica* sobre otro número para retornar un tercer número.
+El primer caso define una función multiply, que recibe un número, *se aplica* sobre otro número para retornar un tercer número.
 
-En segundo caso **def**ine una función que retorna otra función que multiplica por dos sus argumentos.
+En segundo caso define una función que retorna otra función que multiplica por dos sus argumentos.
 
-La función diez es una función que retorna siempre el mismo valor. En estos casos es mejor declarar una variable inmutable como hacemos con doce.
+De este modo diez y doce son funciones que retornan el mismo valor (el compilador debería optimizar esto a valores fijos).
 
 ## Declaración de funciones
 
 La forma de declarar una función es la siguiente
 
-    def nombreDeLaFuncion parametros_curry -> TipoRetorno = cuerpoDeLaFuncion
+    def nombreDeLaFuncion : Tipo -> Tipo -> ... -> TipoRetorno 
+    let arg arg arg .. = cuerpoDeLaFuncion
 
 Ejemplos:
 
-    def factorial n:Num -> Num = if n == 0 then 1 else n * factorial (n-1)
+    def factorial : Num -> Num 
+    let factorial n = if n == 0 then 1 else n * factorial (n-1)
 
-El parámetro debe tener un nombre y un tipo, como en el caso anterior, n es el parámetro de tipo Num.
+Esto es similar a Haskell, pero agregamos las palabras def y let.
+
+Con def definimos el "prototipo" o "firma" de la función.
+Con let definimos la igualdad o ecuación que define como calcular la función.
 
 El parámetro puede ser una tupla como en este ejemplo:
 
-    def min’(a:Num, b:Num) -> Num = if a < b then a else b
+    def min’(Num, Num) -> Num 
+    let min' (a,b) = if a < b then a else b
 
 Por supuesto el valor de retorno puede también ser una tupla:
 
-    def swap’(a:Num, b:Num) -> (Num, Num) = (b,a)
-
-El tipo de retorno de la función se puede omitir y Ogú lo deduce del cuerpo de la función, siguiendo una notación a la inferencia de tipos de las variables:
-
-    def min(a:Num, b:Num) = if a < b then a else b
-
-    def swap (a:Num, b:Num) = (b, a) // también se puede omitir el : antes del signo =
-
-    def multiplicar x: Num y: Num = x * y
-    def doblar = multiplicar 2
-    doblar 10 // retorna 20
-    def diez = doblar 5
-
-    def max’ (a:Num, b:Num) = if a > b then a else b
+    def swap’(Num, Num) -> (Num, Num) 
+    let swap'(a,b) = (b,a)
 
 
 El uso de tuplas y currying permite hacer cosas interesantes como lo siguiente:
 
-    def sumarVectores (a:Num,b:Num) (c:Num,c:Num) = (a+c, b+d)
+    def sumarVectores (Num,Num) (Num,Num) -> (Num,Num)
+    let sumarVectores (a,b) (c,d) = (a+c, b+d)
 
     sumarVectores (10,10) (20,20) // produce (30,30)
 
+Podemos omitir el prototipo "casi siempre" y el compilador tratará de inferir los tipos:
 
-Otra forma simplificada de declarar parámetros con tuplas es la siguiente:
+    let min a b = if a < b then a else b
+    
+(Lo que hace en este caso es buscar un tipo que tenga definido el operador <, normalmente existe un Trait que implementa < que se llama Ord, eso lo veremos más adelante).
 
-    def sumarVectores (a,b:Num) (c,d:Num) = (a+c, b+d)
+    let suma a b = a + b
+    
+(Acá lo mismo, el trait Num permite sumar dos números.
 
-El compilador es suficientemente inteligente para permitir esta abreviación.
+El prototipo es necesario si queremos explicitar el tipo de dato de los argumentos:
+
+    def suma : Int -> Int -> Int
+    let suma a b = a + b
+    
+Con esto la función suma se puede invocar:
+
+    suma 10 20
+    
+Pero no con enteros:
+    
+    suma 1.0 2.0 ; <- es un error
 
 
 ## Pattern Matching de Funciones
 
 Esta es una característica tomada de Haskell, que permite definir funciones de manera bastante conveniente:
 
-    def factorial 0 = 1
-    def factorial 1 = 1
-    def factorial n = n * factorial(n-1)
+    let factorial 0 = 1
+    let factorial 1 = 1
+    let factorial n = n * factorial(n-1)
 
-El compilador infiere el tipo de los argumentos de acuerdo al pattern matching (en este caso usará Int).
+El compilador infiere el tipo de los argumentos de acuerdo al pattern matching (en este caso usará Num).
 
 Otro ejemplo:
 
-    def radioAlfa ‘a’ = “Alfa”
-    def radioAlfa ‘b’ = “Bravo”
-    def radioAlfa ‘c’ = “Charlie”
-    def radioAlfa ‘d’ = “Delta”
-    def radioAlfa ‘c’ = “Charlie”
+    let radioAlfa ‘a’ = “Alfa”
+    let radioAlfa ‘b’ = “Bravo”
+    let radioAlfa ‘c’ = “Charlie”
+    let radioAlfa ‘d’ = “Delta”
+    let radioAlfa ‘c’ = “Charlie”
 
 En este caso estamos definiendo una función que retorna un string por cada carácter usando el alfabeto radiofónico.
 
-## Prototipos
-
-Si queremos usar otro tipo debemos declarar previamente el tipo de la función.
-
-    def factorial :: Num -> Num
-    def factorial 0 = 1
-    def factorial 1 = 1
-    def factorial n = n * factorial(n-1)
-
-
-El formato de una predefinición de tipo de una función es:
-
-    def nombreDelaFuncion :: Tipo -> Tipo
-
-A esto lo llamamos prototipo de función.
-
-Cuando declaramos un prototipo, podemos colocar las demás definiciones de este modo:
-
-    def factorial :: Num -> Num 
-        factorial 0 = 1
-        factorial 1 = 1
-        factorial n = n * factorial(n-1)
-
-En este caso las definiciones deben ir una tras otra inmediatamente después del prototipo.
-
-
-Podemos re declarar sumarVectores así:
-
-    def sumarVectores :: (Num,Num) -> (Num,Num) -> (Num,Num)
-        sumarVectores (a,b) (c,d) = (a+c, b+d)
-
-Esto es muy similar a Haskell. La ventaja es que le indicamos al compilador que es lo que necesitamos precisamente.
-
-
-    def radioAlfa :: Char -> String
-        radioAlfa ‘a’ = “Alfa”
-        radioAlfa ‘b’ = “Bravo”
-            .... etc...
-
-
-Para declarar un prototipo de una función con currying usamos el operador flecha tantas veces como sea necesario:
-
-    def nombreDeLafuncion :: Tipo -> Tipo -> Tipo …
-
-Ejemplos:
-
-    def multiplicar :: Num -> Num -> Num
-        multiplicar x y = x*y
 
 El operador -> es asociativo por la derecha, así que se debe considerar usar paréntesis cuando se usan tipos lambda. 
 
 Por ejemplo:
 
-    def applyTwice :: (Num -> Num) -> Num -> Num
-        applyTwice fn x = fn (fn x)
+    def applyTwice : (Num -> Num) -> Num -> Num
+    let applyTwice fn x = fn (fn x)
 
 La función applyTwice aplica una función que recibe un numero y retorna un numero dos veces.
 
 Ejemplo:
 
-    def add5 x:Num = x + 5
-    applyTwice add5 10 // = 20
+    def add5 : Num -> Num
+    let add5 x = x + 5
+    
+    applyTwice add5 10 ;= 20
 
 ## Funciones genéricas
 
@@ -296,32 +295,44 @@ Si en un prototipo usamos identificadores en minúsculas, estamos declarando un 
 Por ejemplo:
 
 
-    def first :: (a,b,c) -> a
-        first (a,_,_) = a
+    def first : (a,b,c) -> a
+    
+    let first (a,_,_) = a
 
-    def second :: (a,b,c) -> b
-        second (_,b,_) = b
+    def second : (a,b,c) -> b
+    
+    let second (_,b,_) = b
 
 el símbolo _ indica que no nos interesa el valor. 
 En estos dos ejemplos hemos creado funciones para obtener elementos de una 3-tupla.
+
+
+Podemos restringir el tipo genérico del siguiente modo:
+
+    def compare : (Num a) => a -> a -> a
+
+    let compare a b = a - b
+    
+La variable usada en el prototipo (def) representa un tipo restringido a que debe implementar el trait Num.
+En cambio la variable a en el let es una variable de tipo Num, lo mismo que b. No deben confundirse.
 
 ## Funciones con listas 
 
 Veamos algunos ejemplos:
 
-    def head’ :: [x] -> x
-        head’ [] = error “Lista vacía”
-        head’ [x::_] = x
+    def head’ : [x] -> x
+    let head’ [] = error! “Lista vacía”
+    let head’ (x::_) = x
 
-    def length’ :: (l: Num) => [x] -> l 
-        length’ [] := 0
-        length’ [x::xs] := 1 + length’ xs
+    def length’ : (l: Num) => [x] -> l 
+    let length’ [] = 0
+    let length’ (x::xs) = 1 + length’ xs
 
-    def tell :: (a:Show) => [a] -> String 
-        tell [] = “lista vacía”
-        tell [x] = “la lista tiene un elemento “ ++ show x
-        tell [x,y] = “la lista tiene dos elementos: “ ++ show x ++ show y
-        tell [x,y,…] = “la lista es larga. Los primeros dos elementos son:” ++ show x ++ show y
+    def tell : (a:Show) => [a] -> String 
+    let tell [] = “lista vacía”
+    let tell [x] = “la lista tiene un elemento “ ++ show x
+    let tell [x,y] = “la lista tiene dos elementos: “ ++ show x ++ show y
+    let tell (x::y::_) = “la lista es larga. Los primeros dos elementos son:” ++ show x ++ show y
 
 En estos ejemplos vemos como el prototipo puede restringir los tipos de las variables genéricas. 
 
@@ -330,12 +341,12 @@ En el caso de tell, restringimos a que a pertenezca a la clase Show.
 
 ## Guardias
 
-A veces una función se puede expresar mejor en función de varias condiciones que deben cumplirse.
+A veces una función se puede expresar mejor en base a varias condiciones que deben cumplirse.
 
 Por ejemplo, supongamos que queremos una función que nos clasifique según nuestro indice de masa corporal (imc).
 
-    def strIMC :: (a:Float) => a -> String
-    def strIMC imc
+    def strIMC : (a:Float) => a -> String
+    let strIMC imc
         | imc <= 18.5 = “estas bajo el peso normal”
         | imc <= 25.0 = “tu peso es normal”
         | imc <= 30.0 = “estas con sobrepeso”
@@ -346,8 +357,8 @@ En este caso los guardias se separan por una barra vertical | y están antes del
 
 Otro ejemplo, en este caso calculamos el IMC en base a la estatura y el peso.
 
-    def strIMC’ :: (a:Float) => a -> a -> String
-        strIMC’ peso altura 
+    def strIMC’ : (a:Float) => a -> a -> String
+    let strIMC’ peso altura 
         | peso / altura ^ 2 <= 18.5 = “estas bajo el peso normal”
         | peso / altura ^ 2 <= 25.0 = “tu peso es normal”
         | peso / altura ^ 2 <= 30.0 = “estas con sobrepeso”
@@ -358,18 +369,20 @@ Otro ejemplo, en este caso calculamos el IMC en base a la estatura y el peso.
 
 La función anterior calcula una y otra vez el IMC. Podemos simplificar esto usando  **where** :
 
-    def strIMC’ :: (a:Float) => a -> a -> String
-        strIMC’ peso altura 
+    def strIMC’ : (a:Float) => a -> a -> String
+    
+    let strIMC’ peso altura 
         | imc <= 18.5 = “estas bajo el peso normal”
         | imc <= 25.0 = “tu peso es normal”
         | imc <= 30.0 = “estas con sobrepeso”
         | otherwise = “estas obeso, cuidado!”
-        where  imc := peso / altura ^ 2
+        where imc = peso / altura ^ 2
 
 Si queremos documentar un poco más esta función podemos hacer lo siguiente
 
-    def strIMC’ :: (a:Float) => a -> a -> String
-    def strIMC’ peso altura 
+    def strIMC’ : (a:Float) => a -> a -> String
+    
+    let strIMC’ peso altura 
         | imc <= delgado = “estas bajo el peso normal”
         | imc <= normal = “tu peso es normal”
         | imc <= gordo = “estas con sobrepeso”
@@ -377,64 +390,74 @@ Si queremos documentar un poco más esta función podemos hacer lo siguiente
         where 
           imc = peso / altura ^ 2 
           delgado = 18.5
-          normal = 25,0
-          gordo = 30.0.
+          normal = 25.0
+          gordo = 30.0
 
 Una forma más simplificada es:
-    def strIMC’ :: (a:Float) => a -> a -> String
-     strIMC’ peso altura 
+
+    def strIMC’ : (a:Float) => a -> a -> String
+    let strIMC’ peso altura 
         | imc <= delgado = “estas bajo el peso normal”
         | imc <= normal = “tu peso es normal”
         | imc <= gordo = “estas con sobrepeso”
         | otherwise = “estas obeso, cuidado!”
         where  imc = peso / altura ^ 2
-         (delgado,normal,gordo) = (18.5, 25,0, 30.0)
+               (delgado,normal,gordo) = (18.5, 25,0, 30.0)
 
 La cláusula **where**  despues del cuerpo de una función permite definir variables o funciones. 
-Las variables declaradas son inmutables. 
 
-Una función se puede definir del siguiente modo:
+Notar que se deben identar tanto los guards como las declaraciones en el where.
 
-    def calcIMCs :: (a:Float)=> [(a, a)] -> [a]  
-        calcIMCs lista = [imc p a | (p, a) <- lista]  
+Veamos otro ejemplo:
+
+    def calcIMCs : (a:Float)=> [(a, a)] -> [a]  
+    
+    let calcIMCs lista = [imc p a | (p, a) <- lista]  
         where  imc peso altura = peso / altura ^ 2
 
 Esta función recibe una lista de duplas con pesos y alturas retornando una lista de los indices de masa corporal respectivos.
+
 (Notar que se parece mucho a Haskell)
 
-La notación [imc p a | (p,a) <- xs] indica que se debe armar una lista por comprensión, donde cada elemento de la lista corresponde a aplicar la función imc para cada parámetro p y a, donde p y a son los elementos de la dupla en xs. 
+La notación [imc p a | (p,a) <- xs] indica que se debe armar una lista por comprensión, donde cada elemento de la lista corresponde la aplicación de
+la función imc para cada parámetro p y a, donde p y a son los elementos de la dupla en xs. 
+
 El operador <- toma cada uno de los elementos de la lista. 
 
 ## Cuerpo de la función
 
-Hasta ahora hemos visto sólo casos en que la función consiste en una expresión simple. También hemos visto como usar guardias y pattern matching.
-
-¿Pero que pasa cuando las funciones son más complejas, con varias expresiones?
+Hasta ahora hemos visto sólo casos en que la función consiste en una expresión simple. 
+También hemos visto como usar guardias y pattern matching.
+Pero, ¿qué pasa cuando las funciones son más complejas, con varias expresiones?
 
 Consideremos la función minmax, que retorna una dupla con los valores máximos y mínimos de una lista.
 
-    def minmax :: (x:Ord) => [x] -> (x,x)
-        minmax [] = error “debe contener al menos un elemento”
-        minmax xs = {
-          var cmin := head xs
-          var cmax := cmin
-          for x <- tail xs do { 
-            when x < cmin do cmin = x
-            when x > cmax do cmax = x
-          }
-          (cmin, cmax)
-        }
+    def minmax : (x:Ord) => [x] -> (x,x)
+    
+    let minmax [] = error! “debe contener al menos un elemento”
+    
+    let minmax xs = 
+        var cmin = head xs
+        var cmax = cmin
+        for x <- tail xs do 
+            when x < cmin do cmin <- x
+            when x > cmax do cmax <- x
+        (cmin, cmax)
 
-Esta es una implementación imperativa de este problema. No es la mejor manera de implementar esta solución en Ogú. Pero sirve para introducir varios conceptos.
+Esta es una implementación imperativa de este problema. 
+No es la mejor manera de implementar esta solución en Ogú. 
+Pero sirve para introducir varios conceptos.
 
-Lo primero, cuando hay más de una expresión se deben agrupar entre llaves {}. Cada expresión va en una linea.
+Lo primero, cuando hay más de una expresión se colocan en un bloque, el que se distingue por la indentación (4 espacios en este caso)
+Cada expresión va en una linea.
+
 Cuando un bloque corresponde al cuerpo de una función entonces el valor de la función será la última expresión del bloque.
 
-La sentencia when se usa porque en Ogú un **if** es una expresión que requiere siempre un else. En cambio when permite ejecutar una sentencia cuando su expresión condicional es verdadera. 
+La sentencia *when* se usa porque en Ogú un **if** es una expresión que requiere siempre un else. 
+En cambio when permite ejecutar una sentencia cuando su expresión condicional es verdadera. 
 
-Si se necesitan dos expresiones en una línea se pueden separar por punto y coma.
+La elección de when y su sintáxis es para hacer el código más "feo", con el fin de impulsar un estilo más funcional.
 
-La elección de when y su sintáxis está elegida para hacer el código más "feo", con el fin de impulsar un estilo más funcional.
 En general las sentencias que tienen do son imperativas y rompen el paradigma funcional.
 
 La forma de when es 
@@ -443,100 +466,54 @@ La forma de when es
 
 El loop for es es bastante simple de entender, lo explicaremos en más detalle más adelante.
 
+Notar que la asignación de las variables cmin y cmax se hace con el operador <-. El signo '=' está reservado
+para las variables inmutable o para el valor inicial de una variable mutable.
+
 Esta es otra manera de definir esta función
 
-    def minmax :: (x:Ord) => [x] -> (x,x)
-        minmax [] = error “debe contener al menos un elemento”
-        minmax xs = (minimun xs, maximun xs)
+    def minmax : (x:Ord) => [x] -> (x,x)
+    let minmax [] = error! “debe contener al menos un elemento”
+    let minmax xs = (minimun xs, maximun xs)
         where  maximun [x] = x
-               maximun [x,x] = max x (maximun xs)
+               maximun (x::xs) = max x (maximun xs)
                minimun [x] = x
-               minimum [x,xs…] = min x (minimum xs) 
-
-No es la forma más eficiente, pero refleja el espíritu de Ogú. 
-En general usar loops, when en Ogú no es buen estilo.
-
-## Let
-
-Consideremos la función areaCilindro, que calcula el área de un cilindro:
-
-    def areaCilindro :: a:Float => a -> a -> a
-        areaCilindro r h = 
-         let areaLateral = 2 * pi * r * h
-         and areaBase = pi * r ^ 2
-         in areaLateral + 2 * areaBase 
-
-Let permite definir funciones o variables (inmutables) que son usadas en la expresión que viene después de in.
-
-La forma general es let binding (and binding)* in expresión.
-
-A diferencia de **where** , Let es una expresión, **where**  es una construcción sintáctica para simplificar la elaboración de algunas funciones.
+               minimum (x::xs) = min x (minimum xs) 
 
 
-Es decir, se puede usar en expresiones como:
-
-    4 * (let a = 9 in a + 1) + 2 // = 42
-
-Un uso es permitir introducir funciones en expresiones de listas por comprensión:
-
-    [let square = x * x in (square 5, square 3, square 2)]
-    // [(25,9,4)]
-
-En vez de and, se puede usar ‘;’ y en ese caso se pueden colocar las declaraciones en la misma linea:
-
-    (let a = 100; b = 200; c = 300 in a*b*c)
-
-
-Nota: lo mismo se puede hacer con **where** . El compilador nota que hay un punto y coma y espera que venga otra declaración en la misma línea o en la linea siguiente:
-
-    def strIMC’ :: (a:Float) => a -> a -> String
-        strIMC’ peso altura 
-        | imc <= delgado = “estas bajo el peso normal”
-        | imc <= normal = “tu peso es normal”
-        | imc <= gordo = “estas con sobrepeso”
-        | otherwise = “estas obeso, cuidado!”
-        where imc = peso / altura ^ 2;
-              (delgado,normal,gordo) = (18.5, 25,0, 30.0)
-
-Pero hay que tener cuidado, no se debe colocar un ';' después de la última definición.
-
-* (TODO LO ANTERIOR CON RESPECTO A WHERE e IN PUEDE CAMBIAR)
+En general usar loops y when en Ogú no es buen estilo.
 
 # Tipos en Ogú
 
-En Ogú un tipo se introduce con la keyword type
+En Ogú un existen los enums:
 
-    type Bool = false | true
+    enum Bool = false | true
 
 Esto introduce un tipo enumerado Bool con dos valores posibles, false o true.
 
-Los valores false y true son valores atomicos, o simplemente átomos.
-
-Otros ejemplos
-
-    type BasicColor = red | green | blue
-
-
 Del mismo modo podemos pensar que Int está definido del siguiente modo:
 
-    type Int = -2147483648 | -2147483647 | … | -1 | 0 | 1 | 2 | … | 2147483647
+    enum Int = -2147483648 | -2147483647 | … | -1 | 0 | 1 | 2 | … | 2147483647
+
+Los valores false y true son valores atomicos, o simplemente átomos.
+
+Otra forma de declarar un enum, es usando tipos algebraicos, como en Haskell:
+
+    data BasicColor = red | green | blue
 
 
-Hay varios tipos predefinidos en Ogú. Como Int, Float, Long, Double, Char.
-
-Todos estos son tipos escalare, porque sólo tienen un valor.
-
-Se pueden definir tipos vectoriales que son agregaciones de tipos, por ejemplo:
+Se pueden declara tipos nuevos en base a tipos existentes, por ejemplo, tipos vectoriales,
+que son agregaciones de tipos, para esto usamos type
 
     type String = [Char]
 
 O por ejemplo
 
-    type IntVector = (Int,Int)
+    type IntVector = (Int,Int) ; un vector es una tupla de 2 elementos
 
 Tambien se pueden definir mapas del siguiente modo:
 
-    type StrMap v = [String:v]
+    type StrMap v = {String -> v}
+    
 
 Los nombres de los tipos en Ogú empiezan con mayúsculas
 
@@ -546,51 +523,35 @@ De este modo podemos declarar así:
     val color : BasicColor = red
     val s : String = ""
     val iv = (10,10)
-    val edades : (StrMap Int) = ["Pedro":25, "Juan:30, "Diego":40]
+    val edades : (StrMap Int) = {"Pedro"->25, "Juan"->30, "Diego"->40}
 
-
-## Clases
-
-A los tipos se les puede definir un comportamiento predefinido especifico para el tipo del siguiente modo:
-
-    class Bool = false | true {
-        def not value:Bool = if value = false then true else false
-    }
-
-A diferencia de la declaración de Bool anterior, ahora hemos definido un método que se aplica sobre todas instancias de Bool.
-
-Las clases en Ogú son similares a los type classes en Haskell, pero pueden tener variables de instancia, es decir, se pueden crear clases mutables.
-
-Las funciones de una clase se conocen como métodos.
 
 ## Traits genéricas
 
-Las clases pueden tener parámetros, por ejemplo:
+Un trait es como los type class de Haskell
 
-    trait YesNo a = {
+    trait YesNo a where
         def yesno :: a -> Bool
-    }
 
 esta type class genérica con un método llamado yesno que recibe el argumento y debe retornar Bool.
 
 
 Una vez que tenemos definida una type class podemos usarla para instanciarla en otros tipos del siguiente modo:
 
-    class YesNo Int = {
-        def yesno 0 = false
-        def yesno _ = true
-    }
+    instance YesNo Int where
+        let yesno 0 = false
+        let yesno _ = true
 
-    instance YesNo [x] = {
-        def yesno [] = false
-        def yesno _  = true
-    }
+    instance YesNo [x] where
+        let yesno [] = false
+        let yesno _  = true
 
+(Notar la indentación)
 
 # Tipos algebraicos
 
 
-    type Shape = Circle Float Float Float Float | Rectangle Float Float Float Float
+    data Shape = Circle Float Float Float Float | Rectangle Float Float Float Float
 
 Esto define una clase algebraica Shape.
 La clase Shape puede ser un Circle o un Rectangle.
@@ -608,9 +569,28 @@ Con esto podemos hacer
 
 En Ogú se pueden crear clases
 
-    class Persona (val nombre : String; var edad : Int)
+    mut class Persona (val nombre : String, var edad : Int)
 
-Esto define una clase con dos variables de instancia, nombre y edad.
+Esto define una clase mutable con dos variables de instancia, nombre y edad.
+
+Si la clase declara uno de sus campos como var, debe declararse como mut class.
+
+Una clase inmutable se declara así:
+
+    class Persona(nombre:String, edad:Int)
+
+Si declaras una clase como mutable, la palabra reservada 'var' es redundante:
+
+    mut class Persona (nombre:String, var edad:Int) ;; var edad es redundante
+    
+Si declara una clase como inmutable, la palabra reservada 'val' es redundante:
+
+    class Persona(nombre:String, val edad:Int) ;; val edad es redundante
+    
+Pero **val** es útil si queremos que un atributo sea inmutable dentro de una clase mutable:
+
+    mut class Persona(val nombre:String, edad:Int) ;; no se puede cambiar el nombre
+    
 
 Otros ejemplos:
 
@@ -626,81 +606,110 @@ Para crear un elemento de estas clases se invoca su constructor
 
 
 La sintaxis presentada permite crear una clase con variables de instancia que estarán en su constructor.
+
 Se pueden agregar más atributos a una clase que no necesariamente son inicializados en el constructor
 
-    class Empresa (val rut:String, val razonSocial:String) 
-    {
+    mut class Empresa (val rut:String, val razonSocial:String) where 
         var cantidadEmpleados : Int = 0
         var patrimonioInicial : Money = 1000000
-    }
-Una clase puede tener varios constructores, estos se declaran del siguiente modo:
 
-    class Auto(val modelo:String; año:Int) = {
-        var bencina := 0
+Una clase puede tener métodos, los que se declaran del siguiente modo:
 
-        constructor Auto(modelo:String) = Auto(modelo, 0)
-        constructor Auto() = Auto(“Sin modelo”, 0)
-    }
-
-Los constructores  pueden tener código asociado, el que se invoca dentro de un bloque de código.
-
-    class Auto(val modelo:String; val año:Int) =  {
+    mut class Auto(val modelo:String, año:Int) where 
         var bencina = 0
-        constructor Auto(modelo:String) = Auto(modelo, 0) {
-            bencina = 0
-        }
-    }
+        var kilometraje = 0
+        
+        let kilometrosPorLitro = 12
+        
+        let avanzar! self kms = 
+           set kilometraje self = (kilometraje self)  + kms
+           $bencina <- $bencina - (kms/$kilometrosPorLitro) 
 
-Dentro de una clase puede ejecutarse código que se invocará cada vez que se cree una nueva instancia de la clase.
+           
+Los métodos se invocan del siguiente modo:
 
-    class AutoInc() = {
-        var cont = 0
-        cont = cont + 1
-
-        def getCont self = cont
-    }
+    var auto = Auto("Ford", 2015)
     
-    val a := AutoInc()
-    val b := AutoInc()
+    avanzar! auto 100
     
-    getCont a // <— retorna 1
-    getCont b // <— retorna 1
+    set kilometraje auto = (kilometraje auto) + 200
+    
+    println "el kilometrake de tu auto es: " ++ (kilometraje auto) ;; imprime 300
+    
+    
+Las variables de instancia de una clase se pueden obtener así:
+        
+     variable objeto
+     
+Para modificarlas (sólo si son mutables):
+     
+     set variable objeto = valor
+     
+Un método se invoca así:
+     
+     metodo objeto args...
+     
+
+La variable especial self puede ser usada cuando se define un método.
+
+No es necesario definir métodos como los vimos recién, puesto que Ogú es funcional, podríamos haber
+definido avanzar del siguiente modo:
+
+    def avanzar! : Auto -> ()
+    
+    let avanzar! auto kms =
+       set kilometraje auto = (kilometraje auto) + kms
+       set bencina auto = (bencina auto) - (kms/(kilometrosPorLitro auto)) 
 
 
-Acá acabamos de ver como definir una función de clase, o método.
+La ventaja es que al definirlo en clase podemos usar la notación $variable.
 
+    $variable es igual a decir (variable self)
+    
+Sólo se puede usar cuando estamos definiendo un método.
+
+En vez de hacer
+    set variable = valor
+    set variable objeto = valor
+    
+Podemos usar la notación <-
+
+    variable <- valor
+    variable objeto <- valor
+    
+Esto sólo sirve para variables mutables.
+    
+    
 En Ogú los métodos son funciones que se restringen a la clase y que siempre reciben un parámetro (self).
 Se invocan como cualquier función, en Ogú no existe la notación objeto . metodo.
 
-Veamos un ejemplo:
+Veamos otro ejemplo:
 
-    class Stack() = {
+    class Stack() where
+    
         var _data : [Int] = []
 
-        def push! self x:Int = {
-            _data = cons x _data
-        }
+        let push! self x:Int = 
+            $_data <- x :: $_data
 
-        def pop! self = {
-            val result = head _data
-            _data = tail _data
+        let pop! self = 
+            val result = head $_data
+            $_data <- tail $_data
             result
-        }
 
-        def empty? self = {
-            empty _data
-        }
-    }
+        let empty? self = 
+            empty? $_data
     
     
-     var stack : Stack()
+     var stack = Stack()
      push! stack 10
      push! stack 20
-     pop! stack /// <- retorna 20
+     pop! stack ;; <- retorna 20
 
 
 Esta es una definición de una clase mutable (con estado).
-Es una convención en Ogú que las funciones que mutan una clase deben llevar el signo ! al final del nombre, de este modo se sabe que mutan el estado del objeto.
+Es una convención en Ogú que las funciones que mutan una clase deben llevar el signo ! al final del nombre, 
+de este modo se sabe que mutan el estado del objeto.
 Por eso se las llama mutadores.
 
 Otra convención es que los métodos que permiten consultar el estado de una clase llevan el signo ? al final del nombre.
@@ -709,32 +718,35 @@ Los metodos de clase deben tener siempre el parámetro self, es opcional colocar
 
 Es un error declarar un método sin el parámetro self dentro de la clase.
 
-Para obtener un atributo de un objeto usamos la notación punto
-
-    val auto : Auto()
-    auto.bencina
-
-Notar que no se puede hacer objeto.metodo (….) !!
-
-
 ## Herencia de clases
 
-Ogú soporta herencia simple.
+Ogú no tiene herencia de clases.
 
-    class Persona(rut:String, nombre:String, edad:Int)
-    class Empleado(rut:String, nombre:String, edad:Int, empresa:String) > Persona(rut, nombre, edad)
+Sin embargo, existe una característica que permite simularla:
 
+    class Rectangulo(x,y,w,h:Int)
+    
+    class Cuadrado(x,y,l:Int) = Rectangulo(x,y,l)
+
+Con esto decimos que en realidad Cuadrado es un caso especial de rectángulo.
+
+(En realidad es un constructor con otro nombre).
+
+En este caso Cuadrado no puede tener una sentencia where para definir nuevos métodos ni sobre escribirlos.
+
+Esto es util para crear nuevos constructores:
+
+    mut class Auto(modelo:String) = Auto(modelo, 0)
+    mut class Auto() = Auto(“Sin modelo”, 0)
 
 # Módulos
 
-Las clases se pueden declarar dentro de un módulo.
+Las clases, tipos y funciones se pueden declarar dentro de un módulo.
 
 
-    module Collections {
-        class Stack = {….}
-        class List = { …. }
-    }
-
+    module Collections 
+        class Stack where...
+        class List where...
 
 Si module aparece al principio del archivo se pueden omitir las llaves y se considera todo el archivo como parte del módulo.
 
@@ -742,42 +754,32 @@ Si module aparece al principio del archivo se pueden omitir las llaves y se cons
 Los modulos se importan con la palabra reservada **uses**.
 
 
-    module ModA {
-        class A() = { … def foo … }
-    }
+    module ModA 
     
-    module ModB {
-        class B() = { … }
-    }
+        class A() where
+         … def foo … 
     
-    module ExtModA {
-      uses ModA
-      class A += { … def bar … }
-    }
+    module ModB 
+        class B()
     
-    module ModC {
-        uses ModA
-        val obj := A()
-        foo obj // ok
-        bar obj // errror
-    }
     
-    module ModD {
-        uses ModA, ExtModA
-        val obj := A()
-        foo obj // ok
-        bar obj // ok
-    }
+    module ModC 
+        
+    uses ModA
+    val obj = A()
+    foo obj ; ok
+    bar obj ;; errror
 
-Para desambiguar clases uno puede usar la notación modulo.Tipo
 
-    module ModA {
-        class A() = {…}
-    }
+Para desambiguar clases o tipos uno puede usar la notación modulo.Tipo
+
+    module ModA 
     
-    module ModB {
-        class A() = { …}
-    }
+    class A() ...
+    
+    module ModB 
+    
+    class A() ...
     
     uses ModA, ModB
     val x := A() // <- error, ambiguo
@@ -787,78 +789,99 @@ Para desambiguar clases uno puede usar la notación modulo.Tipo
 
 Los nombres de módulo también empiezan en mayúsculas.
 
-Se puede definir alias usando type, o alias
+Se puede definir alias usando type y alias
 
     uses ModA, ModB
     type AA = ModA.A
     type AB = ModB.A
 
-
     uses ModA, ModB
     alias AA = ModA.A
     alias AB = ModB.A
+    alias mA = ModA.m
 
 La diferencia es que alias se puede usar con funciones y type solo con tipos.
+
 Además alias no introduce un tipo nuevo, por lo tanto no se puede aplicar en expresiones de algebra de tipos.
 
 
 # Traits
 
-Un trait es similar al concepto en Scala, es decir, es como una clase más limitada que permite definir un protocolo para una clase.
-Los traits son similares a las clases pero:
-1. no pueden ser instanciados (es decir, no tienen constructores).
-2. pueden tener sólo prototipos de funciones (una clase puede tener prototipos de funciones, pero también debe tener la implementación de la función)
+Un trait es similar al concepto de type clases en Haskell
+Los traits:
 
-    trait Figura = {
+    1. no pueden ser instanciados (es decir, no tienen constructores).
+    2. pueden tener sólo prototipos de funciones (una clase puede tener prototipos de funciones, pero también debe tener la implementación de la función)
+    3. Pueden tener variables de instancia (en este caso deben llevar el prefijo mut):
+
+
+Por ejemplo:
+
+   trait Figura self where
+    
         def area :: self -> Float
         def perimetro :: self -> Perimetro
-    }
     
+   mut trait Container e where
+        
+        var _data : [e] = []
+        
+
+El argumento que recibe un trait es el tipo al que se le implementarán las funciones del trait.
+        
 
 Con esto podemos crear clases que implementan el trait Figura
 
-    class Circulo(val x,y:Int; val radio:Int) ~ Figura = {
-        def area self = pi * radio ^ 2
-        def perimetro = 2 * pi * radio
-    }
+    class Circulo(x,y:Int, radio:Int)
     
-    class Rectangulo(val x,y, ancho,alto:Int) ~ Figura = {
-        def area self = ancho * alto
-        def perimetro = 2 * (ancho + alto)
-    }
+    instance Figura Circulo where
+    
+        let area circ = pi * (radio circ) ^ 2
+        
+        let perimetro c = 2 * pi * (radio c)
+        
+    class Rectangulo(x,y, ancho,alto:Int) 
+    
+    
+    instance Figura Rectangulo where
+    
+        let area self = (ancho self) * (alto self)
+    
+        let perimetro = 2 * ((ancho self) + (alto self))
+
 
 # Tipos de datos algebraicos
 
 En Ogú se puede hacer lo siguiente:
 
-    class Circulo(…) =…
-    class Rectangulo(…) = …
-    class Cuadrado(…) > Rectangulo(…) = …
-    class Triangulo(…) = …
+    class Circulo(…)
+    class Rectangulo(…)
+    class Cuadrado(…) = Rectangulo(…) 
+    class Triangulo(…) 
     
-    type Figura = Circulo | Rectangulo | Cuadrado | Triangulo
+    data Figura = Circulo | Rectangulo | Cuadrado | Triangulo
     
     def area :: Figura -> Int
     def area c:Circulo : Int = …
     def area r:Rectangulo : Int = …
     def area t:Triangulo : Int = …
-    // como Cuadrado deriva de Rectangulo no es necesario implementarlo, salvo que se quiera realizar una implementación más eficiente.
+    ;; como Cuadrado es un Rectangulo no es necesario implementarlo, salvo que se quiera realizar una implementación más eficiente.
 
 
 También podemos hacer esto:
 
-    class Leaf(val data:Int)
+    class Leaf(value:Int)
     
     type Tree = Empty | Leaf | Node(Tree,Tree)
     
-    def depth :: Tree -> Int
+    def depth : Tree -> Int
     def depth Empty = 0
     def depth Leaf = 1
     def depth Node(l,r) = 1 + max (depth l) (depth r)
 
 Otro ejemplo:
 
-    class Number(val value:Int)
+    class Number(value:Int)
     
     type Expression = Number
                     | Add(Expression, Expression)
@@ -868,59 +891,111 @@ Otro ejemplo:
     
     
     def evaluate :: Expression -> Int
-        evaluate a:Number = a.value
-        evaluate Add (e1, e2) = evaluate e1 + evaluate e2
-        evaluate Minus(e1, e2) = evaluate e1 - evaluate e2
-        evaluate Mult(e1, e2) = evaluate e1 * evaluate e2
-        evaluate Divide(e1, e2) = evaluate e1 / evaluate e2
+    let evaluate a:Number = value a
+    let evaluate Add (e1, e2) = evaluate e1 + evaluate e2
+    let evaluate Minus(e1, e2) = evaluate e1 - evaluate e2
+    let evaluate Mult(e1, e2) = evaluate e1 * evaluate e2
+    let evaluate Divide(e1, e2) = evaluate e1 / evaluate e2
 
     val e : Expression = Add(Number(3), Number(4))
-    evaluate e // = 7
+    evaluate e ;; = 7
     val es := Multiply( Add(Number(3),Number(4)), Divide(Number(8), Number(2)) )
-    evaluate es // =
+    evaluate es ;; = 28
 
 
 
-# Tipos Paramétricos
+# Clases Paramétricas
 
-Las clases pueden ser paramétricas (como los templates en C++)
+Las clases pueden ser paramétricas (como los templates en C++):
 
-    class Stack{T}() = {
-        var _data : [T] = []
+    mut class Stack t () where
     
-        def push! self x:T = {
-            _data = cons x _data
-        }
+        var _data : [t] = []
+    
+        let push! self x:T = 
+            $_data <- x :: $_data
 
-        def pop! self = {
-            val result := head _data
-            _data = tail _data
+        let pop! self = 
+            val result = head $_data
+            $_data <- tail $_data
             result
-        }
     
-        def empty? self = {
-            empty _data
-        }
-    }
+        let empty? self =
+            empty? $_data
     
 
 Entonces podemos definir cosas como
 
-    type IntStack = Stack{Int}
+    type IntStack = Stack Int
+
+Y usarlo:
+
+    var stack = IntStack()
+    push! stack 10
+    push! stack 20
+    pop! stack ; <- retorna 20
+    
+
+Sin esta característica escribir una clase Stack genérica sería así de tortuoso:
+    
+    
+    trait Stackable s e where
+    
+        def push!  : s -> e -> !
+        def pop!   : s -> e
+        def empty? : s -> Bool
+        
+    
+    ;; Un contenedor de elementos tipo e
+    mut trait MutContainer e where
+    
+        var _data : [e] = []   ;; los traits pueden tener variables mutables
+    
+    ;; acá reemplazamos s por (MutContainer e)
+    instance Stackable (MutContainer e) e where
+    
+        let push! stack x = ;;; stack es de tipo MutContainer e, x es de tipo e
+           set _data s = x :: _data
+        
+        let pop! stack =
+           let result = head (_data stack) ;; fallará si _data en stack es [])
+           set _data stack = tail (_data stack)
+           result
+        
+        let empty? stack = null? (_data stack)
+        
+    
+    type Stack x = Stackable (MutContainer x) x
+    
+    type IntStack = Stack Int
+    
+    var stack = IntStack() ;; las instancias de un trait tienen el contructor ()
+    
+    push! stack 10
+    push! stack 20
+    pop! stack ; <- retorna 20
+
+
+# Tipos Paramétricos
 
 También se pueden presentar tipos paramétricos algebraicos
 
-    type Maybe{T} = Nothing | Some(T)
+    data Maybe t = Nothing | Some t
     
-    val any : Maybe{String} = Nothing
-    val some  : Maybe{String} = Some(“algo”)
+    val any : Maybe String = Nothing
+    val some  : Maybe String = Some “algo”
 
-A los tipos paramétricos se les puede exigir que cumplan ciertas restricciones
+A los tipos y clases paramétricos se les puede exigir que cumplan ciertas restricciones
 
 
-    class Stack{T ~ Ord => T }() ….
+    class (t:Ord) => Stack t () where …
     
-    class Sorter{T > Num => T}()….
+    data (t:Ord) => Maybe t = Nothing | Some t
+     
+     
+    
+
+    
 
 
 

@@ -1,57 +1,92 @@
-// types
+;; types
 
-type Bool = false | true 
+enum Boolean = false | true
 
-type BasicColor = red | green | blue 
+data Bool' = False | True
+
+data BasicColor = Red | Green | Blue
 
 type String = [Char]
 
 type IntVector = (Int,Int)
 
-type StrMap v = [String:v]
+type StrMap v = {String -> v}
 
-type Stack a = Stk [a] 
+var edades : StrMap Int = {"Juan"->10, "Pedro" -> 11, "María" -> 12}
+var edades' : (StrMap Int) = {"Juan"->10, "Pedro" -> 11, "María" -> 12}
 
-val b : Bool = false
-val color : BasicColor = red
-val s : String = ""
-val iv = (10,10)
-val edades : (StrMap Int) = ["Pedro":25, "Juan":30, "Diego":40]
+data Auto = Auto{companía:String, modelo:String, año:Int} ; structs
 
-def	create               = Stk []
-def	push x (Stk xs)      = Stk (x::xs)
-def	pop    (Stk (x::xs)) = Stk xs
-def	top    (Stk (x::xs)) = xd
-def	empty? (Stk xs)      = null xs
+data Vehicle = Car{company:String, model:String, year:Int} ; structs
+             | Bus{company:String, model:String, year:Int, capacity: Int}
+             deriving (Show)
 
-class Bool = false | true {
-	def not value:Bool = if value == false then true else false
-}
+let b : Bool = False
+let color : BasicColor = Red
+let s : String = ""
+let iv = (10,10)
+let edades : StrMap Int = {"Pedro"->25, "Juan"->30, "Diego"->40}
 
-trait Ord x = {
-	def succ :: x -> x
-	def prev :: x -> x
-}
+let mustang56 = Car{company="Ford", model="Mustang", year=1956}
 
-instance Ord BasicColor = {
-	def succ x 
-	    | x == red = green
-	    | x == green = blue
-	    | x == blue = red
-	def prev x
-		| x == red = blue
-		| x == green = red
-		| x == blue = green
-}
+let comp = company mustang56
 
-trait Eq a = {
+let mdl = model mustang56
 
-        def == :: a a -> Bool
-        def /= :: a a -> Bool
-            /= a a = not (a == a)
+let yr = year mustang56
 
-    }
+data Stk x = Stk x deriving (Show)
 
-instance Eq Int = {
-    def == x y = (a-a) == 0
-} 
+type Stack a = Stk [a]
+
+let create              = Stk []
+let push x (Stk xs)     = Stk (x::xs)
+let pop    (Stk (x::xs)) = Stk xs
+let top    (Stk (x::xs)) = x
+let empty? (Stk xs)     = null xs
+
+let stack = create
+
+let stack1 = push 1 stack
+
+let uno = top stack1
+
+let stack2 = pop stack1
+
+if empty? stack2 then println! "stack2 está vacío" else println "WTF??"
+
+trait Ord x where
+    def succ : x -> x
+
+    def prev : x -> x
+
+instance Ord BasicColor where 
+
+    let succ x
+        | x == Red = Green
+        | x == Green = Blue
+        | x == Blue = Red
+
+    let prev x
+        | x == Red = Blue
+        | x == Green = Red
+        | x == Blue = Green
+
+let r = Red
+let g = succ r
+
+
+trait Eq a where 
+
+    def == : a -> a -> Bool
+
+    def /= : a -> a -> Bool
+    
+    let /= a a = not (a == a)
+
+
+instance Eq Int where
+    
+    let == x y = (a-a) == 0
+    
+ 

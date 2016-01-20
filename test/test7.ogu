@@ -1,20 +1,19 @@
-// test 7 many functions
+;; test 7 many functions
 
-def factorial n:Num -> Num = if n == 0 then 1 else n * factorial (n-1)
+let factorial n = if n == 0 then 1 else n * factorial (n-1)
 
-def min'(a:Num, b:Num) -> Num = if a < b then a else b
+let min'(a, b)  = if a < b then a else b
 
-def swap'(a:Num, b:Num) -> (Num,Num) = (b,a)
+let swap'(a, b)  = (b,a)
 
-def min(a:Num,b:Num) = if a < b then a else b
+let min(a,b) = if a < b then a else b
 
-def swap(a:Num, b:Num) = (b,a)
+let swap(a:Num, b:Num) = (b,a)
 
-def sumarVectores (a:Num,b:Num) (c:Num,c:Num) = (a+c, b+d)
+let sumarVectores (a:Num,b:Num) (c:Num,c:Num) = (a+c, b+d)
 
-def sumarVectores (a,b:Num) (c,d:Num) = (a+c, b+d)
+let sumarVectores (a,b:Num) (c,d:Num) = (a+c, b+d)
 
+let test =
+    sumarVectores (10,10) (20,20) ; produce (30,30)
 
-def test() {
- sumarVectores (10,10) (20,20) // produce (30,30)
-}

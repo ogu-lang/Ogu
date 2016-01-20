@@ -1,26 +1,26 @@
-// test 9 funciones con listas
+; test 9 funciones con listas
 
 
-def head' :: [x] -> x 
- 	head' [] = error "Lista vacía"
- 	head' [x::_] = x
+def head' : [x] -> x
+let head' [] = error! "Lista vacía"
+let head' (x::_) = x
 
-def length' :: (l: Num) => [x] -> l 
-	length' [] = 0
-	length' [x::xs] = 1 + length' xs
+def length' : [x] -> Num
+let length' [] = 0
+let length' (x::xs) = 1 + length' xs
 
-def tell :: (a:Show) => [a] -> String 
-	tell [] = "lista vacía"
-	tell [x] = "la lista tiene un elemento " ++ show x
-	tell [x,y] = "la lista tiene dos elementos: " ++ show x ++ show y
-	tell (x::y::_) = "la lista es larga. Los primeros dos elementos son:" ++ show x ++ show y
+def tell : (a:Show) => [a] -> String
+let tell [] = "lista vacía"
+let tell [x] = "la lista tiene un elemento " ++ show x
+let tell [x,y] = "la lista tiene dos elementos: " ++ show x ++ show y
+let tell (x::y::_) = "la lista es larga. Los primeros dos elementos son:" ++ show x ++ show y
 
-def discard2 :: [x] -> [x] 
-	discard2 [] = error "lista vacia"
-	discard2 [a] = error "debe tener más de 2 elementos"
-	discard2 [a,b] = error "debe tener más de 2 elementos"
-	discard2 (a::b::tail) = tail
+def discard2 : [x] -> [x]
+let discard2 [] = error "lista vacia"
+let discard2 [a] = error "debe tener más de 2 elementos"
+let discard2 [a,b] = error "debe tener más de 2 elementos"
+let discard2 (a::b::tail) = tail
 
-val even = [2*x | x <- 1..100]
+let even = [2*x | x <- 1..100]
 
-def evenNumbers  =  [2 * x | x <- 1..]
+let evenNumbers  =  [2 * x | x <- 1...]

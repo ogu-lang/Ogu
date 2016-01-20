@@ -3,11 +3,12 @@ plugins {
   id 'java' 
   id 'antlr'
   id 'com.github.johnrengelman.shadow' version '1.2.0'
+
 }
 
 defaultTasks 'shadowJar'
 
-version = "0.1.1"
+version = "0.1.2"
 
 jar {
     manifest {
@@ -21,4 +22,5 @@ repositories {
 
 dependencies {
   antlr "org.antlr:antlr4-maven-plugin:4.5"
+  compile "com.yuvalshavit:antlr-denter:1.1"
 }

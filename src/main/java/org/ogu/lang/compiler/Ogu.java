@@ -24,10 +24,14 @@ public class Ogu {
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		OguParser parser = new OguParser(tokens);
 		parser.removeErrorListeners();
-		parser.addErrorListener(new OguVerboseListener());
+		OguVerboseListener listener = new OguVerboseListener();
+		parser.addErrorListener(listener);
 		ParseTree tree = parser.module();
 		println(tree.toStringTree(parser));
 		message(COMPILING_END, arg);
+		if (listener.getErrores() > 0) {
+			message(COMPILING_HAS_ERRORS, arg, listener.getErrores());
+		}
 	}
 
 	public static void println(String str) {
@@ -45,10 +49,11 @@ public class Ogu {
 		System.err.println(msg);
 	}
 
-	static final String VERSION = "Ogu version 0.1.1";
+	static final String VERSION = "Ogu version 0.1.2";
 	static final String WELCOME = "Hola amiko mio de mi.";
-	static final String GOODBYE = "Ke kapo el kompilador, nosierto?\n\nChau, chau amiko mio de mi.";
-	static final String COMPILING_FILE = "Yiko Peleita!\n(compilando archivo '%s')";
+	static final String GOODBYE = "Ke kapo el kompilador, nosierto?\nChau, chau amiko mio de mi.";
+	static final String COMPILING_FILE = "Yiko Peleita! (compilando archivo '%s').";
 	static final String COMPILING = "Akarruuuu!";
-	static final String COMPILING_END = "Mi soi kapo.\n(archivo '%s' compilado)\n";
+	static final String COMPILING_END = "Mi soi kapo (archivo '%s' compilado).\n";
+	static final String COMPILING_HAS_ERRORS = "Archivo %s tiene %d errores\n";
 }

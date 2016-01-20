@@ -1,25 +1,23 @@
-trait YesNo a = {
-  def yesno :: a -> Bool
-}
+trait YesNo a where
 
-instance YesNo Int = { 
-  def yesno 0 = false
-  def yesno _ = true
-}
+  def yesno : a -> Bool
 
-instance YesNo [a] = {
-  def yesno [] = false
-  def yesno _ = true
-}
+instance YesNo Int where
+  let yesno 0 = false
+  let yesno _ = true
 
-instance YesNo Bool = {
-  def yesno = id
-}
+instance YesNo [a] where
 
-type Maybe s = Nothing | Some(s)
+  let yesno [] = false
+  let yesno _ = true
 
-instance YesNo Maybe T = {
-  def yesno Just(_) = true
-  def yesno Nothing = False
-}
+instance YesNo Bool where
+
+  let yesno = id ;; Bool tiene una función id
+
+data Maybe s = Nothing | Some(s)
+
+instance YesNo Maybe T where
+  let yesno Just(_) = true
+  let yesno Nothing = False
 

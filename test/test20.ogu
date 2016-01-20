@@ -1,36 +1,32 @@
-// https://gist.github.com/mbbx6spp/5548937 en Scala traducido a Ogú
+;; https://gist.github.com/mbbx6spp/5548937 en Scala traducido a Ogú
  
 module Net.Susanpotter.Algdt
  
-trait Order x = {
-                
-	def execute :: x -> Unit
-}
+trait Order x where
 
-instance Order MarketOrder = {
-	
-	def execute _ do print! "executing market order\n"
-}
+      def execute : x -> ()
 
-instance Order LimitOrder = {
-	
-	def execute _ do print! "executing limit order\n"
+instance Order MarketOrder where
 
-}
+    let execute _ = print! "executing market order\n"
+
+instance Order LimitOrder where
+
+    let execute _ = print! "executing limit order\n"
   
-type Currency = USD | CAD | EUR | GBP
+data Currency = USD | CAD | EUR | GBP
  
-class Money(currency:Currency; amount:Int)
+class Money(currency:Currency, amount:Int)
  
-type Period = Hour | Day | Week | Month
+data Period = Hour | Day | Week | Month
  
 class Duty(description, skillRequired:String)
  
-class Project(name, description:String; deliverables:[String])
+class Project(name, description:String, deliverables:[String])
  
-class Employee(title:String; salary: Money; duties:[Duty])
+class Employee(title:String, salary: Money, duties:[Duty])
 
-class Contractor(rate:Money; period:Period; project: [Project])
+class Contractor(rate:Money, period:Period, project: [Project])
  
-type Worker = Employee | Contractor
+data Worker = Employee | Contractor
  

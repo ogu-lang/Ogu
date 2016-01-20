@@ -1,58 +1,28 @@
-class Number(val value:Int)
+class Number(value:Int)
 
-type Expression = Number
+data Expression  = Number
                  | Add(Expression, Expression)
                  | Minus(Expression, Expression)
                  | Mult (Expression, Expression)
                  | Divide(Expression, Expression)
 
-def evaluate :: Expression -> Int  
-    evaluate a:Number = a.value
-    evaluate Add (e1, e2) = evaluate e1 + evaluate e2
-    evaluate Minus(e1, e2) = evaluate e1 - evaluate e2
-    evaluate Mult(e1, e2) = evaluate e1 * evaluate e2
-    evaluate Divide(e1, e2) = evaluate e1 / evaluate e2
+def evaluate : Expression -> Int
+let evaluate a:Number = value a
+let evaluate Add(e1, e2) = evaluate e1 + evaluate e2
+let evaluate Minus(e1, e2) = evaluate e1 - evaluate e2
+let evaluate Mult(e1, e2) = evaluate e1 * evaluate e2
+let evaluate Divide(e1, e2) = evaluate e1 / evaluate e2
 
- val e : Expression = Add(Number(3), Number(4))
- val es := Multiply( Add(Number(3),Number(4)), Divide(Number(8), Number(2)) )
+val e : Expression = Add(Number(3), Number(4))
 
-
-
-trait Stackable s = {
-  def push! :: Stackable -> s -> ()
-  def pop! :: Stackable -> s
-  def empty? :: Stackable -> Bool
-}
+val es = Multiply( Add(Number(3),Number(4)), Divide(Number(8), Number(2)) )
 
 
-class Stack s = {
-  var _data : [s] = []
-}
+data Maybe s = Nothing | Some(s)
 
-instance Stackable s:Stack = {
+let some : Maybe String = Nothing
 
-  def push! self x:T 
-      do _data = cons x _data
-
-  def pop! self = {
-              val result := head _data
-              set _data = tail _data
-              result
-      }
-
-  def empty? self = 
-              null _data
-
-}
-
-
-type IntStack = (Stack Int)
-
-type Maybe s = Nothing | Some(s)
-
-val some : (Maybe String) = Nothing
-
-val any  : (Maybe String) = Some("algo")
+let any  : Maybe String = Some("algo")
 
 
 

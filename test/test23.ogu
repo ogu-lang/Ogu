@@ -1,0 +1,43 @@
+;; clases y métodos
+
+mut class Empresa (val rut:String, val razonSocial:String) where
+    var cantidadEmpleados : Int = 0
+    val patrimonioInicial : Money = 1000000
+
+mut class Auto(val modelo:String, año:Int) where
+    var bencina = 0
+    var kilometraje = 0
+
+    let kilometrosPorLitro = 12
+
+
+    let avanzar! self kms =
+        set kilometraje self = (kilometraje self) + kms
+        $bencina <- $bencina - (kms/$kilometrosPorLitro)
+
+
+mut class Stack t () where
+
+    var _data : [t] = []
+
+    let push! self x:T =
+        $_data <- x :: $_data
+
+    let pop! self =
+        let result = head $_data
+        $_data <- tail $_data
+        result
+
+    let empty? self =
+        empty? $_data
+
+mut class Auto(modelo:String) = Auto(modelo, 0)
+mut class Auto() = Auto("Sin modelo", 0)
+
+
+class (t:Ord) => Stack' t () where
+
+    let pop = 0
+
+
+data (t:Ord) => Maybe t = Nothing | Some t

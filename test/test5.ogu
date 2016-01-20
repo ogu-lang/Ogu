@@ -1,19 +1,18 @@
-// test 5
+; test 5
 
-def cero = 0
+let cero = 0
 
-def max a:Num b:Num -> Num = if  a > b then a else b
+let max a b = if  a > b then a else b
 
-def max' (a:Num, b:Num) -> Num = if a > b then a else b
+def max' : (Num,Num) -> Num
+let max' a b = if a > b then a else b
 
-def from5 -> (Num -> Num) = max 5
+let from5  = max 5
 
+let test =
+    max' (4,5)
 
-def test() {
-max' (4,5)
+    from5 3 ; retorna 5
 
-from5 3 // retorna 5
+    from5 8 ; retorna 8
 
-from5 8 // retorna 8
-
-}

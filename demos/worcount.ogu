@@ -1,8 +1,0 @@
-def main :: [String] -> !
-    main [] = println! "use: wordcount file..."
-    main [x|xs] = { report x ; main xs }
-      where report x = println "file: "++x++" words: "++ show (file_open x |> split_lines |> split_word |> length)
-    
-	
-
-	
