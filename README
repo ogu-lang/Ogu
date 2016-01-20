@@ -3,7 +3,7 @@ This is the programming language Ogu
 TEST
 ----
 
-You will need Gradle 2.3 to build this project (download from http://gradle.org).
+You will need Gradle 2.10 to build this project (download from http://gradle.org).
 
 To build the compiler just do the following:
 
@@ -13,11 +13,11 @@ A .jar file is generated in ./buid/libs with name Ogu-{version}-all.jar, where {
 
 Test the compiler doing:
 
-	$ java -jar ./build/libs/Ogu-0.1.1-all.jar ./test/test0.ogu
+	$ java -jar ./build/libs/Ogu-0.1.2-all.jar ./test/test0.ogu
 
 After that you should see the following on your console:
 
-	Ogu version 0.1.1
+	Ogu version 0.1.2
 
 	Hola amiko mio de mi.
 
