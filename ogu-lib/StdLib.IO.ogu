@@ -1,0 +1,35 @@
+module StdLib.IO
+
+exports (println!, readln!)
+
+#{extern "jvm" "java.io.PrintStream"}
+type PrintStream
+
+#{extern "jvm" "java.io.InputStream"}
+type InputStream
+
+#{extern "jvm" "java.io.InputStreamReader"}
+type InputStreamReader
+
+#{extern "jvm" "java.io.BufferedReader"}
+type BufferedReader
+
+
+#{extern "jvm" "System.out"}
+val _stdOut : _PrintStream
+
+#{extern "jvm" "System.in"}
+val _systemIn : _InputStream
+
+val _stdIn = BufferedReader(InputStreamReader(systemIn))
+
+def println! : String -> ()
+let println! str =
+    println stdOut str
+    ()
+
+
+def readln! : -> String
+let readln! =
+    readLine _stdIn
+

@@ -40,23 +40,28 @@ import com.yuvalshavit.antlr4.DenterHelper;
 
 }
 
-module : moduleHeader=module_header? module_uses* module_body NL*;
+module : moduleHeader=module_header? module_export* module_uses* module_body NL*;
 
 module_header : 'module' name=module_name NL* ;
 
 module_name : (parts+=TID) ('.' parts+=TID)* ;
 
-module_uses : 'uses' TID ('.' TID)* NL* ;
+module_export : 'exports' ('*' | '(' export_name (',' export_name)* ')' ) NL*;
+
+export_name : TID | ID ;
+
+module_uses : 'uses' module_name NL* ;
 
 module_body : (members+=module_decl NL*)* ;
 
-module_decl : def | let | var | val |  trait_def | instance_def | type_def | data_def | enum_def | class_def | compiler_flag | expr;
+module_decl : compiler_flag?
+    (def | let | var | val |  trait_def | instance_def | type_def | data_def | enum_def | class_def  | expr);
 
 trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT   ;
 
 instance_def : 'instance' TID type type* 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT   ;
 
-compiler_flag : '#' '{' ID (STRING)* '}' ;
+compiler_flag : '#' '{' ID (STRING)* '}' NL*;
 
 enum_def : 'enum' TID '=' ID ('|' ID)* deriving? ;
 
@@ -72,7 +77,7 @@ class_ctor : TID '(' expr_list? ')'  ;
 
 class_where : 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT ;
 
-type_def : 'type' TID (typedef_args)? '=' type  ;
+type_def :  'type' TID (typedef_args)? ('=' type)?  ;
 
 data_type_decl : type ('|' type)* deriving?
               | type  INDENT ('|' type NL*)*  deriving? NL* DEDENT
@@ -100,12 +105,13 @@ typedef_arg_constraint
 
 enum_values : ID ((NL)* '|' ID)* ;
 
-def : 'def' func_id ':' (func_def_constraints)?
+def :
+    'def' func_id ':' (func_def_constraints)?
     (func_def_arg (<assoc=right> '->' func_def_arg)* ('->' '!')? 
     | <assoc=right>'->' func_def_arg
     |'->' '!');
 
-var : 'var' vid (':' type)? ('=' expr)? ;
+var :  'var' vid (':' type)? ('=' expr)? ;
 
 vid : ID | '(' vidt (',' vidt)* ')' ;
 
@@ -132,7 +138,7 @@ let
 	| 'let' '(' lid (',' lid)* ')' '=' expr
 	;
 
-val : 'val' ID (':' type)? '=' expr
+val :  'val' ID (':' type)? ('=' expr)?
     | 'val' '(' lid (',' lid)* ')' '=' expr ;
 
 
@@ -308,7 +314,6 @@ do_expression
 ID : [_a-záéíóúñ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ('!'|'?')?;
 
 TID : [A-ZÁÉÍÓÚÑ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ;
-
 
 STRING : '"' (ESC|.)*? '"' ;
 

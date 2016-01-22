@@ -1,1 +1,3 @@
+uses StdLib.IO
+
 println! "Hola Mundo"

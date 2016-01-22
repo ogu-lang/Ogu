@@ -22,6 +22,11 @@ public class OguModule extends Node {
         expression.parent = this;
     }
 
+    public void add(UsesDeclaration usesDeclaration) {
+        uses.add(usesDeclaration);
+        usesDeclaration.parent = this;
+    }
+
     public void setName(ModuleNameDefinition nameDefinition) {
         if (this.nameDefinition != null) {
             this.nameDefinition.parent = null;

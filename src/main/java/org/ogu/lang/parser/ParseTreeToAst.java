@@ -10,6 +10,7 @@ import org.ogu.lang.parser.ast.expressions.Expression;
 import org.ogu.lang.parser.ast.expressions.FunctionCall;
 import org.ogu.lang.parser.ast.expressions.ValueReference;
 import org.ogu.lang.parser.ast.expressions.literals.StringLiteral;
+import org.ogu.lang.parser.ast.uses.UsesDeclaration;
 
 import java.io.File;
 import java.util.stream.Collectors;
@@ -48,9 +49,9 @@ public class ParseTreeToAst {
             if (memberNode instanceof Expression)
                 module.add((Expression) memberNode);
         }
-        //for (TurinParser.ImportDeclarationContext importDeclarationContext : ctx.importDeclaration()) {
-        //    module.add(toAst(importDeclarationContext));
-        //}
+        for (OguParser.Module_usesContext usesDeclarationContext : ctx.module_uses()) {
+            module.add(toAst(usesDeclarationContext));
+        }
         return module;
     }
 
@@ -74,6 +75,14 @@ public class ParseTreeToAst {
             throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
         }
     }
+
+    private UsesDeclaration toAst(OguParser.Module_usesContext ctx) {
+        System.out.println("uses to ast");
+        if (ctx.module_name() != null)
+            return new UsesDeclaration(toAst(ctx.module_name()));
+        throw new UnsupportedOperationException(ctx.toString());
+    }
+
 
     private Expression toAst(OguParser.ExprContext ctx) {
         if (ctx.function != null) {

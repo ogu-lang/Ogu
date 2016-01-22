@@ -94,6 +94,10 @@ public class QualifiedName extends Node {
     @Override
     public String toString() {
         return qualifiedName();
+       /* return "QualifiedName{" +
+                "base=" + base + "," +
+                "name=" + name +
+                '}';  */
     }
 
     public String firstSegment() {
