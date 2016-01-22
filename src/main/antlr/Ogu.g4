@@ -40,9 +40,11 @@ import com.yuvalshavit.antlr4.DenterHelper;
 
 }
 
-module : module_header? module_uses* module_body NL*;
+module : moduleHeader=module_header? module_uses* module_body NL*;
 
-module_header : 'module' TID ('.' TID)* NL* ;
+module_header : 'module' name=module_name NL* ;
+
+module_name : (parts+=TID) ('.' parts+=TID)* ;
 
 module_uses : 'uses' TID ('.' TID)* NL* ;
 
@@ -247,11 +249,12 @@ expr
 	| expr '@' expr
 	| '$' ID
 	| ID ('.' ID)+
-	| ID (expr)*
+	| function_call=ID (expr)*
 	| TID (expr)*
 	| set_expr
 	| atom
 	;
+
 
 if_expr : 'if' expr then_part ;
 

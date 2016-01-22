@@ -11,7 +11,7 @@ public  class OguVerboseListener extends BaseErrorListener {
 
 	@Override
 	public void syntaxError(Recognizer<?,?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-		List<String> stack = ((Parser) recognizer).getRuleInvocationStack();
+		List<String> stack = ((org.antlr.v4.runtime.Parser) recognizer).getRuleInvocationStack();
 		Collections.reverse(stack);
 		Ogu.error(ERROR_BEGIN);
 		Ogu.error("rule stack: "+stack);

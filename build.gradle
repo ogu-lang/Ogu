@@ -23,4 +23,9 @@ repositories {
 dependencies {
   antlr "org.antlr:antlr4-maven-plugin:4.5"
   compile "com.yuvalshavit:antlr-denter:1.1"
+  compile 'com.google.guava:guava:19.0'
+  compile 'org.ow2.asm:asm:5.0.4'
+  compile 'org.ow2.asm:asm-util:5.0.4'
+  compile 'org.ow2.asm:asm-tree:5.0.4'
+  compile 'com.beust:jcommander:1.48'
 }
