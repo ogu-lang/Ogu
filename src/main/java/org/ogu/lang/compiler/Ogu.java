@@ -108,28 +108,6 @@ public class Ogu {
         }
     }
 
-    /***
-	private static void parseFile(String arg) throws Exception  {
-
-		message(COMPILING_FILE, arg);
-		message(COMPILING);
-		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(arg));
-
-		OguLexer lexer = new OguLexer(input);
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		OguParser parser = new OguParser(tokens);
-		parser.removeErrorListeners();
-		OguVerboseListener listener = new OguVerboseListener();
-		parser.addErrorListener(listener);
-		ParseTree tree = parser.module();
-		println(tree.toStringTree(parser));
-		message(COMPILING_END, arg);
-		if (listener.getErrores() > 0) {
-			message(COMPILING_HAS_ERRORS, arg, listener.getErrores());
-		}
-	}
-     ***/
-
 	public static void println(String str) {
 		System.out.println(str);
 		System.out.println();

@@ -2,8 +2,10 @@ package org.ogu.lang.compiler;
 
 import org.ogu.lang.classloading.ClassFileDefinition;
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
+import org.ogu.lang.definitions.ExpressionDefinition;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.OguModule;
+import org.ogu.lang.parser.ast.expressions.Expression;
 import org.ogu.lang.resolvers.SymbolResolver;
 
 import java.util.ArrayList;
@@ -33,9 +35,10 @@ public class Compilation {
         List<ClassFileDefinition> classFileDefinitions = new ArrayList<>();
 
         for (Node node : module.getChildren()) {
-
+            System.out.println("Node: "+node+" node: "+node.contextName()+" "+node.describe());
         }
 
         return classFileDefinitions;
     }
+
 }

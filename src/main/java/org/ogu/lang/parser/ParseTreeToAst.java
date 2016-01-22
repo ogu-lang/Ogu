@@ -1,9 +1,15 @@
 package org.ogu.lang.parser;
 
 import org.ogu.lang.antlr.*;
+import org.ogu.lang.definitions.ExpressionDefinition;
 import org.ogu.lang.parser.ast.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.ogu.lang.parser.ast.expressions.ActualParam;
+import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.expressions.FunctionCall;
+import org.ogu.lang.parser.ast.expressions.ValueReference;
+import org.ogu.lang.parser.ast.expressions.literals.StringLiteral;
 
 import java.io.File;
 import java.util.stream.Collectors;
@@ -35,12 +41,22 @@ public class ParseTreeToAst {
         OguModule module = new OguModule();
         getPositionFrom(module, ctx);
         module.setName(toAst(file, ctx.moduleHeader));
+
+        OguParser.Module_bodyContext bodyCtx = ctx.module_body();
+        for (OguParser.Module_declContext memberCtx : bodyCtx.module_decl()) {
+            Node memberNode = toAst(memberCtx);
+            if (memberNode instanceof Expression)
+                module.add((Expression) memberNode);
+        }
+        //for (TurinParser.ImportDeclarationContext importDeclarationContext : ctx.importDeclaration()) {
+        //    module.add(toAst(importDeclarationContext));
+        //}
         return module;
     }
 
-    public ModuleNameDefinition toAst(File file, OguParser.Module_headerContext ctx) {
+    private ModuleNameDefinition toAst(File file, OguParser.Module_headerContext ctx) {
         if (ctx == null)
-            return new ModuleNameDefinition(file.getName());
+            return new ModuleNameDefinition(buildModuleNameFromFileName(file.getName()));
         return new ModuleNameDefinition(toAst(ctx.name).qualifiedName());
     }
 
@@ -50,5 +66,69 @@ public class ParseTreeToAst {
         return qualifiedName;
     }
 
+    private Node toAst(OguParser.Module_declContext ctx) {
+        if (ctx.expr() != null) {
+            return toAst(ctx.expr());
+        }
+        else {
+            throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+        }
+    }
+
+    private Expression toAst(OguParser.ExprContext ctx) {
+        if (ctx.function != null) {
+            return toAstFunctionCall(ctx);
+        }
+        else {
+            throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+        }
+    }
+
+    private ActualParam toAstParam(OguParser.ExprContext ctx) {
+        if (ctx.literal != null)
+            return new ActualParam(toAst(ctx.atom()));
+        if (ctx.function != null) {
+            System.out.println("Ast Param ctx.function="+ctx.function);
+            return new ActualParam(toAstFunctionCall(ctx));
+        }
+        else {
+            throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+        }
+    }
+
+    private ValueReference toAst(OguParser.Func_nameContext ctx) {
+        ValueReference expression = new ValueReference(idText(ctx.name));
+        getPositionFrom(expression, ctx);
+        return expression;
+    }
+
+    private Expression toAst(OguParser.AtomContext atomCtx) {
+        if (atomCtx.string_literal != null) {
+            return new StringLiteral(idText(atomCtx.STRING().getSymbol()));
+        }
+        else {
+            throw new UnsupportedOperationException(atomCtx.getClass().getCanonicalName());
+        }
+    }
+
+    private FunctionCall toAstFunctionCall(OguParser.ExprContext ctx) {
+        Expression function = toAst(ctx.function);
+        FunctionCall funcCall = new FunctionCall(function, ctx.expr().stream().map((apCtx)->toAstParam(apCtx)).collect(Collectors.toList()));
+        return funcCall;
+    }
+
+
+    private String idText(Token token) {
+        if (token.getText().startsWith("v#") || token.getText().startsWith("T#")) {
+            return token.getText().substring(2);
+        } else {
+            return token.getText();
+        }
+    }
+
+    private String buildModuleNameFromFileName(String name) {
+        int pos = name.indexOf('.');
+        return Character.toUpperCase(name.charAt(0))+name.substring(1, pos);
+    }
 
 }

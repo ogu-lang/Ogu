@@ -48,9 +48,9 @@ module_name : (parts+=TID) ('.' parts+=TID)* ;
 
 module_uses : 'uses' TID ('.' TID)* NL* ;
 
-module_body : (decl NL*)* ;
+module_body : (members+=module_decl NL*)* ;
 
-decl : def | let | var | val |  trait_def | instance_def | type_def | data_def | enum_def | class_def | compiler_flag | expr;
+module_decl : def | let | var | val |  trait_def | instance_def | type_def | data_def | enum_def | class_def | compiler_flag | expr;
 
 trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT   ;
 
@@ -249,11 +249,13 @@ expr
 	| expr '@' expr
 	| '$' ID
 	| ID ('.' ID)+
-	| function_call=ID (expr)*
+	| function=func_name (params+=expr)*
 	| TID (expr)*
 	| set_expr
-	| atom
+	| literal=atom
 	;
+
+func_name : name=ID;
 
 
 if_expr : 'if' expr then_part ;
@@ -279,7 +281,7 @@ map_expr
     | ID '=' expr (',' ID '=' expr)*
     ;
 
-atom : INT | FLOAT | STRING | CHAR | DATE ;
+atom : INT | FLOAT | string_literal=STRING | CHAR | DATE ;
 
 list_expr : list_element (',' list_element)* ;
 

@@ -34,10 +34,8 @@ public class OguModuleWithSource {
 
         OguModuleWithSource that = (OguModuleWithSource) o;
 
-        if (!source.equals(that.source)) return false;
-        if (!module.equals(that.module)) return false;
+        return source.equals(that.source) && module.equals(that.module);
 
-        return true;
     }
 
     @Override

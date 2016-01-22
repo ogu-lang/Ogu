@@ -84,8 +84,6 @@ public abstract class Node implements Symbol {
         return parent;
     }
 
-
-
     public void setParent(Node parent) {
         if (parent == this) {
             throw new IllegalArgumentException();

@@ -1,6 +1,7 @@
 package org.ogu.lang.parser.ast;
 
 import com.google.common.collect.ImmutableList;
+import org.ogu.lang.parser.ast.expressions.Expression;
 import org.ogu.lang.parser.ast.uses.UsesDeclaration;
 
 import java.util.ArrayList;
@@ -16,6 +17,10 @@ public class OguModule extends Node {
     private List<Node> topNodes = new ArrayList<>();
     private List<UsesDeclaration> uses = new ArrayList<>();
 
+    public void add(Expression expression) {
+        topNodes.add(expression);
+        expression.parent = this;
+    }
 
     public void setName(ModuleNameDefinition nameDefinition) {
         if (this.nameDefinition != null) {
