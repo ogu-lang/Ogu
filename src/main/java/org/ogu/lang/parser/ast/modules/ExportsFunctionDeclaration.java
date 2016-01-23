@@ -2,7 +2,8 @@ package org.ogu.lang.parser.ast.modules;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.expressions.ValueReference;
+import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.expressions.Reference;
 
 /**
  * Exports a function
@@ -10,7 +11,7 @@ import org.ogu.lang.parser.ast.expressions.ValueReference;
  */
 public class ExportsFunctionDeclaration extends ExportsDeclaration {
 
-    private ValueReference referenceName;
+    private OguIdentifier referenceName;
 
     @Override
     public String toString() {
@@ -19,7 +20,7 @@ public class ExportsFunctionDeclaration extends ExportsDeclaration {
                 '}';
     }
 
-    public ExportsFunctionDeclaration(ValueReference referenceName) {
+    public ExportsFunctionDeclaration(OguIdentifier referenceName) {
         this.referenceName = referenceName;
         this.referenceName.setParent(this);
     }

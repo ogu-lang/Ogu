@@ -2,22 +2,25 @@ package org.ogu.lang.parser.ast.expressions;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
+import org.ogu.lang.parser.ast.OguIdentifier;
 import org.ogu.lang.typesystem.TypeUsage;
 
 /**
+ * A reference to a type, a val, a var o a function
  * Created by ediaz on 22-01-16.
  */
-public class ValueReference extends Expression  {
-    private String name;
+public class Reference extends Expression  {
+    private OguIdentifier name;
 
-    public ValueReference(String name) {
+    public Reference(OguIdentifier name) {
         this.name = name;
+        this.name.setParent(this);
     }
 
     @Override
     public String toString() {
 
-        return "ValueReference{" +
+        return "Reference{" +
                 "name='" + name + '\'' +
                 '}';
     }
@@ -29,6 +32,6 @@ public class ValueReference extends Expression  {
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.of();
+        return ImmutableList.of(name);
     }
 }

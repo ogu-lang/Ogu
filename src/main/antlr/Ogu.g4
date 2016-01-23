@@ -56,7 +56,7 @@ module_body : (members+=module_decl NL*)* ;
 
 module_decl
     : expr
-    | compiler_flags?   (def | let | var | val |  alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
+    | compiler_flags?   (def | let | var | val_def |  alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
     ;
 
 alias_def : 'alias' alias_target '=' alias_origin NL*;
@@ -65,9 +65,9 @@ alias_target : alias_tid=TID | alias_id=ID;
 
 alias_origin :  alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_origin_id=ID)? ;
 
-trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT   ;
+trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((def|let|var|val_def) NL* )* NL* DEDENT   ;
 
-instance_def : 'instance' TID type type* 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT   ;
+instance_def : 'instance' TID type type* 'where' INDENT ((def|let|var|val_def) NL* )* NL* DEDENT   ;
 
 compiler_flags :  compiler_flag+ ;
 
@@ -85,7 +85,7 @@ class_arg : ('var'|'val')? ID (',' ID)* ':' type ;
 
 class_ctor : TID '(' expr_list? ')'  ;
 
-class_where : 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT ;
+class_where : 'where' INDENT ((def|let|var|val_def) NL* )* NL* DEDENT ;
 
 type_def :  'type' TID (typedef_args)? ('=' type)?  ;
 
@@ -148,7 +148,8 @@ let
 	| 'let' '(' lid (',' lid)* ')' '=' expr
 	;
 
-val :  'val' ID (':' type)? ('=' expr)?
+val_def
+    :  'val' val_id=ID (':' type)? ('=' expr)
     | 'val' '(' lid (',' lid)* ')' '=' expr ;
 
 
@@ -264,15 +265,16 @@ expr
 	| expr '<-' expr
 	| expr '@' expr
 	| '$' ID
-	| ID ('.' ID)+
-	| function=func_name (params+=expr)*
-	| TID (expr)*
+	| ID
+	| function=func_name (params+=expr)+
+	| qual_function=qual_func_name (params+=expr)*
 	| set_expr
 	| literal=atom
 	;
 
 func_name : name=ID;
 
+qual_func_name : qual+=TID ('.' qual+=TID)* ('.' name=ID)? ;
 
 if_expr : 'if' expr then_part ;
 

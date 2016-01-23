@@ -48,7 +48,18 @@ public class OguName extends Node {
         }
     }
 
+    public String qualifiedName() {
+        if (base == null) {
+            return name;
+        } else {
+            return base + "." + name;
+        }
+    }
 
+    @Override
+    public String toString() {
+        return qualifiedName();
+    }
 
 
 }

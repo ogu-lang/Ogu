@@ -13,31 +13,31 @@ uses Java.Lang
 #{extern "jvm" "java/lang/System"}
 alias System = Java.Lang.System
 
-
-#{extern "jvm" "java/lang/System.in:Ljava/io/InputStream;"}  ;; because in is a reserved word in Ogú
-alias _stdIn = System._In
-
+alias InputStream = Java.IO.InputStream
 alias BufferedReader = Java.IO.BufferedReader
 alias InputStreamReader = Java.IO.InputStreamReader
 alias PrintStream = Java.IO.PrintStream
 
+#{extern "jvm" "java/lang/System.in:Ljava/io/InputStream;"}  ;; because in is a reserved word in Ogú
+val _stdIn : InputStream = System._in
+
 #{extern "jvm" "java/lang/System.out:Ljava/io/PrintStream;"}
-val _stdOut : PrintStream = System.out
+val _stdOut : PrintStream = System._out
 
-#{extern "jvm" "java/io/PrintStream.println:(Ljava/lang/String;)V"}
-def _println : PrintStream -> String -> ()
+;#{extern "jvm" "java/io/PrintStream.println:(Ljava/lang/String;)V"}
+;def _println : PrintStream -> String -> ()
 
-def println! : String -> ()
-let println! str =
-    _println stdOut str
-    ()
+;def println! : String -> ()
+;let println! str =
+;    _println stdOut str
+;    ()
 
-val _stdIn = BufferedReader(InputStreamReader(_stdIn))
+;val _stdIn = BufferedReader(InputStreamReader(_stdIn))
 
-#{extern "jvm" "/java/io/BufferedReader.readLine:()Ljava/lang/String"}
-def _readln : BufferedReader -> String
+;#{extern "jvm" "/java/io/BufferedReader.readLine:()Ljava/lang/String"}
+;def _readln : BufferedReader -> String
 
-def readln! : -> String
-let readln! =
-    readLine _stdIn
+;def readln! : -> String
+;let readln! =
+;    readLine _stdIn
 

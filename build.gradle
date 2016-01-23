@@ -2,9 +2,13 @@
 plugins {
   id 'java' 
   id 'antlr'
+  id 'idea'
   id 'com.github.johnrengelman.shadow' version '1.2.0'
 
 }
+
+apply plugin: 'idea'
+apply plugin:'antlr'
 
 defaultTasks 'shadowJar'
 
@@ -31,4 +35,14 @@ dependencies {
   compile 'org.ow2.asm:asm-util:5.0.4'
   compile 'org.ow2.asm:asm-tree:5.0.4'
   compile 'com.beust:jcommander:1.48'
+}
+
+generateGrammarSource {
+    outputDirectory = new File("${project.buildDir}/generated-src/antlr/main/java/org/ogu/lang/antlr".toString())
+}
+
+idea {
+    module {
+        generatedSourceDirs += file("${project.buildDir}/generated-src/antlr/main/java")
+    }
 }

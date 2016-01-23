@@ -2,6 +2,8 @@ package org.ogu.lang.parser.ast.modules;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
+import org.ogu.lang.parser.ast.decls.Declaration;
+import org.ogu.lang.parser.ast.decls.ValDeclaration;
 import org.ogu.lang.parser.ast.expressions.Expression;
 import org.ogu.lang.parser.ast.modules.ExportsDeclaration;
 import org.ogu.lang.parser.ast.modules.ModuleNameDefinition;
@@ -18,14 +20,21 @@ import java.util.List;
 public class OguModule extends Node {
 
     ModuleNameDefinition nameDefinition;
-    private List<Node> topNodes = new ArrayList<>();
+    private List<Expression> program = new ArrayList<>();
     private List<UsesDeclaration> uses = new ArrayList<>();
     private List<AliasDeclaration> aliases = new ArrayList<>();
     private List<ExportsDeclaration> exports = new ArrayList<>();
+    private List<Declaration> decls = new ArrayList<>();
+
 
     public void add(Expression expression) {
-        topNodes.add(expression);
+        program.add(expression);
         expression.setParent(this);
+    }
+
+    public void add(Declaration decl) {
+        decls.add(decl);
+        decl.setParent(this);
     }
 
     public void add(AliasDeclaration alias) {
@@ -57,7 +66,8 @@ public class OguModule extends Node {
     public Iterable<Node> getChildren() {
         return ImmutableList.<Node>builder()
                 .add(nameDefinition)
-                .addAll(topNodes)
+                .addAll(program)
+                .addAll(decls)
                 .addAll(aliases)
                 .addAll(exports)
                 .addAll(uses).build();
