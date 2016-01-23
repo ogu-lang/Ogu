@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.OguIdentifier;
 import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.typeusage.TypeArg;
 
 /**
  * A val declaration (val id = value) where value is an expression
@@ -12,9 +13,18 @@ import org.ogu.lang.parser.ast.expressions.Expression;
 public class ValDeclaration extends Declaration {
 
     private Expression value;
+    private TypeArg returnType;
 
     public ValDeclaration(OguIdentifier id, Expression value) {
         super(id);
+        this.value = value;
+        this.value.setParent(this);
+    }
+
+    public ValDeclaration(OguIdentifier id, TypeArg returnType, Expression value) {
+        super(id);
+        this.returnType = returnType;
+        this.returnType.setParent(this);
         this.value = value;
         this.value.setParent(this);
     }
@@ -28,7 +38,8 @@ public class ValDeclaration extends Declaration {
     public String toString() {
         return "ValDeclaration{" +
                 "id='" + id + '\''+
-                "value=" + value +
+                ", returnType="+returnType+
+                ", value=" + value +
                 '}';
     }
 }

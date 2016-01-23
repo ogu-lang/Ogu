@@ -207,13 +207,13 @@ type : '[' type ']'
      | TID '{' ID ':' type (',' ID ':' type)* '}' // structs
      | '{' type  '->' type '}'
      | type '->' type (<assoc=right>'->' type)*
-     | tid (tid|ID|type)*
+     | tid (t_a+=tid_args)*
      | ID
      ;
 
-tid : TID ('.' TID)* ;
+tid : t+=TID ('.' t+=TID)* ;
 
-
+tid_args : tid|ID|type;
 
 
 op : '@' | '+' | '-' | 'and' | 'or' | 'not' | 'yield' | '*' | '/' | '//' | '^' | '|>' | '<|'
@@ -262,7 +262,7 @@ expr
 	| expr '||' expr
 	| expr 'or' expr
 	| '(' op (expr)* ')'
-	| '(' expr_list? ')'
+	| '(' el=expr_list? ')'
 	| '[' (list_expr)? ']'
 	| '{' map_expr? '}'
 	| expr '<-' expr

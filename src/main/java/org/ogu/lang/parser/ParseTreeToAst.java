@@ -198,20 +198,37 @@ public class ParseTreeToAst {
 
     private ValDeclaration toAst(OguParser.Val_declContext ctx) {
         if (ctx.val_id != null) {
-            return new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.expr()));
+            if (ctx.type() == null)
+                return new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.expr()));
+            return new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()));
         }
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
+
+    private TypeArg toAst(OguParser.TypeContext ctx) {
+        if (ctx.tid() != null) {
+            if (ctx.t_a.isEmpty()) {
+                return new QualifiedTypeArg(toAst(ctx.tid()));
+            }
+        }
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private OguTypeIdentifier toAst(OguParser.TidContext ctx) {
+        return OguTypeIdentifier.create(ctx.t.stream().map(this::idText).collect(Collectors.toList()));
+    }
+
+
     private Expression toAst(OguParser.ExprContext ctx) {
+        if (ctx.el != null)
+            System.out.println("EL!!!");
         if (ctx.function != null) {
             return toAstFunctionCall(ctx);
         }
         if (ctx.qual_function != null) {
             return toAstFunctionCall(ctx);
         }
-        else {
-            throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
-        }
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
     private ActualParam toAstParam(OguParser.ExprContext ctx) {
@@ -244,12 +261,12 @@ public class ParseTreeToAst {
         if (atomCtx.string_literal != null) {
             return new StringLiteral(idText(atomCtx.STRING().getSymbol()));
         }
-        else {
-            throw new UnsupportedOperationException(atomCtx.getClass().getCanonicalName());
-        }
+        throw new UnsupportedOperationException(atomCtx.getClass().getCanonicalName());
     }
 
     private FunctionCall toAstFunctionCall(OguParser.ExprContext ctx) {
+        if (ctx.el != null)
+            System.out.println("EL!!");
         if (ctx.function != null) {
             Expression function = toAst(ctx.function);
             return new FunctionCall(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
@@ -263,11 +280,7 @@ public class ParseTreeToAst {
 
 
     private String idText(Token token) {
-        if (token.getText().startsWith("v#") || token.getText().startsWith("T#")) {
-            return token.getText().substring(2);
-        } else {
-            return token.getText();
-        }
+        return token.getText();
     }
 
     private String buildModuleNameFromFileName(String name) {
