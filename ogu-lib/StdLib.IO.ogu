@@ -24,20 +24,21 @@ val _stdIn : InputStream = System._in
 #{extern "jvm" "java/lang/System.out:Ljava/io/PrintStream;"}
 val _stdOut : PrintStream = System._out
 
-;#{extern "jvm" "java/io/PrintStream.println:(Ljava/lang/String;)V"}
-;def _println : PrintStream -> String -> ()
+;#{extern "jvm" "/java/io/BufferedReader.readLine:()Ljava/lang/String"}
+def _readln : BufferedReader -> String
 
-;def println! : String -> ()
+#{extern "jvm" "java/io/PrintStream.println:(Ljava/lang/String;)V"}
+def _println : PrintStream -> String -> ()
+
+def println! : String -> ()
 ;let println! str =
 ;    _println stdOut str
 ;    ()
 
 ;val _stdIn = BufferedReader(InputStreamReader(_stdIn))
 
-;#{extern "jvm" "/java/io/BufferedReader.readLine:()Ljava/lang/String"}
-;def _readln : BufferedReader -> String
 
-;def readln! : -> String
+def readln! : String
 ;let readln! =
 ;    readLine _stdIn
 

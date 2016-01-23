@@ -3,7 +3,9 @@ package org.ogu.lang.parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.ogu.lang.antlr.OguParser;
+import org.ogu.lang.compiler.Ogu;
 import org.ogu.lang.parser.ast.*;
+import org.ogu.lang.parser.ast.decls.FunctionDeclaration;
 import org.ogu.lang.parser.ast.decls.ValDeclaration;
 import org.ogu.lang.parser.ast.expressions.ActualParam;
 import org.ogu.lang.parser.ast.expressions.Expression;
@@ -11,10 +13,7 @@ import org.ogu.lang.parser.ast.expressions.FunctionCall;
 import org.ogu.lang.parser.ast.expressions.Reference;
 import org.ogu.lang.parser.ast.expressions.literals.StringLiteral;
 import org.ogu.lang.parser.ast.modules.*;
-import org.ogu.lang.parser.ast.typeusage.AliasDeclaration;
-import org.ogu.lang.parser.ast.typeusage.AliasError;
-import org.ogu.lang.parser.ast.typeusage.IdAliasDeclaration;
-import org.ogu.lang.parser.ast.typeusage.TypeAliasDeclaration;
+import org.ogu.lang.parser.ast.typeusage.*;
 
 import java.io.File;
 import java.util.List;
@@ -59,6 +58,8 @@ public class ParseTreeToAst {
                 module.add((AliasDeclaration) memberNode);
             else if (memberNode instanceof ValDeclaration)
                 module.add((ValDeclaration) memberNode);
+            else if (memberNode instanceof FunctionDeclaration)
+                module.add((FunctionDeclaration) memberNode);
         }
 
         for (OguParser.Module_usesContext usesDeclarationContext : ctx.module_uses()) {
@@ -124,14 +125,47 @@ public class ParseTreeToAst {
         if (ctx.alias_def() != null) {
             return toAst(ctx.alias_def());
         }
-        if (ctx.val_def() != null) {
-            return toAst(ctx.val_def());
+        if (ctx.val_decl() != null) {
+            return toAst(ctx.val_decl());
         }
         if (ctx.expr() != null) {
             return toAst(ctx.expr());
         }
 
+        if (ctx.func_decl() != null) {
+            return toAst(ctx.func_decl());
+        }
+
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private FunctionDeclaration toAst(OguParser.Func_declContext ctx) {
+
+        if (ctx.name.f_id != null ) {
+            List<TypeArg> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
+            return new FunctionDeclaration(toAst(ctx.name), params);
+        }
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private TypeArg toAst(OguParser.Func_decl_argContext ctx) {
+        if (ctx.unit() != null)
+            return new UnitTypeArg();
+        if (ctx.fda_id != null)
+            return new QualifiedTypeArg(OguTypeIdentifier.create(idText(ctx.fda_id)));
+        if (!ctx.fda_tid.isEmpty()) {
+            if (ctx.fda_tid_tid_arg.isEmpty() && ctx.fda_tid_id_arg.isEmpty()) {
+                OguTypeIdentifier id = OguTypeIdentifier.create(ctx.fda_tid.stream().map(this::idText).collect(Collectors.toList()));
+                return new QualifiedTypeArg(id);
+            }
+        }
+        throw new UnsupportedOperationException(ctx.toString());
+    }
+
+    private OguIdentifier toAst(OguParser.Func_name_declContext ctx) {
+        if (ctx.f_id != null)
+            return new OguIdentifier(idText(ctx.f_id));
+        throw new UnsupportedOperationException(ctx.toString());
     }
 
     private List<ExportsDeclaration> toAst(OguParser.Module_exportsContext ctx) {
@@ -162,7 +196,7 @@ public class ParseTreeToAst {
         }
     }
 
-    private ValDeclaration toAst(OguParser.Val_defContext ctx) {
+    private ValDeclaration toAst(OguParser.Val_declContext ctx) {
         if (ctx.val_id != null) {
             return new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.expr()));
         }

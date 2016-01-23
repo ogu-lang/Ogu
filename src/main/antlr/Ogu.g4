@@ -56,7 +56,7 @@ module_body : (members+=module_decl NL*)* ;
 
 module_decl
     : expr
-    | compiler_flags?   (def | let | var | val_def |  alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
+    | compiler_flags?   (func_decl | let | var | val_decl |  alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
     ;
 
 alias_def : 'alias' alias_target '=' alias_origin NL*;
@@ -65,9 +65,9 @@ alias_target : alias_tid=TID | alias_id=ID;
 
 alias_origin :  alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_origin_id=ID)? ;
 
-trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((def|let|var|val_def) NL* )* NL* DEDENT   ;
+trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((func_decl|let|var|val_decl) NL* )* NL* DEDENT   ;
 
-instance_def : 'instance' TID type type* 'where' INDENT ((def|let|var|val_def) NL* )* NL* DEDENT   ;
+instance_def : 'instance' TID type type* 'where' INDENT ((func_decl|let|var|val_decl) NL* )* NL* DEDENT   ;
 
 compiler_flags :  compiler_flag+ ;
 
@@ -75,9 +75,9 @@ compiler_flag : '#' '{' ID (STRING)* '}' NL*;
 
 enum_def : 'enum' TID '=' ID ('|' ID)* deriving? ;
 
-data_def : 'data' func_def_constraints? TID (typedef_args)? '=' data_type_decl ;
+data_def : 'data' func_decl_constraints? TID (typedef_args)? '=' data_type_decl ;
 
-class_def : 'mut'? 'class' func_def_constraints? TID ID* '(' class_args? ')' ('=' class_ctor | class_where)? ;
+class_def : 'mut'? 'class' func_decl_constraints? TID ID* '(' class_args? ')' ('=' class_ctor | class_where)? ;
 
 class_args : class_arg (',' class_arg)* ;
 
@@ -85,7 +85,7 @@ class_arg : ('var'|'val')? ID (',' ID)* ':' type ;
 
 class_ctor : TID '(' expr_list? ')'  ;
 
-class_where : 'where' INDENT ((def|let|var|val_def) NL* )* NL* DEDENT ;
+class_where : 'where' INDENT ((func_decl|let|var|val_decl) NL* )* NL* DEDENT ;
 
 type_def :  'type' TID (typedef_args)? ('=' type)?  ;
 
@@ -115,11 +115,11 @@ typedef_arg_constraint
 
 enum_values : ID ((NL)* '|' ID)* ;
 
-def :
-    'def' func_id ':' (func_def_constraints)?
-    (func_def_arg (<assoc=right> '->' func_def_arg)* ('->' '!')? 
-    | <assoc=right>'->' func_def_arg
-    |'->' '!');
+func_decl :
+    'def' name=func_name_decl ':' (func_decl_constraints)?
+      (arg+=func_decl_arg (<assoc=right> '->' arg+=func_decl_arg)*
+      | '->'? func_decl_arg
+      );
 
 var :  'var' vid (':' type)? ('=' expr)? ;
 
@@ -127,28 +127,32 @@ vid : ID | '(' vidt (',' vidt)* ')' ;
 
 vidt : ID (':' type)? ;
 
-func_def_constraints : '(' func_def_constraint_list ')' '=>' ;
+func_decl_constraints : '(' func_decl_constraint_list ')' '=>' ;
 
-func_def_constraint_list : func_def_constraint (',' func_def_constraint)* ;
+func_decl_constraint_list : func_decl_constraint (',' func_decl_constraint)* ;
 
-func_def_constraint : ID ':' type ;
+func_decl_constraint : ID ':' type ;
 
-func_def_arg
-	: '(' ')'
-	| '[' func_def_arg ']'
-	| '(' func_def_arg (',' func_def_arg)* ')'
-	| '(' func_def_arg (<assoc=right> '->'func_def_arg)+ ')'
-	| '{' func_def_arg ('->' func_def_arg)* '}'
-	| ID
-	| TID (TID|ID)*
+func_decl_arg
+	: unit
+	| '[' func_decl_arg ']'
+	| '(' func_decl_arg (',' func_decl_arg)* ')'
+	| '(' func_decl_arg (<assoc=right> '->'func_decl_arg)+ ')'
+	| '{' func_decl_arg ('->' func_decl_arg)* '}'
+	| fda_id=ID
+	| fda_tid+=TID ('.' fda_tid+=TID)* (fda_tid_tid_arg+=TID | fda_tid_id_arg+=ID)*
 	;
+
+unit : '(' ')' | '!' ;
+
+func_name_decl : f_id=ID | f_op=op ;
 
 let
 	: 'let' (lid|op) let_arg* let_expr
 	| 'let' '(' lid (',' lid)* ')' '=' expr
 	;
 
-val_def
+val_decl
     :  'val' val_id=ID (':' type)? ('=' expr)
     | 'val' '(' lid (',' lid)* ')' '=' expr ;
 
@@ -211,7 +215,6 @@ tid : TID ('.' TID)* ;
 
 
 
-func_id : ID | op ;
 
 op : '@' | '+' | '-' | 'and' | 'or' | 'not' | 'yield' | '*' | '/' | '//' | '^' | '|>' | '<|'
 	| 'in' | 'not' 'in' | '==' | '/='
