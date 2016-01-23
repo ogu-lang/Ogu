@@ -31,7 +31,7 @@ type Stack x = Stackable (MutContainer x) x
 
 type IntStack = Stack Int
 
-var stack = IntStack() ;; las instancias de un trait tienen el contructor ()
+var stack = new IntStack() ;; las instancias de un trait tienen el contructor ()
 
 push! stack 10
 push! stack 20

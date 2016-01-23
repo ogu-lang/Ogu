@@ -7,15 +7,13 @@ import org.ogu.lang.compiler.Ogu;
 import org.ogu.lang.parser.ast.*;
 import org.ogu.lang.parser.ast.decls.FunctionDeclaration;
 import org.ogu.lang.parser.ast.decls.ValDeclaration;
-import org.ogu.lang.parser.ast.expressions.ActualParam;
-import org.ogu.lang.parser.ast.expressions.Expression;
-import org.ogu.lang.parser.ast.expressions.FunctionCall;
-import org.ogu.lang.parser.ast.expressions.Reference;
+import org.ogu.lang.parser.ast.expressions.*;
 import org.ogu.lang.parser.ast.expressions.literals.StringLiteral;
 import org.ogu.lang.parser.ast.modules.*;
 import org.ogu.lang.parser.ast.typeusage.*;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -141,7 +139,7 @@ public class ParseTreeToAst {
 
     private FunctionDeclaration toAst(OguParser.Func_declContext ctx) {
 
-        if (ctx.name.f_id != null ) {
+        if (ctx.name.f_id != null) {
             List<TypeArg> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
             return new FunctionDeclaration(toAst(ctx.name), params);
         }
@@ -189,18 +187,23 @@ public class ParseTreeToAst {
             }
             return new TypeAliasDeclaration(toOguTypeIdentifier(target), toOguTypeIdentifier(origin));
         } else {
-          if (origin.alias_origin_id == null) {
-              return new AliasError(error("error.alias.id_no_id"), getPosition(ctx));
-          }
-          return new IdAliasDeclaration(toOguIdentifier(target), toOguIdentifier(origin));
+            if (origin.alias_origin_id == null) {
+                return new AliasError(error("error.alias.id_no_id"), getPosition(ctx));
+            }
+            return new IdAliasDeclaration(toOguIdentifier(target), toOguIdentifier(origin));
         }
     }
 
     private ValDeclaration toAst(OguParser.Val_declContext ctx) {
         if (ctx.val_id != null) {
-            if (ctx.type() == null)
-                return new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.expr()));
-            return new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()));
+            if (ctx.type() == null) {
+                ValDeclaration val = new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.expr()));
+                getPositionFrom(val, ctx);
+                return val;
+            }
+            ValDeclaration val = new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()));
+            getPositionFrom(val, ctx);
+            return val;
         }
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
@@ -220,8 +223,9 @@ public class ParseTreeToAst {
 
 
     private Expression toAst(OguParser.ExprContext ctx) {
-        if (ctx.el != null)
-            System.out.println("EL!!!");
+        if (ctx.constructor() != null) {
+            return toAst(ctx.constructor());
+        }
         if (ctx.function != null) {
             return toAstFunctionCall(ctx);
         }
@@ -231,16 +235,43 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
+    private Constructor toAst(OguParser.ConstructorContext ctx) {
+        TypeReference type = new TypeReference(toAst(ctx.tid()));
+        getPositionFrom(type, ctx);
+        List<ActualParam> params = ctx.expr_list().expr().stream().map(this::toAstParam).collect(Collectors.toList());
+        Constructor ctor = new Constructor(type, params);
+        getPositionFrom(ctor, ctx);
+        return ctor;
+    }
+
     private ActualParam toAstParam(OguParser.ExprContext ctx) {
-        if (ctx.literal != null)
-            return new ActualParam(toAst(ctx.atom()));
+        System.out.println("ctx = "+ctx.getText());
+
+        if (ctx.ref != null) {
+            OguIdentifier id = OguIdentifier.create(idText(ctx.ref));
+            getPositionFrom(id, ctx);
+            Reference ref = new Reference(id);
+            getPositionFrom(ref, ctx);
+            ActualParam param = new ActualParam(ref);
+            getPositionFrom(param, ctx);
+            return param;
+        }
+        if (ctx.literal != null) {
+            ActualParam param = new ActualParam(toAst(ctx.atom()));
+            getPositionFrom(param, ctx);
+            return param;
+        }
         if (ctx.function != null) {
-            System.out.println("Ast Param ctx.function="+ctx.function);
-            return new ActualParam(toAstFunctionCall(ctx));
+            ActualParam param = new ActualParam(toAstFunctionCall(ctx));
+            getPositionFrom(param, ctx);
+            return param;
         }
-        else {
-            throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+        if (ctx.constructor() != null) {
+            ActualParam param = new ActualParam(toAst(ctx.constructor()));
+            getPositionFrom(param, ctx);
+            return param;
         }
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
     private Expression toAst(OguParser.Func_nameContext ctx) {
@@ -250,30 +281,42 @@ public class ParseTreeToAst {
     }
 
     private Expression toAst(OguParser.Qual_func_nameContext ctx) {
-        OguIdentifier tname = OguIdentifier.create(ctx.qual.stream().map(Token::getText).collect(Collectors.toList()), idText(ctx.name));
-        Reference id = new Reference(tname);
-        getPositionFrom(id, ctx);
-        return id;
+        System.out.println("toAst ctx="+ctx);
+        if (ctx.name == null) {
+            OguTypeIdentifier tname = OguTypeIdentifier.create(ctx.qual.stream().map(Token::getText).collect(Collectors.toList()));
+            TypeReference ref = new TypeReference(tname);
+            getPositionFrom(ref, ctx);
+            return ref;
+        } else {
+            OguIdentifier tname = OguIdentifier.create(ctx.qual.stream().map(Token::getText).collect(Collectors.toList()), idText(ctx.name));
+            Reference id = new Reference(tname);
+            getPositionFrom(id, ctx);
+            return id;
+        }
     }
 
 
-    private Expression toAst(OguParser.AtomContext atomCtx) {
-        if (atomCtx.string_literal != null) {
-            return new StringLiteral(idText(atomCtx.STRING().getSymbol()));
+    private Expression toAst(OguParser.AtomContext ctx) {
+        if (ctx.string_literal != null) {
+            StringLiteral lit = new StringLiteral(idText(ctx.STRING().getSymbol()));
+            getPositionFrom(lit, ctx);
         }
-        throw new UnsupportedOperationException(atomCtx.getClass().getCanonicalName());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
     private FunctionCall toAstFunctionCall(OguParser.ExprContext ctx) {
-        if (ctx.el != null)
-            System.out.println("EL!!");
         if (ctx.function != null) {
             Expression function = toAst(ctx.function);
-            return new FunctionCall(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            FunctionCall functionCall = new FunctionCall(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            getPositionFrom(functionCall, ctx);
+            return functionCall;
+
         }
         if (ctx.qual_function != null) {
             Expression function = toAst(ctx.qual_function);
-            return new FunctionCall(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            FunctionCall functionCall = new FunctionCall(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            getPositionFrom(functionCall, ctx);
+            return functionCall;
         }
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
@@ -285,7 +328,7 @@ public class ParseTreeToAst {
 
     private String buildModuleNameFromFileName(String name) {
         int pos = name.indexOf('.');
-        return Character.toUpperCase(name.charAt(0))+name.substring(1, pos);
+        return Character.toUpperCase(name.charAt(0)) + name.substring(1, pos);
     }
 
 }

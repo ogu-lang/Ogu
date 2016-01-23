@@ -33,9 +33,8 @@ def _println : PrintStream -> String -> ()
 def println! : String -> ()
 ;let println! str =
 ;    _println stdOut str
-;    ()
 
-;val _stdIn = BufferedReader(InputStreamReader(_stdIn))
+val _stdIn : BufferedReader = new BufferedReader (new InputStreamReader (_stdIn))
 
 
 def readln! : String

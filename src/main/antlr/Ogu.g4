@@ -261,19 +261,31 @@ expr
 	| expr 'and' expr
 	| expr '||' expr
 	| expr 'or' expr
-	| '(' op (expr)* ')'
-	| '(' el=expr_list? ')'
+	| paren_expr
 	| '[' (list_expr)? ']'
 	| '{' map_expr? '}'
 	| expr '<-' expr
 	| expr '@' expr
 	| '$' ID
-	| ID
+	| ref=ID
 	| function=func_name (params+=expr)+
 	| qual_function=qual_func_name (params+=expr)*
+	| constructor
 	| set_expr
 	| literal=atom
 	;
+
+constructor
+    : 'new' tid '(' expr_list? ')' ;
+
+expr_list
+    : expr (',' expr)*
+    ;
+
+paren_expr
+    : '(' op expr* ')'
+    | '(' expr_list ')'
+    ;
 
 func_name : name=ID;
 
@@ -293,9 +305,6 @@ case_guards : INDENT case_guard NL* (case_guard NL*)* DEDENT ;
 
 case_guard : expr '=>' expr ;
 
-expr_list
-    : expr (',' expr)*
-    ;
 
 map_expr
     : expr '->' expr (',' expr '->' expr)*
