@@ -11,7 +11,7 @@ import com.beust.jcommander.JCommander;
 import org.ogu.lang.classloading.ClassFileDefinition;
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
 import org.ogu.lang.parser.OguModuleWithSource;
-import org.ogu.lang.parser.ast.OguModule;
+import org.ogu.lang.parser.ast.modules.OguModule;
 import org.ogu.lang.parser.ast.Position;
 import org.ogu.lang.resolvers.*;
 import org.ogu.lang.resolvers.compiled.JarTypeResolver;

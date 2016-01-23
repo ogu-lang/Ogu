@@ -1,33 +1,41 @@
+;; uses java integration
 module StdLib.IO
 
-exports (println!, readln!)
 
-#{extern "jvm" "java.io.PrintStream"}
-type PrintStream
+exports println!, readln!
 
-#{extern "jvm" "java.io.InputStream"}
-type InputStream
+#{extern "jvm" "java/io"}
+uses Java.IO
 
-#{extern "jvm" "java.io.InputStreamReader"}
-type InputStreamReader
+#{extern "jvm" "java/lang"}
+uses Java.Lang
 
-#{extern "jvm" "java.io.BufferedReader"}
-type BufferedReader
+#{extern "jvm" "java/lang/System"}
+alias System = Java.Lang.System
 
 
-#{extern "jvm" "System.out"}
-val _stdOut : _PrintStream
+#{extern "jvm" "java/lang/System.in:Ljava/io/InputStream;"}  ;; because in is a reserved word in Ogú
+alias _stdIn = System._In
 
-#{extern "jvm" "System.in"}
-val _systemIn : _InputStream
+alias BufferedReader = Java.IO.BufferedReader
+alias InputStreamReader = Java.IO.InputStreamReader
+alias PrintStream = Java.IO.PrintStream
 
-val _stdIn = BufferedReader(InputStreamReader(systemIn))
+#{extern "jvm" "java/lang/System.out:Ljava/io/PrintStream;"}
+val _stdOut : PrintStream = System.out
+
+#{extern "jvm" "java/io/PrintStream.println:(Ljava/lang/String;)V"}
+def _println : PrintStream -> String -> ()
 
 def println! : String -> ()
 let println! str =
-    println stdOut str
+    _println stdOut str
     ()
 
+val _stdIn = BufferedReader(InputStreamReader(_stdIn))
+
+#{extern "jvm" "/java/io/BufferedReader.readLine:()Ljava/lang/String"}
+def _readln : BufferedReader -> String
 
 def readln! : -> String
 let readln! =

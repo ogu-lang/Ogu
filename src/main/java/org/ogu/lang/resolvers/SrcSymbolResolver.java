@@ -1,6 +1,6 @@
 package org.ogu.lang.resolvers;
 
-import org.ogu.lang.parser.ast.OguModule;
+import org.ogu.lang.parser.ast.modules.OguModule;
 import java.util.List;
 
 /**

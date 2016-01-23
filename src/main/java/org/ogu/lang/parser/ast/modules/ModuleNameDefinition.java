@@ -1,7 +1,8 @@
-package org.ogu.lang.parser.ast;
+package org.ogu.lang.parser.ast.modules;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.codegen.jvm.JvmNameUtils;
+import org.ogu.lang.parser.ast.Node;
 
 /**
  * Created by ediaz on 21-01-16.

@@ -1,7 +1,7 @@
 package org.ogu.lang.parser;
 
 import com.google.common.collect.ImmutableList;
-import org.ogu.lang.parser.ast.OguModule;
+import org.ogu.lang.parser.ast.modules.OguModule;
 
 import java.io.File;
 import java.io.FileInputStream;

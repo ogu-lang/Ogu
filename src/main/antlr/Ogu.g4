@@ -40,26 +40,36 @@ import com.yuvalshavit.antlr4.DenterHelper;
 
 }
 
-module : moduleHeader=module_header? module_export* module_uses* module_body NL*;
+module : moduleHeader=module_header? module_exports* module_uses* module_body NL*;
 
 module_header : 'module' name=module_name NL* ;
 
 module_name : (parts+=TID) ('.' parts+=TID)* ;
 
-module_export : 'exports' ('*' | '(' export_name (',' export_name)* ')' ) NL*;
+module_exports : compiler_flags? 'exports' exports+=export_name (',' exports+=export_name)*  NL*;
 
-export_name : TID | ID ;
+export_name : TID | ID  ;
 
-module_uses : 'uses' module_name NL* ;
+module_uses : compiler_flags? 'uses' imports+=module_name (',' imports+=module_name)* NL* ;
 
 module_body : (members+=module_decl NL*)* ;
 
-module_decl : compiler_flag?
-    (def | let | var | val |  trait_def | instance_def | type_def | data_def | enum_def | class_def  | expr);
+module_decl
+    : expr
+    | compiler_flags?   (def | let | var | val |  alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
+    ;
+
+alias_def : 'alias' alias_target '=' alias_origin NL*;
+
+alias_target : alias_tid=TID | alias_id=ID;
+
+alias_origin :  alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_origin_id=ID)? ;
 
 trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT   ;
 
 instance_def : 'instance' TID type type* 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT   ;
+
+compiler_flags :  compiler_flag+ ;
 
 compiler_flag : '#' '{' ID (STRING)* '}' NL*;
 
@@ -311,9 +321,9 @@ do_expression
 	: 'do' (expr | block)
 	;
 
-ID : [_a-záéíóúñ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ('!'|'?')?;
+ID : [_a-záéíóúñ][_\-a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ('!'|'?')?;
 
-TID : [A-ZÁÉÍÓÚÑ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ;
+TID : [A-ZÁÉÍÓÚÑ][_\-a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ;
 
 STRING : '"' (ESC|.)*? '"' ;
 

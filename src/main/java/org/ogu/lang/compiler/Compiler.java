@@ -2,7 +2,7 @@ package org.ogu.lang.compiler;
 
 import org.ogu.lang.classloading.ClassFileDefinition;
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
-import org.ogu.lang.parser.ast.OguModule;
+import org.ogu.lang.parser.ast.modules.OguModule;
 import org.ogu.lang.resolvers.ResolverRegistry;
 import org.ogu.lang.resolvers.SymbolResolver;
 

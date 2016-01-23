@@ -10,6 +10,9 @@ defaultTasks 'shadowJar'
 
 version = "0.1.2"
 
+targetCompatibility = '1.8'
+sourceCompatibility = '1.8'
+
 jar {
     manifest {
         attributes 'Main-Class': 'org.ogu.lang.compiler.Ogu'

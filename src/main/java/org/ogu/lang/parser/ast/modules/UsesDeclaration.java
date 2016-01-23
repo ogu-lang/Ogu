@@ -1,4 +1,4 @@
-package org.ogu.lang.parser.ast.uses;
+package org.ogu.lang.parser.ast.modules;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
@@ -27,6 +27,7 @@ public class UsesDeclaration extends Node {
 
     public UsesDeclaration(QualifiedName qualifiedName) {
         this.qualifiedName = qualifiedName;
+        this.qualifiedName.setParent(this);
     }
 
     public  Optional<Symbol> findAmongImported(String name, SymbolResolver resolver) {

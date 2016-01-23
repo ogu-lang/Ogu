@@ -2,6 +2,7 @@ package org.ogu.lang.parser.ast;
 
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
 import org.ogu.lang.parser.ast.expressions.InvocableExpr;
+import org.ogu.lang.parser.ast.modules.OguModule;
 import org.ogu.lang.resolvers.ResolverRegistry;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
