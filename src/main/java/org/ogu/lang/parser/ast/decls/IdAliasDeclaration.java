@@ -1,8 +1,10 @@
-package org.ogu.lang.parser.ast.typeusage;
+package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.OguIdentifier;
+
+import java.util.List;
 
 /**
  * A common alias (for vals, defs, lets) not Types
@@ -10,13 +12,11 @@ import org.ogu.lang.parser.ast.OguIdentifier;
  */
 public class IdAliasDeclaration extends AliasDeclaration {
 
-    private OguIdentifier aliasTarget;
     private OguIdentifier aliasOrigin;
 
 
-    public IdAliasDeclaration(OguIdentifier target, OguIdentifier origin) {
-        this.aliasTarget = target;
-        this.aliasTarget.setParent(this);
+    public IdAliasDeclaration(OguIdentifier target, OguIdentifier origin, List<Decorator> decorators) {
+        super(target, decorators);
         this.aliasOrigin = origin;
         this.aliasOrigin.setParent(this);
     }
@@ -24,13 +24,13 @@ public class IdAliasDeclaration extends AliasDeclaration {
     @Override
     public String toString() {
         return "TypeAliasDeclaration{" +
-                "aliasTarget=" + aliasTarget +
+                "aliasTarget=" + name +
                 ", aliasOrigin=" + aliasOrigin +
                 '}';
     }
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().add(aliasTarget).add(aliasOrigin).build();
+        return ImmutableList.<Node>builder().add(name).add(aliasOrigin).build();
     }
 }

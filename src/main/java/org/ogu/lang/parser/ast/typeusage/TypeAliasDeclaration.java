@@ -2,9 +2,11 @@ package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguName;
 import org.ogu.lang.parser.ast.OguTypeIdentifier;
-import org.ogu.lang.parser.ast.QualifiedName;
+import org.ogu.lang.parser.ast.decls.AliasDeclaration;
+import org.ogu.lang.parser.ast.decls.Decorator;
+
+import java.util.List;
 
 /**
  * Declare an Alias. Syntax is alias <target> = <origin>.
@@ -13,15 +15,11 @@ import org.ogu.lang.parser.ast.QualifiedName;
  */
 public class TypeAliasDeclaration extends AliasDeclaration {
 
-    //
-
-    private OguTypeIdentifier aliasTarget;
     private OguTypeIdentifier aliasOrigin;
 
 
-    public TypeAliasDeclaration(OguTypeIdentifier target, OguTypeIdentifier origin) {
-        this.aliasTarget = target;
-        this.aliasTarget.setParent(this);
+    public TypeAliasDeclaration(OguTypeIdentifier target, OguTypeIdentifier origin, List<Decorator> decorators) {
+        super(target, decorators);
         this.aliasOrigin = origin;
         this.aliasOrigin.setParent(this);
     }
@@ -29,13 +27,14 @@ public class TypeAliasDeclaration extends AliasDeclaration {
     @Override
     public String toString() {
         return "TypeAliasDeclaration{" +
-                "aliasTarget=" + aliasTarget +
+                "aliasTarget=" + name +
                 ", aliasOrigin=" + aliasOrigin +
+                ", decorators="+ decorators +
                 '}';
     }
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().add(aliasTarget).add(aliasOrigin).build();
+        return ImmutableList.<Node>builder().add(name).add(aliasOrigin).addAll(decorators).build();
     }
 }

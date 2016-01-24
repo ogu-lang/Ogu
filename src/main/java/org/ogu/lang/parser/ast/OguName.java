@@ -2,10 +2,7 @@ package org.ogu.lang.parser.ast;
 
 import com.google.common.collect.ImmutableList;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * An Identifier in Ogú.
@@ -16,10 +13,6 @@ public class OguName extends Node {
 
     private OguName base;
     private String name;
-
-    public OguName getBase() {
-        return base;
-    }
 
     public String getName() {
         return name;

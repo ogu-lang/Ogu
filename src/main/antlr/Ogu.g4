@@ -46,17 +46,17 @@ module_header : 'module' name=module_name NL* ;
 
 module_name : (parts+=TID) ('.' parts+=TID)* ;
 
-module_exports : compiler_flags? 'exports' exports+=export_name (',' exports+=export_name)*  NL*;
+module_exports : decs=decorators? 'exports' exports+=export_name (',' exports+=export_name)*  NL*;
 
 export_name : TID | ID  ;
 
-module_uses : compiler_flags? 'uses' imports+=module_name (',' imports+=module_name)* NL* ;
+module_uses : decs=decorators? 'uses' imports+=module_name (',' imports+=module_name)* NL* ;
 
 module_body : (members+=module_decl NL*)* ;
 
 module_decl
     : expr
-    | compiler_flags?   (func_decl | let | var | val_decl |  alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
+    | decs=decorators?   (func_decl | let | var | val_decl |  alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
     ;
 
 alias_def : 'alias' alias_target '=' alias_origin NL*;
@@ -69,9 +69,9 @@ trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((func_decl|let|var|val_d
 
 instance_def : 'instance' TID type type* 'where' INDENT ((func_decl|let|var|val_decl) NL* )* NL* DEDENT   ;
 
-compiler_flags :  compiler_flag+ ;
+decorators :  (dec+=decorator)+ ;
 
-compiler_flag : '#' '{' ID (STRING)* '}' NL*;
+decorator : '#' '{' dec_id=ID (dec_args+=STRING)* '}' NL*;
 
 enum_def : 'enum' TID '=' ID ('|' ID)* deriving? ;
 

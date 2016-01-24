@@ -12,14 +12,14 @@ import java.util.List;
  * def funcion : T -> T -> T
  * Created by ediaz on 23-01-16.
  */
-public class FunctionDeclaration extends Declaration {
+public class FunctionDeclaration extends NameDeclaration {
 
-    List<TypeArg> paramTypes;
-    TypeArg returnType;
+    private List<TypeArg> paramTypes;
+    private TypeArg returnType;
 
 
-    public FunctionDeclaration(OguIdentifier id, List<TypeArg> paramTypes) {
-        super(id);
+    public FunctionDeclaration(OguIdentifier id, List<TypeArg> paramTypes, List<Decorator> decorators) {
+        super(id, decorators);
         this.paramTypes = new ArrayList<>();
         this.paramTypes.addAll(paramTypes.subList(0, paramTypes.size()-1));
         this.paramTypes.forEach((p) -> p.setParent(this));
@@ -32,9 +32,10 @@ public class FunctionDeclaration extends Declaration {
     public String toString() {
 
         return "FunctionDeclaration{" +
-                "id ='" + id + '\'' +
+                "id ='" + name + '\'' +
                 ", returnType =" + returnType+
                 ", paramTypes =" + paramTypes +
+                ", decorators = " + decorators +
                 '}';
     }
 }

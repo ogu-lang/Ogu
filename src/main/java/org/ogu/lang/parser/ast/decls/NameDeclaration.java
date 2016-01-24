@@ -2,35 +2,35 @@ package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
-
-import java.util.ArrayList;
+import org.ogu.lang.parser.ast.OguName;
 import java.util.List;
 
 /**
  * Any Declaration
  * Created by ediaz on 23-01-16.
  */
-public abstract class Declaration extends Node {
+public abstract class NameDeclaration extends Declaration {
 
-    protected List<Decorator> decorators;
+    protected OguName name;
 
-    protected Declaration(List<Decorator> decorators) {
-        this.decorators = new ArrayList<>();
-        this.decorators.addAll(decorators);
-        this.decorators.forEach((p) -> p.setParent(this));
+    protected NameDeclaration(OguName name, List<Decorator> decorators) {
+        super(decorators);
+        this.name = name;
+        this.name.setParent(this);
     }
 
     @Override
     public Iterable<Node> getChildren() {
         return ImmutableList.<Node>builder()
+                .add(name)
                 .addAll(decorators).build();
     }
 
     @Override
     public String toString() {
         return "Declaration{" +
-                "decorators='" +decorators + '\''+
+                "name='" + name + '\''+
+                ", decorators=" + decorators +
                 '}';
     }
 }

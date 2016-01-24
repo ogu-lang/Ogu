@@ -1,11 +1,13 @@
-package org.ogu.lang.parser.ast.typeusage;
+package org.ogu.lang.parser.ast.decls;
 
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.Position;
+import org.ogu.lang.parser.ast.decls.AliasDeclaration;
 import org.ogu.lang.resolvers.SymbolResolver;
 
 import java.util.Collections;
+import java.util.List;
 
 /**
  * A semantic error on Alias declaration
@@ -14,16 +16,16 @@ import java.util.Collections;
 public class AliasError extends AliasDeclaration {
 
     private String message;
-    private Position position;
 
     public AliasError(String message, Position position) {
+        super(null, Collections.emptyList());
         this.message = message;
-        this.position = position;
+        this.setPosition(position);
     }
 
     @Override
     protected boolean specificValidate(SymbolResolver resolver, ErrorCollector errorCollector) {
-        errorCollector.recordSemanticError(position, message);
+        errorCollector.recordSemanticError(getPosition(), message);
         return false;
     }
 

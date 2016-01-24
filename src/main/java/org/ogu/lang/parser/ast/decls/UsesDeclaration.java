@@ -1,11 +1,13 @@
-package org.ogu.lang.parser.ast.modules;
+package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
+import org.ogu.lang.parser.ast.OguTypeIdentifier;
 import org.ogu.lang.parser.ast.QualifiedName;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.Symbol;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -13,21 +15,19 @@ import java.util.Optional;
  * Created by ediaz on 21-01-16.
  */
 
-public class UsesDeclaration extends Node {
+public class UsesDeclaration extends NameDeclaration {
 
 
-    private QualifiedName qualifiedName;
 
     @Override
     public String toString() {
         return "UsesDeclaration{" +
-                "qualifiedName=" + qualifiedName +
+                "name=" + name +
                 '}';
     }
 
-    public UsesDeclaration(QualifiedName qualifiedName) {
-        this.qualifiedName = qualifiedName;
-        this.qualifiedName.setParent(this);
+    public UsesDeclaration(OguTypeIdentifier name, List<Decorator> decorators) {
+        super(name, decorators);
     }
 
     public  Optional<Symbol> findAmongImported(String name, SymbolResolver resolver) {
@@ -36,8 +36,4 @@ public class UsesDeclaration extends Node {
     }
 
 
-    @Override
-    public Iterable<Node> getChildren() {
-        return ImmutableList.of(qualifiedName);
-    }
 }

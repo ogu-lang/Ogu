@@ -3,17 +3,15 @@ package org.ogu.lang.parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.ogu.lang.antlr.OguParser;
-import org.ogu.lang.compiler.Ogu;
 import org.ogu.lang.parser.ast.*;
-import org.ogu.lang.parser.ast.decls.FunctionDeclaration;
-import org.ogu.lang.parser.ast.decls.ValDeclaration;
+import org.ogu.lang.parser.ast.decls.*;
 import org.ogu.lang.parser.ast.expressions.*;
 import org.ogu.lang.parser.ast.expressions.literals.StringLiteral;
 import org.ogu.lang.parser.ast.modules.*;
 import org.ogu.lang.parser.ast.typeusage.*;
 
 import java.io.File;
-import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,10 +59,10 @@ public class ParseTreeToAst {
         }
 
         for (OguParser.Module_usesContext usesDeclarationContext : ctx.module_uses()) {
-            module.addUses(toAst(usesDeclarationContext));
+            module.addUses(toAst(usesDeclarationContext, toAstDecorators(usesDeclarationContext.decs)));
         }
         for (OguParser.Module_exportsContext exportsDeclarationContext : ctx.module_exports()) {
-            module.addExports(toAst(exportsDeclarationContext));
+            module.addExports(toAst(exportsDeclarationContext, toAstDecorators(exportsDeclarationContext.decs)));
         }
         return module;
     }
@@ -75,10 +73,10 @@ public class ParseTreeToAst {
         return new ModuleNameDefinition(toAst(ctx.name).qualifiedName());
     }
 
-    private QualifiedName toAst(OguParser.Module_nameContext ctx) {
-        QualifiedName qualifiedName = QualifiedName.create(ctx.parts.stream().map(Token::getText).collect(Collectors.toList()));
-        getPositionFrom(qualifiedName, ctx);
-        return qualifiedName;
+    private OguTypeIdentifier toAst(OguParser.Module_nameContext ctx) {
+        OguTypeIdentifier type = OguTypeIdentifier.create(ctx.parts.stream().map(Token::getText).collect(Collectors.toList()));
+        getPositionFrom(type, ctx);
+        return type;
     }
 
     private OguTypeIdentifier toOguTypeIdentifier(OguParser.Alias_targetContext ctx) {
@@ -106,12 +104,12 @@ public class ParseTreeToAst {
         return tname;
     }
 
-    private ExportsDeclaration toAst(OguParser.Export_nameContext ctx) {
+    private ExportsDeclaration toAst(OguParser.Export_nameContext ctx, List<Decorator> decs) {
         ExportsDeclaration result;
         if (ctx.ID() != null)
-            result = new ExportsFunctionDeclaration(new OguIdentifier(idText(ctx.ID().getSymbol())));
+            result = new ExportsFunctionDeclaration(new OguIdentifier(idText(ctx.ID().getSymbol())), decs);
         else if (ctx.TID() != null)
-            result = new ExportsTypeDeclaration(QualifiedName.create(idText(ctx.TID().getSymbol())));
+            result = new ExportsTypeDeclaration(OguTypeIdentifier.create(idText(ctx.TID().getSymbol())), decs);
         else {
             throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
         }
@@ -121,27 +119,47 @@ public class ParseTreeToAst {
 
     private Node toAst(OguParser.Module_declContext ctx) {
         if (ctx.alias_def() != null) {
-            return toAst(ctx.alias_def());
+            return toAst(ctx.alias_def(), toAstDecorators(ctx.decs));
         }
         if (ctx.val_decl() != null) {
-            return toAst(ctx.val_decl());
+            return toAst(ctx.val_decl(), toAstDecorators(ctx.decs));
         }
-        if (ctx.expr() != null) {
-            return toAst(ctx.expr());
+        if (ctx.func_decl() != null) {
+            return toAst(ctx.func_decl(), toAstDecorators(ctx.decs));
         }
 
-        if (ctx.func_decl() != null) {
-            return toAst(ctx.func_decl());
+        if (ctx.expr() != null) {
+            return toAst(ctx.expr());
         }
 
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private FunctionDeclaration toAst(OguParser.Func_declContext ctx) {
+    private List<Decorator> toAstDecorators(OguParser.DecoratorsContext decs) {
+        if (decs == null)
+            return Collections.emptyList();
+        return decs.dec.stream().map(this::toAst).collect(Collectors.toList());
+    }
 
+    private Decorator toAst(OguParser.DecoratorContext ctx) {
+        String decoratorId = idText(ctx.dec_id);
+        if ("extern".equals(decoratorId)) {
+            List<String> decoratorArgs = ctx.dec_args.stream().map(this::idText).collect(Collectors.toList());
+            if (decoratorArgs.size() != 2)
+                return new DecoratorError(error("error.decorator.wrong_size_of_arguments"), getPosition(ctx));
+            Decorator decorator = new ExternDecorator(decoratorArgs.get(0), decoratorArgs.get(1));
+            getPositionFrom(decorator, ctx);
+            return decorator;
+        }
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private FunctionDeclaration toAst(OguParser.Func_declContext ctx, List<Decorator> decorators) {
         if (ctx.name.f_id != null) {
             List<TypeArg> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
-            return new FunctionDeclaration(toAst(ctx.name), params);
+            FunctionDeclaration funcDecl = new FunctionDeclaration(toAst(ctx.name), params, decorators);
+            getPositionFrom(funcDecl, ctx);
+            return funcDecl;
         }
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
@@ -157,51 +175,56 @@ public class ParseTreeToAst {
                 return new QualifiedTypeArg(id);
             }
         }
-        throw new UnsupportedOperationException(ctx.toString());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
     private OguIdentifier toAst(OguParser.Func_name_declContext ctx) {
         if (ctx.f_id != null)
             return new OguIdentifier(idText(ctx.f_id));
-        throw new UnsupportedOperationException(ctx.toString());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private List<ExportsDeclaration> toAst(OguParser.Module_exportsContext ctx) {
+    private List<ExportsDeclaration> toAst(OguParser.Module_exportsContext ctx, List<Decorator> decorators) {
         if (ctx.export_name() != null)
-            return ctx.exports.stream().map(this::toAst).collect(Collectors.toList());
+            return ctx.exports.stream().map((e) -> toAst(e, decorators)).collect(Collectors.toList());
         throw new UnsupportedOperationException(ctx.toString());
     }
 
-    private List<UsesDeclaration> toAst(OguParser.Module_usesContext ctx) {
+
+    private List<UsesDeclaration> toAst(OguParser.Module_usesContext ctx, List<Decorator> decs) {
         if (ctx.module_name() != null)
-            return ctx.imports.stream().map((i) -> new UsesDeclaration(toAst(i))).collect(Collectors.toList());
+            return ctx.imports.stream().map((i) -> new UsesDeclaration(toAst(i), decs)).collect(Collectors.toList());
         throw new UnsupportedOperationException(ctx.toString());
     }
 
-    private AliasDeclaration toAst(OguParser.Alias_defContext ctx) {
+    private AliasDeclaration toAst(OguParser.Alias_defContext ctx, List<Decorator> decs) {
         OguParser.Alias_targetContext target = ctx.alias_target();
         OguParser.Alias_originContext origin = ctx.alias_origin();
         if (target.alias_tid != null) {
             if (origin.alias_origin_id != null) {
                 return new AliasError(error("error.alias.tid_no_tid"), getPosition(ctx));
             }
-            return new TypeAliasDeclaration(toOguTypeIdentifier(target), toOguTypeIdentifier(origin));
+            TypeAliasDeclaration decl = new TypeAliasDeclaration(toOguTypeIdentifier(target), toOguTypeIdentifier(origin), decs);
+            getPositionFrom(decl, ctx);
+            return decl;
         } else {
             if (origin.alias_origin_id == null) {
                 return new AliasError(error("error.alias.id_no_id"), getPosition(ctx));
             }
-            return new IdAliasDeclaration(toOguIdentifier(target), toOguIdentifier(origin));
+            IdAliasDeclaration decl = new IdAliasDeclaration(toOguIdentifier(target), toOguIdentifier(origin), decs);
+            getPositionFrom(decl, ctx);
+            return decl;
         }
     }
 
-    private ValDeclaration toAst(OguParser.Val_declContext ctx) {
+    private ValDeclaration toAst(OguParser.Val_declContext ctx, List<Decorator> decorators) {
         if (ctx.val_id != null) {
             if (ctx.type() == null) {
-                ValDeclaration val = new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.expr()));
+                ValDeclaration val = new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.expr()), decorators);
                 getPositionFrom(val, ctx);
                 return val;
             }
-            ValDeclaration val = new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()));
+            ValDeclaration val = new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decorators);
             getPositionFrom(val, ctx);
             return val;
         }
@@ -245,8 +268,6 @@ public class ParseTreeToAst {
     }
 
     private ActualParam toAstParam(OguParser.ExprContext ctx) {
-        System.out.println("ctx = "+ctx.getText());
-
         if (ctx.ref != null) {
             OguIdentifier id = OguIdentifier.create(idText(ctx.ref));
             getPositionFrom(id, ctx);
@@ -281,7 +302,6 @@ public class ParseTreeToAst {
     }
 
     private Expression toAst(OguParser.Qual_func_nameContext ctx) {
-        System.out.println("toAst ctx="+ctx);
         if (ctx.name == null) {
             OguTypeIdentifier tname = OguTypeIdentifier.create(ctx.qual.stream().map(Token::getText).collect(Collectors.toList()));
             TypeReference ref = new TypeReference(tname);

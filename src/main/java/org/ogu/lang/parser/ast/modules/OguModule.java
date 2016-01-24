@@ -3,12 +3,10 @@ package org.ogu.lang.parser.ast.modules;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.Declaration;
-import org.ogu.lang.parser.ast.decls.ValDeclaration;
+import org.ogu.lang.parser.ast.decls.ExportsDeclaration;
+import org.ogu.lang.parser.ast.decls.UsesDeclaration;
 import org.ogu.lang.parser.ast.expressions.Expression;
-import org.ogu.lang.parser.ast.modules.ExportsDeclaration;
-import org.ogu.lang.parser.ast.modules.ModuleNameDefinition;
-import org.ogu.lang.parser.ast.modules.UsesDeclaration;
-import org.ogu.lang.parser.ast.typeusage.AliasDeclaration;
+import org.ogu.lang.parser.ast.decls.AliasDeclaration;
 
 import java.util.ArrayList;
 import java.util.List;
