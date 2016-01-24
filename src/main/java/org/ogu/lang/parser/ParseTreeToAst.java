@@ -55,11 +55,11 @@ public class ParseTreeToAst {
             else if (memberNode instanceof AliasDeclaration)
                 module.add((AliasDeclaration) memberNode);
             else if (memberNode instanceof ValDeclaration)
-                module.add((ValDeclaration) memberNode);
+                module.add((ExportableDeclaration) memberNode);
             else if (memberNode instanceof FunctionDeclaration)
-                module.add((FunctionDeclaration) memberNode);
-            else if (memberNode instanceof FunctionDefinition)
-                module.add((FunctionDefinition) memberNode);
+                module.add((ExportableDeclaration) memberNode);
+            else if (memberNode instanceof LetDefinition)
+                module.add((ExportableDeclaration) memberNode);
         }
 
         for (OguParser.Module_usesContext usesDeclarationContext : ctx.module_uses()) {
@@ -139,15 +139,24 @@ public class ParseTreeToAst {
             return toAst(ctx.expr());
         }
 
+        if (ctx.type_def() != null) {
+            return toAst(ctx.type_def());
+        }
+
+
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private FunctionDefinition toAst(OguParser.Func_defContext ctx, List<Decorator> decorators) {
+    private TypeDeclaration toAst(OguParser.Type_defContext ctx) {
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private LetDefinition toAst(OguParser.Func_defContext ctx, List<Decorator> decorators) {
         if (ctx.let_func_name != null) {
             if (ctx.let_func_name.lid_fun_id != null) {
                 OguIdentifier funcId = OguIdentifier.create(idText(ctx.let_func_name.lid_fun_id));
                 List<FunctionPatternParam> params = funcArgsToAst(ctx.let_func_args);
-                FunctionDefinition funcdef = new FunctionDefinition(funcId, params, decorators);
+                LetDefinition funcdef = new LetDefinition(funcId, params, decorators);
                 getPositionFrom(funcdef, ctx);
                 if (ctx.expr() != null) {
                     Expression expr = toAst(ctx.expr());
@@ -162,7 +171,7 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private void toAst(OguParser.Let_exprContext ctx, FunctionDefinition funcdef) {
+    private void toAst(OguParser.Let_exprContext ctx, LetDefinition funcdef) {
         if (ctx.let_block() != null) {
             toAst(ctx.let_block(), funcdef);
             return;
@@ -171,7 +180,7 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private void toAst(OguParser.Let_blockContext ctx, FunctionDefinition funcdef) {
+    private void toAst(OguParser.Let_blockContext ctx, LetDefinition funcdef) {
         for (OguParser.Let_declContext decl : ctx.ld) {
             if (decl.expr() != null)
                 funcdef.add(toAst(decl.expr()));

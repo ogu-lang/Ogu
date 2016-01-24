@@ -1,4 +1,4 @@
-package org.ogu.lang.parser.ast.typeusage;
+package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;

@@ -19,6 +19,10 @@ public abstract class NameDeclaration extends Declaration {
         this.name.setParent(this);
     }
 
+    public String getName() {
+        return name.getName();
+    }
+
     @Override
     public Iterable<Node> getChildren() {
         return ImmutableList.<Node>builder()

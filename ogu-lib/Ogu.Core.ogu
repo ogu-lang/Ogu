@@ -1,8 +1,7 @@
 ;; uses java integration
-module StdLib.IO
+module Ogu.Core
 
-
-exports println!, readln!
+exports println!, readln!, String
 
 #{extern "jvm" "java/io"}
 uses Java.IO
@@ -10,21 +9,26 @@ uses Java.IO
 #{extern "jvm" "java/lang"}
 uses Java.Lang
 
-#{extern "jvm" "java/lang/System"}
+
+#{extern "jvm" "Ljava/lang/String"}
+type String = Java.Lang.String
+
+#{extern "jvm" "Ljava/lang/System;"}
 alias System = Java.Lang.System
+
 
 alias InputStream = Java.IO.InputStream
 alias BufferedReader = Java.IO.BufferedReader
 alias InputStreamReader = Java.IO.InputStreamReader
 alias PrintStream = Java.IO.PrintStream
 
-#{extern "jvm" "java/lang/System.in:Ljava/io/InputStream;"}  ;; because in is a reserved word in Ogú
-val _stdIn : InputStream = System._in
+#{extern "jvm" "java/lang/System.in:Ljava/io/InputStream;"}
+val _stdIn : InputStream = System._in  ;; because in is a reserved word in Ogú
 
 #{extern "jvm" "java/lang/System.out:Ljava/io/PrintStream;"}
 val _stdOut : PrintStream = System._out
 
-;#{extern "jvm" "/java/io/BufferedReader.readLine:()Ljava/lang/String"}
+;#{extern "jvm" "/java/io/BufferedReader.readLine:()Ljava/lang/String;"}
 def _readln : BufferedReader -> String
 
 #{extern "jvm" "java/io/PrintStream.println:(Ljava/lang/String;)V"}

@@ -2,11 +2,8 @@ package org.ogu.lang.parser.ast.modules;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.decls.Declaration;
-import org.ogu.lang.parser.ast.decls.ExportsDeclaration;
-import org.ogu.lang.parser.ast.decls.UsesDeclaration;
+import org.ogu.lang.parser.ast.decls.*;
 import org.ogu.lang.parser.ast.expressions.Expression;
-import org.ogu.lang.parser.ast.decls.AliasDeclaration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,26 +15,31 @@ import java.util.List;
 public class OguModule extends Node {
 
     ModuleNameDefinition nameDefinition;
-    private List<Expression> program = new ArrayList<>();
     private List<UsesDeclaration> uses = new ArrayList<>();
     private List<AliasDeclaration> aliases = new ArrayList<>();
     private List<ExportsDeclaration> exports = new ArrayList<>();
-    private List<Declaration> decls = new ArrayList<>();
+    private List<ExportableDeclaration> declarations = new ArrayList<>();
+    private List<Expression> program = new ArrayList<>();
 
+    public List<AliasDeclaration> getAliases() { return aliases; }
+
+    public List<Expression> getProgram() {
+        return program;
+    }
 
     public void add(Expression expression) {
         program.add(expression);
         expression.setParent(this);
     }
 
-    public void add(Declaration decl) {
-        decls.add(decl);
-        decl.setParent(this);
-    }
-
     public void add(AliasDeclaration alias) {
         aliases.add(alias);
         alias.setParent(this);
+    }
+
+    public void add(ExportableDeclaration decl) {
+        declarations.add(decl);
+        decl.setParent(this);
     }
 
     public void addExports(List<ExportsDeclaration> exportsDeclarations) {
@@ -65,7 +67,7 @@ public class OguModule extends Node {
         return ImmutableList.<Node>builder()
                 .add(nameDefinition)
                 .addAll(program)
-                .addAll(decls)
+                .addAll(declarations)
                 .addAll(aliases)
                 .addAll(exports)
                 .addAll(uses).build();
@@ -73,5 +75,9 @@ public class OguModule extends Node {
 
     public ModuleNameDefinition getNameDefinition() {
         return nameDefinition;
+    }
+
+    public List<ExportableDeclaration> getDeclarations() {
+        return declarations;
     }
 }

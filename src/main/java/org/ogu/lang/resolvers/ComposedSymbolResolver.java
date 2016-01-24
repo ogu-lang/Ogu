@@ -1,7 +1,11 @@
 package org.ogu.lang.resolvers;
 
+import org.ogu.lang.parser.ast.Node;
+import org.ogu.lang.symbols.Symbol;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * TODO Implements for real
@@ -26,5 +30,10 @@ public class ComposedSymbolResolver  implements SymbolResolver {
     @Override
     public void setParent(SymbolResolver parent) {
         this.parent = parent;
+    }
+
+    @Override
+    public Optional<Symbol> findSymbol(String name, Node context) {
+        return null;
     }
 }

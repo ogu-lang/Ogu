@@ -87,7 +87,7 @@ class_ctor : TID '(' expr_list? ')'  ;
 
 class_where : 'where' INDENT ((func_decl|func_def|var|val_def) NL* )* NL* DEDENT ;
 
-type_def :  'type' TID (typedef_args)? ('=' type)?  ;
+type_def :  'type' t=TID (typedef_args)? ('=' type)?  ;
 
 data_type_decl : type ('|' type)* deriving?
               | type  INDENT ('|' type NL*)*  deriving? NL* DEDENT

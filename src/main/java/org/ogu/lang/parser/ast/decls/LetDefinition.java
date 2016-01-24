@@ -14,12 +14,12 @@ import java.util.List;
  * let
  * Created by ediaz on 23-01-16.
  */
-public class FunctionDefinition extends NameDeclaration {
+public class LetDefinition extends ExportableDeclaration {
 
     List<FunctionPatternParam> params;
     List<FunctionNode> body;
 
-    public FunctionDefinition(OguIdentifier name, List<FunctionPatternParam> params, List<Decorator> decorators) {
+    public LetDefinition(OguIdentifier name, List<FunctionPatternParam> params, List<Decorator> decorators) {
         super(name, decorators);
         this.params = new ArrayList<>();
         this.params.addAll(params);

@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * Parser
+ * Takes .ogu files and generates an AST for each one
  * Created by ediaz on 20-01-16.
  */
 public class Parser {

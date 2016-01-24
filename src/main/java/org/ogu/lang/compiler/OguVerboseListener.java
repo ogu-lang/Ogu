@@ -2,6 +2,7 @@ package org.ogu.lang.compiler;
 
 import java.util.*;
 import org.antlr.v4.runtime.*;
+import org.ogu.lang.util.Feedback;
 
 public  class OguVerboseListener extends BaseErrorListener {
 
@@ -13,10 +14,10 @@ public  class OguVerboseListener extends BaseErrorListener {
 	public void syntaxError(Recognizer<?,?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
 		List<String> stack = ((org.antlr.v4.runtime.Parser) recognizer).getRuleInvocationStack();
 		Collections.reverse(stack);
-		Ogu.error(ERROR_BEGIN);
-		Ogu.error("rule stack: "+stack);
-		Ogu.error("linea "+line+":"+charPositionInLine+" posición "+offendingSymbol+": "+msg+"\n");
-		Ogu.error(ERROR_END);
+		Feedback.error(ERROR_BEGIN);
+		Feedback.error("rule stack: "+stack);
+		Feedback.error("linea "+line+":"+charPositionInLine+" posición "+offendingSymbol+": "+msg+"\n");
+		Feedback.error(ERROR_END);
 		++errores;
 	}
 

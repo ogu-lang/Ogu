@@ -12,18 +12,18 @@ import java.util.List;
  * A val declaration (val id = value) where value is an expression
  * Created by ediaz on 23-01-16.
  */
-public class ValDeclaration extends ExportableDeclaration {
+public class VarDeclaration extends ExportableDeclaration {
 
     private Expression value;
     private TypeArg returnType;
 
-    public ValDeclaration(OguIdentifier id, Expression value, List<Decorator> decorators) {
+    public VarDeclaration(OguIdentifier id, Expression value, List<Decorator> decorators) {
         super(id, decorators);
         this.value = value;
         this.value.setParent(this);
     }
 
-    public ValDeclaration(OguIdentifier id, TypeArg returnType, Expression value, List<Decorator> decorators) {
+    public VarDeclaration(OguIdentifier id, TypeArg returnType, Expression value, List<Decorator> decorators) {
         super(id, decorators);
         this.returnType = returnType;
         this.returnType.setParent(this);

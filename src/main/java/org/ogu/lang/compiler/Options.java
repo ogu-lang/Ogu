@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Compiler Options
  * Created by ediaz on 20-01-16.
  */
 public class Options {
@@ -57,6 +58,10 @@ public class Options {
     public void setSources(List<String> sources) {
         this.sources = sources;
     }
+
+    // use to compile without core libs
+    @Parameter(names = {"-nc", "--nocore"})
+    private boolean nocore = true;
 
     @Parameter(names = {"-o", "--output"})
     private String destinationDir = "ogu_classes";

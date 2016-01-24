@@ -12,7 +12,7 @@ import java.util.List;
  * def funcion : T -> T -> T
  * Created by ediaz on 23-01-16.
  */
-public class FunctionDeclaration extends NameDeclaration {
+public class FunctionDeclaration extends ExportableDeclaration {
 
     private List<TypeArg> paramTypes;
     private TypeArg returnType;

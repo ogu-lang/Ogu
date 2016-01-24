@@ -27,7 +27,7 @@ public class Compiler {
 
     public List<ClassFileDefinition> compile(OguModule module, ErrorCollector errorCollector) {
         ResolverRegistry.INSTANCE.record(module, resolver);
-        return new Compilation(resolver, errorCollector).compile(module);
+        return new Compilation(resolver, errorCollector, options).compile(module);
     }
 
 
