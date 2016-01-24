@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.ogu.lang.util.Messages.error;
+import static org.ogu.lang.util.Messages.message;
 
 /**
  * Transforms from Antlr ParseTree to Ast.
@@ -227,7 +227,7 @@ public class ParseTreeToAst {
         if ("extern".equals(decoratorId)) {
             List<String> decoratorArgs = ctx.dec_args.stream().map(this::idText).collect(Collectors.toList());
             if (decoratorArgs.size() != 2)
-                return new DecoratorError(error("error.decorator.wrong_size_of_arguments"), getPosition(ctx));
+                return new DecoratorError(message("error.decorator.wrong_size_of_arguments"), getPosition(ctx));
             Decorator decorator = new ExternDecorator(decoratorArgs.get(0), decoratorArgs.get(1));
             getPositionFrom(decorator, ctx);
             return decorator;
@@ -283,14 +283,14 @@ public class ParseTreeToAst {
         OguParser.Alias_originContext origin = ctx.alias_origin();
         if (target.alias_tid != null) {
             if (origin.alias_origin_id != null) {
-                return new AliasError(error("error.alias.tid_no_tid"), getPosition(ctx));
+                return new AliasError(message("error.alias.tid_no_tid"), getPosition(ctx));
             }
             TypeAliasDeclaration decl = new TypeAliasDeclaration(toOguTypeIdentifier(target), toOguTypeIdentifier(origin), decs);
             getPositionFrom(decl, ctx);
             return decl;
         } else {
             if (origin.alias_origin_id == null) {
-                return new AliasError(error("error.alias.id_no_id"), getPosition(ctx));
+                return new AliasError(message("error.alias.id_no_id"), getPosition(ctx));
             }
             IdAliasDeclaration decl = new IdAliasDeclaration(toOguIdentifier(target), toOguIdentifier(origin), decs);
             getPositionFrom(decl, ctx);

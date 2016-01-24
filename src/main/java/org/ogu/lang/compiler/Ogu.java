@@ -17,6 +17,7 @@ import org.ogu.lang.resolvers.compiled.JarTypeResolver;
 import org.ogu.lang.resolvers.jdk.JdkTypeResolver;
 import org.ogu.lang.util.Feedback;
 import org.ogu.lang.util.Logger;
+import org.ogu.lang.util.Messages;
 
 import static org.ogu.lang.util.Feedback.*;
 import static org.ogu.lang.util.Feedback.message;
@@ -128,10 +129,10 @@ public class Ogu {
         }
     }
 
-    static final String ERROR = "Me sake la ñoña! ";
-    static final String ERROR_OPTIONS = "Mi no entendió nah: ";
-    static final String ERROR_NO_FILES_TO_COMPILE = "Noay Peleita Yika! Mi tanto burrío...";
-    static final String HELP_MESSAGE = "Yo te allullo amiko mio:\n";
-	static final String WELCOME = "Hola amiko mio de mi.";
-	static final String GOODBYE = "Ke kapo el kompilador, nosierto?\nChau, chau amiko mio de mi.";
+    static final String ERROR = Messages.message("ogu.error");
+    static final String ERROR_OPTIONS = Messages.message("ogu.error.options");
+    static final String ERROR_NO_FILES_TO_COMPILE = Messages.message("ogu.error.no_files");
+    static final String HELP_MESSAGE = Messages.message("ogu.help");
+	static final String WELCOME = Messages.message("ogu.welcome");
+	static final String GOODBYE = Messages.message("ogu.goodbye");
 }

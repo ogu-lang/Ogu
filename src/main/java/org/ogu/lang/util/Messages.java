@@ -10,9 +10,9 @@ import java.util.ResourceBundle;
 public class Messages {
 
     static final Locale currentLocale = Locale.getDefault();
-    static final ResourceBundle messages = ResourceBundle.getBundle("MessagesBundle", currentLocale);
+    static final ResourceBundle messages = ResourceBundle.getBundle("MessagesBundle", currentLocale, new UTF8Control());
 
-    public static String error(String msgKey) {
+    public static String message(String msgKey) {
         return messages.getString(msgKey);
     }
 }
