@@ -5,6 +5,8 @@ import org.antlr.v4.runtime.Token;
 import org.ogu.lang.antlr.OguParser;
 import org.ogu.lang.parser.ast.*;
 import org.ogu.lang.parser.ast.decls.*;
+import org.ogu.lang.parser.ast.decls.funcdef.FuncIdParam;
+import org.ogu.lang.parser.ast.decls.funcdef.FunctionPatternParam;
 import org.ogu.lang.parser.ast.expressions.*;
 import org.ogu.lang.parser.ast.expressions.literals.StringLiteral;
 import org.ogu.lang.parser.ast.modules.*;
@@ -56,6 +58,8 @@ public class ParseTreeToAst {
                 module.add((ValDeclaration) memberNode);
             else if (memberNode instanceof FunctionDeclaration)
                 module.add((FunctionDeclaration) memberNode);
+            else if (memberNode instanceof FunctionDefinition)
+                module.add((FunctionDefinition) memberNode);
         }
 
         for (OguParser.Module_usesContext usesDeclarationContext : ctx.module_uses()) {
@@ -121,11 +125,14 @@ public class ParseTreeToAst {
         if (ctx.alias_def() != null) {
             return toAst(ctx.alias_def(), toAstDecorators(ctx.decs));
         }
-        if (ctx.val_decl() != null) {
-            return toAst(ctx.val_decl(), toAstDecorators(ctx.decs));
+        if (ctx.val_def() != null) {
+            return toAst(ctx.val_def(), toAstDecorators(ctx.decs));
         }
         if (ctx.func_decl() != null) {
             return toAst(ctx.func_decl(), toAstDecorators(ctx.decs));
+        }
+        if (ctx.func_def() != null) {
+            return toAst(ctx.func_def(), toAstDecorators(ctx.decs));
         }
 
         if (ctx.expr() != null) {
@@ -133,6 +140,71 @@ public class ParseTreeToAst {
         }
 
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private FunctionDefinition toAst(OguParser.Func_defContext ctx, List<Decorator> decorators) {
+        if (ctx.let_func_name != null) {
+            if (ctx.let_func_name.lid_fun_id != null) {
+                OguIdentifier funcId = OguIdentifier.create(idText(ctx.let_func_name.lid_fun_id));
+                List<FunctionPatternParam> params = funcArgsToAst(ctx.let_func_args);
+                FunctionDefinition funcdef = new FunctionDefinition(funcId, params, decorators);
+                getPositionFrom(funcdef, ctx);
+                if (ctx.expr() != null) {
+                    Expression expr = toAst(ctx.expr());
+                    funcdef.add(expr);
+                } else if (ctx.let_expr() != null) {
+                    toAst(ctx.let_expr(), funcdef);
+
+                }
+                return funcdef;
+            }
+        }
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private void toAst(OguParser.Let_exprContext ctx, FunctionDefinition funcdef) {
+        if (ctx.let_block() != null) {
+            toAst(ctx.let_block(), funcdef);
+            return;
+        }
+
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private void toAst(OguParser.Let_blockContext ctx, FunctionDefinition funcdef) {
+        for (OguParser.Let_declContext decl : ctx.ld) {
+            if (decl.expr() != null)
+                funcdef.add(toAst(decl.expr()));
+            else
+                throw new UnsupportedOperationException(decl.getClass().getCanonicalName());
+        }
+    }
+
+
+    private List<FunctionPatternParam> funcArgsToAst(List<OguParser.Let_argContext> let_func_args) {
+        return let_func_args.stream().map(this::toAst).collect(Collectors.toList());
+    }
+
+    private FunctionPatternParam toAst(OguParser.Let_argContext ctx) {
+        if (ctx.let_arg_atom() != null)
+            return toAst(ctx.let_arg_atom());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private FunctionPatternParam toAst(List<OguParser.Let_arg_atomContext> params) {
+        if (params.size() == 1) {
+            OguParser.Let_arg_atomContext atom = params.get(0);
+            if (atom.l_id != null && atom.l_id.lid_fun_id != null) {
+                FuncIdParam id = toAst(atom.l_id.lid_fun_id);
+                getPositionFrom(id, atom);
+                return id;
+            }
+        }
+        throw new UnsupportedOperationException(params.getClass().getCanonicalName());
+    }
+
+    private FuncIdParam toAst(Token tok) {
+        return new FuncIdParam(OguIdentifier.create(idText(tok)));
     }
 
     private List<Decorator> toAstDecorators(OguParser.DecoratorsContext decs) {
@@ -217,7 +289,7 @@ public class ParseTreeToAst {
         }
     }
 
-    private ValDeclaration toAst(OguParser.Val_declContext ctx, List<Decorator> decorators) {
+    private ValDeclaration toAst(OguParser.Val_defContext ctx, List<Decorator> decorators) {
         if (ctx.val_id != null) {
             if (ctx.type() == null) {
                 ValDeclaration val = new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.expr()), decorators);
@@ -254,6 +326,11 @@ public class ParseTreeToAst {
         }
         if (ctx.qual_function != null) {
             return toAstFunctionCall(ctx);
+        }
+        if (ctx.ref != null) {
+            Reference ref = new Reference(OguIdentifier.create(idText(ctx.ref)));
+            getPositionFrom(ref, ctx);
+            return ref;
         }
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
@@ -320,6 +397,7 @@ public class ParseTreeToAst {
         if (ctx.string_literal != null) {
             StringLiteral lit = new StringLiteral(idText(ctx.STRING().getSymbol()));
             getPositionFrom(lit, ctx);
+            return lit;
         }
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
@@ -338,6 +416,7 @@ public class ParseTreeToAst {
             getPositionFrom(functionCall, ctx);
             return functionCall;
         }
+
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 

@@ -56,7 +56,7 @@ module_body : (members+=module_decl NL*)* ;
 
 module_decl
     : expr
-    | decs=decorators?   (func_decl | let | var | val_decl |  alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
+    | decs=decorators?   (func_decl | func_def | var | val_def |  alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
     ;
 
 alias_def : 'alias' alias_target '=' alias_origin NL*;
@@ -65,9 +65,9 @@ alias_target : alias_tid=TID | alias_id=ID;
 
 alias_origin :  alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_origin_id=ID)? ;
 
-trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((func_decl|let|var|val_decl) NL* )* NL* DEDENT   ;
+trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((func_decl|func_def|var|val_def) NL* )* NL* DEDENT   ;
 
-instance_def : 'instance' TID type type* 'where' INDENT ((func_decl|let|var|val_decl) NL* )* NL* DEDENT   ;
+instance_def : 'instance' TID type type* 'where' INDENT ((func_decl|func_def|var|val_def) NL* )* NL* DEDENT   ;
 
 decorators :  (dec+=decorator)+ ;
 
@@ -85,7 +85,7 @@ class_arg : ('var'|'val')? ID (',' ID)* ':' type ;
 
 class_ctor : TID '(' expr_list? ')'  ;
 
-class_where : 'where' INDENT ((func_decl|let|var|val_decl) NL* )* NL* DEDENT ;
+class_where : 'where' INDENT ((func_decl|func_def|var|val_def) NL* )* NL* DEDENT ;
 
 type_def :  'type' TID (typedef_args)? ('=' type)?  ;
 
@@ -147,27 +147,27 @@ unit : '(' ')' | '!' ;
 
 func_name_decl : f_id=ID | f_op=op ;
 
-let
-	: 'let' (lid|op) let_arg* let_expr
+func_def
+	: 'let' (let_func_name=lid|op) (let_func_args+=let_arg)* let_expr
 	| 'let' '(' lid (',' lid)* ')' '=' expr
 	;
 
-val_decl
+val_def
     :  'val' val_id=ID (':' type)? ('=' expr)
     | 'val' '(' lid (',' lid)* ')' '=' expr ;
 
 
-lid : ID | ID ':' type ;
+lid : lid_fun_id=ID | lid_val_id=ID ':' type ;
 
 let_arg
-    : let_arg_atom
-    | '[' let_arg_atom? (',' let_arg_atom)* ']'
+    : l_atom=let_arg_atom
+    | '[' (let_arg_atom (',' let_arg_atom)*)? ']'
     | '(' let_arg_atom (',' let_arg_atom)* ')'
     | '(' let_arg_atom ('::' let_arg_atom)* ')'
     ;
 
 let_arg_atom
-    : lid | atom | TID (ID|let_arg)* ;
+    : l_id=lid | atom | TID (ID|let_arg)* ;
 
 let_expr : '=' ( let_block | expr let_where? )
          |  guards where?
@@ -192,11 +192,11 @@ where_expr
 
 
 let_block
-    : INDENT (let_decl NL*)+ (where NL*)? DEDENT
+    : INDENT (ld+=let_decl NL*)+ (where NL*)? DEDENT
     ;
 
 let_decl
-    : let | var | expr ;
+    : func_def | var | expr ;
 
 block : INDENT (let_decl NL*)* DEDENT ;
 
@@ -267,11 +267,11 @@ expr
 	| expr '<-' expr
 	| expr '@' expr
 	| '$' ID
-	| ref=ID
 	| function=func_name (params+=expr)+
 	| qual_function=qual_func_name (params+=expr)*
 	| constructor
 	| set_expr
+	| ref=ID
 	| literal=atom
 	;
 

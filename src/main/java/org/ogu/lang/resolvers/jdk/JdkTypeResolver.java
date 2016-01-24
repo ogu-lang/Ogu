@@ -1,7 +1,6 @@
 package org.ogu.lang.resolvers.jdk;
 
 import org.ogu.lang.definitions.TypeDefinition;
-import org.ogu.lang.parser.ast.invocables.FunctionDefinitionNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.resolvers.TypeResolver;
 import java.util.Optional;
@@ -36,10 +35,6 @@ public class JdkTypeResolver implements TypeResolver {
         return null;
     }
 
-    @Override
-    public Optional<FunctionDefinitionNode> resolveAbsoluteFunctionName(String typeName) {
-        return null;
-    }
 
     @Override
     public boolean existPackage(String packageName) {

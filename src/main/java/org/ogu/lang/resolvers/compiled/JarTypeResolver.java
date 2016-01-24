@@ -1,7 +1,6 @@
 package org.ogu.lang.resolvers.compiled;
 
 import org.ogu.lang.definitions.TypeDefinition;
-import org.ogu.lang.parser.ast.invocables.FunctionDefinitionNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.resolvers.TypeResolver;
 
@@ -30,11 +29,6 @@ public class JarTypeResolver implements TypeResolver {
 
     @Override
     public Optional<TypeDefinition> resolveAbsoluteTypeName(String typeName) {
-        return null;
-    }
-
-    @Override
-    public Optional<FunctionDefinitionNode> resolveAbsoluteFunctionName(String typeName) {
         return null;
     }
 

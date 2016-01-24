@@ -1,7 +1,6 @@
 package org.ogu.lang.resolvers;
 
 import org.ogu.lang.definitions.TypeDefinition;
-import org.ogu.lang.parser.ast.invocables.FunctionDefinitionNode;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,10 +32,6 @@ public class ComposedTypeResolver implements TypeResolver {
         return null;
     }
 
-    @Override
-    public Optional<FunctionDefinitionNode> resolveAbsoluteFunctionName(String typeName) {
-        return null;
-    }
 
     @Override
     public boolean existPackage(String packageName) {

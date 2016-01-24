@@ -31,13 +31,13 @@ def _readln : BufferedReader -> String
 def _println : PrintStream -> String -> ()
 
 def println! : String -> ()
-;let println! str =
-;    _println stdOut str
+let println! str =
+    _println stdOut str
 
 val _stdIn : BufferedReader = new BufferedReader (new InputStreamReader (_stdIn))
 
 
 def readln! : String
-;let readln! =
-;    readLine _stdIn
+let readln! =
+    readLine _stdIn
 
