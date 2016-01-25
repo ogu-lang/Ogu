@@ -59,23 +59,25 @@ module_decl
     | decs=decorators?   (func_decl | func_def | var | val_def |  alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
     ;
 
+decorators :  (dec+=decorator)+ ;
+
+decorator : '#' '{' dec_id=ID (dec_args+=STRING)* '}' NL*;
+
 alias_def : 'alias' alias_target '=' alias_origin NL*;
 
 alias_target : alias_tid=TID | alias_id=ID;
 
 alias_origin :  alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_origin_id=ID)? ;
 
-trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((func_decl|func_def|var|val_def) NL* )* NL* DEDENT   ;
-
-instance_def : 'instance' TID type type* 'where' INDENT ((func_decl|func_def|var|val_def) NL* )* NL* DEDENT   ;
-
-decorators :  (dec+=decorator)+ ;
-
-decorator : '#' '{' dec_id=ID (dec_args+=STRING)* '}' NL*;
-
 enum_def : 'enum' TID '=' ID ('|' ID)* deriving? ;
 
-data_def : 'data' func_decl_constraints? TID (typedef_args)? '=' data_type_decl ;
+data_def : 'data' constraints=typedef_args_constraints? TID (typedef_params)? '=' data_type_decl ;
+
+trait_def : 'mut'? 'trait' constraints=typedef_args_constraints? TID ID (ID)* ('where' INDENT (internal_decl NL* )* NL* DEDENT)?   ;
+
+instance_def : 'instance' constraints=typedef_args_constraints? TID type type* ('where' INDENT (internal_decl NL* )* NL* DEDENT)? ;
+
+internal_decl : decorators? (func_decl|func_def|var|val_def) ;
 
 class_def : 'mut'? 'class' func_decl_constraints? TID ID* '(' class_args? ')' ('=' class_ctor | class_where)? ;
 
@@ -85,9 +87,9 @@ class_arg : ('var'|'val')? ID (',' ID)* ':' type ;
 
 class_ctor : TID '(' expr_list? ')'  ;
 
-class_where : 'where' INDENT ((func_decl|func_def|var|val_def) NL* )* NL* DEDENT ;
+class_where : 'where' INDENT (internal_decl NL* )* NL* DEDENT ;
 
-type_def :  'type' t=TID (typedef_args)? ('=' type)?  ;
+type_def :  'type' constraints=typedef_args_constraints? t=TID (ta=typedef_params)? ('=' type)?  ;
 
 data_type_decl : type ('|' type)* deriving?
               | type  INDENT ('|' type NL*)*  deriving? NL* DEDENT
@@ -97,20 +99,16 @@ deriving : 'deriving' deriving_types | INDENT 'deriving' deriving_types NL* DEDE
 
 deriving_types :  '(' tid (',' tid)* ')' ;
 
-typedef_args
-	: typedef_args_constraints? ID (ID)*
+typedef_params
+	:  params+=ID (params+=ID)*
 	;
 
 typedef_args_constraints
-	: '(' typedef_arg_constraint_list ')' '=>'
-	;
-
-typedef_arg_constraint_list
-	: typedef_arg_constraint (',' typedef_arg_constraint)*
+	: '(' tac+=typedef_arg_constraint (',' tac+=typedef_arg_constraint)* ')' '=>'
 	;
 
 typedef_arg_constraint
-	: ID (',' ID)* ':' type
+	: ids+=ID (',' ids+=ID)* ':' t=type
 	;
 
 enum_values : ID ((NL)* '|' ID)* ;
@@ -145,10 +143,11 @@ func_decl_arg
 
 unit : '(' ')' | '!' ;
 
-func_name_decl : f_id=ID | f_op=op ;
+func_name_decl : f_id=ID | f_op=op | '(' f_op=op ')';
 
 func_def
 	: 'let' (let_func_name=lid|op) (let_func_args+=let_arg)* let_expr
+	| 'let' let_arg op let_arg let_expr
 	| 'let' '(' lid (',' lid)* ')' '=' expr
 	;
 
@@ -208,6 +207,7 @@ type : '[' type ']'
      | '{' type  '->' type '}'
      | type '->' type (<assoc=right>'->' type)*
      | tid (t_a+=tid_args)*
+     | nat=('i8' | 'u8' | 'i16' | 'u16' | 'i32' | 'u32' | 'i64' | 'u64' | 'f32' | 'f64')
      | ID
      ;
 
@@ -335,9 +335,9 @@ do_expression
 	: 'do' (expr | block)
 	;
 
-ID : [_a-záéíóúñ][_\-a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ('!'|'?')?;
+ID : [_a-záéíóúñ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ('!'|'?')?;
 
-TID : [A-ZÁÉÍÓÚÑ][_\-a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ;
+TID : [A-ZÁÉÍÓÚÑ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ;
 
 STRING : '"' (ESC|.)*? '"' ;
 

@@ -2,7 +2,6 @@ package org.ogu.lang.parser.ast.decls;
 
 import org.ogu.lang.parser.ast.OguIdentifier;
 import org.ogu.lang.parser.ast.typeusage.TypeArg;
-import org.ogu.lang.symbols.FormalParameter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,13 +11,14 @@ import java.util.List;
  * def funcion : T -> T -> T
  * Created by ediaz on 23-01-16.
  */
-public class FunctionDeclaration extends ExportableDeclaration {
+public class FunctionMemberDeclaration extends ContractMemberDeclaration {
 
     private List<TypeArg> paramTypes;
     private TypeArg returnType;
+    private ContractDeclaration contractDeclaration;
 
 
-    public FunctionDeclaration(OguIdentifier id, List<TypeArg> paramTypes, List<Decorator> decorators) {
+    public FunctionMemberDeclaration(OguIdentifier id, List<TypeArg> paramTypes, List<Decorator> decorators) {
         super(id, decorators);
         this.paramTypes = new ArrayList<>();
         this.paramTypes.addAll(paramTypes.subList(0, paramTypes.size()-1));
@@ -38,4 +38,6 @@ public class FunctionDeclaration extends ExportableDeclaration {
                 ", decorators = " + decorators +
                 '}';
     }
+
+
 }

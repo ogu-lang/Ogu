@@ -52,7 +52,7 @@ public class Ogu {
 
         Logger.configure(options);
 
-        org.ogu.lang.parser.Parser parser = new org.ogu.lang.parser.Parser();
+        org.ogu.lang.parser.Parser parser = new org.ogu.lang.parser.Parser(options);
 
         List<OguModuleWithSource> oguModules = new ArrayList<>();
         for (String source : options.getSources()) {
@@ -64,6 +64,7 @@ public class Ogu {
                 return;
             }
         }
+
 
         SymbolResolver resolver = getResolver(options.getSources(), options.getClassPathElements(), oguModules.stream().map(OguModuleWithSource::getModule).collect(Collectors.toList()));
 
@@ -135,4 +136,5 @@ public class Ogu {
     static final String HELP_MESSAGE = Messages.message("ogu.help");
 	static final String WELCOME = Messages.message("ogu.welcome");
 	static final String GOODBYE = Messages.message("ogu.goodbye");
+    static final String LEXONLY = Messages.message("ogu.lex_only");
 }

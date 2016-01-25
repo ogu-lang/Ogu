@@ -1,3 +1,3 @@
-uses StdLib.IO
+uses Ogu.Core ; release 0.1.3 needs this
 
 println! "Hola Mundo"

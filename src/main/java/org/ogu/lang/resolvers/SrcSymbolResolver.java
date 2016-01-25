@@ -3,7 +3,6 @@ package org.ogu.lang.resolvers;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.AliasDeclaration;
 import org.ogu.lang.parser.ast.decls.ExportableDeclaration;
-import org.ogu.lang.parser.ast.decls.ValDeclaration;
 import org.ogu.lang.parser.ast.modules.OguModule;
 import org.ogu.lang.symbols.Symbol;
 

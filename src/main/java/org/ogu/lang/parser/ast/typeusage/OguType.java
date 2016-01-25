@@ -1,4 +1,4 @@
-package org.ogu.lang.parser.ast.types;
+package org.ogu.lang.parser.ast.typeusage;
 
 import org.ogu.lang.parser.ast.Node;
 

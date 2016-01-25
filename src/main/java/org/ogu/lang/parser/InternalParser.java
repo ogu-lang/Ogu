@@ -1,5 +1,6 @@
 package org.ogu.lang.parser;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -15,11 +16,11 @@ import org.ogu.lang.compiler.OguVerboseListener;
 
 public class InternalParser {
 
-    public OguParser.ModuleContext produceParseTree(InputStream inputStream) throws IOException {
+    public OguParser.ModuleContext produceParseTree(File file, InputStream inputStream) throws IOException {
         CharStream charStream = new ANTLRInputStream(inputStream);
         OguLexer l = new OguLexer(charStream);
         OguParser p = new OguParser(new CommonTokenStream(l));
-        OguVerboseListener listener = new OguVerboseListener();
+        OguVerboseListener listener = new OguVerboseListener(file);
         p.addErrorListener(listener);
 
         OguParser.ModuleContext moduleContext = p.module();

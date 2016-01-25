@@ -51,6 +51,10 @@ public class Options {
         this.help = help;
     }
 
+    public boolean isParseOnly() { return parseOnly; }
+
+    public void setParseOnly(boolean parseOnly) { this.parseOnly = parseOnly; }
+
     public List<String> getSources() {
         return sources;
     }
@@ -62,6 +66,9 @@ public class Options {
     // use to compile without core libs
     @Parameter(names = {"-nc", "--nocore"})
     private boolean nocore = true;
+
+    @Parameter(names = {"-p", "--parse"})
+    private boolean parseOnly = false;
 
     @Parameter(names = {"-o", "--output"})
     private String destinationDir = "ogu_classes";

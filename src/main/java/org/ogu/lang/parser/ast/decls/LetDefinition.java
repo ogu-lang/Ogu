@@ -14,10 +14,11 @@ import java.util.List;
  * let
  * Created by ediaz on 23-01-16.
  */
-public class LetDefinition extends ExportableDeclaration {
+public class LetDefinition extends ContractMemberDeclaration {
 
     List<FunctionPatternParam> params;
     List<FunctionNode> body;
+    ContractDeclaration contractDeclaration;
 
     public LetDefinition(OguIdentifier name, List<FunctionPatternParam> params, List<Decorator> decorators) {
         super(name, decorators);
@@ -45,4 +46,6 @@ public class LetDefinition extends ExportableDeclaration {
                 ", decorators=" + decorators +
                 '}';
     }
+
+
 }

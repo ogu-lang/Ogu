@@ -7,14 +7,15 @@ import org.ogu.lang.parser.ast.*;
 import org.ogu.lang.parser.ast.decls.*;
 import org.ogu.lang.parser.ast.decls.funcdef.FuncIdParam;
 import org.ogu.lang.parser.ast.decls.funcdef.FunctionPatternParam;
+import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
+import org.ogu.lang.parser.ast.decls.typedef.TypeParamConstrained;
 import org.ogu.lang.parser.ast.expressions.*;
 import org.ogu.lang.parser.ast.expressions.literals.StringLiteral;
 import org.ogu.lang.parser.ast.modules.*;
 import org.ogu.lang.parser.ast.typeusage.*;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.ogu.lang.util.Messages.message;
@@ -54,9 +55,9 @@ public class ParseTreeToAst {
                 module.add((Expression) memberNode);
             else if (memberNode instanceof AliasDeclaration)
                 module.add((AliasDeclaration) memberNode);
-            else if (memberNode instanceof ValDeclaration)
+            else if (memberNode instanceof ValMemberDeclaration)
                 module.add((ExportableDeclaration) memberNode);
-            else if (memberNode instanceof FunctionDeclaration)
+            else if (memberNode instanceof FunctionMemberDeclaration)
                 module.add((ExportableDeclaration) memberNode);
             else if (memberNode instanceof LetDefinition)
                 module.add((ExportableDeclaration) memberNode);
@@ -122,33 +123,104 @@ public class ParseTreeToAst {
     }
 
     private Node toAst(OguParser.Module_declContext ctx) {
+        List<Decorator> decs = toAstDecorators(ctx.decs);
+
         if (ctx.alias_def() != null) {
-            return toAst(ctx.alias_def(), toAstDecorators(ctx.decs));
+            return toAst(ctx.alias_def(), decs);
         }
         if (ctx.val_def() != null) {
-            return toAst(ctx.val_def(), toAstDecorators(ctx.decs));
+            return toAst(ctx.val_def(), decs);
         }
         if (ctx.func_decl() != null) {
-            return toAst(ctx.func_decl(), toAstDecorators(ctx.decs));
+            return toAst(ctx.func_decl(), decs);
         }
         if (ctx.func_def() != null) {
-            return toAst(ctx.func_def(), toAstDecorators(ctx.decs));
+            return toAst(ctx.func_def(), decs);
+        }
+
+        if (ctx.type_def() != null) {
+            return toAst(ctx.type_def(), decs);
+        }
+
+        if (ctx.trait_def() != null) {
+            return toAst(ctx.trait_def(), decs);
+        }
+
+        if (ctx.data_def() != null) {
+            return toAst(ctx.data_def(), decs);
+        }
+
+        if (ctx.enum_def() != null) {
+            return toAst(ctx.enum_def(), decs);
+        }
+
+        if (ctx.class_def() != null) {
+            return toAst(ctx.class_def(), decs);
         }
 
         if (ctx.expr() != null) {
             return toAst(ctx.expr());
         }
 
-        if (ctx.type_def() != null) {
-            return toAst(ctx.type_def());
-        }
-
-
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private TypeDeclaration toAst(OguParser.Type_defContext ctx) {
+    private Node toAst(OguParser.Class_defContext ctx, List<Decorator> decs) {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+
+    private Node toAst(OguParser.Enum_defContext ctx, List<Decorator> decs) {
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private Node toAst(OguParser.Data_defContext ctx, List<Decorator> decs) {
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private TraitDeclaration toAst(OguParser.Trait_defContext ctx, List<Decorator> decs) {
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private TypeDeclaration toAst(OguParser.Type_defContext ctx, List<Decorator> decs) {
+        Map<String,OguType> constraints = new HashMap<>();
+        if (ctx.constraints != null)
+            loadTypeConstraints(ctx.constraints, constraints);
+
+
+        OguTypeIdentifier name = new OguTypeIdentifier(idText(ctx.t));
+        OguType type = toAst(ctx.type());
+        getPositionFrom(name, ctx);
+        if (ctx.ta == null)  {
+            SimpleTypeDeclaration tdecl = new SimpleTypeDeclaration(name, type, decs);
+            getPositionFrom(tdecl, ctx);
+            return tdecl;
+        } else {
+            // TODO Warning if are unused contraints
+            List<TypeParam> params = new ArrayList<>();
+            for (Token param : ctx.typedef_params().params) {
+                String id = idText(param);
+                TypeParam p;
+                if (constraints.containsKey(id))
+                    p = new TypeParamConstrained(id, constraints.get(id));
+                else
+                    p = new TypeParam(id);
+                getPositionFrom(p, ctx);
+                params.add(p);
+            }
+            GenericTypeDeclaration tdecl = new GenericTypeDeclaration(name, params, type, decs);
+            getPositionFrom(tdecl, ctx);
+            return tdecl;
+        }
+    }
+
+    private void loadTypeConstraints(OguParser.Typedef_args_constraintsContext ctx, Map<String, OguType> cons) {
+        for (OguParser.Typedef_arg_constraintContext tac:ctx.tac) {
+            OguType type = toAst(tac.type());
+            for (Token id : tac.ids) {
+                cons.put(idText(id), type);
+            }
+        }
     }
 
     private LetDefinition toAst(OguParser.Func_defContext ctx, List<Decorator> decorators) {
@@ -235,10 +307,10 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private FunctionDeclaration toAst(OguParser.Func_declContext ctx, List<Decorator> decorators) {
+    private FunctionMemberDeclaration toAst(OguParser.Func_declContext ctx, List<Decorator> decorators) {
         if (ctx.name.f_id != null) {
             List<TypeArg> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
-            FunctionDeclaration funcDecl = new FunctionDeclaration(toAst(ctx.name), params, decorators);
+            FunctionMemberDeclaration funcDecl = new FunctionMemberDeclaration(toAst(ctx.name), params, decorators);
             getPositionFrom(funcDecl, ctx);
             return funcDecl;
         }
@@ -298,25 +370,29 @@ public class ParseTreeToAst {
         }
     }
 
-    private ValDeclaration toAst(OguParser.Val_defContext ctx, List<Decorator> decorators) {
+    private ValMemberDeclaration toAst(OguParser.Val_defContext ctx, List<Decorator> decorators) {
         if (ctx.val_id != null) {
             if (ctx.type() == null) {
-                ValDeclaration val = new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.expr()), decorators);
+                ValMemberDeclaration val = new ValMemberDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.expr()), decorators);
                 getPositionFrom(val, ctx);
                 return val;
             }
-            ValDeclaration val = new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decorators);
+            ValMemberDeclaration val = new ValMemberDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decorators);
             getPositionFrom(val, ctx);
             return val;
         }
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private TypeArg toAst(OguParser.TypeContext ctx) {
+    private OguType toAst(OguParser.TypeContext ctx) {
         if (ctx.tid() != null) {
             if (ctx.t_a.isEmpty()) {
                 return new QualifiedTypeArg(toAst(ctx.tid()));
             }
+        } else if (ctx.nat != null) {
+            OguNativeType type = new OguNativeType(idText(ctx.nat));
+            getPositionFrom(type, ctx);
+            return type;
         }
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }

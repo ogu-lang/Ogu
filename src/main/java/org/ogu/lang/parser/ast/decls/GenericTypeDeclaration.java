@@ -3,29 +3,37 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.OguTypeIdentifier;
+import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
 import org.ogu.lang.parser.ast.typeusage.OguType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * All type declarations
+ * A type declared like
+ *     type T a b c = ...
+ * (Useful to restrict a data)
  * Created by ediaz on 24-01-16.
  */
-public abstract  class TypeDeclaration extends ExportableDeclaration {
+public class GenericTypeDeclaration  extends TypeDeclaration {
 
-    protected OguType type;
+    protected List<TypeParam> params;
 
-    protected TypeDeclaration(OguTypeIdentifier name, OguType type, List<Decorator> decorators)  {
-        super(name, decorators);
-        this.type = type;
-        this.type.setParent(this);
+    public GenericTypeDeclaration(OguTypeIdentifier name, List<TypeParam> params, OguType type, List<Decorator> decorators) {
+        super(name, type, decorators);
+        this.params = new ArrayList<>();
+        this.params.addAll(params);
+        this.params.forEach((p) -> p.setParent(this));
     }
+
+
 
     @Override
     public String toString() {
-        return "TypeDeclaration{"+
+        return "GenericTypeDeclaration{"+
                 "name="+name+
                 ", type="+type+
+                ", params="+params+
                 ", decorators="+decorators+
                 '}';
     }
@@ -36,7 +44,7 @@ public abstract  class TypeDeclaration extends ExportableDeclaration {
         return ImmutableList.<Node>builder()
                 .add(name)
                 .add(type)
+                .addAll(params)
                 .addAll(decorators).build();
     }
-
 }

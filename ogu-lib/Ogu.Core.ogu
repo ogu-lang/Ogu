@@ -9,9 +9,82 @@ uses Java.IO
 #{extern "jvm" "java/lang"}
 uses Java.Lang
 
+#{extern "jvm" "java/math"}
+uses Java.Math
+
+type Char = i16
+type Short = i16
+type Int = i32
+type Long = i64
+
+type Float = f32
+type Double = f64
+
+type Integer = Java.Math.BigInteger
+
+trait Num a where
+
+    def (+) : a -> a -> a
+
+    def (-) : a -> a -> a
+
+    def (*) : a -> a -> a
+
+    def (/) : a -> a -> a
+
+    def neg : a -> a
+
+    def abs : a -> a
+
+    def sgn : a -> a
+
+    def id : a -> a
+    let id a = a
+
+    let x - y =  x + neg y
+
+    let neg x = 0 - x
+
+#{primitive}
+instance Num Char
+#{primitive}
+instance Num Short
+#{primitive}
+instance Num Int
+#{primitive}
+instance Num Long
+#{primitive}
+instance Num Float
+#{primitive}
+instance Num Double
+
+
+instance Num Integer where
+
+    #{extern "jvm" "java/math/BigInteger.add:(Ljava/math/BigInteger;)V"}
+    let x + y = add x y
+
+    let x - y = substract x y
+
+    let x * y = multiply x y
+
+    let x / y = divide x y
+
+    let neg x = negate x
+
+    let abs x = abs x
+
+    let sgn x = signum x
+
+
+
+type String = [Char]
+
+
+
 
 #{extern "jvm" "Ljava/lang/String"}
-type String = Java.Lang.String
+type JavaString = Java.Lang.String
 
 #{extern "jvm" "Ljava/lang/System;"}
 alias System = Java.Lang.System
@@ -37,6 +110,8 @@ def _println : PrintStream -> String -> ()
 def println! : String -> ()
 let println! str =
     _println stdOut str
+
+
 
 val _stdIn : BufferedReader = new BufferedReader (new InputStreamReader (_stdIn))
 

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.OguIdentifier;
 import org.ogu.lang.parser.ast.expressions.Expression;
-import org.ogu.lang.parser.ast.typeusage.TypeArg;
+import org.ogu.lang.parser.ast.typeusage.OguType;
 
 import java.util.List;
 
@@ -12,18 +12,18 @@ import java.util.List;
  * A val declaration (val id = value) where value is an expression
  * Created by ediaz on 23-01-16.
  */
-public class ValDeclaration extends ExportableDeclaration {
+public class ValMemberDeclaration extends ContractMemberDeclaration {
 
     private Expression value;
-    private TypeArg returnType;
+    private OguType returnType;
 
-    public ValDeclaration(OguIdentifier id, Expression value, List<Decorator> decorators) {
+    public ValMemberDeclaration(OguIdentifier id, Expression value, List<Decorator> decorators) {
         super(id, decorators);
         this.value = value;
         this.value.setParent(this);
     }
 
-    public ValDeclaration(OguIdentifier id, TypeArg returnType, Expression value, List<Decorator> decorators) {
+    public ValMemberDeclaration(OguIdentifier id, OguType returnType, Expression value, List<Decorator> decorators) {
         super(id, decorators);
         this.returnType = returnType;
         this.returnType.setParent(this);
@@ -45,4 +45,7 @@ public class ValDeclaration extends ExportableDeclaration {
                 ", decorators" + decorators +
                 '}';
     }
+
+
+
 }
