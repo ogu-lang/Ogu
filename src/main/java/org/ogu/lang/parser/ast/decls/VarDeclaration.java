@@ -12,7 +12,7 @@ import java.util.List;
  * A val declaration (val id = value) where value is an expression
  * Created by ediaz on 23-01-16.
  */
-public class VarDeclaration extends ExportableDeclaration {
+public class VarDeclaration extends FunctionalDeclaration {
 
     private Expression value;
     private TypeArg returnType;

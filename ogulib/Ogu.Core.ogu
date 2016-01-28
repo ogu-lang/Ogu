@@ -76,15 +76,98 @@ instance Num Integer where
 
     let sgn x = signum x
 
+#{primitive}
+enum Bool = false | true
+
+trait Eq x where
+
+    def (==) : x -> x -> Bool
+    def (/=) : x -> x -> Bool
+
+#{primitive}
+instance Eq Bool
+
+#{primitive}
+def (||) : Bool -> Bool -> Bool
+
+#{primitive}
+def (&&) : Bool -> Bool -> Bool
+
+#{primitive}
+def not : Bool -> Bool
+
+def otherwise : Bool
+let otherwise = true
+
+
+data Ordering = LT | EQ | GT
+
+instance Eq Ordering where
+
+    let LT == LT = true
+    let EQ == EQ = true
+    let GT == GT = true
+    let _  == _  = false
+
+    let a /= b = not (a == b)
+
+trait (a:Eq)=> Ord a where
+
+    def compare : a -> a -> Ordering
+    def (<) : a -> a -> Bool
+    def (<=) : a -> a -> Bool
+    def (>) : a -> a -> Bool
+    def (>=) : a -> a -> Bool
+
+    def max : a -> a -> a
+    let max a b = if a >= b then a else b
+
+    def min : a -> a -> a
+    let min a b = if a <= b then a else b
+
+#{primitive}
+instance Ord Char
+#{primitive}
+instance Ord Short
+#{primitive}
+instance Ord Int
+#{primitive}
+instance Ord Long
+#{primitive}
+instance Ord Float
+#{primitive}
+instance Ord Double
+
+
+
+instance Ord Integer where
+
+    let compare a b =
+        let result = compareTo a b
+        case result of
+             -1 => LT
+             0 => EQ
+             1 => GT
+
+    let a <  b  = (compare a b) == LT
+    let a <= b = (a < b) || (a == b)
+    let a >  b = (compare a b) == GT
+    let a >= b = (a > b) || (a == b)
+
+
 
 
 type String = [Char]
 
-
-
-
 #{extern "jvm" "Ljava/lang/String"}
 type JavaString = Java.Lang.String
+
+
+def _javaStringToString : JavaString -> String
+let _javaStringToString str = toCharArray str
+
+def _stringToJavaString : String -> JavaString
+let _stringToJavaString str = new JavaString(str)
 
 #{extern "jvm" "Ljava/lang/System;"}
 alias System = Java.Lang.System
@@ -102,14 +185,15 @@ val _stdIn : InputStream = System._in  ;; because in is a reserved word in Ogú
 val _stdOut : PrintStream = System._out
 
 ;#{extern "jvm" "/java/io/BufferedReader.readLine:()Ljava/lang/String;"}
-def _readln : BufferedReader -> String
+def _readln : BufferedReader -> JavaString
 
 #{extern "jvm" "java/io/PrintStream.println:(Ljava/lang/String;)V"}
-def _println : PrintStream -> String -> ()
+def _println : PrintStream -> JavaString -> ()
+
 
 def println! : String -> ()
 let println! str =
-    _println stdOut str
+    _println stdOut <| _stringToJavaString str
 
 
 
@@ -118,5 +202,5 @@ val _stdIn : BufferedReader = new BufferedReader (new InputStreamReader (_stdIn)
 
 def readln! : String
 let readln! =
-    readLine _stdIn
+    readLine _stdIn |> _javaStringToString
 

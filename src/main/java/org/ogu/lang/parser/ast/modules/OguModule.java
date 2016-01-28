@@ -44,8 +44,7 @@ public class OguModule extends Node {
 
     public void addExports(List<ExportsDeclaration> exportsDeclarations) {
         exports.addAll(exportsDeclarations);
-        for (ExportsDeclaration exportsDeclaration : exportsDeclarations)
-            exportsDeclaration.setParent(this);
+        exports.forEach((e) -> e.setParent(this));
     }
 
     public void addUses(List<UsesDeclaration> usesDeclarations) {

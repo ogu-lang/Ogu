@@ -15,7 +15,7 @@ import java.util.List;
  * (Useful to restrict a data)
  * Created by ediaz on 24-01-16.
  */
-public class GenericTypeDeclaration  extends TypeDeclaration {
+public class GenericTypeDeclaration  extends TypedefDeclaration {
 
     protected List<TypeParam> params;
 
