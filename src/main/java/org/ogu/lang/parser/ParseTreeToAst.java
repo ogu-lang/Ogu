@@ -201,8 +201,24 @@ public class ParseTreeToAst {
     }
 
 
-    private Node toAst(OguParser.Enum_defContext ctx, List<Decorator> decs) {
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    private EnumDeclaration toAst(OguParser.Enum_defContext ctx, List<Decorator> decs) {
+        OguTypeIdentifier name = new OguTypeIdentifier(ctx.en.getText());
+        List<OguIdentifier> values = ctx.values.stream().map((t) -> new OguIdentifier(idText(t))).collect(Collectors.toList());
+        List<OguTypeIdentifier> deriving = toDerivingAst(ctx.deriving());
+        EnumDeclaration decl = new EnumDeclaration(name, values, deriving, decs);
+        getPositionFrom(decl, ctx);
+        return decl;
+    }
+
+    private List<OguTypeIdentifier> toDerivingAst(OguParser.DerivingContext ctx) {
+        if (ctx == null)
+            return Collections.emptyList();
+
+        List<OguTypeIdentifier> deriving = ctx.deriving_types().dt.stream().map(this::toAst).collect(Collectors.toList());
+        for (OguTypeIdentifier oguTypeIdentifier : deriving) {
+           getPositionFrom(oguTypeIdentifier, ctx);
+        }
+        return deriving;
     }
 
     private Node toAst(OguParser.Data_defContext ctx, List<Decorator> decs) {

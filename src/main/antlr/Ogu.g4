@@ -69,7 +69,7 @@ alias_target : alias_tid=TID | alias_id=ID;
 
 alias_origin :  alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_origin_id=ID)? ;
 
-enum_def : 'enum' TID '=' ID ('|' ID)* deriving? ;
+enum_def : 'enum' en=TID '=' values+=ID ('|' values+=ID)* deriving? ;
 
 data_def : 'data' constraints=typedef_args_constraints? TID (typedef_params)? '=' data_type_decl ;
 
@@ -97,7 +97,7 @@ data_type_decl : type ('|' type)* deriving?
 
 deriving : 'deriving' deriving_types | INDENT 'deriving' deriving_types NL* DEDENT ;
 
-deriving_types :  '(' tid (',' tid)* ')' ;
+deriving_types :  '(' dt+=tid (',' dt+=tid)* ')' ;
 
 typedef_params
 	:  params+=ID (params+=ID)*
