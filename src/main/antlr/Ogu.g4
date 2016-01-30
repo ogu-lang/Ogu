@@ -55,8 +55,9 @@ module_uses : decs=decorators? 'uses' imports+=module_name (',' imports+=module_
 module_body : (members+=module_decl NL*)* ;
 
 module_decl
-    : expr
-    | decs=decorators?   ( var | val_def | func_decl | func_def | alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
+    : decs=decorators?
+    ( var | val_def | func_decl | func_def | alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
+    | expr
     ;
 
 decorators :  (dec+=decorator)+ ;
@@ -71,7 +72,7 @@ alias_origin :  alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_or
 
 enum_def : 'enum' en=TID '=' values+=ID ('|' values+=ID)* deriving? ;
 
-data_def : 'data' constraints=typedef_args_constraints? TID (typedef_params)? '=' data_type_decl ;
+data_def : 'data' constraints=typedef_args_constraints? name=TID (typedef_params)? '=' data_type_decl ;
 
 trait_def : (mut='mut')? 'trait' constraints=typedef_args_constraints? name=TID params+=ID (params+=ID)* ('where' INDENT (internal_decl NL* )* NL* DEDENT)?   ;
 
@@ -91,8 +92,8 @@ class_where : 'where' INDENT (internal_decl NL* )* NL* DEDENT ;
 
 type_def :  'type' constraints=typedef_args_constraints? t=TID (ta=typedef_params)? ('=' type)?  ;
 
-data_type_decl : type ('|' type)* deriving?
-              | type  INDENT ('|' type NL*)*  deriving? NL* DEDENT
+data_type_decl : t+=type ('|' t+=type)* deriving?
+              | t+=type  INDENT ('|' t+=type NL*)*  deriving? NL* DEDENT
               ;
 
 deriving : 'deriving' deriving_types | INDENT 'deriving' deriving_types NL* DEDENT ;
@@ -143,10 +144,12 @@ divergence : '!' ;
 func_name_decl : f_id=ID | f_op=op | '(' f_op=op ')';
 
 func_def
-	: 'let' (let_func_name=lid|op) (let_func_args+=let_arg)* let_expr
-	| 'let' left=let_arg infix_op=op right=let_arg let_expr
-	| 'let' let_arg '`' infix_id=ID '`'  let_arg let_expr
-    | 'let' '(' lid (',' lid)* ')' '=' expr
+	: 'let'
+	( (let_func_name=lid|op) (let_func_args+=let_arg)* let_expr
+	| left=let_arg infix_op=op right=let_arg let_expr
+	| let_arg '`' infix_id=ID '`'  let_arg let_expr
+    | '(' lid (',' lid)* ')' '=' expr
+	)
 	;
 
 val_def
@@ -165,7 +168,7 @@ let_arg
     ;
 
 let_arg_atom
-    : l_id=lid | atom | TID (ID|let_arg)* ;
+    : l_id=lid | atom | t_id=TID la=let_arg* ;
 
 let_expr : '=' ( let_block | expr let_where? )
          |  guards where?
@@ -213,7 +216,7 @@ tid_args : tid|ID|type;
 expr  
 	: if_expr
 	| 'for' (set_expr | list_expr) do_expression
-    | 'case' expr 'of' case_guards
+    | case_expr
 	| 'when' expr  do_expression
 	| 'while' expr do_expression
 	| 'unless' expr  do_expression
@@ -248,21 +251,21 @@ expr
 	;
 
 primary
-	    : unary_expr
+	    : neg_expr
 	    | literal=atom
 	    ;
 
-atom : INT | FLOAT | string_literal=STRING | CHAR | DATE ;
+atom : i=INT | f=FLOAT | string_literal=STRING | c=CHAR | d=DATE ;
 
-unary_expr
-    : '(' '-' expr ')'
-    | '-' (INT|FLOAT);
+neg_expr
+    : '(' '-' e=expr ')'
+    | '-' (a=atom);
 
 constructor
     : 'new' tid '(' expr_list? ')' ;
 
 expr_list
-    : expr (',' expr)*
+    : e+=expr (',' e+=expr)*
     ;
 
 paren_expr
@@ -281,19 +284,21 @@ func_name : name=ID;
 
 qual_func_name : qual+=TID ('.' qual+=TID)* ('.' name=ID)? ;
 
-if_expr : 'if' expr then_part ;
+if_expr : 'if' cond=expr then_part ;
 
-then_part : 'then' (expr  else_part|expr? then_block else_part) | INDENT 'then' (expr NL* else_part |expr? then_block else_part) NL* DEDENT ;
+then_part : 'then' (te=expr  else_part|te=expr? tb=then_block else_part) | INDENT 'then' (te=expr NL* else_part |te=expr? tb=then_block else_part) NL* DEDENT ;
 
-else_part : 'else' (expr|expr? else_block) ;
+else_part : 'else' (e=expr|e=expr? eb=else_block) ;
 
 then_block : INDENT (let_decl NL*)+ NL* DEDENT ;
 
 else_block : INDENT (let_decl NL*)+ DEDENT ;
 
-case_guards : INDENT case_guard NL* (case_guard NL*)* DEDENT ;
+case_expr : 'case' s=expr 'of' g=case_guards ;
 
-case_guard : expr '=>' expr ;
+case_guards : INDENT cg+=case_guard NL* (cg+=case_guard NL*)* DEDENT ;
+
+case_guard : c=expr '=>' r=expr ;
 
 op : '@' | '^' | '*' | '/' | '%' |  '//' | '+' | '-'  | '++' | '::'
 	| '~' | '..' | '...' | '|>' | '<|'

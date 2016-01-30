@@ -97,6 +97,7 @@ def (&&) : Bool -> Bool -> Bool
 def not : Bool -> Bool
 
 def otherwise : Bool
+
 let otherwise = true
 
 

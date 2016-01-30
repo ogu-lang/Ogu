@@ -13,7 +13,7 @@ import java.util.List;
  */
 public abstract class AlgebraicDataTypeDeclaration extends TypeDeclaration {
 
-    private List<OguTypeIdentifier> deriving;
+    protected List<OguTypeIdentifier> deriving;
 
     protected AlgebraicDataTypeDeclaration(OguTypeIdentifier name, List<OguTypeIdentifier> deriving, List<Decorator> decorators) {
         super(name, decorators);
