@@ -197,7 +197,7 @@ let_decl
 
 block : INDENT (let_decl NL*)* DEDENT ;
 
-type : '[' type ']'
+type : '[' vt=type ']'
      | '(' ')'
      | '(' type (',' type)* ')'
      | '{' ID ':' type (',' ID ':' type)* '}' // structs

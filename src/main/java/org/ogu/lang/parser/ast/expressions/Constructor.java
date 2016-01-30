@@ -22,6 +22,14 @@ public class Constructor extends InvocableExpr {
     }
 
     @Override
+    public String toString() {
+        return "Constructor {"+
+                "type = "+type +
+                "params = "+actualParams +
+                '}';
+    }
+
+    @Override
     public Iterable<Node> getChildren() {
         return ImmutableList.<Node>builder().add(type).addAll(actualParams).build();
     }

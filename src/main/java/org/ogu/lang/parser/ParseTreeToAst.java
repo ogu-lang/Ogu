@@ -537,6 +537,12 @@ public class ParseTreeToAst {
     }
 
     private OguType toAst(OguParser.TypeContext ctx) {
+        if (ctx.vt != null) {
+            OguType type = toAst(ctx.vt);
+            VectorType vtype = new VectorType(type);
+            getPositionFrom(vtype, ctx);
+            return vtype;
+        }
         if (ctx.tid() != null) {
             if (ctx.t_a.isEmpty()) {
                 return new QualifiedTypeArg(toAst(ctx.tid()));
@@ -546,6 +552,7 @@ public class ParseTreeToAst {
             getPositionFrom(type, ctx);
             return type;
         }
+        Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
@@ -563,12 +570,20 @@ public class ParseTreeToAst {
             return toAst(ctx.case_expr());
         }
 
+        if (ctx.paren_expr() != null) {
+            return toAst(ctx.paren_expr());
+        }
+
         if (ctx.constructor() != null) {
             return toAst(ctx.constructor());
         }
+
+
         if (ctx.function != null) {
             return toAstFunctionCall(ctx);
         }
+
+
         if (ctx.qual_function != null) {
             return toAstFunctionCall(ctx);
         }

@@ -12,7 +12,6 @@ import java.util.List;
 public abstract class InvocableExpr extends Expression {
 
     protected List<ActualParam> actualParams;
-    protected List<ActualParam> originalParams;
 
     public List<ActualParam> getActualParams() {
         return actualParams;
@@ -22,7 +21,6 @@ public abstract class InvocableExpr extends Expression {
         this.actualParams = new ArrayList<>();
         this.actualParams.addAll(actualParams);
         this.actualParams.forEach((p) -> p.setParent(this));
-        originalParams = actualParams;
     }
 
     protected abstract List<? extends FormalParameter> formalParameters(SymbolResolver resolver);
