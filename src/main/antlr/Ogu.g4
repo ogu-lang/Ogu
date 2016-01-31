@@ -86,7 +86,7 @@ class_params : class_param (',' class_param)* ;
 
 class_param : ('var'|'val')? ID (',' ID)* ':' type ;
 
-class_ctor : TID '(' expr_list? ')'  ;
+class_ctor : TID '(' tuple_expr? ')'  ;
 
 class_where : 'where' INDENT (internal_decl NL* )* NL* DEDENT ;
 
@@ -237,7 +237,6 @@ expr
 	| l=expr o=('+'|'-') r=expr
     | <assoc=right> l=expr o='::' r=expr
     | <assoc=right> l=expr o='++' r=expr
-
     | l=expr o=('=='|'/='|'<'|'<='|'>'|'>=') r=expr
     | l=expr o='&&' r=expr
     | l=expr o='||' r=expr
@@ -265,15 +264,15 @@ neg_expr
     | '-' (a=atom);
 
 constructor
-    : 'new' tid '(' expr_list? ')' ;
+    : 'new' tid '(' tuple_expr? ')' ;
 
-expr_list
+tuple_expr
     : e+=expr (',' e+=expr)*
     ;
 
 paren_expr
     : '(' op expr* ')'
-    | '(' expr_list ')'
+    | '(' tuple_expr ')'
     ;
 
 vector_expr
@@ -286,19 +285,16 @@ vector_expr
 // [1...]
 // [1..10, 20..30, 40...]
 //[2 * x | x <- 1...]
-list_expr : le+=range_expr (',' le+=range_expr)* range_tail?
+list_expr : le+=range_expr (',' le+=range_expr)*
           | e=expr '|' se+=set_constraint_expr (',' se+=set_constraint_expr)* ;
 
-set_constraint_expr : ID '<-' range_expr
-         | '(' ID (',' ID)* ')' '<-' expr
+set_constraint_expr : s_id=ID '<-' re=range_expr
+         | '(' l_id+=ID (',' l_id+=ID)* ')' '<-' re=range_expr
         ;
 
-range_expr : expr ('..' expr)?
-           | expr '...'
+range_expr : beg=expr ('..' end=expr)?
+           | beg=expr '...'
            ;
-
-range_tail : ',' expr '...'
-	       ;
 
 dict_expr
     : '{' map_expr? '}' ;

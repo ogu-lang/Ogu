@@ -1,6 +1,5 @@
 package org.ogu.lang.parser;
 
-import javafx.beans.binding.ListExpression;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.ogu.lang.antlr.OguParser;
@@ -16,6 +15,7 @@ import org.ogu.lang.parser.ast.expressions.*;
 import org.ogu.lang.parser.ast.expressions.control.CaseExpression;
 import org.ogu.lang.parser.ast.expressions.control.CaseGuard;
 import org.ogu.lang.parser.ast.expressions.control.IfExpression;
+import org.ogu.lang.parser.ast.expressions.literals.CharLiteral;
 import org.ogu.lang.parser.ast.expressions.literals.IntLiteral;
 import org.ogu.lang.parser.ast.expressions.literals.StringLiteral;
 import org.ogu.lang.parser.ast.modules.*;
@@ -625,10 +625,58 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private VectorExpression toAst(OguParser.Vector_exprContext ctx) {
-        List<Expression> exprs = new ArrayList<>();
-        Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    private ListExpression toAst(OguParser.Vector_exprContext ctx) {
+        if (ctx.list_expr() == null) {
+            EmptyListExpression empty = new EmptyListExpression();
+            getPositionFrom(empty, ctx);
+            return empty;
+        }
+        return toAst(ctx.list_expr());
+    }
+
+    private ListExpression toAst(OguParser.List_exprContext ctx) {
+        if (ctx.e == null) {
+            List<RangeExpression> ranges = new ArrayList<>();
+            for (OguParser.Range_exprContext r : ctx.le) {
+                ranges.add(toAst(r));
+            }
+            ListByExtensionExpression lexpr = new ListByExtensionExpression(ranges);
+            getPositionFrom(lexpr, ctx);
+            return lexpr;
+        } else {
+            Expression value = toAst(ctx.e);
+            List<SetConstraint> constraints = new ArrayList<>();
+            for (OguParser.Set_constraint_exprContext sc:ctx.se) {
+                constraints.add(toAst(sc));
+            }
+            ListByComprehensionExpression list = new ListByComprehensionExpression(value, constraints);
+            getPositionFrom(list, ctx);
+            return list;
+        }
+    }
+
+    private SetConstraint toAst(OguParser.Set_constraint_exprContext ctx) {
+        if (ctx.s_id != null) {
+            SetConstraint cons = new SetConstraint(OguIdentifier.create(idText(ctx.s_id)), toAst(ctx.range_expr()));
+            getPositionFrom(cons, ctx);
+            return cons;
+        } else {
+            List<OguIdentifier> ids = ctx.l_id.stream().map((t) -> new OguIdentifier(idText(t))).collect(Collectors.toList());
+            SetConstraint cons = new SetConstraint(ids, toAst(ctx.range_expr()));
+            getPositionFrom(cons, ctx);
+            return cons;
+        }
+    }
+
+    private RangeExpression toAst(OguParser.Range_exprContext ctx) {
+        if (ctx.end == null) {
+            InfiniteRangeExpression range = new InfiniteRangeExpression(toAst(ctx.beg));
+            getPositionFrom(range, ctx);
+            return range;
+        }
+        RangeExpression range = new RangeExpression(toAst(ctx.beg), toAst(ctx.end));
+        getPositionFrom(range, ctx);
+        return range;
     }
 
     private CaseExpression toAst(OguParser.Case_exprContext ctx) {
@@ -678,7 +726,7 @@ public class ParseTreeToAst {
     private Constructor toAst(OguParser.ConstructorContext ctx) {
         TypeReference type = new TypeReference(toAst(ctx.tid()));
         getPositionFrom(type, ctx);
-        List<ActualParam> params = ctx.expr_list().expr().stream().map(this::toAstParam).collect(Collectors.toList());
+        List<ActualParam> params = ctx.tuple_expr().expr().stream().map(this::toAstParam).collect(Collectors.toList());
         Constructor ctor = new Constructor(type, params);
         getPositionFrom(ctor, ctx);
         return ctor;
@@ -726,18 +774,23 @@ public class ParseTreeToAst {
     }
 
     private Expression toAst(OguParser.Paren_exprContext ctx) {
-        if (ctx.expr_list() != null) {
-            return toAst(ctx.expr_list());
+        if (ctx.tuple_expr() != null) {
+            return toAst(ctx.tuple_expr());
         }
         Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private Expression toAst(OguParser.Expr_listContext ctx) {
+    private Expression toAst(OguParser.Tuple_exprContext ctx) {
         if (ctx.e.size() == 1)
             return toAst(ctx.e.get(0));
-        Logger.debug(ctx.getText());
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+        List<Expression> exprs = new ArrayList<>();
+        for (OguParser.ExprContext ec : ctx.e) {
+            exprs.add(toAst(ec));
+        }
+        TupleExpression tuple = new TupleExpression(exprs);
+        getPositionFrom(tuple, ctx);
+        return tuple;
     }
 
     private Expression toAst(OguParser.PrimaryContext ctx) {
@@ -794,6 +847,13 @@ public class ParseTreeToAst {
             getPositionFrom(lit, ctx);
             return lit;
         }
+        if (ctx.CHAR() != null) {
+            String ctxt = ctx.CHAR().getText();
+            CharLiteral cl = new CharLiteral(ctxt);
+            getPositionFrom(cl, ctx);
+            return cl;
+        }
+        Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
