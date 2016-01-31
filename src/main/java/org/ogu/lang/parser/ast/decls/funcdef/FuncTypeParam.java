@@ -15,6 +15,7 @@ public class FuncTypeParam extends FunctionPatternParam {
 
 
     public FuncTypeParam(OguTypeIdentifier typeId) {
+        super();
         this.typeId = typeId;
         this.typeId.setParent(this);
     }

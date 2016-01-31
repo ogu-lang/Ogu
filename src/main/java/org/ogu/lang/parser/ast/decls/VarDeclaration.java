@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.OguIdentifier;
 import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.typeusage.OguType;
 import org.ogu.lang.parser.ast.typeusage.TypeArg;
 
 import java.util.List;
@@ -14,8 +15,23 @@ import java.util.List;
  */
 public class VarDeclaration extends FunctionalDeclaration {
 
-    private Expression value;
-    private TypeArg returnType;
+    protected Expression value;
+    protected OguType type;
+
+    protected VarDeclaration(OguType type,  Expression value, List<Decorator> decorators) {
+        super(decorators);
+        this.type = type;
+        this.type.setParent(this);
+        this.value = value;
+        this.value.setParent(this);
+    }
+
+    protected VarDeclaration(Expression value, List<Decorator> decorators) {
+        super(decorators);
+        this.value = value;
+        this.value.setParent(this);
+    }
+
 
     public VarDeclaration(OguIdentifier id, Expression value, List<Decorator> decorators) {
         super(id, decorators);
@@ -23,24 +39,27 @@ public class VarDeclaration extends FunctionalDeclaration {
         this.value.setParent(this);
     }
 
-    public VarDeclaration(OguIdentifier id, TypeArg returnType, Expression value, List<Decorator> decorators) {
+    public VarDeclaration(OguIdentifier id, OguType type, Expression value, List<Decorator> decorators) {
         super(id, decorators);
-        this.returnType = returnType;
-        this.returnType.setParent(this);
+        this.type = type;
+        this.type.setParent(this);
         this.value = value;
         this.value.setParent(this);
     }
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().add(name).add(value).addAll(decorators).build();
+        if (type == null)
+            return ImmutableList.<Node>builder().add(name).add(value).addAll(decorators).build();
+        else
+            return ImmutableList.<Node>builder().add(name).add(value).add(type).addAll(decorators).build();
     }
 
     @Override
     public String toString() {
         return "ValDeclaration{" +
                 "id='" + name + '\''+
-                ", returnType="+returnType+
+                ", type="+type+
                 ", value=" + value +
                 ", decorators" + decorators +
                 '}';

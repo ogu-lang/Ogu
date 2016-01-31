@@ -13,6 +13,10 @@ public abstract class NameDeclaration extends Declaration {
 
     protected OguName name;
 
+    protected NameDeclaration(List<Decorator> decorators) {
+        super(decorators);
+    }
+
     protected NameDeclaration(OguName name, List<Decorator> decorators) {
         super(decorators);
         this.name = name;

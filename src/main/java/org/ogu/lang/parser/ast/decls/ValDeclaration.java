@@ -14,8 +14,23 @@ import java.util.List;
  */
 public class ValDeclaration extends FunctionalDeclaration {
 
-    private Expression value;
-    private OguType returnType;
+    protected Expression value;
+    protected OguType type;
+
+    protected ValDeclaration(OguType type,  Expression value, List<Decorator> decorators) {
+        super(decorators);
+        this.type = type;
+        this.type.setParent(this);
+        this.value = value;
+        this.value.setParent(this);
+    }
+
+    protected ValDeclaration(Expression value, List<Decorator> decorators) {
+        super(decorators);
+        this.value = value;
+        this.value.setParent(this);
+    }
+
 
     public ValDeclaration(OguIdentifier id, Expression value, List<Decorator> decorators) {
         super(id, decorators);
@@ -25,22 +40,26 @@ public class ValDeclaration extends FunctionalDeclaration {
 
     public ValDeclaration(OguIdentifier id, OguType returnType, Expression value, List<Decorator> decorators) {
         super(id, decorators);
-        this.returnType = returnType;
-        this.returnType.setParent(this);
+        this.type = returnType;
+        this.type.setParent(this);
         this.value = value;
         this.value.setParent(this);
     }
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().add(name).add(value).addAll(decorators).build();
+        if (type == null)
+            return ImmutableList.<Node>builder().add(name).add(value).addAll(decorators).build();
+        else
+            return ImmutableList.<Node>builder().add(name).add(type).add(value).addAll(decorators).build();
+
     }
 
     @Override
     public String toString() {
         return "ValDeclaration{" +
                 "id='" + name + '\''+
-                ", returnType="+returnType+
+                ", type="+type+
                 ", value=" + value +
                 ", decorators" + decorators +
                 '}';

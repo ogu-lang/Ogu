@@ -122,7 +122,7 @@ func_decl :
 
 var :  'var' vid (':' type)? ('=' expr)? ;
 
-vid : ID | '(' vidt (',' vidt)* ')' ;
+vid : i=ID | '(' vidt (',' vidt)* ')' ;
 
 vidt : ID (':' type)? ;
 
@@ -158,17 +158,20 @@ val_def
     ;
 
 
-lid : lid_fun_id=ID | lid_val_id=ID ':' type ;
+lid : lid_fun_id=ID | lid_val_id=ID ':' t=type ;
 
 let_arg
     : l_atom=let_arg_atom
-    | '[' (let_arg_atom (',' let_arg_atom)*)? ']'
+    | let_arg_vector
     | '(' let_arg_atom (',' let_arg_atom)* ')'
     | '(' let_arg_atom ('::' let_arg_atom)* ')'
     ;
 
 let_arg_atom
     : l_id=lid | atom | t_id=TID la=let_arg* ;
+
+let_arg_vector
+    : '[' (let_arg_atom (',' let_arg_atom)*)? ']'  ;
 
 let_expr : '=' ( let_block | expr let_where? )
          |  guards where?

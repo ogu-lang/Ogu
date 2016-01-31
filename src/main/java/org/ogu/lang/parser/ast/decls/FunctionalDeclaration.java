@@ -14,6 +14,10 @@ public abstract class FunctionalDeclaration extends ExportableDeclaration {
 
     private ContractDeclaration contract;
 
+    protected FunctionalDeclaration(List<Decorator> decorators) {
+        super(decorators);
+    }
+
 
     public void setContract(ContractDeclaration contract) {
         this.contract = contract;

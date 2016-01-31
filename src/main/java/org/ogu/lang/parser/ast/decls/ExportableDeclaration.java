@@ -11,6 +11,11 @@ import java.util.List;
  */
 public abstract class ExportableDeclaration extends NameDeclaration {
 
+    protected ExportableDeclaration(List<Decorator> decorators) {
+        super(decorators);
+    }
+
+
     protected ExportableDeclaration(OguName name, List<Decorator> decorators) {
         super(name, decorators);
     }
