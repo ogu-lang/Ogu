@@ -588,6 +588,10 @@ public class ParseTreeToAst {
             return toAst(ctx.paren_expr());
         }
 
+        if (ctx.vector_expr() != null) {
+            return toAst(ctx.vector_expr());
+        }
+
         if (ctx.constructor() != null) {
             return toAst(ctx.constructor());
         }
@@ -617,6 +621,12 @@ public class ParseTreeToAst {
             return toAst(ctx.primary());
         }
 
+        Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private VectorExpression toAst(OguParser.Vector_exprContext ctx) {
+        List<Expression> exprs = new ArrayList<>();
         Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }

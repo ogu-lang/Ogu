@@ -219,7 +219,7 @@ tid_args : tid|ID|type;
 
 expr  
 	: if_expr
-	| 'for' (set_expr | list_expr) do_expression
+	| 'for' (set_constraint_expr | list_expr) do_expression
     | case_expr
 	| 'when' expr  do_expression
 	| 'while' expr do_expression
@@ -229,6 +229,7 @@ expr
 	| 'yield' expr
 	| 'recur' expr*
 	| expr '<-' expr
+	| 'set' ID expr? '=' expr
 	|<assoc=right> l=expr o=('>>'|'<<'|'|>'|'<|') r=expr  // composition
     | l=expr o='@' r=expr
 	|<assoc=right> l=expr o='^' r=expr
@@ -236,8 +237,7 @@ expr
 	| l=expr o=('+'|'-') r=expr
     | <assoc=right> l=expr o='::' r=expr
     | <assoc=right> l=expr o='++' r=expr
-    | expr '..' (expr)?
-	| expr '...'
+
     | l=expr o=('=='|'/='|'<'|'<='|'>'|'>=') r=expr
     | l=expr o='&&' r=expr
     | l=expr o='||' r=expr
@@ -249,7 +249,6 @@ expr
 	| function=func_name (params+=expr)+
 	| qual_function=qual_func_name (params+=expr)*
 	| constructor
-	| set_expr
 	| ref=ID
 	| primary
 	;
@@ -279,6 +278,27 @@ paren_expr
 
 vector_expr
     : '[' (list_expr)? ']' ;
+
+
+// [1,2,3]
+// [(a,b) | a <- [0..10], b <- ['A', 'B']]
+// [1..10, 20..30]
+// [1...]
+// [1..10, 20..30, 40...]
+//[2 * x | x <- 1...]
+list_expr : le+=range_expr (',' le+=range_expr)* range_tail?
+          | e=expr '|' se+=set_constraint_expr (',' se+=set_constraint_expr)* ;
+
+set_constraint_expr : ID '<-' range_expr
+         | '(' ID (',' ID)* ')' '<-' expr
+        ;
+
+range_expr : expr ('..' expr)?
+           | expr '...'
+           ;
+
+range_tail : ',' expr '...'
+	       ;
 
 dict_expr
     : '{' map_expr? '}' ;
@@ -317,14 +337,7 @@ map_expr
     ;
 
 
-list_expr : list_element (',' list_element)* ;
 
-list_element : expr ('|' set_expr (',' set_expr)*)? ;
-
-
-set_expr : ID expr? '<-' expr
-         | '(' ID expr? (',' ID expr? )* ')' '<-' expr
-         | 'set' ID expr? '=' expr ;
 
 lambda_args
 	: lambda_arg lambda_arg*
