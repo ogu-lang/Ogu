@@ -18,26 +18,26 @@ import java.util.List;
 public class SetConstraint extends Expression {
 
     List<OguIdentifier> ids;
-    RangeExpression range;
+    Expression expression;
 
-    public SetConstraint(List<OguIdentifier> ids, RangeExpression range) {
+    public SetConstraint(List<OguIdentifier> ids, Expression expression) {
         super();
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);
         this.ids.forEach((i) -> i.setParent(this));
-        this.range = range;
-        this.range.setParent(this);
+        this.expression = expression;
+        this.expression.setParent(this);
     }
 
-    public SetConstraint(OguIdentifier id, RangeExpression range) {
-        this(ImmutableList.of(id), range);
+    public SetConstraint(OguIdentifier id, Expression expression) {
+        this(ImmutableList.of(id), expression);
     }
 
     @Override
     public String toString() {
         return "SetConstraint {" +
                 "ids = "+ids +
-                ", range = "+range+
+                ", expression = "+ expression +
                 '}';
     }
 
@@ -49,7 +49,7 @@ public class SetConstraint extends Expression {
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().addAll(ids).add(range).build();
+        return ImmutableList.<Node>builder().addAll(ids).add(expression).build();
     }
 
 }

@@ -196,7 +196,7 @@ let_block
     ;
 
 let_decl
-    : func_def | var | expr ;
+    : func_def | val_def | var | expr ;
 
 block : INDENT (let_decl NL*)* DEDENT ;
 
@@ -222,7 +222,7 @@ tid_args : tid|ID|type;
 
 expr  
 	: if_expr
-	| 'for' (set_constraint_expr | list_expr) do_expression
+	| for_expr
     | case_expr
 	| 'when' expr  do_expression
 	| 'while' expr do_expression
@@ -291,11 +291,11 @@ vector_expr
 list_expr : le+=range_expr (',' le+=range_expr)*
           | e=expr '|' se+=set_constraint_expr (',' se+=set_constraint_expr)* ;
 
-set_constraint_expr : s_id=ID '<-' re=range_expr
-         | '(' l_id+=ID (',' l_id+=ID)* ')' '<-' re=range_expr
+set_constraint_expr : s_id=ID '<-' re=expr
+         | '(' l_id+=ID (',' l_id+=ID)* ')' '<-' re=expr
         ;
 
-range_expr : beg=expr ('..' end=expr)?
+range_expr :  beg=expr ('..' end=expr)?
            | beg=expr '...'
            ;
 
@@ -316,6 +316,8 @@ else_part : 'else' (e=expr|e=expr? eb=else_block) ;
 then_block : INDENT (let_decl NL*)+ NL* DEDENT ;
 
 else_block : INDENT (let_decl NL*)+ DEDENT ;
+
+for_expr : 'for' set_constraint_expr  do_expression ;
 
 case_expr : 'case' s=expr 'of' g=case_guards ;
 

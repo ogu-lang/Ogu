@@ -9,9 +9,7 @@ import org.ogu.lang.parser.ast.decls.funcdef.*;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParamConstrained;
 import org.ogu.lang.parser.ast.expressions.*;
-import org.ogu.lang.parser.ast.expressions.control.CaseExpression;
-import org.ogu.lang.parser.ast.expressions.control.CaseGuard;
-import org.ogu.lang.parser.ast.expressions.control.IfExpression;
+import org.ogu.lang.parser.ast.expressions.control.*;
 import org.ogu.lang.parser.ast.expressions.literals.CharLiteral;
 import org.ogu.lang.parser.ast.expressions.literals.IntLiteral;
 import org.ogu.lang.parser.ast.expressions.literals.StringLiteral;
@@ -610,6 +608,11 @@ public class ParseTreeToAst {
         if (ctx.if_expr() != null) {
             return toAst(ctx.if_expr());
         }
+
+        if (ctx.for_expr() != null) {
+            return toAst(ctx.for_expr());
+        }
+
         if (ctx.case_expr() != null) {
             return toAst(ctx.case_expr());
         }
@@ -655,6 +658,54 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
+    private Expression toAst(OguParser.For_exprContext ctx) {
+        SetConstraint forCond = toAst(ctx.set_constraint_expr());
+        DoExpression doExpr = toAst(ctx.do_expression());
+        ForExpression forExpr = new ForExpression(forCond, doExpr);
+        getPositionFrom(forExpr, ctx);
+        return forExpr;
+    }
+
+    private DoExpression toAst(OguParser.Do_expressionContext ctx) {
+        List<Expression> exprs = new ArrayList<>();
+        if (ctx.block() == null) {
+            exprs.add(toAst(ctx.expr()));
+        } else {
+            for (OguParser.Let_declContext decl : ctx.block().let_decl()) {
+                if (decl.expr() != null)
+                    exprs.add(toAst(decl.expr()));
+                else if (decl.func_def() != null)
+                    exprs.add(toAst(decl.func_def()));
+                else if (decl.val_def() != null)
+                    exprs.add(toAst(decl.val_def()));
+                else { ///var
+                    exprs.add(toAst(decl.var()));
+                }
+            }
+        }
+        DoExpression doExpr = new DoExpression(exprs);
+        getPositionFrom(doExpr, ctx);
+        return doExpr;
+    }
+
+    private VarDeclExpression toAst(OguParser.VarContext ctx) {
+        VarDeclExpression expr = new VarDeclExpression(toAst(ctx, Collections.emptyList()));
+        getPositionFrom(expr, ctx);
+        return expr;
+    }
+
+    private ValDeclExpression toAst(OguParser.Val_defContext ctx) {
+        ValDeclExpression expr = new ValDeclExpression(toAst(ctx, Collections.emptyList()));
+        getPositionFrom(expr, ctx);
+        return expr;
+    }
+
+    private FuncDeclExpression toAst(OguParser.Func_defContext ctx) {
+        FuncDeclExpression expr = new FuncDeclExpression(toAst(ctx, Collections.emptyList()));
+        getPositionFrom(expr, ctx);
+        return expr;
+    }
+
     private ListExpression toAst(OguParser.Vector_exprContext ctx) {
         if (ctx.list_expr() == null) {
             EmptyListExpression empty = new EmptyListExpression();
@@ -687,12 +738,12 @@ public class ParseTreeToAst {
 
     private SetConstraint toAst(OguParser.Set_constraint_exprContext ctx) {
         if (ctx.s_id != null) {
-            SetConstraint cons = new SetConstraint(OguIdentifier.create(idText(ctx.s_id)), toAst(ctx.range_expr()));
+            SetConstraint cons = new SetConstraint(OguIdentifier.create(idText(ctx.s_id)), toAst(ctx.expr()));
             getPositionFrom(cons, ctx);
             return cons;
         } else {
             List<OguIdentifier> ids = ctx.l_id.stream().map((t) -> new OguIdentifier(idText(t))).collect(Collectors.toList());
-            SetConstraint cons = new SetConstraint(ids, toAst(ctx.range_expr()));
+            SetConstraint cons = new SetConstraint(ids, toAst(ctx.expr()));
             getPositionFrom(cons, ctx);
             return cons;
         }
