@@ -197,9 +197,9 @@ let_decl
 
 block : INDENT (let_decl NL*)* DEDENT ;
 
-type : '[' vt=type ']'
-     | '(' ')'
-     | '(' type (',' type)* ')'
+type : vector_type
+     | unit
+     | tuple_type
      | '{' ID ':' type (',' ID ':' type)* '}' // structs
      | TID '{' ID ':' type (',' ID ':' type)* '}' // structs
      | '{' type  '->' type '}'
@@ -208,6 +208,10 @@ type : '[' vt=type ']'
      | nat=('i8' | 'u8' | 'i16' | 'u16' | 'i32' | 'u32' | 'i64' | 'u64' | 'f32' | 'f64')
      | ID
      ;
+
+vector_type : '[' vt=type ']' ;
+
+tuple_type : '(' t+=type (',' t+=type)* ')';
 
 tid : t+=TID ('.' t+=TID)* ;
 

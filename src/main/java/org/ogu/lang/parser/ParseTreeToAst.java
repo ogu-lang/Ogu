@@ -537,11 +537,25 @@ public class ParseTreeToAst {
     }
 
     private OguType toAst(OguParser.TypeContext ctx) {
-        if (ctx.vt != null) {
-            OguType type = toAst(ctx.vt);
+        if (ctx.vector_type() != null) {
+            OguType type = toAst(ctx.vector_type().type());
             VectorType vtype = new VectorType(type);
             getPositionFrom(vtype, ctx);
             return vtype;
+        }
+        if (ctx.unit() != null) {
+            UnitType utype = new UnitType();
+            getPositionFrom(utype, ctx);
+            return utype;
+        }
+        if (ctx.tuple_type() != null) {
+            List<OguType> types = new ArrayList<>();
+            for (OguParser.TypeContext type : ctx.tuple_type().type()) {
+                types.add(toAst(type));
+            }
+            TupleType ttype = new TupleType(types);
+            getPositionFrom(ttype, ctx);
+            return ttype;
         }
         if (ctx.tid() != null) {
             if (ctx.t_a.isEmpty()) {

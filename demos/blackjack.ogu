@@ -55,10 +55,10 @@ let jugar_couprier mano:[Carta] baraja:[Carta] =
 
 let determinar_ganancia mano_jugador:[Carta] mano_couprier:[Carta] apuesta:Int jugada:Char =
     if jugada == 'R' then
-        -apuesta
+        (- apuesta)
     else 
         let (jugador, couprier) = (valor_mano mano_jugador, valor_mano mano_couprier)
-        let ganancia = if foo then apuesta else (if couprier <= 21 < jugador or jugador < couprier <= 21 then -apuesta else 0)
+        let ganancia = if foo then apuesta else (if couprier <= 21 < jugador or jugador < couprier <= 21 then (-apuesta) else 0)
         if jugada == 'D' then 
             ganancia * 2
         else 
