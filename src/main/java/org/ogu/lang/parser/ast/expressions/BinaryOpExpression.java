@@ -9,14 +9,14 @@ import org.ogu.lang.typesystem.TypeUsage;
  * Bi
  * Created by ediaz on 27-01-16.
  */
-public class BinaryOpExpr extends Expression {
+public class BinaryOpExpression extends Expression {
 
     OguOperator op;
     Expression leftExpr;
     Expression rightExpr;
 
 
-    public BinaryOpExpr(OguOperator op, Expression left, Expression right) {
+    public BinaryOpExpression(OguOperator op, Expression left, Expression right) {
         super();
         this.op = op;
         this.op.setParent(this);

@@ -231,8 +231,7 @@ expr
 	| '\\' lambda_args? '->' (expr|block)
 	| 'yield' expr
 	| 'recur' expr*
-	| expr '<-' expr
-	| 'set' ID expr? '=' expr
+	| assign_expr
 	|<assoc=right> l=expr o=('>>'|'<<'|'|>'|'<|') r=expr  // composition
     | l=expr o='@' r=expr
 	|<assoc=right> l=expr o='^' r=expr
@@ -246,7 +245,7 @@ expr
 	| paren_expr
 	| vector_expr
 	| dict_expr
-	| expr '`' ID '`' expr
+	| l_infix=expr '`' infix_id=ID '`' r_infix=expr
 	| '$' ID
 	| function=func_name (params+=expr)+
 	| qual_function=qual_func_name (params+=expr)*
@@ -276,6 +275,12 @@ tuple_expr
 paren_expr
     : '(' op expr* ')'
     | '(' tuple_expr ')'
+    ;
+
+assign_expr
+	: i=ID a=expr? '<-' e=expr
+	| '$' si=ID a=expr? '<-' e=expr
+	| 'set' i=ID a=expr? '=' e=expr
     ;
 
 vector_expr

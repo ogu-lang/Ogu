@@ -1,5 +1,6 @@
 package org.ogu.lang.parser;
 
+import com.google.common.collect.ImmutableList;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.ogu.lang.antlr.OguParser;
@@ -617,6 +618,10 @@ public class ParseTreeToAst {
             return toAst(ctx.case_expr());
         }
 
+        if (ctx.assign_expr() != null) {
+            return toAst(ctx.assign_expr());
+        }
+
         if (ctx.paren_expr() != null) {
             return toAst(ctx.paren_expr());
         }
@@ -629,6 +634,17 @@ public class ParseTreeToAst {
             return toAst(ctx.constructor());
         }
 
+        if (ctx.infix_id != null) {
+            Reference name = new Reference(OguIdentifier.create(idText(ctx.infix_id)));
+            Expression l = toAst(ctx.l_infix);
+            Expression r = toAst(ctx.r_infix);
+            List<ActualParam> params = new ArrayList<>();
+            params.add(new ActualParam(l));
+            params.add(new ActualParam(r));
+            FunctionCall call = new FunctionCall(l, params);
+            getPositionFrom(call, ctx);
+            return call;
+        }
 
         if (ctx.function != null) {
             return toAstFunctionCall(ctx);
@@ -646,7 +662,7 @@ public class ParseTreeToAst {
         if (ctx.o != null) {
             Expression left = toAst(ctx.l);
             Expression right = toAst(ctx.r);
-            BinaryOpExpr expr = new BinaryOpExpr(new OguOperator(ctx.o.getText()), left, right);
+            BinaryOpExpression expr = new BinaryOpExpression(new OguOperator(ctx.o.getText()), left, right);
             getPositionFrom(expr, ctx);
             return expr;
         }
@@ -656,6 +672,25 @@ public class ParseTreeToAst {
 
         Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private AssignExpression toAst(OguParser.Assign_exprContext ctx) {
+        AssignExpression expr;
+        if (ctx.si != null) {
+            OguIdentifier id = OguIdentifier.create(idText(ctx.si));
+            if (ctx.a == null)
+                expr = new AssignSelfExpression(id, toAst(ctx.e));
+            else
+                expr = new AssignSelfExpression(id, toAst(ctx.a), toAst(ctx.e));
+        } else {
+            OguIdentifier id = OguIdentifier.create(idText(ctx.i));
+            if (ctx.a == null)
+                expr = new AssignExpression(id, toAst(ctx.e));
+            else
+                expr = new AssignExpression(id, toAst(ctx.a), toAst(ctx.e));
+        }
+        getPositionFrom(expr, ctx);
+        return expr;
     }
 
     private Expression toAst(OguParser.For_exprContext ctx) {
@@ -824,7 +859,7 @@ public class ParseTreeToAst {
             return param;
         }
         if (ctx.o != null) {
-            BinaryOpExpr expr = new BinaryOpExpr(new OguOperator(ctx.o.getText()), toAst(ctx.l), toAst(ctx.r));
+            BinaryOpExpression expr = new BinaryOpExpression(new OguOperator(ctx.o.getText()), toAst(ctx.l), toAst(ctx.r));
             getPositionFrom(expr, ctx);
             ActualParam param = new ActualParam(expr);
             getPositionFrom(param, ctx);
