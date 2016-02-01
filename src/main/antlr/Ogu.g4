@@ -225,7 +225,7 @@ expr
 	| for_expr
     | case_expr
     | when_expr
-	| 'while' expr do_expression
+    | while_expr
 	| 'unless' expr  do_expression
 	| 'let' ID '=' expr (',' ID '=' expr)* ('in' expr)?
 	| '\\' lambda_args? '->' (expr|block)
@@ -256,6 +256,7 @@ expr
 
 when_expr : 'when' expr do_expression ;
 
+while_expr : 'while' expr do_expression ;
 
 primary
 	    : neg_expr

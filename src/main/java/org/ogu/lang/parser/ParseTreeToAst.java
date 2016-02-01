@@ -625,6 +625,10 @@ public class ParseTreeToAst {
             return toAst(ctx.when_expr());
         }
 
+        if (ctx.while_expr() != null) {
+            return toAst(ctx.while_expr());
+        }
+
         if (ctx.assign_expr() != null) {
             return toAst(ctx.assign_expr());
         }
@@ -679,6 +683,12 @@ public class ParseTreeToAst {
 
         Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private WhileExpression toAst(OguParser.While_exprContext ctx) {
+        WhileExpression expr = new WhileExpression(toAst(ctx.expr()), toAst(ctx.do_expression()));
+        getPositionFrom(expr, ctx);
+        return expr;
     }
 
     private WhenExpression toAst(OguParser.When_exprContext ctx) {
