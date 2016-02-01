@@ -386,13 +386,85 @@ public class ParseTreeToAst {
     private void toAst(OguParser.Let_exprContext ctx, LetDeclaration funcdef) {
         if (ctx.let_block() != null) {
             toAst(ctx.let_block(), funcdef);
+            if (ctx.let_block().where() != null)
+                parseWhere(ctx.let_block().where(), funcdef);
             return;
         }
-        if (ctx.expr() != null) { // TODO Parse where
+        if (ctx.expr() != null) {
             funcdef.add(toAst(ctx.expr()));
+            if (ctx.where() != null)
+                parseWhere(ctx.where(), funcdef);
             return;
         }
+        if (ctx.guards() != null) {
+            for (OguParser.GuardContext guard:ctx.guards().guard()) {
+                funcdef.add(toAst(guard));
+            }
+            if (ctx.where() != null)
+                parseWhere(ctx.where(), funcdef);
+            if (ctx.guards().where() != null)
+                parseWhere(ctx.guards().where(), funcdef);
+            return;
+        }
+        Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private void parseWhere(OguParser.WhereContext ctx, LetDeclaration funcdef) {
+        for (OguParser.Where_exprContext wc:ctx.wl) {
+            parseWhereCtx(wc, funcdef);
+        }
+    }
+
+    private void parseWhereCtx(OguParser.Where_exprContext ctx, LetDeclaration funcdef) {
+        if (ctx.i != null) {
+            OguIdentifier funcId = OguIdentifier.create(idText(ctx.i));
+            List<FunctionPatternParam> params = funcArgsToAst(ctx.let_arg());
+            LetDefinition letDef = new LetDefinition(funcId, params, Collections.emptyList());
+            getPositionFrom(letDef, ctx);
+            if (ctx.let_expr() != null) {
+                toAst(ctx.let_expr(), letDef);
+            }
+            WhereDeclaration where = new WhereDeclaration(letDef);
+            getPositionFrom(where, ctx);
+            funcdef.add(where);
+            return;
+        }
+        else {
+            if (!ctx.tup.isEmpty()) {
+                List<OguIdentifier> ids = new ArrayList<>();
+                Map<OguIdentifier, OguType> types = new HashMap<>();
+                lidsToAst(ctx.tup, ids, types);
+                Expression value = toAst(ctx.expr());
+                TupleValDeclaration decl = new TupleValDeclaration(ids, types, value, Collections.emptyList());
+                getPositionFrom(decl, ctx);
+                WhereDeclaration where = new WhereDeclaration(decl);
+                getPositionFrom(where, ctx);
+                funcdef.add(where);
+                return;
+            }
+
+        }
+        Logger.debug(ctx.getText());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private GuardDeclaration toAst(OguParser.GuardContext ctx) {
+        Expression base = toAst(ctx.be);
+        List<Expression> args = new ArrayList<>();
+        for (OguParser.ExprContext c : ctx.ae)
+            args.add(toAst(c));
+        List<Expression> exprs = new ArrayList<>();
+        if (ctx.de != null)
+            exprs.add(toAst(ctx.de));
+        else {
+            iterLetDecls(ctx.eb.let_decl(), exprs);
+        }
+        DoExpression doExpr = new DoExpression(exprs);
+        getPositionFrom(doExpr, ctx);
+        GuardDeclaration guard = new GuardDeclaration(base, args, doExpr);
+        getPositionFrom(guard, ctx);
+        return guard;
     }
 
     private void toAst(OguParser.Let_blockContext ctx, LetDeclaration funcdef) {
@@ -413,16 +485,42 @@ public class ParseTreeToAst {
     }
 
     private FunctionPatternParam toAst(OguParser.Let_argContext ctx) {
-        if (ctx.let_arg_vector() != null)
-            return toAst(ctx.let_arg_vector());
+
 
         if (ctx.l_atom != null)
             return toAst(ctx.l_atom);
 
+        if (ctx.let_arg_vector() != null)
+            return toAst(ctx.let_arg_vector());
+
+
+        if (ctx.let_arg_tuple_or_list() != null)
+            return toAst(ctx.let_arg_tuple_or_list());
+
+        Logger.debug(ctx.getText());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private FunctionPatternParam toAst(OguParser.Let_arg_tuple_or_listContext ctx) {
+        if (ctx.la != null && !ctx.la.isEmpty()) {
+            List<FunctionPatternParam> args = new ArrayList<>();
+            for (OguParser.Let_arg_atomContext ac:ctx.la)
+                args.add(toAst(ac));
+            FuncListParam param = new FuncListParam(args);
+            getPositionFrom(param, ctx);
+            return param;
+        }
+        Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
     private FunctionPatternParam toAst(OguParser.Let_arg_vectorContext ctx) {
+        if (ctx.la == null || ctx.la.isEmpty()) {
+            FuncEmptyVectorParam param = new FuncEmptyVectorParam();
+            getPositionFrom(param, ctx);
+            return param;
+        }
+        Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
 
     }
@@ -446,6 +544,12 @@ public class ParseTreeToAst {
             FuncTypeParam typeParam = new FuncTypeParam(new OguTypeIdentifier(idText(ctx.t_id)));
             getPositionFrom(typeParam, ctx);
             return typeParam;
+        }
+
+        if (ctx.a != null) {
+            FuncExprParam param = new FuncExprParam(toAst(ctx.atom()));
+            getPositionFrom(param, ctx);
+            return param;
         }
         Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
@@ -476,6 +580,12 @@ public class ParseTreeToAst {
             getPositionFrom(decorator, ctx);
             return decorator;
         }
+        if ("entrypoint".equals(decoratorId)) {
+            Decorator decorator = new EntryPointDecorator();
+            getPositionFrom(decorator, ctx);
+            return decorator;
+        }
+        Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
@@ -656,6 +766,10 @@ public class ParseTreeToAst {
             return toAst(ctx.while_expr());
         }
 
+        if (ctx.lambda_expr() != null) {
+            return toAst(ctx.lambda_expr());
+        }
+
         if (ctx.assign_expr() != null) {
             return toAst(ctx.assign_expr());
         }
@@ -708,6 +822,43 @@ public class ParseTreeToAst {
             return toAst(ctx.primary());
         }
 
+        Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private LambdaExpression toAst(OguParser.Lambda_exprContext ctx) {
+        List<LambdaArg> args = Collections.emptyList();
+        if (ctx.lambda_args() != null)
+            args = ctx.lambda_args().lambda_arg().stream().map(this::toAst).collect(Collectors.toList());
+        DoExpression doExpr;
+        if (ctx.expr() == null)
+            doExpr = toAst(ctx.block());
+        else
+            doExpr = new DoExpression(ImmutableList.of(toAst(ctx.expr())));
+        LambdaExpression expr = new LambdaExpression(args, doExpr);
+        getPositionFrom(expr, ctx);
+        return expr;
+    }
+
+    private DoExpression toAst(OguParser.BlockContext ctx) {
+        List<Expression> exprs = new ArrayList<>();
+        iterLetDecls(ctx.let_decl(), exprs);
+        DoExpression doExpr = new DoExpression(exprs);
+        getPositionFrom(doExpr, ctx);
+        return doExpr;
+    }
+
+    private LambdaArg toAst(OguParser.Lambda_argContext ctx) {
+        if (ctx.i != null) {
+            LambdaArg arg;
+            OguIdentifier id = OguIdentifier.create(idText(ctx.i));
+            if (ctx.type() == null)
+                arg = new LambdaArg(id);
+            else
+                arg = new LambdaArg(id, toAst(ctx.type()));
+            getPositionFrom(arg, ctx);
+            return arg;
+        }
         Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }

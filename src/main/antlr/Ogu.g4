@@ -165,15 +165,18 @@ lid : lid_fun_id=ID | lid_val_id=ID ':' t=type ;
 let_arg
     : l_atom=let_arg_atom
     | let_arg_vector
-    | '(' let_arg_atom (',' let_arg_atom)* ')'
-    | '(' let_arg_atom ('::' let_arg_atom)* ')'
+    | let_arg_tuple_or_list
     ;
 
 let_arg_atom
-    : l_id=lid | atom | t_id=TID la=let_arg* ;
+    : l_id=lid | a=atom | t_id=TID la=let_arg* ;
 
 let_arg_vector
-    : '[' (let_arg_atom (',' let_arg_atom)*)? ']'  ;
+    : '[' (la+=let_arg_atom (',' la+=let_arg_atom)*)? ']'  ;
+
+let_arg_tuple_or_list
+ : '(' ta+=let_arg_atom (',' ta+=let_arg_atom)* ')'
+ |  '(' la+=let_arg_atom ('::' la+=let_arg_atom)* ')' ;
 
 let_expr : '=' ( let_block | expr let_where? )
          |  guards where?
@@ -181,15 +184,15 @@ let_expr : '=' ( let_block | expr let_where? )
 
 guards : INDENT (guard NL*)*   (where NL*)? DEDENT;
 
-guard : '|' expr (expr)* '=' (expr|let_block) NL*  ;
+guard : '|' be=expr (ae+=expr)* '=' (de=expr|eb=let_block) NL*  ;
 
 let_where : INDENT where NL* DEDENT ;
 
-where : 'where' where_expr? (INDENT (where_expr NL*)+ DEDENT)? ;
+where : 'where' wl+=where_expr? (INDENT (wl+=where_expr NL*)+ DEDENT)? ;
 
 where_expr
-	: ID let_arg* NL* let_expr
-	| '(' lid (',' lid)* ')' '=' expr
+	: i=ID let_arg* NL* let_expr
+	| '(' tup+=lid (',' tup+=lid)* ')' '=' expr
 	;
 
 
@@ -230,7 +233,7 @@ expr
     | while_expr
 	| 'unless' expr  do_expression
 	| 'let' ID '=' expr (',' ID '=' expr)* ('in' expr)?
-	| '\\' lambda_args? '->' (expr|block)
+	| lambda_expr
 	| 'yield' expr
 	| 'recur' expr*
 	| assign_expr
@@ -256,6 +259,9 @@ expr
     | dict_expr
 
 	;
+
+lambda_expr
+    	: '\\' lambda_args? '->' (expr|block)  ;
 
 when_expr : 'when' expr do_expression ;
 
@@ -357,8 +363,8 @@ lambda_args
 	;
 
 lambda_arg
-	: ID (':' type)?
-	| '(' (lambda_arg (',' lambda_arg)*)? ')'
+	: i=ID (':' type)?
+	| '(' (la+=lambda_arg (',' la+=lambda_arg)*)? ')'
 	;		
 
 do_expression
