@@ -2,11 +2,11 @@ uses Random
 
 type Carta = (Char,Char)
 
-let baraja_mezclada =
+let baraja_mezclada! =
     let palos = ['C', 'D', 'T', 'P']
     let valores = ['A' , 2 .. 11, 'J', 'Q', 'K']
     let baraja = [(valor,palo) | palo <- palos, valor <- valores]
-    shuffle baraja    
+    for c <- shuffle! baraja do yield c
 
 let valor_mano cartas:[Carta] = 
     var valor = 0
@@ -50,7 +50,7 @@ let mostrar_manos mano_jugador:[Carta] mano_couprier:[Carta] =
 let jugar_couprier mano:[Carta] baraja:[Carta] = 
     var result = mano
     while (valor_mano result) < 17 do
-        result <- result ++ (next baraja)
+        result <- result ++ (next! baraja)
     result
 
 let determinar_ganancia mano_jugador:[Carta] mano_couprier:[Carta] apuesta:Int jugada:Char =
@@ -66,8 +66,8 @@ let determinar_ganancia mano_jugador:[Carta] mano_couprier:[Carta] apuesta:Int j
 
 let jugar_mano apuesta:Int pozo:Int =
     print! "Nueva mano, apuesta $" ++ apuesta ++ " pozo $" ++ (pozo - apuesta) ++ "\n"
-    let baraja = baraja_mezclada
-    let (mano_jugador, mano_couprier) = ([next baraja, next baraja], [next baraja, next baraja])
+    let baraja = baraja_mezclada!
+    let (mano_jugador, mano_couprier) = ([next! baraja, next! baraja], [next! baraja, next! baraja])
 
     if (valor_mano mano_jugador) == 21 then 
         mostar_manos mano_jugador mano_couprier
@@ -81,10 +81,10 @@ let jugar_mano apuesta:Int pozo:Int =
             when jugada == 'M' do
                  mano_couprier <- jugar_couprier mano_couprier baraja
             when jugada == 'D' do 
-                mano_jugador <- mano_jugador ++ (next baraja)
+                mano_jugador <- mano_jugador ++ (next! baraja)
                 mano_couprier <- jugar_couprier mano_couprier baraja
             when jugada == 'O' do
-                 mano_jugador <- mano_jugador ++ (next baraja)
+                 mano_jugador <- mano_jugador ++ (next! baraja)
             when (valor_mano mano_jugador) > 21 do
                  jugada <- 'R'
         mostar_manos mano_jugador mano_couprier

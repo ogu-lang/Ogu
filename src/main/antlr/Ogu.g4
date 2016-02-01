@@ -234,8 +234,8 @@ expr
 	| 'unless' expr  do_expression
 	| 'let' ID '=' expr (',' ID '=' expr)* ('in' expr)?
 	| lambda_expr
-	| 'yield' expr
-	| 'recur' expr*
+	| yield_expr
+	| recur_expr
 	| assign_expr
 	|<assoc=right> l=expr o=('>>'|'<<'|'|>'|'<|') r=expr  // composition
     | l=expr o='@' r=expr
@@ -259,6 +259,14 @@ expr
     | dict_expr
 
 	;
+
+
+recur_expr
+    : 'recur' expr*  ;
+
+yield_expr
+    : 'yield' expr ;
+
 
 lambda_expr
     	: '\\' lambda_args? '->' (expr|block)  ;

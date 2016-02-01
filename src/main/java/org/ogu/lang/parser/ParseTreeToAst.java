@@ -132,6 +132,11 @@ public class ParseTreeToAst {
         if (ctx.val_def() != null) {
             return toAst(ctx.val_def(), decs);
         }
+
+        if (ctx.var() != null) {
+            return toAst(ctx.var(), decs);
+        }
+
         if (ctx.func_decl() != null) {
             return toAst(ctx.func_decl(), decs);
         }
@@ -167,6 +172,8 @@ public class ParseTreeToAst {
             return toAst(ctx.expr());
         }
 
+
+        Logger.debug(ctx.getText());
 
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
@@ -770,6 +777,15 @@ public class ParseTreeToAst {
             return toAst(ctx.lambda_expr());
         }
 
+        if (ctx.yield_expr() != null) {
+            return toAst(ctx.yield_expr());
+        }
+
+        if (ctx.recur_expr() != null) {
+            return toAst(ctx.recur_expr());
+        }
+
+
         if (ctx.assign_expr() != null) {
             return toAst(ctx.assign_expr());
         }
@@ -822,8 +838,23 @@ public class ParseTreeToAst {
             return toAst(ctx.primary());
         }
 
-        Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
+        Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private RecurExpression toAst(OguParser.Recur_exprContext ctx) {
+        List<Expression> args = new ArrayList<>();
+        for (OguParser.ExprContext ce:ctx.expr())
+            args.add(toAst(ce));
+        RecurExpression expr = new RecurExpression(args);
+        getPositionFrom(expr, ctx);
+        return expr;
+    }
+
+    private YieldExpression toAst(OguParser.Yield_exprContext ctx) {
+        YieldExpression expr = new YieldExpression(toAst(ctx.expr()));
+        getPositionFrom(expr, ctx);
+        return expr;
     }
 
     private LambdaExpression toAst(OguParser.Lambda_exprContext ctx) {
