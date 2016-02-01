@@ -23,6 +23,6 @@ public class InfiniteRangeExpression extends RangeExpression {
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.of(end);
+        return ImmutableList.of(begin);
     }
 }

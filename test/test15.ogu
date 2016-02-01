@@ -3,7 +3,7 @@
 ;; Un stack s con elementos de tipo e
 trait Stackable s e where
 
-  def push!  : s -> e -> !
+  def push!  : s -> e -> ()
   def pop!   : s -> e
   def empty? : s -> Bool
 
