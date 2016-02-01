@@ -12,6 +12,7 @@ import org.ogu.lang.parser.ast.decls.typedef.TypeParamConstrained;
 import org.ogu.lang.parser.ast.expressions.*;
 import org.ogu.lang.parser.ast.expressions.control.*;
 import org.ogu.lang.parser.ast.expressions.literals.CharLiteral;
+import org.ogu.lang.parser.ast.expressions.literals.FloatLiteral;
 import org.ogu.lang.parser.ast.expressions.literals.IntLiteral;
 import org.ogu.lang.parser.ast.expressions.literals.StringLiteral;
 import org.ogu.lang.parser.ast.modules.*;
@@ -19,6 +20,7 @@ import org.ogu.lang.parser.ast.typeusage.*;
 import org.ogu.lang.util.Logger;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1197,6 +1199,14 @@ public class ParseTreeToAst {
             CharLiteral cl = new CharLiteral(ctxt);
             getPositionFrom(cl, ctx);
             return cl;
+        }
+
+        if (ctx.FLOAT() != null) {
+            String dtxt = ctx.FLOAT().getText().replace("_", "");
+            BigDecimal bd = new BigDecimal(dtxt);
+            FloatLiteral lit = new FloatLiteral(bd);
+            getPositionFrom(lit, ctx);
+            return lit;
         }
         Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
