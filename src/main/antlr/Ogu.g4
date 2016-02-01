@@ -224,7 +224,7 @@ expr
 	: if_expr
 	| for_expr
     | case_expr
-	| 'when' expr  do_expression
+    | when_expr
 	| 'while' expr do_expression
 	| 'unless' expr  do_expression
 	| 'let' ID '=' expr (',' ID '=' expr)* ('in' expr)?
@@ -253,6 +253,9 @@ expr
 	| ref=ID
 	| primary
 	;
+
+when_expr : 'when' expr do_expression ;
+
 
 primary
 	    : neg_expr

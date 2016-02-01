@@ -39,6 +39,12 @@ public class VarDeclaration extends FunctionalDeclaration {
         this.value.setParent(this);
     }
 
+    public VarDeclaration(OguIdentifier id, OguType type, List<Decorator> decorators) {
+        super(id, decorators);
+        this.type = type;
+        this.type.setParent(this);
+    }
+
     public VarDeclaration(OguIdentifier id, OguType type, Expression value, List<Decorator> decorators) {
         super(id, decorators);
         this.type = type;
@@ -49,10 +55,15 @@ public class VarDeclaration extends FunctionalDeclaration {
 
     @Override
     public Iterable<Node> getChildren() {
-        if (type == null)
+        if (type == null) {
             return ImmutableList.<Node>builder().add(name).add(value).addAll(decorators).build();
-        else
-            return ImmutableList.<Node>builder().add(name).add(value).add(type).addAll(decorators).build();
+        } else {
+            if (value == null)
+                return ImmutableList.<Node>builder().add(name).add(type).addAll(decorators).build();
+
+            else
+                return ImmutableList.<Node>builder().add(name).add(value).add(type).addAll(decorators).build();
+        }
     }
 
     @Override

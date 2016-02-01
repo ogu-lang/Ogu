@@ -543,7 +543,10 @@ public class ParseTreeToAst {
             if (ctx.type() == null) {
                 var = new VarDeclaration(id, toAst(ctx.expr()), decs);
             } else {
-                var = new VarDeclaration(id, toAst(ctx.type()), toAst(ctx.expr()), decs);
+                if (ctx.expr() != null)
+                    var = new VarDeclaration(id, toAst(ctx.type()), toAst(ctx.expr()), decs);
+                else
+                    var = new VarDeclaration(id, toAst(ctx.type()), decs);
             }
             getPositionFrom(var, ctx);
             return var;
@@ -618,6 +621,10 @@ public class ParseTreeToAst {
             return toAst(ctx.case_expr());
         }
 
+        if (ctx.when_expr() != null) {
+            return toAst(ctx.when_expr());
+        }
+
         if (ctx.assign_expr() != null) {
             return toAst(ctx.assign_expr());
         }
@@ -674,6 +681,12 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
+    private WhenExpression toAst(OguParser.When_exprContext ctx) {
+        WhenExpression expr = new WhenExpression(toAst(ctx.expr()), toAst(ctx.do_expression()));
+        getPositionFrom(expr, ctx);
+        return expr;
+    }
+
     private AssignExpression toAst(OguParser.Assign_exprContext ctx) {
         AssignExpression expr;
         if (ctx.si != null) {
@@ -706,17 +719,7 @@ public class ParseTreeToAst {
         if (ctx.block() == null) {
             exprs.add(toAst(ctx.expr()));
         } else {
-            for (OguParser.Let_declContext decl : ctx.block().let_decl()) {
-                if (decl.expr() != null)
-                    exprs.add(toAst(decl.expr()));
-                else if (decl.func_def() != null)
-                    exprs.add(toAst(decl.func_def()));
-                else if (decl.val_def() != null)
-                    exprs.add(toAst(decl.val_def()));
-                else { ///var
-                    exprs.add(toAst(decl.var()));
-                }
-            }
+            iterLetDecls(ctx.block().let_decl(), exprs);
         }
         DoExpression doExpr = new DoExpression(exprs);
         getPositionFrom(doExpr, ctx);
@@ -818,11 +821,28 @@ public class ParseTreeToAst {
         return ifExpr;
     }
 
+    private void iterLetDecls(List<OguParser.Let_declContext> decls, List<Expression> exprs) {
+        for (OguParser.Let_declContext decl : decls) {
+            if (decl.expr() != null)
+                exprs.add(toAst(decl.expr()));
+            else if (decl.func_def() != null)
+                exprs.add(toAst(decl.func_def()));
+            else if (decl.val_def() != null)
+                exprs.add(toAst(decl.val_def()));
+            else {  ///var
+                exprs.add(toAst(decl.var()));
+            }
+        }
+    }
+
     private List<Expression> toAst(OguParser.Then_partContext ctx) {
         List<Expression> ifElems = new ArrayList<>();
         if (ctx.tb != null) {
-            Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
-            throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+            List<Expression> exprs = new ArrayList<>();
+            iterLetDecls(ctx.tb.let_decl(), exprs);
+            DoExpression doExpr = new DoExpression(exprs);
+            getPositionFrom(doExpr, ctx);
+            ifElems.add(doExpr);
         }
         else { // tb == null
             ifElems.add(toAst(ctx.te));
@@ -835,8 +855,13 @@ public class ParseTreeToAst {
         if (ctx.eb == null) {
             return toAst(ctx.e);
         }
-        Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+        else {
+            List<Expression> exprs = new ArrayList<>();
+            iterLetDecls(ctx.eb.let_decl(), exprs);
+            DoExpression doExpr = new DoExpression(exprs);
+            getPositionFrom(doExpr, ctx);
+            return doExpr;
+        }
     }
 
     private Constructor toAst(OguParser.ConstructorContext ctx) {
