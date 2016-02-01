@@ -773,6 +773,10 @@ public class ParseTreeToAst {
             return toAst(ctx.while_expr());
         }
 
+        if (ctx.let_in_expr() != null) {
+            return toAst(ctx.let_in_expr());
+        }
+
         if (ctx.lambda_expr() != null) {
             return toAst(ctx.lambda_expr());
         }
@@ -840,6 +844,22 @@ public class ParseTreeToAst {
 
         Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private LetInExpression toAst(OguParser.Let_in_exprContext ctx) {
+        Map<OguIdentifier, Expression> exprs = new HashMap<>();
+        for (OguParser.Let_in_argContext lin:ctx.let_in_arg()) {
+            OguIdentifier id = OguIdentifier.create(idText(lin.i));
+            Expression expr = toAst(lin.e);
+            exprs.put(id, expr);
+        }
+        LetInExpression expr;
+        if (ctx.in_expr == null)
+            expr = new LetInExpression(exprs);
+        else
+            expr = new LetInExpression(exprs, toAst(ctx.in_expr));
+        getPositionFrom(expr, ctx);
+        return expr;
     }
 
     private RecurExpression toAst(OguParser.Recur_exprContext ctx) {

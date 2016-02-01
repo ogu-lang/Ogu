@@ -232,7 +232,7 @@ expr
     | when_expr
     | while_expr
 	| 'unless' expr  do_expression
-	| 'let' ID '=' expr (',' ID '=' expr)* ('in' expr)?
+	| let_in_expr
 	| lambda_expr
 	| yield_expr
 	| recur_expr
@@ -257,9 +257,13 @@ expr
 	| paren_expr
     | vector_expr
     | dict_expr
-
 	;
 
+let_in_expr
+    : 'let' let_in_arg (',' let_in_arg)* ('in' in_expr=expr)?  ;
+
+let_in_arg
+    : i=ID '=' e=expr ;
 
 recur_expr
     : 'recur' expr*  ;
