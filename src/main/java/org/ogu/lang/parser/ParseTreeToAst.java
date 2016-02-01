@@ -60,11 +60,7 @@ public class ParseTreeToAst {
                 module.add((Expression) memberNode);
             else if (memberNode instanceof AliasDeclaration)
                 module.add((AliasDeclaration) memberNode);
-            else if (memberNode instanceof ValDeclaration)
-                module.add((ExportableDeclaration) memberNode);
-            else if (memberNode instanceof FunctionDeclaration)
-                module.add((ExportableDeclaration) memberNode);
-            else if (memberNode instanceof LetDefinition)
+            else if (memberNode instanceof ExportableDeclaration)
                 module.add((ExportableDeclaration) memberNode);
         }
 
@@ -335,7 +331,7 @@ public class ParseTreeToAst {
         }
     }
 
-    private LetDeclaration toAst(OguParser.Func_defContext ctx, List<Decorator> decorators) {
+    private FunctionalDeclaration toAst(OguParser.Func_defContext ctx, List<Decorator> decorators) {
         if (ctx.let_func_name != null) {
             if (ctx.let_func_name.lid_fun_id != null) {
                 OguIdentifier funcId = OguIdentifier.create(idText(ctx.let_func_name.lid_fun_id));
@@ -360,7 +356,31 @@ public class ParseTreeToAst {
             }
             return opDef;
         }
+
+        if (!ctx.tup.isEmpty()) {
+            List<OguIdentifier> ids = new ArrayList<>();
+            Map<OguIdentifier, OguType> types = new HashMap<>();
+            lidsToAst(ctx.tup, ids, types);
+            Expression value = toAst(ctx.expr());
+            TupleValDeclaration decl = new TupleValDeclaration(ids, types, value, decorators);
+            getPositionFrom(decl, ctx);
+            return decl;
+        }
+        Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private void lidsToAst(List<OguParser.LidContext> lids, List<OguIdentifier> ids, Map<OguIdentifier, OguType> types) {
+        for(OguParser.LidContext ctx : lids) {
+            if (ctx.lid_fun_id !=null) {
+                ids.add(OguIdentifier.create(idText(ctx.lid_fun_id)));
+            } else {
+                OguIdentifier id = OguIdentifier.create(idText(ctx.lid_val_id));
+                OguType type = toAst(ctx.type());
+                ids.add(id);
+                types.put(id, type);
+            }
+        }
     }
 
     private void toAst(OguParser.Let_exprContext ctx, LetDeclaration funcdef) {
@@ -493,6 +513,13 @@ public class ParseTreeToAst {
                 return new QualifiedTypeArg(id);
             }
         }
+        if (ctx.vector() != null) {
+            TypeArg arg = toAst(ctx.vector().func_decl_arg());
+            VectorTypeArg vec = new VectorTypeArg(arg);
+            getPositionFrom(vec, ctx);
+            return vec;
+        }
+        Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
@@ -884,44 +911,9 @@ public class ParseTreeToAst {
     }
 
     private ActualParam toAstParam(OguParser.ExprContext ctx) {
-        if (ctx.ref != null) {
-            OguIdentifier id = OguIdentifier.create(idText(ctx.ref));
-            getPositionFrom(id, ctx);
-            Reference ref = new Reference(id);
-            getPositionFrom(ref, ctx);
-            ActualParam param = new ActualParam(ref);
-            getPositionFrom(param, ctx);
-            return param;
-        }
-        if (ctx.o != null) {
-            BinaryOpExpression expr = new BinaryOpExpression(new OguOperator(ctx.o.getText()), toAst(ctx.l), toAst(ctx.r));
-            getPositionFrom(expr, ctx);
-            ActualParam param = new ActualParam(expr);
-            getPositionFrom(param, ctx);
-            return param;
-
-        }
-        if (ctx.primary() != null) {
-            ActualParam param = new ActualParam(toAst(ctx.primary()));
-            getPositionFrom(param, ctx);
-            return param;
-        }
-        if (ctx.function != null) {
-            ActualParam param = new ActualParam(toAstFunctionCall(ctx));
-            getPositionFrom(param, ctx);
-            return param;
-        }
-        if (ctx.constructor() != null) {
-            ActualParam param = new ActualParam(toAst(ctx.constructor()));
-            getPositionFrom(param, ctx);
-            return param;
-        }
-        if (ctx.paren_expr() != null) {
-            return new ActualParam(toAst(ctx.paren_expr()));
-        }
-
-        Logger.debug(ctx.getText());
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+        ActualParam param = new ActualParam(toAst(ctx));
+        getPositionFrom(param, ctx);
+        return param;
     }
 
     private Expression toAst(OguParser.Paren_exprContext ctx) {

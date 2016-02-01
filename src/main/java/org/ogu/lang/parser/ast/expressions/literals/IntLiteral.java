@@ -19,6 +19,10 @@ public class IntLiteral extends Expression {
         this.value = value;
     }
 
+    @Override
+    public String toString() {
+        return "INT("+value+")";
+    }
 
     @Override
     public TypeUsage calcType() {

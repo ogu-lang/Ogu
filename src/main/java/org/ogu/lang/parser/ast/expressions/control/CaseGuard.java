@@ -23,6 +23,14 @@ public class CaseGuard extends Node {
     }
 
     @Override
+    public String toString() {
+        return "CaseGuard {"+
+                "cond="+cond+
+                ", result="+result+
+                '}';
+    }
+
+    @Override
     public Iterable<Node> getChildren() {
         return ImmutableList.<Node>builder().add(cond).add(result).build();
 

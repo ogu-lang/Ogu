@@ -11,8 +11,8 @@ import java.util.Collections;
  */
 public class OguName extends Node {
 
-    private OguName base;
-    private String name;
+    protected OguName base;
+    protected String name;
 
     public String getName() {
         return name;
@@ -55,4 +55,23 @@ public class OguName extends Node {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        OguIdentifier that = (OguIdentifier) o;
+
+        return base != null ? base.equals(that.base) : that.base == null && name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = base != null ? base.hashCode() : 0;
+        result = 31 * result + name.hashCode();
+        return result;
+    }
 }

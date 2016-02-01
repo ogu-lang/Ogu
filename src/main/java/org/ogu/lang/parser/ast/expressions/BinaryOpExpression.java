@@ -27,6 +27,15 @@ public class BinaryOpExpression extends Expression {
     }
 
     @Override
+    public String toString() {
+        return "BinaryOp {"+
+                "op='"+op+"'"+
+                ", left="+leftExpr+
+                ", right="+rightExpr+
+                '}';
+    }
+
+    @Override
     public TypeUsage calcType() {
         return null;
     }

@@ -129,7 +129,7 @@ vidt : ID (':' type)? ;
 func_decl_arg
 	: unit
 	| divergence
-	| '[' func_decl_arg ']'
+	| vector
 	| '(' func_decl_arg (',' func_decl_arg)* ')'
 	| '(' func_decl_arg (<assoc=right> '->'func_decl_arg)+ ')'
 	| '{' func_decl_arg ('->' func_decl_arg)* '}'
@@ -141,6 +141,8 @@ unit : '(' ')' ;
 
 divergence : '!' ;
 
+vector : '[' func_decl_arg ']' ;
+
 func_name_decl : f_id=ID | f_op=op | '(' f_op=op ')';
 
 func_def
@@ -148,7 +150,7 @@ func_def
 	( (let_func_name=lid|op) (let_func_args+=let_arg)* let_expr
 	| left=let_arg infix_op=op right=let_arg let_expr
 	| let_arg '`' infix_id=ID '`'  let_arg let_expr
-    | '(' lid (',' lid)* ')' '=' expr
+    | '(' tup+=lid (',' tup+=lid)* ')' '=' expr
 	)
 	;
 
@@ -242,9 +244,6 @@ expr
     | l=expr o=('=='|'/='|'<'|'<='|'>'|'>=') r=expr
     | l=expr o='&&' r=expr
     | l=expr o='||' r=expr
-	| paren_expr
-	| vector_expr
-	| dict_expr
 	| l_infix=expr '`' infix_id=ID '`' r_infix=expr
 	| '$' ID
 	| function=func_name (params+=expr)+
@@ -252,6 +251,10 @@ expr
 	| constructor
 	| ref=ID
 	| primary
+	| paren_expr
+    | vector_expr
+    | dict_expr
+
 	;
 
 when_expr : 'when' expr do_expression ;

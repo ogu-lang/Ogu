@@ -30,4 +30,8 @@ public class OguIdentifier extends OguName {
             return new OguIdentifier(base.get(0));
         return new OguIdentifier(OguTypeIdentifier.create(base.subList(0, base.size()-1)), base.get(base.size()-1));
     }
+
+
+
+
 }
