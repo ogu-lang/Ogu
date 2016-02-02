@@ -372,7 +372,7 @@ op : '@' | '^' | '*' | '/' | '%' |  '//' | '+' | '-'  | '++' | '::'
 
 map_expr
     : ma+=m_arrow (',' ma+=m_arrow)*
-    | m_assign (',' m_assign)*
+    | mb+=m_assign (',' mb+=m_assign)*
     ;
 
 m_arrow : k=expr '->' v=expr ;

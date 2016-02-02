@@ -534,9 +534,13 @@ public class ParseTreeToAst {
             getPositionFrom(param, ctx);
             return param;
         }
-        Logger.debug(ctx.getText());
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
-
+        List<FunctionPatternParam> args = new ArrayList<>();
+        for (OguParser.Let_arg_atomContext ac:ctx.la) {
+             args.add(toAst(ac));
+        }
+        FuncVectorParam param = new FuncVectorParam(args);
+        getPositionFrom(param, ctx);
+        return param;
     }
 
     private FunctionPatternParam toAst(OguParser.Let_arg_atomContext ctx) {
@@ -917,6 +921,19 @@ public class ParseTreeToAst {
             MapExpression map = new MapExpression(keys, vals);
             getPositionFrom(map, ctx);
             return map;
+        }
+        if (ctx.map_expr().m_assign != null && !ctx.map_expr().mb.isEmpty()) {
+            List<FieldExpression> fieldExprs = new ArrayList<>();
+            for (OguParser.M_assignContext mc:ctx.map_expr().mb) {
+                OguIdentifier id = OguIdentifier.create(idText(mc.i));
+                Expression expr = toAst(mc.expr());
+                FieldExpression fld = new FieldExpression(id, expr);
+                getPositionFrom(fld, ctx.map_expr());
+                fieldExprs.add(fld);
+            }
+            RecordExpression rec = new RecordExpression(fieldExprs);
+            getPositionFrom(rec, ctx);
+            return rec;
         }
 
         Logger.debug(ctx.getText());

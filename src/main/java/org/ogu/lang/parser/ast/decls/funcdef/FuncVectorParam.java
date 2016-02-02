@@ -4,30 +4,35 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.OguTypeIdentifier;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * and id for pattern matching
  * Created by ediaz on 23-01-16.
  */
 public class FuncVectorParam extends FunctionPatternParam {
 
-    private OguTypeIdentifier typeId;
+    private List<FunctionPatternParam> args;
 
 
-    public FuncVectorParam(OguTypeIdentifier typeId) {
+    public FuncVectorParam(List<FunctionPatternParam> args) {
         super();
-        this.typeId = typeId;
-        this.typeId.setParent(this);
+        this.args = new ArrayList<>();
+        this.args.addAll(args);
+        this.args.forEach((a) -> a.setParent(this));
     }
 
     @Override
     public String toString() {
-        return "FuncArg_MatchType{"+
-                "typeId="+typeId+
+        return "FuncVectorParam{"+
+                "args="+args+
                 '}';
     }
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.of(typeId);
+        return ImmutableList.<Node>builder().addAll(args).build();
     }
+
 }
