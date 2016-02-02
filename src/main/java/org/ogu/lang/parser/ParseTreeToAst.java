@@ -284,7 +284,9 @@ public class ParseTreeToAst {
             return toAst(ctx.val_def(), decs);
         if (ctx.func_def() != null)
             return toAst(ctx.func_def(), decs);
-
+        if (ctx.var() != null)
+            return toAst(ctx.var(), decs);
+        Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
@@ -1276,7 +1278,11 @@ public class ParseTreeToAst {
     private Constructor toAst(OguParser.ConstructorContext ctx) {
         TypeReference type = new TypeReference(toAst(ctx.tid()));
         getPositionFrom(type, ctx);
-        List<ActualParam> params = ctx.tuple_expr().expr().stream().map(this::toAstParam).collect(Collectors.toList());
+        List<ActualParam> params;
+        if (ctx.tuple_expr() == null)
+            params = Collections.emptyList();
+        else
+            params = ctx.tuple_expr().expr().stream().map(this::toAstParam).collect(Collectors.toList());
         Constructor ctor = new Constructor(type, params);
         getPositionFrom(ctor, ctx);
         return ctor;
