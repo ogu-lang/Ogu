@@ -211,7 +211,7 @@ type : vector_type
      | unit
      | tuple_type
      | anon_record_type
-     | TID '{' ID ':' type (',' ID ':' type)* '}' // structs
+     | record_type
      | map_type
      | type '->' type (<assoc=right>'->' type)*
      | gt=tid (t_a+=tid_args)*
@@ -229,7 +229,9 @@ tid : t+=TID ('.' t+=TID)* ;
 
 tid_args : tid|i=ID|type;
 
-anon_record_type : '{' fldDecl (',' fldDecl)* '}' ; // structs
+anon_record_type : '{' fldDecl (',' fldDecl)* '}' ; // anonymous structs
+
+record_type : ti=TID '{' fldDecl (',' fldDecl)* '}' ; // structs
 
 fldDecl : i=ID ':' t=type ;
 

@@ -3,6 +3,7 @@ package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
+import org.ogu.lang.parser.ast.OguTypeIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +13,15 @@ import java.util.List;
  * Ej: {name:String, age:Int}
  * Created by ediaz on 01-02-16.
  */
-public class AnonRecordType extends OguType {
-  private List<RecordField> fields;
+public class RecordType extends OguType {
 
-    public AnonRecordType(List<RecordField> fields) {
+    private OguTypeIdentifier name;
+    private List<RecordField> fields;
+
+    public RecordType(OguTypeIdentifier name, List<RecordField> fields) {
         super();
+        this.name = name;
+        this.name.setParent(this);
         this.fields = new ArrayList<>();
         this.fields.addAll(fields);
         this.fields.forEach((f) -> f.setParent(this));
@@ -25,11 +30,11 @@ public class AnonRecordType extends OguType {
 
     @Override
     public String toString() {
-        return "AnonRecord{fields="+fields+'}';
+        return "Record{name="+name+", fields" + fields + '}';
     }
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().addAll(fields).build();
+        return ImmutableList.<Node>builder().add(name).addAll(fields).build();
     }
 }

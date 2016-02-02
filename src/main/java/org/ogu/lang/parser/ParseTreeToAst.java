@@ -764,6 +764,10 @@ public class ParseTreeToAst {
             return toAst(ctx.anon_record_type());
         }
 
+        if (ctx.record_type() != null) {
+            return toAst(ctx.record_type());
+        }
+
         if (ctx.tid() != null) {
             if (ctx.t_a.isEmpty()) {
                 return new QualifiedTypeArg(toAst(ctx.tid()));
@@ -791,6 +795,8 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
+
+
     private OguType toAst(OguParser.Tid_argsContext ctx) {
         if (ctx.i != null) {
             IdTypeArg type = new IdTypeArg(OguIdentifier.create(idText(ctx.i)));
@@ -807,6 +813,17 @@ public class ParseTreeToAst {
         }
         Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private RecordType toAst(OguParser.Record_typeContext ctx) {
+        List<RecordField> fields = new ArrayList<>();
+        for (OguParser.FldDeclContext fc:ctx.fldDecl()) {
+            fields.add(toAst(fc));
+        }
+        OguTypeIdentifier name = OguTypeIdentifier.create(idText(ctx.ti));
+        RecordType record = new RecordType(name, fields);
+        getPositionFrom(record, ctx);
+        return record;
     }
 
     private AnonRecordType toAst(OguParser.Anon_record_typeContext ctx) {
