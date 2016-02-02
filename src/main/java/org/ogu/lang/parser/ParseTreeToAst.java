@@ -339,6 +339,17 @@ public class ParseTreeToAst {
 
     private FunctionalDeclaration toAst(OguParser.Func_defContext ctx, List<Decorator> decorators) {
         if (ctx.let_func_name != null) {
+            if (ctx.let_func_name.lid_val_id != null) {
+                OguIdentifier funcId = OguIdentifier.create(idText(ctx.let_func_name.lid_val_id));
+                OguType type = toAst(ctx.let_func_name.t);
+                if (ctx.let_func_args != null && !ctx.let_func_args.isEmpty()) {
+                    return new ErrorFunctionalDeclaration("error.let_as_val.no_params", getPosition(ctx));
+                }
+                Expression expr = toAst(ctx.let_expr());
+                ValDeclaration val = new ValDeclaration(funcId, type, expr, decorators);
+                getPositionFrom(val, ctx);
+                return val;
+            }
             if (ctx.let_func_name.lid_fun_id != null) {
                 OguIdentifier funcId = OguIdentifier.create(idText(ctx.let_func_name.lid_fun_id));
                 List<FunctionPatternParam> params = funcArgsToAst(ctx.let_func_args);
@@ -387,6 +398,14 @@ public class ParseTreeToAst {
                 types.put(id, type);
             }
         }
+    }
+
+    private Expression toAst(OguParser.Let_exprContext ctx) {
+        if (ctx.expr() != null) {
+            return toAst(ctx.expr());
+        }
+        Logger.debug(ctx.getText());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
     private void toAst(OguParser.Let_exprContext ctx, LetDeclaration funcdef) {
@@ -558,10 +577,21 @@ public class ParseTreeToAst {
                 return param;
             }
         }
-        if (ctx.t_id != null && ctx.la == null) {
-            FuncTypeParam typeParam = new FuncTypeParam(new OguTypeIdentifier(idText(ctx.t_id)));
-            getPositionFrom(typeParam, ctx);
-            return typeParam;
+        if (ctx.t_id != null)
+        {
+            OguTypeIdentifier tid =  OguTypeIdentifier.create(idText(ctx.t_id));
+            if (ctx.la == null) {
+                FuncTypeParam typeParam = new FuncTypeParam(tid);
+                getPositionFrom(typeParam, ctx);
+                return typeParam;
+            } else {
+                List<FunctionPatternParam> args = new ArrayList<>();
+                for (OguParser.Let_argContext ac:ctx.la)
+                    args.add(toAst(ac));
+                FuncGenericTypeParam typeParam = new FuncGenericTypeParam(tid, args);
+                getPositionFrom(typeParam, ctx);
+                return typeParam;
+            }
         }
 
         if (ctx.a != null) {
@@ -683,14 +713,14 @@ public class ParseTreeToAst {
         OguParser.Alias_originContext origin = ctx.alias_origin();
         if (target.alias_tid != null) {
             if (origin.alias_origin_id != null) {
-                return new AliasError(message("error.alias.tid_no_tid"), getPosition(ctx));
+                return new ErrorAlias(message("error.alias.tid_no_tid"), getPosition(ctx));
             }
             TypeAliasDeclaration decl = new TypeAliasDeclaration(toOguTypeIdentifier(target), toOguTypeIdentifier(origin), decs);
             getPositionFrom(decl, ctx);
             return decl;
         } else {
             if (origin.alias_origin_id == null) {
-                return new AliasError(message("error.alias.id_no_id"), getPosition(ctx));
+                return new ErrorAlias(message("error.alias.id_no_id"), getPosition(ctx));
             }
             IdAliasDeclaration decl = new IdAliasDeclaration(toOguIdentifier(target), toOguIdentifier(origin), decs);
             getPositionFrom(decl, ctx);

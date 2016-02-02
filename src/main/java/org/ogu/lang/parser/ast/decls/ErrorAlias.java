@@ -13,11 +13,11 @@ import java.util.List;
  * A semantic error on Alias declaration
  * Created by ediaz on 22-01-16.
  */
-public class AliasError extends AliasDeclaration {
+public class ErrorAlias extends AliasDeclaration {
 
     private String message;
 
-    public AliasError(String message, Position position) {
+    public ErrorAlias(String message, Position position) {
         super(Collections.emptyList());
         this.message = message;
         this.setPosition(position);

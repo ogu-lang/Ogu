@@ -171,7 +171,7 @@ let_arg
     ;
 
 let_arg_atom
-    : l_id=lid | a=atom | t_id=TID la=let_arg* ;
+    : l_id=lid | a=atom | t_id=TID (la+=let_arg)* ;
 
 let_arg_vector
     : '[' (la+=let_arg_atom (',' la+=let_arg_atom)*)? ']'  ;

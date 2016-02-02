@@ -82,11 +82,11 @@ trait Eq a where
 
     def /= : a -> a -> Bool
     
-    let /= a a = not (a == a)
+    let a /= b = not (a == b)
 
 
 instance Eq Int where
     
-    let == x y = (a-a) == 0
+    let == x y = (x-y) == 0
     
  
