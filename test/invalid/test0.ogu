@@ -1,0 +1,9 @@
+;; errores semánticos
+
+alias ok = M1.M2.ok ; ok
+
+alias bad = TID.TID.BAD ;
+
+alias OK = M1.M2.OK
+
+alias BAD = M1.M2.bad

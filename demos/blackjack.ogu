@@ -2,18 +2,18 @@ uses Random
 
 type Carta = (Char,Char)
 
-let baraja_mezclada =
+let baraja_mezclada! =
     let palos = ['C', 'D', 'T', 'P']
     let valores = ['A' , 2 .. 11, 'J', 'Q', 'K']
     let baraja = [(valor,palo) | palo <- palos, valor <- valores]
-    shuffle baraja    
+    for c <- shuffle! baraja do yield c
 
 let valor_mano cartas:[Carta] = 
     var valor = 0
     var ases  = false
     for carta <- cartas do 
         let valor_carta = fst carta
-        valor <- if valor_carta in ['J','Q','K'] then valor + 10 else (if valor_carta == 'A' then valor + 1 else valor_carta)
+        valor <- if valor_carta `elem` ['J','Q','K'] then valor + 10 else (if valor_carta == 'A' then valor + 1 else valor_carta)
         when valor_carta == 'A' do 
             ases <- true
     if ases && (valor + 10) <= 21 then
@@ -32,7 +32,7 @@ let solicitar_jugada jugada =
         opciones <- ['R','O','M']
 
     var opcion = strip <| upper <| input! prompt
-    while opcion not in opciones do 
+    while not (opcion `elem` opciones) do
         print "opción incorrecta"
         set opcion = strip <| upper <| input! prompt ;; forma alternativa a opcion <- .... 
     print! "Opción elegida: " ++ opcion ++ " \n"
@@ -50,15 +50,15 @@ let mostrar_manos mano_jugador:[Carta] mano_couprier:[Carta] =
 let jugar_couprier mano:[Carta] baraja:[Carta] = 
     var result = mano
     while (valor_mano result) < 17 do
-        result <- result ++ (next baraja)
+        result <- result ++ (next! baraja)
     result
 
 let determinar_ganancia mano_jugador:[Carta] mano_couprier:[Carta] apuesta:Int jugada:Char =
     if jugada == 'R' then
-        -apuesta
+        (- apuesta)
     else 
         let (jugador, couprier) = (valor_mano mano_jugador, valor_mano mano_couprier)
-        let ganancia = if foo then apuesta else (if couprier <= 21 < jugador or jugador < couprier <= 21 then -apuesta else 0)
+        let ganancia = if foo then apuesta else (if couprier <= 21 < jugador or jugador < couprier <= 21 then (-apuesta) else 0)
         if jugada == 'D' then 
             ganancia * 2
         else 
@@ -66,8 +66,8 @@ let determinar_ganancia mano_jugador:[Carta] mano_couprier:[Carta] apuesta:Int j
 
 let jugar_mano apuesta:Int pozo:Int =
     print! "Nueva mano, apuesta $" ++ apuesta ++ " pozo $" ++ (pozo - apuesta) ++ "\n"
-    let baraja = baraja_mezclada
-    let (mano_jugador, mano_couprier) = ([next baraja, next baraja], [next baraja, next baraja])
+    let baraja = baraja_mezclada!
+    let (mano_jugador, mano_couprier) = ([next! baraja, next! baraja], [next! baraja, next! baraja])
 
     if (valor_mano mano_jugador) == 21 then 
         mostar_manos mano_jugador mano_couprier
@@ -75,16 +75,16 @@ let jugar_mano apuesta:Int pozo:Int =
         (3 * apuesta) / 2
     else 
         var jugada = 'I'
-        while jugada in ['I','O'] do
+        while jugada `elem` ['I','O'] do
             mostar_manos mano_jugador mano_couprier
             jugada <- solicitar_jugada jugada
             when jugada == 'M' do
                  mano_couprier <- jugar_couprier mano_couprier baraja
             when jugada == 'D' do 
-                mano_jugador <- mano_jugador ++ (next baraja)
+                mano_jugador <- mano_jugador ++ (next! baraja)
                 mano_couprier <- jugar_couprier mano_couprier baraja
             when jugada == 'O' do
-                 mano_jugador <- mano_jugador ++ (next baraja)
+                 mano_jugador <- mano_jugador ++ (next! baraja)
             when (valor_mano mano_jugador) > 21 do
                  jugada <- 'R'
         mostar_manos mano_jugador mano_couprier
@@ -104,7 +104,7 @@ let solicitar_apuesta pozo apuesta_minima =
     else 
         let prompt = "\nIngrese su apuesta (min: "++apuesta_minima++", max: "++pozo++", 0 para finalizar juego): "
         var valor = -1
-        while valor /= 0 and not (apuesta_minuma <= valor <= pozo) do
+        while valor /= 0 && not (apuesta_minuma <= valor <= pozo) do
             valor <- toint (input prompt)
         print! ""
         valor
