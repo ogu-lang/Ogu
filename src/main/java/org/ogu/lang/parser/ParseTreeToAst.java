@@ -767,6 +767,14 @@ public class ParseTreeToAst {
         if (ctx.tid() != null) {
             if (ctx.t_a.isEmpty()) {
                 return new QualifiedTypeArg(toAst(ctx.tid()));
+            } else {
+                List<OguType> args = new ArrayList<>();
+                for (OguParser.Tid_argsContext ac:ctx.t_a)
+                    args.add(toAst(ac));
+                OguTypeIdentifier tName = toAst(ctx.gt);
+                GenericType type = new GenericType(tName, args);
+                getPositionFrom(type, ctx);
+                return type;
             }
         }
         if (ctx.nat != null) {
@@ -776,6 +784,24 @@ public class ParseTreeToAst {
         }
         if (ctx.i != null) {
             IdTypeArg type = new IdTypeArg(OguIdentifier.create(idText(ctx.i)));
+            getPositionFrom(type, ctx);
+            return type;
+        }
+        Logger.debug(ctx.getText());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private OguType toAst(OguParser.Tid_argsContext ctx) {
+        if (ctx.i != null) {
+            IdTypeArg type = new IdTypeArg(OguIdentifier.create(idText(ctx.i)));
+            getPositionFrom(type, ctx);
+            return type;
+        }
+        if (ctx.type() != null) {
+            return toAst(ctx.type());
+        }
+        if (ctx.tid() != null) {
+            QualifiedType type = new QualifiedType(toAst(ctx.tid()));
             getPositionFrom(type, ctx);
             return type;
         }

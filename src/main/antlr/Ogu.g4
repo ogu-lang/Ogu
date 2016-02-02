@@ -214,7 +214,7 @@ type : vector_type
      | TID '{' ID ':' type (',' ID ':' type)* '}' // structs
      | map_type
      | type '->' type (<assoc=right>'->' type)*
-     | tid (t_a+=tid_args)*
+     | gt=tid (t_a+=tid_args)*
      | nat=('i8' | 'u8' | 'i16' | 'u16' | 'i32' | 'u32' | 'i64' | 'u64' | 'f32' | 'f64')
      | i=ID
      ;
@@ -227,7 +227,7 @@ map_type : '{' k=type  '->' v=type '}' ;
 
 tid : t+=TID ('.' t+=TID)* ;
 
-tid_args : tid|ID|type;
+tid_args : tid|i=ID|type;
 
 anon_record_type : '{' fldDecl (',' fldDecl)* '}' ; // structs
 
