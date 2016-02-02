@@ -132,8 +132,11 @@ func_decl_arg
 	| '(' func_decl_arg (<assoc=right> '->'func_decl_arg)+ ')'
 	| '{' func_decl_arg ('->' func_decl_arg)* '}'
 	| fda_id=ID
-	| fda_tid+=TID ('.' fda_tid+=TID)* (fda_tid_tid_arg+=TID | fda_tid_id_arg+=ID)*
+	| fda_tid+=TID ('.' fda_tid+=TID)* (tid_or_id_arg+=tid_or_id)*
 	;
+
+tid_or_id
+	: t=TID | i=ID ;
 
 unit : '(' ')' ;
 

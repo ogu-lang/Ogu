@@ -703,9 +703,19 @@ public class ParseTreeToAst {
         if (ctx.fda_id != null)
             return new QualifiedTypeArg(OguTypeIdentifier.create(idText(ctx.fda_id)));
         if (!ctx.fda_tid.isEmpty()) {
-            if (ctx.fda_tid_tid_arg.isEmpty() && ctx.fda_tid_id_arg.isEmpty()) {
-                OguTypeIdentifier id = OguTypeIdentifier.create(ctx.fda_tid.stream().map(this::idText).collect(Collectors.toList()));
+            OguTypeIdentifier id = OguTypeIdentifier.create(ctx.fda_tid.stream().map(this::idText).collect(Collectors.toList()));
+            if (ctx.tid_or_id_arg == null || ctx.tid_or_id_arg.isEmpty()){
                 return new QualifiedTypeArg(id);
+            } else {
+                List<OguName> args = new ArrayList<>();
+                for (OguParser.Tid_or_idContext ti:ctx.tid_or_id_arg)
+                    if (ti.i != null)
+                        args.add(OguIdentifier.create(idText(ti.i)));
+                    else
+                        args.add(OguTypeIdentifier.create(idText(ti.t)));
+                GenericTypeArg genType = new GenericTypeArg(id, args);
+                getPositionFrom(genType, ctx);
+                return genType;
             }
         }
         if (ctx.vector() != null) {
