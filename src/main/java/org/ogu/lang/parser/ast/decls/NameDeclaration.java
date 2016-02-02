@@ -24,6 +24,8 @@ public abstract class NameDeclaration extends Declaration {
     }
 
     public String getName() {
+        if (name == null)
+            return null;
         return name.getName();
     }
 

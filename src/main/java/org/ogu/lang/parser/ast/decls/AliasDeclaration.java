@@ -10,6 +10,7 @@ import java.util.List;
  */
 public abstract class AliasDeclaration extends NameDeclaration {
 
+    protected AliasDeclaration(List<Decorator> decorators) { super(decorators); }
     protected AliasDeclaration(OguName id, List<Decorator> decorators) {
         super(id, decorators);
     }

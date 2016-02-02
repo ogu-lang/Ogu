@@ -20,6 +20,7 @@ public class OguName extends Node {
 
 
     public OguName(OguName base, String name) {
+        super();
         this.base = base;
         this.name = name;
     }

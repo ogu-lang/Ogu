@@ -18,7 +18,7 @@ public class AliasError extends AliasDeclaration {
     private String message;
 
     public AliasError(String message, Position position) {
-        super(null, Collections.emptyList());
+        super(Collections.emptyList());
         this.message = message;
         this.setPosition(position);
     }
