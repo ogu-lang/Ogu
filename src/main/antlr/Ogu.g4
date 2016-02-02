@@ -130,7 +130,7 @@ func_decl_arg
 	: unit
 	| divergence
 	| vector
-	| '(' func_decl_arg (',' func_decl_arg)* ')'
+	| tuple
 	| '(' func_decl_arg (<assoc=right> '->'func_decl_arg)+ ')'
 	| '{' func_decl_arg ('->' func_decl_arg)* '}'
 	| fda_id=ID
@@ -142,6 +142,8 @@ unit : '(' ')' ;
 divergence : '!' ;
 
 vector : '[' func_decl_arg ']' ;
+
+tuple : '(' func_decl_arg (',' func_decl_arg)* ')' ;
 
 func_name_decl : f_id=ID | f_op=op | '(' f_op=op ')';
 
@@ -208,22 +210,28 @@ block : INDENT (let_decl NL*)* DEDENT ;
 type : vector_type
      | unit
      | tuple_type
-     | '{' ID ':' type (',' ID ':' type)* '}' // structs
+     | anon_record_type
      | TID '{' ID ':' type (',' ID ':' type)* '}' // structs
-     | '{' type  '->' type '}'
+     | map_type
      | type '->' type (<assoc=right>'->' type)*
      | tid (t_a+=tid_args)*
      | nat=('i8' | 'u8' | 'i16' | 'u16' | 'i32' | 'u32' | 'i64' | 'u64' | 'f32' | 'f64')
-     | ID
+     | i=ID
      ;
 
 vector_type : '[' vt=type ']' ;
 
 tuple_type : '(' t+=type (',' t+=type)* ')';
 
+map_type : '{' k=type  '->' v=type '}' ;
+
 tid : t+=TID ('.' t+=TID)* ;
 
 tid_args : tid|ID|type;
+
+anon_record_type : '{' fldDecl (',' fldDecl)* '}' ; // structs
+
+fldDecl : i=ID ':' t=type ;
 
 expr  
 	: if_expr
@@ -363,12 +371,13 @@ op : '@' | '^' | '*' | '/' | '%' |  '//' | '+' | '-'  | '++' | '::'
 	;
 
 map_expr
-    : expr '->' expr (',' expr '->' expr)*
-    | ID '=' expr (',' ID '=' expr)*
+    : ma+=m_arrow (',' ma+=m_arrow)*
+    | m_assign (',' m_assign)*
     ;
 
+m_arrow : k=expr '->' v=expr ;
 
-
+m_assign : i=ID '=' e=expr ;
 
 lambda_args
 	: lambda_arg lambda_arg*

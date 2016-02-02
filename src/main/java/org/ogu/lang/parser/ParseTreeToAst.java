@@ -11,10 +11,7 @@ import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParamConstrained;
 import org.ogu.lang.parser.ast.expressions.*;
 import org.ogu.lang.parser.ast.expressions.control.*;
-import org.ogu.lang.parser.ast.expressions.literals.CharLiteral;
-import org.ogu.lang.parser.ast.expressions.literals.FloatLiteral;
-import org.ogu.lang.parser.ast.expressions.literals.IntLiteral;
-import org.ogu.lang.parser.ast.expressions.literals.StringLiteral;
+import org.ogu.lang.parser.ast.expressions.literals.*;
 import org.ogu.lang.parser.ast.modules.*;
 import org.ogu.lang.parser.ast.typeusage.*;
 import org.ogu.lang.util.Logger;
@@ -519,6 +516,14 @@ public class ParseTreeToAst {
             getPositionFrom(param, ctx);
             return param;
         }
+        if (ctx.ta != null && !ctx.ta.isEmpty()) {
+            List<FunctionPatternParam> args = new ArrayList<>();
+            for (OguParser.Let_arg_atomContext ac:ctx.ta)
+                args.add(toAst(ac));
+            FuncTupleParam param = new FuncTupleParam(args);
+            getPositionFrom(param, ctx);
+            return param;
+        }
         Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
@@ -638,6 +643,14 @@ public class ParseTreeToAst {
             getPositionFrom(vec, ctx);
             return vec;
         }
+        if (ctx.tuple() != null) {
+            List<TypeArg> args = new ArrayList<>();
+            for (OguParser.Func_decl_argContext ct:ctx.tuple().func_decl_arg())
+                args.add(toAst(ct));
+            TupleTypeArg tuple = new TupleTypeArg(args);
+            getPositionFrom(tuple, ctx);
+            return tuple;
+        }
         Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
@@ -735,17 +748,53 @@ public class ParseTreeToAst {
             getPositionFrom(ttype, ctx);
             return ttype;
         }
+        if (ctx.map_type() != null) {
+            OguType key = toAst(ctx.map_type().k);
+            OguType val = toAst(ctx.map_type().v);
+            MapType type = new MapType(key, val);
+            getPositionFrom(type, ctx);
+            return type;
+        }
+
+        if (ctx.anon_record_type() != null) {
+            return toAst(ctx.anon_record_type());
+        }
+
         if (ctx.tid() != null) {
             if (ctx.t_a.isEmpty()) {
                 return new QualifiedTypeArg(toAst(ctx.tid()));
             }
-        } else if (ctx.nat != null) {
+        }
+        if (ctx.nat != null) {
             OguNativeType type = new OguNativeType(idText(ctx.nat));
+            getPositionFrom(type, ctx);
+            return type;
+        }
+        if (ctx.i != null) {
+            IdTypeArg type = new IdTypeArg(OguIdentifier.create(idText(ctx.i)));
             getPositionFrom(type, ctx);
             return type;
         }
         Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private AnonRecordType toAst(OguParser.Anon_record_typeContext ctx) {
+        List<RecordField> fields = new ArrayList<>();
+        for (OguParser.FldDeclContext fc:ctx.fldDecl()) {
+            fields.add(toAst(fc));
+        }
+        AnonRecordType record = new AnonRecordType(fields);
+        getPositionFrom(record, ctx);
+        return record;
+    }
+
+    private RecordField toAst(OguParser.FldDeclContext ctx) {
+        OguIdentifier id = OguIdentifier.create(idText(ctx.i));
+        OguType type = toAst(ctx.t);
+        RecordField fld = new RecordField(id, type);
+        getPositionFrom(fld, ctx);
+        return fld;
     }
 
     private OguTypeIdentifier toAst(OguParser.TidContext ctx) {
@@ -842,6 +891,32 @@ public class ParseTreeToAst {
         }
         if (ctx.primary() != null) {
             return toAst(ctx.primary());
+        }
+
+        if (ctx.dict_expr() != null) {
+            return toAst(ctx.dict_expr());
+        }
+
+        Logger.debug(ctx.getText());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private DictExpression toAst(OguParser.Dict_exprContext ctx) {
+        if (ctx.map_expr() == null) {
+            EmptyMapExpression dic = new EmptyMapExpression();
+            getPositionFrom(dic, ctx);
+            return dic;
+        }
+        if (ctx.map_expr().m_arrow != null && !ctx.map_expr().ma.isEmpty()) {
+            List<Expression> keys = new ArrayList<>();
+            List<Expression> vals = new ArrayList<>();
+            for (OguParser.M_arrowContext mc:ctx.map_expr().ma) {
+                keys.add(toAst(mc.k));
+                vals.add(toAst(mc.v));
+            }
+            MapExpression map = new MapExpression(keys, vals);
+            getPositionFrom(map, ctx);
+            return map;
         }
 
         Logger.debug(ctx.getText());
@@ -1208,7 +1283,13 @@ public class ParseTreeToAst {
             getPositionFrom(lit, ctx);
             return lit;
         }
-        Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
+        if (ctx.DATE() != null) {
+            String dtxt = ctx.DATE().getText();
+            DateLiteral lit = new DateLiteral(dtxt);
+            getPositionFrom(lit, ctx);
+            return lit;
+        }
+        Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
