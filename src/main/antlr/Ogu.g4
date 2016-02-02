@@ -80,15 +80,13 @@ instance_def : 'instance' constraints=typedef_args_constraints? name=TID params+
 
 internal_decl : decorators? (func_decl|func_def|var|val_def) ;
 
-class_def : 'mut'? 'class' constraints=typedef_args_constraints? TID ID* '(' class_params? ')' ('=' class_ctor | class_where)? ;
+class_def : (mut='mut')? 'class' constraints=typedef_args_constraints? name=TID params+=ID* '(' class_params? ')' ('=' class_ctor | 'where' INDENT (internal_decl NL* )* NL* DEDENT )? ;
 
 class_params : class_param (',' class_param)* ;
 
 class_param : ('var'|'val')? ID (',' ID)* ':' type ;
 
 class_ctor : TID '(' tuple_expr? ')'  ;
-
-class_where : 'where' INDENT (internal_decl NL* )* NL* DEDENT ;
 
 type_def :  'type' constraints=typedef_args_constraints? t=TID (ta=typedef_params)? ('=' type)?  ;
 

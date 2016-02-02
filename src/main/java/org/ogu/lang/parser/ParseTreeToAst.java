@@ -3,10 +3,12 @@ package org.ogu.lang.parser;
 import com.google.common.collect.ImmutableList;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.ogu.lang.antlr.OguParser;
 import org.ogu.lang.parser.ast.*;
 import org.ogu.lang.parser.ast.decls.*;
 import org.ogu.lang.parser.ast.decls.funcdef.*;
+import org.ogu.lang.parser.ast.decls.typedef.ClassParam;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParamConstrained;
 import org.ogu.lang.parser.ast.expressions.*;
@@ -201,8 +203,38 @@ public class ParseTreeToAst {
 
     }
 
-    private Node toAst(OguParser.Class_defContext ctx, List<Decorator> decs) {
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    private ClassDeclaration toAst(OguParser.Class_defContext ctx, List<Decorator> decs) {
+        boolean isMutable = ctx.mut != null;
+        OguTypeIdentifier name = new OguTypeIdentifier(idText(ctx.name));
+        Map<String,OguType> constraints = new HashMap<>();
+        if (ctx.constraints != null)
+            loadTypeConstraints(ctx.constraints, constraints);
+        List<TypeParam> genParams = getTypeParamList(ctx, ctx.params, constraints);
+        List<FunctionalDeclaration> members = internalDeclToAst(ctx.internal_decl());
+        List<ClassParam> params = new ArrayList<>();
+        if (ctx.class_params() != null)
+            params = toAst(ctx.class_params());
+        ClassDeclaration clazz = new ClassDeclaration(name, isMutable, genParams, params, members, decs);
+        getPositionFrom(clazz, ctx);
+        return clazz;
+    }
+
+    private List<ClassParam> toAst(OguParser.Class_paramsContext ctx) {
+        List<ClassParam> result = new ArrayList<>();
+        for (OguParser.Class_paramContext cp:ctx.class_param()) {
+            result.addAll(toAst(cp));
+        }
+        return result;
+    }
+
+    private List<ClassParam> toAst(OguParser.Class_paramContext ctx) {
+        OguType type = toAst(ctx.type());
+        List<ClassParam> result = new ArrayList<>();
+        for (TerminalNode cid:ctx.ID()) {
+            OguIdentifier id = OguIdentifier.create(cid.getText());
+            result.add(new ClassParam(id, type));
+        }
+        return result;
     }
 
 

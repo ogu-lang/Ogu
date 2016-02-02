@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.OguTypeIdentifier;
 import org.ogu.lang.parser.ast.decls.typedef.ClassParam;
+import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +14,16 @@ import java.util.List;
  */
 public class ClassDeclaration extends ContractDeclaration {
 
+    private List<TypeParam> genParams;
     private List<ClassParam> clasParams;
     private boolean isMutable;
 
-    public ClassDeclaration(OguTypeIdentifier name, List<ClassParam> classParams, boolean isMutable, List<FunctionalDeclaration> members, List<Decorator> decorators) {
+    public ClassDeclaration(OguTypeIdentifier name, boolean isMutable, List<TypeParam> genParams, List<ClassParam> classParams, List<FunctionalDeclaration> members, List<Decorator> decorators) {
         super(name, members, decorators);
         this.isMutable = isMutable;
+        this.genParams = new ArrayList<>();
+        this.genParams.addAll(genParams);
+        this.genParams.forEach((p) -> p.setParent(this));
         this.clasParams = new ArrayList<>();
         this.clasParams = classParams;
         this.clasParams.forEach((p) -> p.setParent(this));
@@ -28,6 +33,7 @@ public class ClassDeclaration extends ContractDeclaration {
     public Iterable<Node> getChildren() {
         return ImmutableList.<Node>builder()
                 .add(name)
+                .addAll(genParams)
                 .addAll(clasParams)
                 .addAll(members)
                 .addAll(decorators).build();
@@ -38,6 +44,7 @@ public class ClassDeclaration extends ContractDeclaration {
         return "ClassDeclaration{" +
                 "name='" + name + '\''+
                 ", isMutable=" + isMutable +
+                ", genParams=" + genParams+
                 ", params=" + clasParams+
                 ", members=" + members +
                 ", decorators=" + decorators +
