@@ -362,17 +362,20 @@ public class ParseTreeToAst {
                 return funcdef;
             }
         }
-        if (ctx.infix_op != null) {
+        if (ctx.infix_op != null || ctx.prefix_op != null) {
             List<FunctionPatternParam> params = new ArrayList<>();
             params.add(toAst(ctx.left));
             params.add(toAst(ctx.right));
-            OpDefinition opDef = new OpDefinition(toAst(ctx.infix_op), params, decorators);
+            OguOperator op = ctx.infix_op != null ? toAst(ctx.infix_op) : toAst(ctx.prefix_op);
+            OpDefinition opDef = new OpDefinition(op, params, decorators);
             getPositionFrom(opDef, ctx);
             if (ctx.let_expr() != null) {
                 toAst(ctx.let_expr(), opDef);
             }
             return opDef;
         }
+
+
 
         if (!ctx.tup.isEmpty()) {
             List<OguIdentifier> ids = new ArrayList<>();

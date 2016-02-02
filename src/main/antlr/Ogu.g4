@@ -149,7 +149,8 @@ func_name_decl : f_id=ID | f_op=op | '(' f_op=op ')';
 
 func_def
 	: 'let'
-	( (let_func_name=lid|op) (let_func_args+=let_arg)* let_expr
+	( let_func_name=lid (let_func_args+=let_arg)* let_expr
+	| prefix_op=op left=let_arg right=let_arg let_expr
 	| left=let_arg infix_op=op right=let_arg let_expr
 	| let_arg '`' infix_id=ID '`'  let_arg let_expr
     | '(' tup+=lid (',' tup+=lid)* ')' '=' expr
