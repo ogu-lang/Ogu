@@ -993,6 +993,10 @@ public class ParseTreeToAst {
             return call;
         }
 
+        if (ctx.self_id() != null) {
+            return toAst(ctx.self_id());
+        }
+
         if (ctx.function != null) {
             return toAstFunctionCall(ctx);
         }
@@ -1023,6 +1027,12 @@ public class ParseTreeToAst {
 
         Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
+
+    private SelfRefExpression toAst(OguParser.Self_idContext ctx) {
+        SelfRefExpression expr = new SelfRefExpression(OguIdentifier.create(idText(ctx.i)));
+        getPositionFrom(expr, ctx);
+        return expr;
     }
 
     private DictExpression toAst(OguParser.Dict_exprContext ctx) {
@@ -1092,9 +1102,12 @@ public class ParseTreeToAst {
     }
 
     private LambdaExpression toAst(OguParser.Lambda_exprContext ctx) {
-        List<LambdaArg> args = Collections.emptyList();
-        if (ctx.lambda_args() != null)
-            args = ctx.lambda_args().lambda_arg().stream().map(this::toAst).collect(Collectors.toList());
+        List<LambdaArg> args = new ArrayList<>();
+        if (ctx.lambda_args() != null) {
+            for (OguParser.Lambda_argContext cl:ctx.lambda_args().lambda_arg()) {
+                args.addAll(toAst(cl));
+            }
+        }
         DoExpression doExpr;
         if (ctx.expr() == null)
             doExpr = toAst(ctx.block());
@@ -1113,7 +1126,7 @@ public class ParseTreeToAst {
         return doExpr;
     }
 
-    private LambdaArg toAst(OguParser.Lambda_argContext ctx) {
+    private List<LambdaArg> toAst(OguParser.Lambda_argContext ctx) {
         if (ctx.i != null) {
             LambdaArg arg;
             OguIdentifier id = OguIdentifier.create(idText(ctx.i));
@@ -1122,10 +1135,13 @@ public class ParseTreeToAst {
             else
                 arg = new LambdaArg(id, toAst(ctx.type()));
             getPositionFrom(arg, ctx);
-            return arg;
+            return ImmutableList.of(arg);
         }
-        Logger.debug(ctx.getText()+ " "+ctx.getRuleContext()+" +" + ctx.getParent().getClass().getCanonicalName());
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+        List<LambdaArg> args = new ArrayList<>();
+        for (OguParser.Lambda_argContext lac:ctx.lambda_arg()) {
+            args.addAll(toAst(lac));
+        }
+        return args;
     }
 
     private WhileExpression toAst(OguParser.While_exprContext ctx) {

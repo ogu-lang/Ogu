@@ -260,7 +260,7 @@ expr
     | l=expr o='&&' r=expr
     | l=expr o='||' r=expr
 	| l_infix=expr '`' infix_id=ID '`' r_infix=expr
-	| '$' ID
+	| self_id
 	| function=func_name (params+=expr)+
 	| qual_function=qual_func_name (params+=expr)*
 	| constructor
@@ -270,6 +270,9 @@ expr
     | vector_expr
     | dict_expr
 	;
+
+self_id
+    : '$' i=ID ;
 
 let_in_expr
     : 'let' let_in_arg (',' let_in_arg)* ('in' in_expr=expr)?  ;
