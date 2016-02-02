@@ -40,270 +40,372 @@ import com.yuvalshavit.antlr4.DenterHelper;
 
 }
 
-module : module_header? module_uses* module_body NL*;
+module : moduleHeader=module_header? module_exports* module_uses* module_body NL*;
 
-module_header : 'module' TID ('.' TID)* NL* ;
+module_header : 'module' name=module_name NL* ;
 
-module_uses : 'uses' TID ('.' TID)* NL* ;
+module_name : (parts+=TID) ('.' parts+=TID)* ;
 
-module_body : (decl NL*)* ;
+module_exports : decs=decorators? 'exports' exports+=export_name (',' exports+=export_name)*  NL*;
 
-decl : def | let | var | val |  trait_def | instance_def | type_def | data_def | enum_def | class_def | compiler_flag | expr;
+export_name : TID | ID  ;
 
-trait_def : 'mut'? 'trait' TID ID (ID)* 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT   ;
+module_uses : decs=decorators? 'uses' imports+=module_name (',' imports+=module_name)* NL* ;
 
-instance_def : 'instance' TID type type* 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT   ;
+module_body : (members+=module_decl NL*)* ;
 
-compiler_flag : '#' '{' ID (STRING)* '}' ;
+module_decl
+    : decs=decorators?
+    ( var | val_def | func_decl | func_def | alias_def | trait_def | instance_def | type_def | data_def | enum_def | class_def )
+    | expr
+    ;
 
-enum_def : 'enum' TID '=' ID ('|' ID)* deriving? ;
+decorators :  (dec+=decorator)+ ;
 
-data_def : 'data' func_def_constraints? TID (typedef_args)? '=' data_type_decl ;
+decorator : '#' '{' dec_id=ID (dec_args+=STRING)* '}' NL*;
 
-class_def : 'mut'? 'class' func_def_constraints? TID ID* '(' class_args? ')' ('=' class_ctor | class_where)? ;
+alias_def : 'alias' alias_target '=' alias_origin NL*;
 
-class_args : class_arg (',' class_arg)* ;
+alias_target : alias_tid=TID | alias_id=ID;
 
-class_arg : ('var'|'val')? ID (',' ID)* ':' type ;
+alias_origin :  alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_origin_id=ID)? ;
 
-class_ctor : TID '(' expr_list? ')'  ;
+enum_def : 'enum' en=TID '=' values+=ID ('|' values+=ID)* deriving? ;
 
-class_where : 'where' INDENT ((def|let|var|val) NL* )* NL* DEDENT ;
+data_def : 'data' constraints=typedef_args_constraints? name=TID (typedef_params)? '=' data_type_decl ;
 
-type_def : 'type' TID (typedef_args)? '=' type  ;
+trait_def : (mut='mut')? 'trait' constraints=typedef_args_constraints? name=TID params+=ID (params+=ID)* ('where' INDENT (internal_decl NL* )* NL* DEDENT)?   ;
 
-data_type_decl : type ('|' type)* deriving?
-              | type  INDENT ('|' type NL*)*  deriving? NL* DEDENT
+instance_def : 'instance' constraints=typedef_args_constraints? name=TID params+=type params+=type* ('where' INDENT (internal_decl NL* )* NL* DEDENT)? ;
+
+internal_decl : decorators? (func_decl|func_def|var|val_def) ;
+
+class_def : (mut='mut')? 'class' constraints=typedef_args_constraints? name=TID params+=ID* '(' class_params? ')' ('=' class_ctor | 'where' INDENT (internal_decl NL* )* NL* DEDENT )? ;
+
+class_params : class_param (',' class_param)* ;
+
+class_param : ('var'|'val')? ID (',' ID)* ':' type ;
+
+class_ctor : TID '(' tuple_expr? ')'  ;
+
+type_def :  'type' constraints=typedef_args_constraints? t=TID (ta=typedef_params)? ('=' type)?  ;
+
+data_type_decl : t+=type ('|' t+=type)* deriving?
+              | t+=type  INDENT ('|' t+=type NL*)*  deriving? NL* DEDENT
               ;
 
 deriving : 'deriving' deriving_types | INDENT 'deriving' deriving_types NL* DEDENT ;
 
-deriving_types :  '(' tid (',' tid)* ')' ;
+deriving_types :  '(' dt+=tid (',' dt+=tid)* ')' ;
 
-typedef_args
-	: typedef_args_constraints? ID (ID)*
+typedef_params
+	:  params+=ID (params+=ID)*
 	;
 
 typedef_args_constraints
-	: '(' typedef_arg_constraint_list ')' '=>'
-	;
-
-typedef_arg_constraint_list
-	: typedef_arg_constraint (',' typedef_arg_constraint)*
+	: '(' tac+=typedef_arg_constraint (',' tac+=typedef_arg_constraint)* ')' '=>'
 	;
 
 typedef_arg_constraint
-	: ID (',' ID)* ':' type
+	: ids+=ID (',' ids+=ID)* ':' t=type
 	;
 
 enum_values : ID ((NL)* '|' ID)* ;
 
-def : 'def' func_id ':' (func_def_constraints)?
-    (func_def_arg (<assoc=right> '->' func_def_arg)* ('->' '!')? 
-    | <assoc=right>'->' func_def_arg
-    |'->' '!');
+func_decl :
+    'def' name=func_name_decl ':' constraints=typedef_args_constraints?
+      (arg+=func_decl_arg (<assoc=right> '->' arg+=func_decl_arg)*
+      | '->'? func_decl_arg
+      );
 
-var : 'var' vid (':' type)? ('=' expr)? ;
+var :  'var' vid (':' type)? ('=' expr)? ;
 
-vid : ID | '(' vidt (',' vidt)* ')' ;
+vid : i=ID | '(' vidt (',' vidt)* ')' ;
 
 vidt : ID (':' type)? ;
 
-func_def_constraints : '(' func_def_constraint_list ')' '=>' ;
-
-func_def_constraint_list : func_def_constraint (',' func_def_constraint)* ;
-
-func_def_constraint : ID ':' type ;
-
-func_def_arg
-	: '(' ')'
-	| '[' func_def_arg ']'
-	| '(' func_def_arg (',' func_def_arg)* ')'
-	| '(' func_def_arg (<assoc=right> '->'func_def_arg)+ ')'
-	| '{' func_def_arg ('->' func_def_arg)* '}'
-	| ID
-	| TID (TID|ID)*
+func_decl_arg
+	: unit
+	| divergence
+	| vector
+	| tuple
+	| '(' func_decl_arg (<assoc=right> '->'func_decl_arg)+ ')'
+	| '{' func_decl_arg ('->' func_decl_arg)* '}'
+	| fda_id=ID
+	| fda_tid+=TID ('.' fda_tid+=TID)* (tid_or_id_arg+=tid_or_id)*
 	;
 
-let
-	: 'let' (lid|op) let_arg* let_expr
-	| 'let' '(' lid (',' lid)* ')' '=' expr
+tid_or_id
+	: t=TID | i=ID ;
+
+unit : '(' ')' ;
+
+divergence : '!' ;
+
+vector : '[' func_decl_arg ']' ;
+
+tuple : '(' func_decl_arg (',' func_decl_arg)* ')' ;
+
+func_name_decl : f_id=ID | f_op=op | '(' f_op=op ')';
+
+func_def
+	: 'let'
+	( let_func_name=lid (let_func_args+=let_arg)* let_expr
+	| prefix_op=op left=let_arg right=let_arg let_expr
+	| left=let_arg infix_op=op right=let_arg let_expr
+	| let_arg '`' infix_id=ID '`'  let_arg let_expr
+    | '(' tup+=lid (',' tup+=lid)* ')' '=' expr
+	)
 	;
 
-val : 'val' ID (':' type)? '=' expr
-    | 'val' '(' lid (',' lid)* ')' '=' expr ;
+val_def
+    :  'val' val_id=ID (':' type)? ('=' expr)
+    | 'val' '(' lid (',' lid)* ')' '=' expr
+    ;
 
 
-lid : ID | ID ':' type ;
+lid : lid_fun_id=ID | lid_val_id=ID ':' t=type ;
 
 let_arg
-    : let_arg_atom
-    | '[' let_arg_atom? (',' let_arg_atom)* ']'
-    | '(' let_arg_atom (',' let_arg_atom)* ')'
-    | '(' let_arg_atom ('::' let_arg_atom)* ')'
+    : l_atom=let_arg_atom
+    | let_arg_vector
+    | let_arg_tuple_or_list
     ;
 
 let_arg_atom
-    : lid | atom | TID (ID|let_arg)* ;
+    : l_id=lid | a=atom | t_id=TID (la+=let_arg)* ;
+
+let_arg_vector
+    : '[' (la+=let_arg_atom (',' la+=let_arg_atom)*)? ']'  ;
+
+let_arg_tuple_or_list
+ : '(' ta+=let_arg_atom (',' ta+=let_arg_atom)* ')'
+ |  '(' la+=let_arg_atom ('::' la+=let_arg_atom)* ')' ;
 
 let_expr : '=' ( let_block | expr let_where? )
          |  guards where?
          ;
 
-guards : INDENT (guard NL*)*  (guard_otherwise NL*)?  (where NL*)? DEDENT;
+guards : INDENT (guard NL*)*   (where NL*)? DEDENT;
 
-guard : '|' expr (expr)* '=' (expr|let_block) NL*  ;
-
-guard_otherwise
-	  : '|' 'otherwise' '=' (expr|let_block) NL*
-	  ;
+guard : '|' be=expr (ae+=expr)* '=' (de=expr|eb=let_block) NL*  ;
 
 let_where : INDENT where NL* DEDENT ;
 
-where : 'where' where_expr? (INDENT (where_expr NL*)+ DEDENT)? ;
+where : 'where' wl+=where_expr? (INDENT (wl+=where_expr NL*)+ DEDENT)? ;
 
 where_expr
-	: ID let_arg* NL* let_expr
-	| '(' lid (',' lid)* ')' '=' expr
+	: i=ID let_arg* NL* let_expr
+	| '(' tup+=lid (',' tup+=lid)* ')' '=' expr
 	;
 
 
 let_block
-    : INDENT (let_decl NL*)+ (where NL*)? DEDENT
+    : INDENT (ld+=let_decl NL*)+ (where NL*)? DEDENT
     ;
 
 let_decl
-    : let | var | expr ;
+    : func_def | val_def | var | expr ;
 
 block : INDENT (let_decl NL*)* DEDENT ;
 
-type : '[' type ']'
-     | '(' ')'
-     | '(' type (',' type)* ')'
-     | '{' ID ':' type (',' ID ':' type)* '}' // structs
-     | TID '{' ID ':' type (',' ID ':' type)* '}' // structs
-     | '{' type  '->' type '}'
+type : vector_type
+     | unit
+     | tuple_type
+     | anon_record_type
+     | record_type
+     | map_type
      | type '->' type (<assoc=right>'->' type)*
-     | tid (tid|ID|type)*
-     | ID
+     | gt=tid (t_a+=tid_args)*
+     | nat=('i8' | 'u8' | 'i16' | 'u16' | 'i32' | 'u32' | 'i64' | 'u64' | 'f32' | 'f64')
+     | i=ID
      ;
 
-tid : TID ('.' TID)* ;
+vector_type : '[' vt=type ']' ;
 
+tuple_type : '(' t+=type (',' t+=type)* ')';
 
+map_type : '{' k=type  '->' v=type '}' ;
 
-func_id : ID | op ;
+tid : t+=TID ('.' t+=TID)* ;
 
-op : '@' | '+' | '-' | 'and' | 'or' | 'not' | 'yield' | '*' | '/' | '//' | '^' | '|>' | '<|'
-	| 'in' | 'not' 'in' | '==' | '/='
-	| '|' | '||' | '&&' | '++' | '::'
-	| '>' | '<'  | '>=' | '<=' 
-	| '..' | '...' 
-	;
+tid_args : tid|i=ID|type;
+
+anon_record_type : '{' fldDecl (',' fldDecl)* '}' ; // anonymous structs
+
+record_type : ti=TID '{' fldDecl (',' fldDecl)* '}' ; // structs
+
+fldDecl : i=ID ':' t=type ;
 
 expr  
 	: if_expr
-	| 'for' (set_expr | list_expr) do_expression
-    | 'case' expr 'of' case_guards
-	| 'when' expr  do_expression
-	| 'while' expr do_expression
+	| for_expr
+    | case_expr
+    | when_expr
+    | while_expr
 	| 'unless' expr  do_expression
-	| 'let' ID '=' expr (',' ID '=' expr)* ('in' expr)?
-	| '\\' lambda_args? '->' (expr|block)
-	| 'yield' expr
-	| 'recur' expr*
-	| '-' expr
-	| '+' expr
-	| 'not' expr
-	| expr '..' (expr)?
-	| expr '...'
-	|<assoc=right> expr '^' expr
-	| expr '*' expr
-	| expr '/' expr
-	| expr '%' expr
-	| <assoc=right> expr '::' expr
-	| <assoc=right> expr '++' expr
-	| <assoc=left> expr '|>' expr
-	| <assoc=right> expr '<|' expr
-	| expr '+' expr
-	| expr '-' expr
-	| expr '==' expr
-	| expr '/=' expr
-	| expr '<'  expr
-	| expr '<=' expr
-	| expr '>'  expr
-	| expr '>=' expr
-	| expr 'in' expr
-	| expr 'not' 'in' expr
-	| expr '&&' expr
-	| expr 'and' expr
-	| expr '||' expr
-	| expr 'or' expr
-	| '(' op (expr)* ')'
-	| '(' expr_list? ')'
-	| '[' (list_expr)? ']'
-	| '{' map_expr? '}'
-	| expr '<-' expr
-	| expr '@' expr
-	| '$' ID
-	| ID ('.' ID)+
-	| ID (expr)*
-	| TID (expr)*
-	| set_expr
-	| atom
+	| let_in_expr
+	| lambda_expr
+	| yield_expr
+	| recur_expr
+	| assign_expr
+	|<assoc=right> l=expr o=('>>'|'<<'|'|>'|'<|') r=expr  // composition
+    | l=expr o='@' r=expr
+	|<assoc=right> l=expr o='^' r=expr
+	| l=expr o=('*'|'/'|'//'|'%') r=expr
+	| l=expr o=('+'|'-') r=expr
+    | <assoc=right> l=expr o='::' r=expr
+    | <assoc=right> l=expr o='++' r=expr
+    | l=expr o=('=='|'/='|'<'|'<='|'>'|'>=') r=expr
+    | l=expr o='&&' r=expr
+    | l=expr o='||' r=expr
+	| l_infix=expr '`' infix_id=ID '`' r_infix=expr
+	| self_id
+	| function=func_name (params+=expr)+
+	| qual_function=qual_func_name (params+=expr)*
+	| constructor
+	| ref=ID
+	| primary
+	| paren_expr
+    | vector_expr
+    | dict_expr
 	;
 
-if_expr : 'if' expr then_part ;
+self_id
+    : '$' i=ID ;
 
-then_part : 'then' (expr  else_part|expr? then_block else_part) | INDENT 'then' (expr NL* else_part |expr? then_block else_part) NL* DEDENT ;
+let_in_expr
+    : 'let' let_in_arg (',' let_in_arg)* ('in' in_expr=expr)?  ;
 
-else_part : 'else' (expr|expr? else_block) ;
+let_in_arg
+    : i=ID '=' e=expr ;
+
+recur_expr
+    : 'recur' expr*  ;
+
+yield_expr
+    : 'yield' expr ;
+
+
+lambda_expr
+    	: '\\' lambda_args? '->' (expr|block)  ;
+
+when_expr : 'when' expr do_expression ;
+
+while_expr : 'while' expr do_expression ;
+
+primary
+	    : neg_expr
+	    | literal=atom
+	    ;
+
+atom : i=INT | f=FLOAT | string_literal=STRING | c=CHAR | d=DATE ;
+
+neg_expr
+    : '(' '-' e=expr ')'
+    | '-' (a=atom);
+
+constructor
+    : 'new' tid '(' tuple_expr? ')' ;
+
+tuple_expr
+    : e+=expr (',' e+=expr)*
+    ;
+
+paren_expr
+    : '(' op expr* ')'
+    | '(' tuple_expr ')'
+    ;
+
+assign_expr
+	: i=ID a=expr? '<-' e=expr
+	| '$' si=ID a=expr? '<-' e=expr
+	| 'set' i=ID a=expr? '=' e=expr
+    ;
+
+vector_expr
+    : '[' (list_expr)? ']' ;
+
+
+// [1,2,3]
+// [(a,b) | a <- [0..10], b <- ['A', 'B']]
+// [1..10, 20..30]
+// [1...]
+// [1..10, 20..30, 40...]
+//[2 * x | x <- 1...]
+list_expr : le+=range_expr (',' le+=range_expr)*
+          | e=expr '|' se+=set_constraint_expr (',' se+=set_constraint_expr)* ;
+
+set_constraint_expr : s_id=ID '<-' re=expr
+         | '(' l_id+=ID (',' l_id+=ID)* ')' '<-' re=expr
+        ;
+
+range_expr :  beg=expr ('..' end=expr)?
+           | beg=expr '...'
+           ;
+
+dict_expr
+    : '{' map_expr? '}' ;
+
+
+func_name : name=ID;
+
+qual_func_name : qual+=TID ('.' qual+=TID)* ('.' name=ID)? ;
+
+if_expr : 'if' cond=expr then_part ;
+
+then_part : 'then' (te=expr  else_part|te=expr? tb=then_block else_part) | INDENT 'then' (te=expr NL* else_part |te=expr? tb=then_block else_part) NL* DEDENT ;
+
+else_part : 'else' (e=expr|e=expr? eb=else_block) ;
 
 then_block : INDENT (let_decl NL*)+ NL* DEDENT ;
 
 else_block : INDENT (let_decl NL*)+ DEDENT ;
 
-case_guards : INDENT case_guard NL* (case_guard NL*)* DEDENT ;
+for_expr : 'for' set_constraint_expr  do_expression ;
 
-case_guard : expr '=>' expr ;
+case_expr : 'case' s=expr 'of' g=case_guards ;
 
-expr_list
-    : expr (',' expr)*
-    ;
+case_guards : INDENT cg+=case_guard NL* (cg+=case_guard NL*)* DEDENT ;
+
+case_guard : c=expr '=>' r=expr ;
+
+op : '@' | '^' | '*' | '/' | '%' |  '//' | '+' | '-'  | '++' | '::'
+	| '~' | '..' | '...' | '|>' | '<|'
+	| '==' | '/='
+	| '>' | '<'  | '>=' | '<='
+	| '|' | '||' | '&&'
+	;
 
 map_expr
-    : expr '->' expr (',' expr '->' expr)*
-    | ID '=' expr (',' ID '=' expr)*
+    : ma+=m_arrow (',' ma+=m_arrow)*
+    | mb+=m_assign (',' mb+=m_assign)*
     ;
 
-atom : INT | FLOAT | STRING | CHAR | DATE ;
+m_arrow : k=expr '->' v=expr ;
 
-list_expr : list_element (',' list_element)* ;
-
-list_element : expr ('|' set_expr (',' set_expr)*)? ;
-
-
-set_expr : ID expr? '<-' expr
-         | '(' ID expr? (',' ID expr? )* ')' '<-' expr
-         | 'set' ID expr? '=' expr ;
+m_assign : i=ID '=' e=expr ;
 
 lambda_args
 	: lambda_arg lambda_arg*
 	;
 
 lambda_arg
-	: ID (':' type)?
-	| '(' (lambda_arg (',' lambda_arg)*)? ')'
+	: i=ID (':' type)?
+	| '(' (la+=lambda_arg (',' la+=lambda_arg)*)? ')'
 	;		
 
 do_expression
 	: 'do' (expr | block)
 	;
 
-ID : [_a-záéíóúñ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ('!'|'?')?;
+// A _A _Ab-> TID
+// _ a _a _aB -> ID
 
-TID : [A-ZÁÉÍÓÚÑ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ;
 
+ID : '_' | '_'?[a-záéíóúñ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ('!'|'?')?;
+
+TID :'_'? [A-ZÁÉÍÓÚÑ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ;
 
 STRING : '"' (ESC|.)*? '"' ;
 
