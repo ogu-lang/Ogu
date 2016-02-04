@@ -12,13 +12,13 @@ import java.util.List;
 /**
  * Created by ediaz on 25-01-16.
  */
-public class ClassDeclaration extends ContractDeclaration {
+public class ClassDeclarationNode extends ContractDeclarationNode {
 
     private List<TypeParam> genParams;
     private List<ClassParam> clasParams;
     private boolean isMutable;
 
-    public ClassDeclaration(TypeIdentifierNode name, boolean isMutable, List<TypeParam> genParams, List<ClassParam> classParams, List<FunctionalDeclaration> members, List<Decorator> decorators) {
+    public ClassDeclarationNode(TypeIdentifierNode name, boolean isMutable, List<TypeParam> genParams, List<ClassParam> classParams, List<FunctionalDeclarationNode> members, List<Decorator> decorators) {
         super(name, members, decorators);
         this.isMutable = isMutable;
         this.genParams = new ArrayList<>();

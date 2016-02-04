@@ -1,10 +1,9 @@
 package org.ogu.lang.parser.ast.decls.funcdef;
 
 import com.google.common.collect.ImmutableList;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.decls.LetDeclaration;
-import org.ogu.lang.parser.ast.decls.TupleValDeclaration;
+import org.ogu.lang.parser.ast.decls.LetDeclarationNode;
+import org.ogu.lang.parser.ast.decls.TupleValDeclarationNode;
 
 /**
  * where ....
@@ -12,14 +11,14 @@ import org.ogu.lang.parser.ast.decls.TupleValDeclaration;
  */
 public class WhereDeclaration extends FunctionNode {
 
-    private TupleValDeclaration tupleDeclaration;
-    private LetDeclaration letDeclaration;
+    private TupleValDeclarationNode tupleDeclaration;
+    private LetDeclarationNode letDeclaration;
 
-    public WhereDeclaration(TupleValDeclaration tupleDeclaration) {
+    public WhereDeclaration(TupleValDeclarationNode tupleDeclaration) {
         this.tupleDeclaration = tupleDeclaration;
     }
 
-    public WhereDeclaration(LetDeclaration letDeclaration) {
+    public WhereDeclaration(LetDeclarationNode letDeclaration) {
         this.letDeclaration = letDeclaration;
     }
 

@@ -12,11 +12,11 @@ import java.util.List;
  *     def (+) -> a -> a -> a
  * Created by ediaz on 26-01-16.
  */
-public class OpDeclaration extends FunctionalDeclaration {
+public class OpDeclarationNode extends FunctionalDeclarationNode {
 
     private List<TypeArgNode> params;
 
-    public OpDeclaration(OperatorNode name, List<TypeArgNode> params, List<Decorator> decorators) {
+    public OpDeclarationNode(OperatorNode name, List<TypeArgNode> params, List<Decorator> decorators) {
         super(name, decorators);
         this.params = new ArrayList<>();
         this.params.addAll(params);

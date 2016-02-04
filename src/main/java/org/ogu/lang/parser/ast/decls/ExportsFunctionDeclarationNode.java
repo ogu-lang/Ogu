@@ -8,7 +8,7 @@ import java.util.List;
  * Exports a function
  * Created by ediaz on 22-01-16.
  */
-public class ExportsFunctionDeclaration extends ExportsDeclaration {
+public class ExportsFunctionDeclarationNode extends ExportsDeclarationNode {
 
     @Override
     public String toString() {
@@ -18,7 +18,7 @@ public class ExportsFunctionDeclaration extends ExportsDeclaration {
                 '}';
     }
 
-    public ExportsFunctionDeclaration(IdentifierNode referenceName, List<Decorator> decorators) {
+    public ExportsFunctionDeclarationNode(IdentifierNode referenceName, List<Decorator> decorators) {
         super(referenceName, decorators);
     }
 

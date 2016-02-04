@@ -12,7 +12,7 @@ import java.util.Optional;
  * Created by ediaz on 21-01-16.
  */
 
-public class UsesDeclaration extends NameDeclaration {
+public class UsesDeclarationNode extends NameDeclarationNode {
 
 
 
@@ -23,7 +23,7 @@ public class UsesDeclaration extends NameDeclaration {
                 '}';
     }
 
-    public UsesDeclaration(TypeIdentifierNode name, List<Decorator> decorators) {
+    public UsesDeclarationNode(TypeIdentifierNode name, List<Decorator> decorators) {
         super(name, decorators);
     }
 

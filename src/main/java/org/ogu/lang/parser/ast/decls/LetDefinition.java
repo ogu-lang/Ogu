@@ -10,7 +10,7 @@ import java.util.List;
  * let
  * Created by ediaz on 23-01-16.
  */
-public class LetDefinition extends LetDeclaration {
+public class LetDefinition extends LetDeclarationNode {
 
 
 

@@ -10,12 +10,12 @@ import java.util.List;
  * A common alias (for vals, defs, lets) not Types
  * Created by ediaz on 22-01-16.
  */
-public class IdAliasDeclaration extends AliasDeclaration {
+public class IdAliasDeclarationNode extends AliasDeclarationNode {
 
     private IdentifierNode aliasOrigin;
 
 
-    public IdAliasDeclaration(IdentifierNode target, IdentifierNode origin, List<Decorator> decorators) {
+    public IdAliasDeclarationNode(IdentifierNode target, IdentifierNode origin, List<Decorator> decorators) {
         super(target, decorators);
         this.aliasOrigin = origin;
         this.aliasOrigin.setParent(this);

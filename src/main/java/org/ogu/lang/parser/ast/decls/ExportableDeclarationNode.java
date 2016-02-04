@@ -9,14 +9,14 @@ import java.util.List;
  * All exportable declarations: Types, Funcs, Vals and Vars
  * Created by ediaz on 24-01-16.
  */
-public abstract class ExportableDeclaration extends NameDeclaration {
+public abstract class ExportableDeclarationNode extends NameDeclarationNode {
 
-    protected ExportableDeclaration(List<Decorator> decorators) {
+    protected ExportableDeclarationNode(List<Decorator> decorators) {
         super(decorators);
     }
 
 
-    protected ExportableDeclaration(NameNode name, List<Decorator> decorators) {
+    protected ExportableDeclarationNode(NameNode name, List<Decorator> decorators) {
         super(name, decorators);
     }
 }

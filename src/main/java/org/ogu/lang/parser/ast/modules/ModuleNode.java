@@ -15,13 +15,13 @@ import java.util.List;
 public class ModuleNode extends Node {
 
     ModuleNameNode nameDefinition;
-    private List<UsesDeclaration> uses = new ArrayList<>();
-    private List<AliasDeclaration> aliases = new ArrayList<>();
-    private List<ExportsDeclaration> exports = new ArrayList<>();
-    private List<ExportableDeclaration> declarations = new ArrayList<>();
+    private List<UsesDeclarationNode> uses = new ArrayList<>();
+    private List<AliasDeclarationNode> aliases = new ArrayList<>();
+    private List<ExportsDeclarationNode> exports = new ArrayList<>();
+    private List<ExportableDeclarationNode> declarations = new ArrayList<>();
     private List<ExpressionNode> program = new ArrayList<>();
 
-    public List<AliasDeclaration> getAliases() { return aliases; }
+    public List<AliasDeclarationNode> getAliases() { return aliases; }
 
     public List<ExpressionNode> getProgram() {
         return program;
@@ -32,24 +32,24 @@ public class ModuleNode extends Node {
         expressionNode.setParent(this);
     }
 
-    public void add(AliasDeclaration alias) {
+    public void add(AliasDeclarationNode alias) {
         aliases.add(alias);
         alias.setParent(this);
     }
 
-    public void add(ExportableDeclaration decl) {
+    public void add(ExportableDeclarationNode decl) {
         declarations.add(decl);
         decl.setParent(this);
     }
 
-    public void addExports(List<ExportsDeclaration> exportsDeclarations) {
+    public void addExports(List<ExportsDeclarationNode> exportsDeclarations) {
         exports.addAll(exportsDeclarations);
         exports.forEach((e) -> e.setParent(this));
     }
 
-    public void addUses(List<UsesDeclaration> usesDeclarations) {
+    public void addUses(List<UsesDeclarationNode> usesDeclarations) {
         uses.addAll(usesDeclarations);
-        for (UsesDeclaration usesDeclaration : usesDeclarations)
+        for (UsesDeclarationNode usesDeclaration : usesDeclarations)
             usesDeclaration.setParent(this);
     }
 
@@ -76,7 +76,7 @@ public class ModuleNode extends Node {
         return nameDefinition;
     }
 
-    public List<ExportableDeclaration> getDeclarations() {
+    public List<ExportableDeclarationNode> getDeclarations() {
         return declarations;
     }
 }

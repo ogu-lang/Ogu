@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.expressions.control;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.decls.FunctionalDeclaration;
+import org.ogu.lang.parser.ast.decls.FunctionalDeclarationNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 /**
@@ -11,9 +11,9 @@ import org.ogu.lang.typesystem.TypeUsage;
  */
 public class FuncDeclExpressionNode extends DeclExpressionNode {
 
-    private FunctionalDeclaration funcDeclaration;
+    private FunctionalDeclarationNode funcDeclaration;
 
-    public FuncDeclExpressionNode(FunctionalDeclaration funcDeclaration) {
+    public FuncDeclExpressionNode(FunctionalDeclarationNode funcDeclaration) {
         super();
         this.funcDeclaration = funcDeclaration;
         this.funcDeclaration.setParent(this);

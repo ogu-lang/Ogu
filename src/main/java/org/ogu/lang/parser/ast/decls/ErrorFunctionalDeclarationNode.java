@@ -11,11 +11,11 @@ import java.util.Collections;
  *
  * Created by ediaz on 02-02-16.
  */
-public class ErrorFunctionalDeclaration extends FunctionalDeclaration {
+public class ErrorFunctionalDeclarationNode extends FunctionalDeclarationNode {
 
     private String message;
 
-    public ErrorFunctionalDeclaration(String message, Position position) {
+    public ErrorFunctionalDeclarationNode(String message, Position position) {
         super(Collections.emptyList());
         this.message = message;
         this.setPosition(position);

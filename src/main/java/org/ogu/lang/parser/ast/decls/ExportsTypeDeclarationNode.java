@@ -8,7 +8,7 @@ import java.util.List;
  * Exports a Type
  * Created by ediaz on 22-01-16.
  */
-public class ExportsTypeDeclaration extends ExportsDeclaration {
+public class ExportsTypeDeclarationNode extends ExportsDeclarationNode {
 
 
     @Override
@@ -19,7 +19,7 @@ public class ExportsTypeDeclaration extends ExportsDeclaration {
                 '}';
     }
 
-    public ExportsTypeDeclaration(TypeIdentifierNode type, List<Decorator> decorators) {
+    public ExportsTypeDeclarationNode(TypeIdentifierNode type, List<Decorator> decorators) {
         super(type, decorators);
     }
 

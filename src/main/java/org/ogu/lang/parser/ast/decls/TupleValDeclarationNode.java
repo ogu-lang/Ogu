@@ -7,48 +7,45 @@ import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A val declaration (val id = value) where value is an expression
  * Created by ediaz on 23-01-16.
  */
-public class TupleVarDeclaration extends VarDeclaration {
-
+public class TupleValDeclarationNode extends ValDeclarationNode {
 
     private List<IdentifierNode> ids;
+    private Map<IdentifierNode, TypeNode> types;
 
-    public TupleVarDeclaration(List<IdentifierNode> ids, ExpressionNode value, List<Decorator> decorators) {
+    public TupleValDeclarationNode(List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types, ExpressionNode value, List<Decorator> decorators) {
         super(value, decorators);
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);
         this.ids.forEach((i) -> i.setParent(this));
-    }
-
-    public TupleVarDeclaration(List<IdentifierNode> ids, TypeNode type, ExpressionNode value, List<Decorator> decorators) {
-        super(type, value, decorators);
-        this.ids = new ArrayList<>();
-        this.ids.addAll(ids);
-        this.ids.forEach((i) -> i.setParent(this));
+        this.types = new HashMap<>();
+        this.types.putAll(types);
+        this.types.keySet().forEach((k) -> k.setParent(this));
     }
 
 
     @Override
     public Iterable<Node> getChildren() {
-        if (type == null)
-            return ImmutableList.<Node>builder().addAll(ids).add(value).addAll(decorators).build();
-        else
-            return ImmutableList.<Node>builder().addAll(ids).add(type).add(value).addAll(decorators).build();
+        return ImmutableList.<Node>builder().addAll(ids).addAll(types.values()).add(value).addAll(decorators).build();
     }
 
     @Override
     public String toString() {
-        return "TupleVarDeclaration{" +
+        return "TupleValDeclaration{" +
                 "ids='" + ids + '\''+
-                ", i="+type+
+                ", types="+types+
                 ", value=" + value +
                 ", decorators" + decorators +
                 '}';
     }
+
+
 
 }

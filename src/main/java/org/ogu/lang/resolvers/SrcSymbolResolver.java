@@ -1,8 +1,8 @@
 package org.ogu.lang.resolvers;
 
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.decls.AliasDeclaration;
-import org.ogu.lang.parser.ast.decls.ExportableDeclaration;
+import org.ogu.lang.parser.ast.decls.AliasDeclarationNode;
+import org.ogu.lang.parser.ast.decls.ExportableDeclarationNode;
 import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.symbols.Symbol;
 
@@ -17,8 +17,8 @@ import java.util.Optional;
  */
 public class SrcSymbolResolver implements SymbolResolver {
 
-    private Map<String, AliasDeclaration> aliasDefinitions;
-    private Map<String, ExportableDeclaration> declarations;
+    private Map<String, AliasDeclarationNode> aliasDefinitions;
+    private Map<String, ExportableDeclarationNode> declarations;
 
     private SymbolResolver parent = null;
 
@@ -27,10 +27,10 @@ public class SrcSymbolResolver implements SymbolResolver {
         this.declarations = new HashMap<>();
 
         for (ModuleNode module : modules) {
-            for (AliasDeclaration aliasDeclaration : module.getAliases())  {
+            for (AliasDeclarationNode aliasDeclaration : module.getAliases())  {
                 aliasDefinitions.put(aliasDeclaration.getName(), aliasDeclaration);
             }
-            for (ExportableDeclaration decl : module.getDeclarations()) {
+            for (ExportableDeclarationNode decl : module.getDeclarations()) {
                 declarations.put(decl.getName(), decl);
             }
         }

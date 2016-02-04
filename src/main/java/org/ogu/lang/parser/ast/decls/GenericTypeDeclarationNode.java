@@ -15,11 +15,11 @@ import java.util.List;
  * (Useful to restrict a data)
  * Created by ediaz on 24-01-16.
  */
-public class GenericTypeDeclaration  extends TypedefDeclaration {
+public class GenericTypeDeclarationNode extends TypedefDeclarationNode {
 
     protected List<TypeParam> params;
 
-    public GenericTypeDeclaration(TypeIdentifierNode name, List<TypeParam> params, TypeNode type, List<Decorator> decorators) {
+    public GenericTypeDeclarationNode(TypeIdentifierNode name, List<TypeParam> params, TypeNode type, List<Decorator> decorators) {
         super(name, type, decorators);
         this.params = new ArrayList<>();
         this.params.addAll(params);

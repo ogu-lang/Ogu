@@ -11,7 +11,7 @@ import java.util.List;
  *     let a - b = ...
  * Created by ediaz on 26-01-16.
  */
-public class OpDefinition extends LetDeclaration {
+public class OpDefinition extends LetDeclarationNode {
 
     public OpDefinition(OperatorNode name, List<FunctionPatternParam> params, List<Decorator> decorators) {
         super(name, params, decorators);

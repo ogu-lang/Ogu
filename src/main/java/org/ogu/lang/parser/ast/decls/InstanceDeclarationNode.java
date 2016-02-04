@@ -9,21 +9,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A trait
+ * instance T x where ...
  * Created by ediaz on 25-01-16.
  */
-public class TraitDeclaration extends ContractDeclaration {
+public class InstanceDeclarationNode extends ContractDeclarationNode {
 
     private List<TypeParam> params;
-    private boolean isMutable;
 
-    public TraitDeclaration(TypeIdentifierNode name, boolean isMutable, List<TypeParam> params, List<FunctionalDeclaration> members, List<Decorator> decorators) {
+    public InstanceDeclarationNode(TypeIdentifierNode name, List<TypeParam> params, List<FunctionalDeclarationNode> members, List<Decorator> decorators) {
         super(name, members, decorators);
-        this.isMutable = isMutable;
         this.params = new ArrayList<>();
         this.params.addAll(params);
         this.params.forEach((p) -> p.setParent(this));
     }
+
+
 
     @Override
     public Iterable<Node> getChildren() {
@@ -36,14 +36,11 @@ public class TraitDeclaration extends ContractDeclaration {
 
     @Override
     public String toString() {
-        return "TraiDeclaration{" +
-                "name='" + name + '\'' +
-                ", isMutable=" + isMutable +
-                ", params=" + params +
+        return "InstanceDeclaration{" +
+                "name='" + name + '\''+
+                ", params=" + params+
                 ", members=" + members +
                 ", decorators=" + decorators +
                 '}';
     }
-
-
 }

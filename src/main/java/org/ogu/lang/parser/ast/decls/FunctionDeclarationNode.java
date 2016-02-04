@@ -11,13 +11,13 @@ import java.util.List;
  * def funcion : T -> T -> T
  * Created by ediaz on 23-01-16.
  */
-public class FunctionDeclaration extends FunctionalDeclaration {
+public class FunctionDeclarationNode extends FunctionalDeclarationNode {
 
     private List<TypeArgNode> paramTypes;
     private TypeArgNode returnType;
 
 
-    public FunctionDeclaration(IdentifierNode id, List<TypeArgNode> paramTypes, List<Decorator> decorators) {
+    public FunctionDeclarationNode(IdentifierNode id, List<TypeArgNode> paramTypes, List<Decorator> decorators) {
         super(id, decorators);
         this.paramTypes = new ArrayList<>();
         this.paramTypes.addAll(paramTypes.subList(0, paramTypes.size()-1));

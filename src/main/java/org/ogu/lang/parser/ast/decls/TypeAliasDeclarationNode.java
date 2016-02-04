@@ -11,12 +11,12 @@ import java.util.List;
  * In thid case target and origin are type names.
  * Created by ediaz on 22-01-16.
  */
-public class TypeAliasDeclaration extends AliasDeclaration {
+public class TypeAliasDeclarationNode extends AliasDeclarationNode {
 
     private TypeIdentifierNode aliasOrigin;
 
 
-    public TypeAliasDeclaration(TypeIdentifierNode target, TypeIdentifierNode origin, List<Decorator> decorators) {
+    public TypeAliasDeclarationNode(TypeIdentifierNode target, TypeIdentifierNode origin, List<Decorator> decorators) {
         super(target, decorators);
         this.aliasOrigin = origin;
         this.aliasOrigin.setParent(this);

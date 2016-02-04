@@ -8,22 +8,19 @@ import org.ogu.lang.parser.ast.typeusage.TypeNode;
 import java.util.List;
 
 /**
- * All type declarations
+ * A type like type T = ..
  * Created by ediaz on 24-01-16.
  */
-public abstract  class TypedefDeclaration extends TypeDeclaration {
+public class SimpleTypeDeclarationNode extends TypedefDeclarationNode {
 
-    protected TypeNode type;
-
-    protected TypedefDeclaration(TypeIdentifierNode name, TypeNode type, List<Decorator> decorators)  {
-        super(name, decorators);
-        this.type = type;
-        this.type.setParent(this);
+    public SimpleTypeDeclarationNode(TypeIdentifierNode name, TypeNode type, List<Decorator> decorators) {
+        super(name, type, decorators);
     }
+
 
     @Override
     public String toString() {
-        return "TypeDeclaration{"+
+        return "SimpleTypeDeclaration{"+
                 "name="+name+
                 ", type="+type+
                 ", decorators="+decorators+
@@ -38,5 +35,4 @@ public abstract  class TypedefDeclaration extends TypeDeclaration {
                 .add(type)
                 .addAll(decorators).build();
     }
-
 }

@@ -9,15 +9,15 @@ import java.util.List;
  * Any Declaration
  * Created by ediaz on 23-01-16.
  */
-public abstract class NameDeclaration extends Declaration {
+public abstract class NameDeclarationNode extends DeclarationNode {
 
     protected NameNode name;
 
-    protected NameDeclaration(List<Decorator> decorators) {
+    protected NameDeclarationNode(List<Decorator> decorators) {
         super(decorators);
     }
 
-    protected NameDeclaration(NameNode name, List<Decorator> decorators) {
+    protected NameDeclarationNode(NameNode name, List<Decorator> decorators) {
         super(decorators);
         this.name = name;
         this.name.setParent(this);

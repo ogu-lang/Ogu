@@ -9,10 +9,10 @@ import java.util.List;
  * Created by ediaz on 21-01-16.
  */
 
-abstract public class ExportsDeclaration extends NameDeclaration {
+abstract public class ExportsDeclarationNode extends NameDeclarationNode {
 
 
-    protected ExportsDeclaration(NameNode name, List<Decorator> decorators) {
+    protected ExportsDeclarationNode(NameNode name, List<Decorator> decorators) {
         super(name, decorators);
     }
 }

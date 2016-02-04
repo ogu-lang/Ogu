@@ -10,11 +10,11 @@ import java.util.List;
  * Any Declaration
  * Created by ediaz on 23-01-16.
  */
-public abstract class Declaration extends Node {
+public abstract class DeclarationNode extends Node {
 
     protected List<Decorator> decorators;
 
-    protected Declaration(List<Decorator> decorators) {
+    protected DeclarationNode(List<Decorator> decorators) {
         this.decorators = new ArrayList<>();
         this.decorators.addAll(decorators);
         this.decorators.forEach((p) -> p.setParent(this));

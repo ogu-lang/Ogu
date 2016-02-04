@@ -13,13 +13,13 @@ import java.util.List;
  * Base for LetDefinition and OpDefinition
  * Created by ediaz on 26-01-16.
  */
-public abstract class LetDeclaration extends FunctionalDeclaration {
+public abstract class LetDeclarationNode extends FunctionalDeclarationNode {
 
     List<FunctionPatternParam> params;
     List<FunctionNode> body;
 
 
-    protected LetDeclaration(NameNode name, List<FunctionPatternParam> params, List<Decorator> decorators) {
+    protected LetDeclarationNode(NameNode name, List<FunctionPatternParam> params, List<Decorator> decorators) {
         super(name, decorators);
         this.params = new ArrayList<>();
         this.params.addAll(params);

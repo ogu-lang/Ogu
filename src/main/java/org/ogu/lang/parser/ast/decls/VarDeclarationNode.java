@@ -12,12 +12,12 @@ import java.util.List;
  * A val declaration (val id = value) where value is an expression
  * Created by ediaz on 23-01-16.
  */
-public class ValDeclaration extends FunctionalDeclaration {
+public class VarDeclarationNode extends FunctionalDeclarationNode {
 
     protected ExpressionNode value;
     protected TypeNode type;
 
-    protected ValDeclaration(TypeNode type, ExpressionNode value, List<Decorator> decorators) {
+    protected VarDeclarationNode(TypeNode type, ExpressionNode value, List<Decorator> decorators) {
         super(decorators);
         this.type = type;
         this.type.setParent(this);
@@ -25,22 +25,28 @@ public class ValDeclaration extends FunctionalDeclaration {
         this.value.setParent(this);
     }
 
-    protected ValDeclaration(ExpressionNode value, List<Decorator> decorators) {
+    protected VarDeclarationNode(ExpressionNode value, List<Decorator> decorators) {
         super(decorators);
         this.value = value;
         this.value.setParent(this);
     }
 
 
-    public ValDeclaration(IdentifierNode id, ExpressionNode value, List<Decorator> decorators) {
+    public VarDeclarationNode(IdentifierNode id, ExpressionNode value, List<Decorator> decorators) {
         super(id, decorators);
         this.value = value;
         this.value.setParent(this);
     }
 
-    public ValDeclaration(IdentifierNode id, TypeNode returnType, ExpressionNode value, List<Decorator> decorators) {
+    public VarDeclarationNode(IdentifierNode id, TypeNode type, List<Decorator> decorators) {
         super(id, decorators);
-        this.type = returnType;
+        this.type = type;
+        this.type.setParent(this);
+    }
+
+    public VarDeclarationNode(IdentifierNode id, TypeNode type, ExpressionNode value, List<Decorator> decorators) {
+        super(id, decorators);
+        this.type = type;
         this.type.setParent(this);
         this.value = value;
         this.value.setParent(this);
@@ -48,11 +54,15 @@ public class ValDeclaration extends FunctionalDeclaration {
 
     @Override
     public Iterable<Node> getChildren() {
-        if (type == null)
+        if (type == null) {
             return ImmutableList.<Node>builder().add(name).add(value).addAll(decorators).build();
-        else
-            return ImmutableList.<Node>builder().add(name).add(type).add(value).addAll(decorators).build();
+        } else {
+            if (value == null)
+                return ImmutableList.<Node>builder().add(name).add(type).addAll(decorators).build();
 
+            else
+                return ImmutableList.<Node>builder().add(name).add(value).add(type).addAll(decorators).build();
+        }
     }
 
     @Override
@@ -64,7 +74,4 @@ public class ValDeclaration extends FunctionalDeclaration {
                 ", decorators" + decorators +
                 '}';
     }
-
-
-
 }

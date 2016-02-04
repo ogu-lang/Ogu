@@ -9,11 +9,11 @@ import java.util.List;
  * Base for EnumDeclaration and DataDeclaration
  * Created by ediaz on 28-01-16.
  */
-public abstract class AlgebraicDataTypeDeclaration extends TypeDeclaration {
+public abstract class AlgebraicDataTypeDeclarationNode extends TypeDeclarationNode {
 
     protected List<TypeIdentifierNode> deriving;
 
-    protected AlgebraicDataTypeDeclaration(TypeIdentifierNode name, List<TypeIdentifierNode> deriving, List<Decorator> decorators) {
+    protected AlgebraicDataTypeDeclarationNode(TypeIdentifierNode name, List<TypeIdentifierNode> deriving, List<Decorator> decorators) {
         super(name, decorators);
         this.deriving = new ArrayList<>();
         this.deriving.addAll(deriving);

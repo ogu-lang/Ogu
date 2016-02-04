@@ -12,11 +12,11 @@ import java.util.List;
  * class, trait and instance are contracts
  * Created by ediaz on 25-01-16.
  */
-public class ContractDeclaration extends TypeDeclaration {
+public class ContractDeclarationNode extends TypeDeclarationNode {
 
-    protected List<FunctionalDeclaration> members;
+    protected List<FunctionalDeclarationNode> members;
 
-    protected ContractDeclaration(NameNode name, List<FunctionalDeclaration> members, List<Decorator> decorators) {
+    protected ContractDeclarationNode(NameNode name, List<FunctionalDeclarationNode> members, List<Decorator> decorators) {
         super(name, decorators);
         this.members = new ArrayList<>();
         this.members.addAll(members);

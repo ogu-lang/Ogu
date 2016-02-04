@@ -2,17 +2,17 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.decls.FunctionalDeclaration;
+import org.ogu.lang.parser.ast.decls.FunctionalDeclarationNode;
 
 /**
  * An expression inside a function
  * Created by ediaz on 23-01-16.
  */
 public class FunctionNodeDecl extends FunctionNode {
-    private FunctionalDeclaration declaration;
+    private FunctionalDeclarationNode declaration;
 
 
-    public FunctionNodeDecl(FunctionalDeclaration declaration) {
+    public FunctionNodeDecl(FunctionalDeclarationNode declaration) {
         this.declaration = declaration;
         this.declaration.setParent(this);
     }

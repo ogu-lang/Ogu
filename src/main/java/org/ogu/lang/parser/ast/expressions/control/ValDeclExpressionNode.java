@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.expressions.control;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.decls.ValDeclaration;
+import org.ogu.lang.parser.ast.decls.ValDeclarationNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 /**
@@ -11,9 +11,9 @@ import org.ogu.lang.typesystem.TypeUsage;
  */
 public class ValDeclExpressionNode extends DeclExpressionNode {
 
-    private ValDeclaration valDeclaration;
+    private ValDeclarationNode valDeclaration;
 
-    public ValDeclExpressionNode(ValDeclaration valDeclaration) {
+    public ValDeclExpressionNode(ValDeclarationNode valDeclaration) {
         super();
         this.valDeclaration = valDeclaration;
         this.valDeclaration.setParent(this);
