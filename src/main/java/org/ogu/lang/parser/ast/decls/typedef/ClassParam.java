@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.decls.typedef;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.typeusage.OguType;
 
 
@@ -13,10 +13,10 @@ import org.ogu.lang.parser.ast.typeusage.OguType;
  */
 public class ClassParam extends Node {
 
-    private OguIdentifier id;
+    private IdentifierNode id;
     private OguType type;
 
-    public ClassParam(OguIdentifier id, OguType type) {
+    public ClassParam(IdentifierNode id, OguType type) {
         this.id = id;
         this.id.setParent(this);
         this.type = type;

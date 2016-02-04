@@ -1,6 +1,6 @@
 package org.ogu.lang.parser.ast.decls;
 
-import org.ogu.lang.parser.ast.OguName;
+import org.ogu.lang.parser.ast.NameNode;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import java.util.List;
 public abstract class AliasDeclaration extends NameDeclaration {
 
     protected AliasDeclaration(List<Decorator> decorators) { super(decorators); }
-    protected AliasDeclaration(OguName id, List<Decorator> decorators) {
+    protected AliasDeclaration(NameNode id, List<Decorator> decorators) {
         super(id, decorators);
     }
 }

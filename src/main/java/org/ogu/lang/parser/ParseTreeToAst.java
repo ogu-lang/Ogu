@@ -80,33 +80,33 @@ public class ParseTreeToAst {
         return new ModuleNameDefinition(toAst(ctx.name).qualifiedName());
     }
 
-    private OguTypeIdentifier toAst(OguParser.Module_nameContext ctx) {
-        OguTypeIdentifier type = OguTypeIdentifier.create(ctx.parts.stream().map(Token::getText).collect(Collectors.toList()));
+    private TypeIdentifierNode toAst(OguParser.Module_nameContext ctx) {
+        TypeIdentifierNode type = TypeIdentifierNode.create(ctx.parts.stream().map(Token::getText).collect(Collectors.toList()));
         getPositionFrom(type, ctx);
         return type;
     }
 
-    private OguTypeIdentifier toOguTypeIdentifier(OguParser.Alias_targetContext ctx) {
-        OguTypeIdentifier tname = OguTypeIdentifier.create(idText(ctx.alias_tid));
+    private TypeIdentifierNode toOguTypeIdentifier(OguParser.Alias_targetContext ctx) {
+        TypeIdentifierNode tname = TypeIdentifierNode.create(idText(ctx.alias_tid));
         getPositionFrom(tname, ctx);
         return tname;
     }
 
-    private OguTypeIdentifier toOguTypeIdentifier(OguParser.Alias_originContext ctx) {
-        OguTypeIdentifier tname = OguTypeIdentifier.create(ctx.alias_origin_tid.stream().map(Token::getText).collect(Collectors.toList()));
+    private TypeIdentifierNode toOguTypeIdentifier(OguParser.Alias_originContext ctx) {
+        TypeIdentifierNode tname = TypeIdentifierNode.create(ctx.alias_origin_tid.stream().map(Token::getText).collect(Collectors.toList()));
         getPositionFrom(tname, ctx);
         return tname;
     }
 
-    private OguIdentifier toOguIdentifier(OguParser.Alias_targetContext ctx) {
-        OguIdentifier tname = OguIdentifier.create(idText(ctx.alias_id));
+    private IdentifierNode toOguIdentifier(OguParser.Alias_targetContext ctx) {
+        IdentifierNode tname = IdentifierNode.create(idText(ctx.alias_id));
         getPositionFrom(tname, ctx);
         return tname;
     }
 
 
-    private OguIdentifier toOguIdentifier(OguParser.Alias_originContext ctx) {
-        OguIdentifier tname = OguIdentifier.create(ctx.alias_origin_tid.stream().map(Token::getText).collect(Collectors.toList()), idText(ctx.alias_origin_id));
+    private IdentifierNode toOguIdentifier(OguParser.Alias_originContext ctx) {
+        IdentifierNode tname = IdentifierNode.create(ctx.alias_origin_tid.stream().map(Token::getText).collect(Collectors.toList()), idText(ctx.alias_origin_id));
         getPositionFrom(tname, ctx);
         return tname;
     }
@@ -114,9 +114,9 @@ public class ParseTreeToAst {
     private ExportsDeclaration toAst(OguParser.Export_nameContext ctx, List<Decorator> decs) {
         ExportsDeclaration result;
         if (ctx.ID() != null)
-            result = new ExportsFunctionDeclaration(new OguIdentifier(idText(ctx.ID().getSymbol())), decs);
+            result = new ExportsFunctionDeclaration(new IdentifierNode(idText(ctx.ID().getSymbol())), decs);
         else if (ctx.TID() != null)
-            result = new ExportsTypeDeclaration(OguTypeIdentifier.create(idText(ctx.TID().getSymbol())), decs);
+            result = new ExportsTypeDeclaration(TypeIdentifierNode.create(idText(ctx.TID().getSymbol())), decs);
         else {
             throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
         }
@@ -180,7 +180,7 @@ public class ParseTreeToAst {
     }
 
     private InstanceDeclaration toAst(OguParser.Instance_defContext ctx, List<Decorator> decs) {
-        OguTypeIdentifier name = new OguTypeIdentifier(idText(ctx.name));
+        TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
         Map<String,OguType> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
@@ -205,7 +205,7 @@ public class ParseTreeToAst {
 
     private ClassDeclaration toAst(OguParser.Class_defContext ctx, List<Decorator> decs) {
         boolean isMutable = ctx.mut != null;
-        OguTypeIdentifier name = new OguTypeIdentifier(idText(ctx.name));
+        TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
         Map<String,OguType> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
@@ -231,7 +231,7 @@ public class ParseTreeToAst {
         OguType type = toAst(ctx.type());
         List<ClassParam> result = new ArrayList<>();
         for (TerminalNode cid:ctx.ID()) {
-            OguIdentifier id = OguIdentifier.create(cid.getText());
+            IdentifierNode id = IdentifierNode.create(cid.getText());
             result.add(new ClassParam(id, type));
         }
         return result;
@@ -239,27 +239,27 @@ public class ParseTreeToAst {
 
 
     private EnumDeclaration toAst(OguParser.Enum_defContext ctx, List<Decorator> decs) {
-        OguTypeIdentifier name = new OguTypeIdentifier(ctx.en.getText());
-        List<OguIdentifier> values = ctx.values.stream().map((t) -> new OguIdentifier(idText(t))).collect(Collectors.toList());
-        List<OguTypeIdentifier> deriving = toDerivingAst(ctx.deriving());
+        TypeIdentifierNode name = new TypeIdentifierNode(ctx.en.getText());
+        List<IdentifierNode> values = ctx.values.stream().map((t) -> new IdentifierNode(idText(t))).collect(Collectors.toList());
+        List<TypeIdentifierNode> deriving = toDerivingAst(ctx.deriving());
         EnumDeclaration decl = new EnumDeclaration(name, values, deriving, decs);
         getPositionFrom(decl, ctx);
         return decl;
     }
 
-    private List<OguTypeIdentifier> toDerivingAst(OguParser.DerivingContext ctx) {
+    private List<TypeIdentifierNode> toDerivingAst(OguParser.DerivingContext ctx) {
         if (ctx == null)
             return Collections.emptyList();
 
-        List<OguTypeIdentifier> deriving = ctx.deriving_types().dt.stream().map(this::toAst).collect(Collectors.toList());
-        for (OguTypeIdentifier oguTypeIdentifier : deriving) {
+        List<TypeIdentifierNode> deriving = ctx.deriving_types().dt.stream().map(this::toAst).collect(Collectors.toList());
+        for (TypeIdentifierNode oguTypeIdentifier : deriving) {
            getPositionFrom(oguTypeIdentifier, ctx);
         }
         return deriving;
     }
 
     private DataDeclaration toAst(OguParser.Data_defContext ctx, List<Decorator> decs) {
-        OguTypeIdentifier name = new OguTypeIdentifier(idText(ctx.name));
+        TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
         Map<String, OguType> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
@@ -269,14 +269,14 @@ public class ParseTreeToAst {
             params = getTypeParamList(ctx, ctx.typedef_params().params, constraints);
         else
             params = Collections.emptyList();
-        List<OguTypeIdentifier> deriving = new ArrayList<>();
+        List<TypeIdentifierNode> deriving = new ArrayList<>();
         List<OguType> values = toAst(ctx.data_type_decl(), deriving);
         DataDeclaration decl = new DataDeclaration(name, params, values, deriving, decs);
         getPositionFrom(decl, ctx);
         return decl;
     }
 
-    private List<OguType> toAst(OguParser.Data_type_declContext ctx, List<OguTypeIdentifier> deriving) {
+    private List<OguType> toAst(OguParser.Data_type_declContext ctx, List<TypeIdentifierNode> deriving) {
         if (ctx.deriving() != null)
             deriving.addAll(toDerivingAst(ctx.deriving()));
         List<OguType> types = new ArrayList<>();
@@ -288,7 +288,7 @@ public class ParseTreeToAst {
 
     private TraitDeclaration toAst(OguParser.Trait_defContext ctx, List<Decorator> decs) {
         boolean isMutable = ctx.mut != null;
-        OguTypeIdentifier name = new OguTypeIdentifier(idText(ctx.name));
+        TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
         Map<String,OguType> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
@@ -328,7 +328,7 @@ public class ParseTreeToAst {
             loadTypeConstraints(ctx.constraints, constraints);
 
 
-        OguTypeIdentifier name = new OguTypeIdentifier(idText(ctx.t));
+        TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.t));
         OguType type = toAst(ctx.type());
         getPositionFrom(name, ctx);
         if (ctx.ta == null)  {
@@ -374,7 +374,7 @@ public class ParseTreeToAst {
     private FunctionalDeclaration toAst(OguParser.Func_defContext ctx, List<Decorator> decorators) {
         if (ctx.let_func_name != null) {
             if (ctx.let_func_name.lid_val_id != null) {
-                OguIdentifier funcId = OguIdentifier.create(idText(ctx.let_func_name.lid_val_id));
+                IdentifierNode funcId = IdentifierNode.create(idText(ctx.let_func_name.lid_val_id));
                 OguType type = toAst(ctx.let_func_name.t);
                 if (ctx.let_func_args != null && !ctx.let_func_args.isEmpty()) {
                     return new ErrorFunctionalDeclaration("error.let_as_val.no_params", getPosition(ctx));
@@ -385,7 +385,7 @@ public class ParseTreeToAst {
                 return val;
             }
             if (ctx.let_func_name.lid_fun_id != null) {
-                OguIdentifier funcId = OguIdentifier.create(idText(ctx.let_func_name.lid_fun_id));
+                IdentifierNode funcId = IdentifierNode.create(idText(ctx.let_func_name.lid_fun_id));
                 List<FunctionPatternParam> params = funcArgsToAst(ctx.let_func_args);
                 LetDefinition funcdef = new LetDefinition(funcId, params, decorators);
                 getPositionFrom(funcdef, ctx);
@@ -400,7 +400,7 @@ public class ParseTreeToAst {
             List<FunctionPatternParam> params = new ArrayList<>();
             params.add(toAst(ctx.left));
             params.add(toAst(ctx.right));
-            OguOperator op = ctx.infix_op != null ? toAst(ctx.infix_op) : toAst(ctx.prefix_op);
+            OperatorNode op = ctx.infix_op != null ? toAst(ctx.infix_op) : toAst(ctx.prefix_op);
             OpDefinition opDef = new OpDefinition(op, params, decorators);
             getPositionFrom(opDef, ctx);
             if (ctx.let_expr() != null) {
@@ -412,8 +412,8 @@ public class ParseTreeToAst {
 
 
         if (!ctx.tup.isEmpty()) {
-            List<OguIdentifier> ids = new ArrayList<>();
-            Map<OguIdentifier, OguType> types = new HashMap<>();
+            List<IdentifierNode> ids = new ArrayList<>();
+            Map<IdentifierNode, OguType> types = new HashMap<>();
             lidsToAst(ctx.tup, ids, types);
             Expression value = toAst(ctx.expr());
             TupleValDeclaration decl = new TupleValDeclaration(ids, types, value, decorators);
@@ -424,12 +424,12 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private void lidsToAst(List<OguParser.LidContext> lids, List<OguIdentifier> ids, Map<OguIdentifier, OguType> types) {
+    private void lidsToAst(List<OguParser.LidContext> lids, List<IdentifierNode> ids, Map<IdentifierNode, OguType> types) {
         for(OguParser.LidContext ctx : lids) {
             if (ctx.lid_fun_id !=null) {
-                ids.add(OguIdentifier.create(idText(ctx.lid_fun_id)));
+                ids.add(IdentifierNode.create(idText(ctx.lid_fun_id)));
             } else {
-                OguIdentifier id = OguIdentifier.create(idText(ctx.lid_val_id));
+                IdentifierNode id = IdentifierNode.create(idText(ctx.lid_val_id));
                 OguType type = toAst(ctx.type());
                 ids.add(id);
                 types.put(id, type);
@@ -480,7 +480,7 @@ public class ParseTreeToAst {
 
     private void parseWhereCtx(OguParser.Where_exprContext ctx, LetDeclaration funcdef) {
         if (ctx.i != null) {
-            OguIdentifier funcId = OguIdentifier.create(idText(ctx.i));
+            IdentifierNode funcId = IdentifierNode.create(idText(ctx.i));
             List<FunctionPatternParam> params = funcArgsToAst(ctx.let_arg());
             LetDefinition letDef = new LetDefinition(funcId, params, Collections.emptyList());
             getPositionFrom(letDef, ctx);
@@ -494,8 +494,8 @@ public class ParseTreeToAst {
         }
         else {
             if (!ctx.tup.isEmpty()) {
-                List<OguIdentifier> ids = new ArrayList<>();
-                Map<OguIdentifier, OguType> types = new HashMap<>();
+                List<IdentifierNode> ids = new ArrayList<>();
+                Map<IdentifierNode, OguType> types = new HashMap<>();
                 lidsToAst(ctx.tup, ids, types);
                 Expression value = toAst(ctx.expr());
                 TupleValDeclaration decl = new TupleValDeclaration(ids, types, value, Collections.emptyList());
@@ -608,7 +608,7 @@ public class ParseTreeToAst {
             }
             else {
                 OguType type = toAst(ctx.l_id.type());
-                OguIdentifier id = OguIdentifier.create(idText(ctx.l_id.lid_val_id));
+                IdentifierNode id = IdentifierNode.create(idText(ctx.l_id.lid_val_id));
                 FuncIdTypeParam param = new FuncIdTypeParam(id, type);
                 getPositionFrom(param, ctx);
                 return param;
@@ -616,7 +616,7 @@ public class ParseTreeToAst {
         }
         if (ctx.t_id != null)
         {
-            OguTypeIdentifier tid =  OguTypeIdentifier.create(idText(ctx.t_id));
+            TypeIdentifierNode tid =  TypeIdentifierNode.create(idText(ctx.t_id));
             if (ctx.la == null) {
                 FuncTypeParam typeParam = new FuncTypeParam(tid);
                 getPositionFrom(typeParam, ctx);
@@ -641,7 +641,7 @@ public class ParseTreeToAst {
     }
 
     private FuncIdParam toAst(Token tok) {
-        return new FuncIdParam(OguIdentifier.create(idText(tok)));
+        return new FuncIdParam(IdentifierNode.create(idText(tok)));
     }
 
     private List<Decorator> toAstDecorators(OguParser.DecoratorsContext decs) {
@@ -691,8 +691,8 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private OguOperator toAst(OguParser.OpContext ctx) {
-        OguOperator op = new OguOperator(ctx.getText());
+    private OperatorNode toAst(OguParser.OpContext ctx) {
+        OperatorNode op = new OperatorNode(ctx.getText());
         getPositionFrom(op, ctx);
         return op;
     }
@@ -701,18 +701,18 @@ public class ParseTreeToAst {
         if (ctx.unit() != null)
             return new UnitTypeArg();
         if (ctx.fda_id != null)
-            return new QualifiedTypeArg(OguTypeIdentifier.create(idText(ctx.fda_id)));
+            return new QualifiedTypeArg(TypeIdentifierNode.create(idText(ctx.fda_id)));
         if (!ctx.fda_tid.isEmpty()) {
-            OguTypeIdentifier id = OguTypeIdentifier.create(ctx.fda_tid.stream().map(this::idText).collect(Collectors.toList()));
+            TypeIdentifierNode id = TypeIdentifierNode.create(ctx.fda_tid.stream().map(this::idText).collect(Collectors.toList()));
             if (ctx.tid_or_id_arg == null || ctx.tid_or_id_arg.isEmpty()){
                 return new QualifiedTypeArg(id);
             } else {
-                List<OguName> args = new ArrayList<>();
+                List<NameNode> args = new ArrayList<>();
                 for (OguParser.Tid_or_idContext ti:ctx.tid_or_id_arg)
                     if (ti.i != null)
-                        args.add(OguIdentifier.create(idText(ti.i)));
+                        args.add(IdentifierNode.create(idText(ti.i)));
                     else
-                        args.add(OguTypeIdentifier.create(idText(ti.t)));
+                        args.add(TypeIdentifierNode.create(idText(ti.t)));
                 GenericTypeArg genType = new GenericTypeArg(id, args);
                 getPositionFrom(genType, ctx);
                 return genType;
@@ -736,9 +736,9 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private OguIdentifier toAst(OguParser.Func_name_declContext ctx) {
+    private IdentifierNode toAst(OguParser.Func_name_declContext ctx) {
         if (ctx.f_id != null)
-            return new OguIdentifier(idText(ctx.f_id));
+            return new IdentifierNode(idText(ctx.f_id));
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
@@ -778,7 +778,7 @@ public class ParseTreeToAst {
 
     private VarDeclaration toAst(OguParser.VarContext ctx, List<Decorator> decs) {
         if (ctx.vid().i != null) {
-            OguIdentifier id =  OguIdentifier.create(idText(ctx.vid().i));
+            IdentifierNode id =  IdentifierNode.create(idText(ctx.vid().i));
             VarDeclaration var;
             if (ctx.type() == null) {
                 var = new VarDeclaration(id, toAst(ctx.expr()), decs);
@@ -797,11 +797,11 @@ public class ParseTreeToAst {
     private ValDeclaration toAst(OguParser.Val_defContext ctx, List<Decorator> decorators) {
         if (ctx.val_id != null) {
             if (ctx.type() == null) {
-                ValDeclaration val = new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.expr()), decorators);
+                ValDeclaration val = new ValDeclaration(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.expr()), decorators);
                 getPositionFrom(val, ctx);
                 return val;
             }
-            ValDeclaration val = new ValDeclaration(OguIdentifier.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decorators);
+            ValDeclaration val = new ValDeclaration(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decorators);
             getPositionFrom(val, ctx);
             return val;
         }
@@ -852,7 +852,7 @@ public class ParseTreeToAst {
                 List<OguType> args = new ArrayList<>();
                 for (OguParser.Tid_argsContext ac:ctx.t_a)
                     args.add(toAst(ac));
-                OguTypeIdentifier tName = toAst(ctx.gt);
+                TypeIdentifierNode tName = toAst(ctx.gt);
                 GenericType type = new GenericType(tName, args);
                 getPositionFrom(type, ctx);
                 return type;
@@ -864,7 +864,7 @@ public class ParseTreeToAst {
             return type;
         }
         if (ctx.i != null) {
-            IdTypeArg type = new IdTypeArg(OguIdentifier.create(idText(ctx.i)));
+            IdTypeArg type = new IdTypeArg(IdentifierNode.create(idText(ctx.i)));
             getPositionFrom(type, ctx);
             return type;
         }
@@ -876,7 +876,7 @@ public class ParseTreeToAst {
 
     private OguType toAst(OguParser.Tid_argsContext ctx) {
         if (ctx.i != null) {
-            IdTypeArg type = new IdTypeArg(OguIdentifier.create(idText(ctx.i)));
+            IdTypeArg type = new IdTypeArg(IdentifierNode.create(idText(ctx.i)));
             getPositionFrom(type, ctx);
             return type;
         }
@@ -897,7 +897,7 @@ public class ParseTreeToAst {
         for (OguParser.FldDeclContext fc:ctx.fldDecl()) {
             fields.add(toAst(fc));
         }
-        OguTypeIdentifier name = OguTypeIdentifier.create(idText(ctx.ti));
+        TypeIdentifierNode name = TypeIdentifierNode.create(idText(ctx.ti));
         RecordType record = new RecordType(name, fields);
         getPositionFrom(record, ctx);
         return record;
@@ -914,15 +914,15 @@ public class ParseTreeToAst {
     }
 
     private RecordField toAst(OguParser.FldDeclContext ctx) {
-        OguIdentifier id = OguIdentifier.create(idText(ctx.i));
+        IdentifierNode id = IdentifierNode.create(idText(ctx.i));
         OguType type = toAst(ctx.t);
         RecordField fld = new RecordField(id, type);
         getPositionFrom(fld, ctx);
         return fld;
     }
 
-    private OguTypeIdentifier toAst(OguParser.TidContext ctx) {
-        return OguTypeIdentifier.create(ctx.t.stream().map(this::idText).collect(Collectors.toList()));
+    private TypeIdentifierNode toAst(OguParser.TidContext ctx) {
+        return TypeIdentifierNode.create(ctx.t.stream().map(this::idText).collect(Collectors.toList()));
     }
 
 
@@ -982,7 +982,7 @@ public class ParseTreeToAst {
         }
 
         if (ctx.infix_id != null) {
-            Reference name = new Reference(OguIdentifier.create(idText(ctx.infix_id)));
+            Reference name = new Reference(IdentifierNode.create(idText(ctx.infix_id)));
             Expression l = toAst(ctx.l_infix);
             Expression r = toAst(ctx.r_infix);
             List<ActualParam> params = new ArrayList<>();
@@ -1006,14 +1006,14 @@ public class ParseTreeToAst {
             return toAstFunctionCall(ctx);
         }
         if (ctx.ref != null) {
-            Reference ref = new Reference(OguIdentifier.create(idText(ctx.ref)));
+            Reference ref = new Reference(IdentifierNode.create(idText(ctx.ref)));
             getPositionFrom(ref, ctx);
             return ref;
         }
         if (ctx.o != null) {
             Expression left = toAst(ctx.l);
             Expression right = toAst(ctx.r);
-            BinaryOpExpression expr = new BinaryOpExpression(new OguOperator(ctx.o.getText()), left, right);
+            BinaryOpExpression expr = new BinaryOpExpression(new OperatorNode(ctx.o.getText()), left, right);
             getPositionFrom(expr, ctx);
             return expr;
         }
@@ -1030,7 +1030,7 @@ public class ParseTreeToAst {
     }
 
     private SelfRefExpression toAst(OguParser.Self_idContext ctx) {
-        SelfRefExpression expr = new SelfRefExpression(OguIdentifier.create(idText(ctx.i)));
+        SelfRefExpression expr = new SelfRefExpression(IdentifierNode.create(idText(ctx.i)));
         getPositionFrom(expr, ctx);
         return expr;
     }
@@ -1055,7 +1055,7 @@ public class ParseTreeToAst {
         if (ctx.map_expr().m_assign != null && !ctx.map_expr().mb.isEmpty()) {
             List<FieldExpression> fieldExprs = new ArrayList<>();
             for (OguParser.M_assignContext mc:ctx.map_expr().mb) {
-                OguIdentifier id = OguIdentifier.create(idText(mc.i));
+                IdentifierNode id = IdentifierNode.create(idText(mc.i));
                 Expression expr = toAst(mc.expr());
                 FieldExpression fld = new FieldExpression(id, expr);
                 getPositionFrom(fld, ctx.map_expr());
@@ -1071,9 +1071,9 @@ public class ParseTreeToAst {
     }
 
     private LetInExpression toAst(OguParser.Let_in_exprContext ctx) {
-        Map<OguIdentifier, Expression> exprs = new HashMap<>();
+        Map<IdentifierNode, Expression> exprs = new HashMap<>();
         for (OguParser.Let_in_argContext lin:ctx.let_in_arg()) {
-            OguIdentifier id = OguIdentifier.create(idText(lin.i));
+            IdentifierNode id = IdentifierNode.create(idText(lin.i));
             Expression expr = toAst(lin.e);
             exprs.put(id, expr);
         }
@@ -1129,7 +1129,7 @@ public class ParseTreeToAst {
     private List<LambdaArg> toAst(OguParser.Lambda_argContext ctx) {
         if (ctx.i != null) {
             LambdaArg arg;
-            OguIdentifier id = OguIdentifier.create(idText(ctx.i));
+            IdentifierNode id = IdentifierNode.create(idText(ctx.i));
             if (ctx.type() == null)
                 arg = new LambdaArg(id);
             else
@@ -1159,13 +1159,13 @@ public class ParseTreeToAst {
     private AssignExpression toAst(OguParser.Assign_exprContext ctx) {
         AssignExpression expr;
         if (ctx.si != null) {
-            OguIdentifier id = OguIdentifier.create(idText(ctx.si));
+            IdentifierNode id = IdentifierNode.create(idText(ctx.si));
             if (ctx.a == null)
                 expr = new AssignSelfExpression(id, toAst(ctx.e));
             else
                 expr = new AssignSelfExpression(id, toAst(ctx.a), toAst(ctx.e));
         } else {
-            OguIdentifier id = OguIdentifier.create(idText(ctx.i));
+            IdentifierNode id = IdentifierNode.create(idText(ctx.i));
             if (ctx.a == null)
                 expr = new AssignExpression(id, toAst(ctx.e));
             else
@@ -1245,11 +1245,11 @@ public class ParseTreeToAst {
 
     private SetConstraint toAst(OguParser.Set_constraint_exprContext ctx) {
         if (ctx.s_id != null) {
-            SetConstraint cons = new SetConstraint(OguIdentifier.create(idText(ctx.s_id)), toAst(ctx.expr()));
+            SetConstraint cons = new SetConstraint(IdentifierNode.create(idText(ctx.s_id)), toAst(ctx.expr()));
             getPositionFrom(cons, ctx);
             return cons;
         } else {
-            List<OguIdentifier> ids = ctx.l_id.stream().map((t) -> new OguIdentifier(idText(t))).collect(Collectors.toList());
+            List<IdentifierNode> ids = ctx.l_id.stream().map((t) -> new IdentifierNode(idText(t))).collect(Collectors.toList());
             SetConstraint cons = new SetConstraint(ids, toAst(ctx.expr()));
             getPositionFrom(cons, ctx);
             return cons;
@@ -1393,19 +1393,19 @@ public class ParseTreeToAst {
     }
 
     private Expression toAst(OguParser.Func_nameContext ctx) {
-        Reference id = new Reference(new OguIdentifier(idText(ctx.name)));
+        Reference id = new Reference(new IdentifierNode(idText(ctx.name)));
         getPositionFrom(id, ctx);
         return id;
     }
 
     private Expression toAst(OguParser.Qual_func_nameContext ctx) {
         if (ctx.name == null) {
-            OguTypeIdentifier tname = OguTypeIdentifier.create(ctx.qual.stream().map(Token::getText).collect(Collectors.toList()));
+            TypeIdentifierNode tname = TypeIdentifierNode.create(ctx.qual.stream().map(Token::getText).collect(Collectors.toList()));
             TypeReference ref = new TypeReference(tname);
             getPositionFrom(ref, ctx);
             return ref;
         } else {
-            OguIdentifier tname = OguIdentifier.create(ctx.qual.stream().map(Token::getText).collect(Collectors.toList()), idText(ctx.name));
+            IdentifierNode tname = IdentifierNode.create(ctx.qual.stream().map(Token::getText).collect(Collectors.toList()), idText(ctx.name));
             Reference id = new Reference(tname);
             getPositionFrom(id, ctx);
             return id;

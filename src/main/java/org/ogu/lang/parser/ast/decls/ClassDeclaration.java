@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.parser.ast.decls.typedef.ClassParam;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
 
@@ -18,7 +18,7 @@ public class ClassDeclaration extends ContractDeclaration {
     private List<ClassParam> clasParams;
     private boolean isMutable;
 
-    public ClassDeclaration(OguTypeIdentifier name, boolean isMutable, List<TypeParam> genParams, List<ClassParam> classParams, List<FunctionalDeclaration> members, List<Decorator> decorators) {
+    public ClassDeclaration(TypeIdentifierNode name, boolean isMutable, List<TypeParam> genParams, List<ClassParam> classParams, List<FunctionalDeclaration> members, List<Decorator> decorators) {
         super(name, members, decorators);
         this.isMutable = isMutable;
         this.genParams = new ArrayList<>();

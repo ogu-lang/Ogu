@@ -9,9 +9,9 @@ import java.util.Collections;
  * There are 2: Type Identifier and Simple Identifier (vars, vals and funcs).
  * Created by ediaz on 22-01-16.
  */
-public class OguName extends Node {
+public class NameNode extends Node {
 
-    protected OguName base;
+    protected NameNode base;
     protected String name;
 
     public String getName() {
@@ -19,13 +19,13 @@ public class OguName extends Node {
     }
 
 
-    public OguName(OguName base, String name) {
+    public NameNode(NameNode base, String name) {
         super();
         this.base = base;
         this.name = name;
     }
 
-    public OguName(String name) {
+    public NameNode(String name) {
         this.name = name;
     }
 
@@ -64,7 +64,7 @@ public class OguName extends Node {
         if (o == null || getClass() != o.getClass())
             return false;
 
-        OguIdentifier that = (OguIdentifier) o;
+        IdentifierNode that = (IdentifierNode) o;
 
         return base != null ? base.equals(that.base) : that.base == null && name.equals(that.name);
     }

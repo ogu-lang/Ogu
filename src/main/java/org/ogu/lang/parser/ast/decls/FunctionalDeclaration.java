@@ -1,8 +1,6 @@
 package org.ogu.lang.parser.ast.decls;
 
-import org.ogu.lang.parser.ast.OguName;
-import org.ogu.lang.parser.ast.decls.funcdef.FunctionNodeExpr;
-import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.NameNode;
 
 import java.util.List;
 
@@ -27,7 +25,7 @@ public abstract class FunctionalDeclaration extends ExportableDeclaration {
         return this.contract;
     }
 
-    protected FunctionalDeclaration(OguName name, List<Decorator> decorators) {
+    protected FunctionalDeclaration(NameNode name, List<Decorator> decorators) {
         super(name, decorators);
     }
 }

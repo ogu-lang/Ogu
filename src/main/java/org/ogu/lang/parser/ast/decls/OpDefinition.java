@@ -1,10 +1,7 @@
 package org.ogu.lang.parser.ast.decls;
 
-import org.ogu.lang.parser.ast.OguOperator;
-import org.ogu.lang.parser.ast.decls.funcdef.FunctionNode;
-import org.ogu.lang.parser.ast.decls.funcdef.FunctionNodeExpr;
+import org.ogu.lang.parser.ast.OperatorNode;
 import org.ogu.lang.parser.ast.decls.funcdef.FunctionPatternParam;
-import org.ogu.lang.parser.ast.expressions.Expression;
 
 import java.util.List;
 
@@ -16,7 +13,7 @@ import java.util.List;
  */
 public class OpDefinition extends LetDeclaration {
 
-    public OpDefinition(OguOperator name, List<FunctionPatternParam> params, List<Decorator> decorators) {
+    public OpDefinition(OperatorNode name, List<FunctionPatternParam> params, List<Decorator> decorators) {
         super(name, params, decorators);
     }
 

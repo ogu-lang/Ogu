@@ -2,8 +2,8 @@ package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +13,9 @@ import java.util.List;
  */
 public class EnumDeclaration extends AlgebraicDataTypeDeclaration {
 
-    private List<OguIdentifier> values;
+    private List<IdentifierNode> values;
 
-    public EnumDeclaration(OguTypeIdentifier name, List<OguIdentifier> values, List<OguTypeIdentifier> deriving, List<Decorator> decorators) {
+    public EnumDeclaration(TypeIdentifierNode name, List<IdentifierNode> values, List<TypeIdentifierNode> deriving, List<Decorator> decorators) {
         super(name, deriving, decorators);
         this.values = new ArrayList<>();
         this.values.addAll(values);

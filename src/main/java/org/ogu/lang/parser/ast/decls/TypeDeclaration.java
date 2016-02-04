@@ -1,6 +1,6 @@
 package org.ogu.lang.parser.ast.decls;
 
-import org.ogu.lang.parser.ast.OguName;
+import org.ogu.lang.parser.ast.NameNode;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import java.util.List;
  */
 public abstract class TypeDeclaration  extends ExportableDeclaration {
 
-    protected TypeDeclaration(OguName name, List<Decorator> decorators) {
+    protected TypeDeclaration(NameNode name, List<Decorator> decorators) {
         super(name, decorators);
     }
 }

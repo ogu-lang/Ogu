@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ public class InstanceDeclaration extends ContractDeclaration {
 
     private List<TypeParam> params;
 
-    public InstanceDeclaration(OguTypeIdentifier name, List<TypeParam> params, List<FunctionalDeclaration> members, List<Decorator> decorators) {
+    public InstanceDeclaration(TypeIdentifierNode name, List<TypeParam> params, List<FunctionalDeclaration> members, List<Decorator> decorators) {
         super(name, members, decorators);
         this.params = new ArrayList<>();
         this.params.addAll(params);

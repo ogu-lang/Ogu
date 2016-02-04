@@ -1,9 +1,6 @@
 package org.ogu.lang.parser.ast.decls;
 
-import com.google.common.collect.ImmutableList;
-import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
-import org.ogu.lang.parser.ast.QualifiedName;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.Symbol;
 
@@ -26,7 +23,7 @@ public class UsesDeclaration extends NameDeclaration {
                 '}';
     }
 
-    public UsesDeclaration(OguTypeIdentifier name, List<Decorator> decorators) {
+    public UsesDeclaration(TypeIdentifierNode name, List<Decorator> decorators) {
         super(name, decorators);
     }
 

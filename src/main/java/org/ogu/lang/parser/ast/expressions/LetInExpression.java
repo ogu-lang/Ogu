@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.expressions;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.HashMap;
@@ -14,17 +14,17 @@ import java.util.Map;
  */
 public class LetInExpression extends Expression {
 
-    private Map<OguIdentifier, Expression> exprs;
+    private Map<IdentifierNode, Expression> exprs;
     private Expression inExpr;
 
-    public LetInExpression(Map<OguIdentifier, Expression> exprs) {
+    public LetInExpression(Map<IdentifierNode, Expression> exprs) {
         this.exprs = new HashMap<>();
         this.exprs.putAll(exprs);
         this.exprs.keySet().forEach((k) -> k.setParent(this));
         this.exprs.values().forEach((v) -> v.setParent(this));
     }
 
-    public LetInExpression(Map<OguIdentifier, Expression> exprs, Expression inExpr) {
+    public LetInExpression(Map<IdentifierNode, Expression> exprs, Expression inExpr) {
         this.exprs = new HashMap<>();
         this.exprs.putAll(exprs);
         this.exprs.keySet().forEach((k) -> k.setParent(this));

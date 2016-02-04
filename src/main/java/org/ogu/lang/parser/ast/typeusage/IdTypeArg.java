@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 
 /**
  * An id used as parameter for a type
@@ -10,10 +10,10 @@ import org.ogu.lang.parser.ast.OguIdentifier;
  */
 public  class IdTypeArg extends OguType {
 
-    private OguIdentifier id;
+    private IdentifierNode id;
 
 
-    public IdTypeArg(OguIdentifier id) {
+    public IdTypeArg(IdentifierNode id) {
         super();
         this.id = id;
         this.id.setParent(this);

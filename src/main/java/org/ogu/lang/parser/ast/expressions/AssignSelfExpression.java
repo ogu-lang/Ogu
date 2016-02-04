@@ -1,9 +1,6 @@
 package org.ogu.lang.parser.ast.expressions;
 
-import com.google.common.collect.ImmutableList;
-import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
-import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.parser.ast.IdentifierNode;
 
 /**
  * $id <- value
@@ -12,11 +9,11 @@ import org.ogu.lang.typesystem.TypeUsage;
 public class AssignSelfExpression extends AssignExpression {
 
 
-    public AssignSelfExpression(OguIdentifier id, Expression value) {
+    public AssignSelfExpression(IdentifierNode id, Expression value) {
         super(id, value);
     }
 
-    public AssignSelfExpression(OguIdentifier id, Expression optArg, Expression value) {
+    public AssignSelfExpression(IdentifierNode id, Expression optArg, Expression value) {
         super(id, optArg, value);
     }
 

@@ -6,10 +6,10 @@ import java.util.Collections;
  * An op (*, +. -, /, etc...)
  * Created by ediaz on 26-01-16.
  */
-public class OguOperator extends OguName {
+public class OperatorNode extends NameNode {
 
 
-    public OguOperator(String name) {
+    public OperatorNode(String name) {
         super(name);
     }
 

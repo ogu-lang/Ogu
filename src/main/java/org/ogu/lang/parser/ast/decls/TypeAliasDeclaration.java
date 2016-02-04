@@ -2,9 +2,7 @@ package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
-import org.ogu.lang.parser.ast.decls.AliasDeclaration;
-import org.ogu.lang.parser.ast.decls.Decorator;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 
 import java.util.List;
 
@@ -15,10 +13,10 @@ import java.util.List;
  */
 public class TypeAliasDeclaration extends AliasDeclaration {
 
-    private OguTypeIdentifier aliasOrigin;
+    private TypeIdentifierNode aliasOrigin;
 
 
-    public TypeAliasDeclaration(OguTypeIdentifier target, OguTypeIdentifier origin, List<Decorator> decorators) {
+    public TypeAliasDeclaration(TypeIdentifierNode target, TypeIdentifierNode origin, List<Decorator> decorators) {
         super(target, decorators);
         this.aliasOrigin = origin;
         this.aliasOrigin.setParent(this);

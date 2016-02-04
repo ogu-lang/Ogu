@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.expressions;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguOperator;
+import org.ogu.lang.parser.ast.OperatorNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 /**
@@ -11,12 +11,12 @@ import org.ogu.lang.typesystem.TypeUsage;
  */
 public class BinaryOpExpression extends Expression {
 
-    OguOperator op;
+    OperatorNode op;
     Expression leftExpr;
     Expression rightExpr;
 
 
-    public BinaryOpExpression(OguOperator op, Expression left, Expression right) {
+    public BinaryOpExpression(OperatorNode op, Expression left, Expression right) {
         super();
         this.op = op;
         this.op.setParent(this);

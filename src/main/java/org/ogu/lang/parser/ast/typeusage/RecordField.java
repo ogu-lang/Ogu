@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 
 /**
  * record field
@@ -11,10 +11,10 @@ import org.ogu.lang.parser.ast.OguIdentifier;
  */
 public class RecordField extends Node {
 
-    private OguIdentifier name;
+    private IdentifierNode name;
     private OguType type;
 
-    public RecordField(OguIdentifier name, OguType type) {
+    public RecordField(IdentifierNode name, OguType type) {
         super();
         this.name = name;
         this.name.setParent(this);

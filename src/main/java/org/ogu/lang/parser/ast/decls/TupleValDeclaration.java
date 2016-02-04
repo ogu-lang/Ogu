@@ -1,9 +1,8 @@
 package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
-import org.ogu.lang.compiler.Ogu;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.expressions.Expression;
 import org.ogu.lang.parser.ast.typeusage.OguType;
 
@@ -18,10 +17,10 @@ import java.util.Map;
  */
 public class TupleValDeclaration extends ValDeclaration {
 
-    private List<OguIdentifier> ids;
-    private Map<OguIdentifier, OguType> types;
+    private List<IdentifierNode> ids;
+    private Map<IdentifierNode, OguType> types;
 
-    public TupleValDeclaration(List<OguIdentifier> ids,  Map<OguIdentifier, OguType> types, Expression value, List<Decorator> decorators) {
+    public TupleValDeclaration(List<IdentifierNode> ids, Map<IdentifierNode, OguType> types, Expression value, List<Decorator> decorators) {
         super(value, decorators);
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);

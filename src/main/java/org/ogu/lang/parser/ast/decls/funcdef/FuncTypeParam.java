@@ -2,8 +2,7 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 
 /**
  * and id for pattern matching
@@ -11,10 +10,10 @@ import org.ogu.lang.parser.ast.OguTypeIdentifier;
  */
 public class FuncTypeParam extends FunctionPatternParam {
 
-    private OguTypeIdentifier typeId;
+    private TypeIdentifierNode typeId;
 
 
-    public FuncTypeParam(OguTypeIdentifier typeId) {
+    public FuncTypeParam(TypeIdentifierNode typeId) {
         super();
         this.typeId = typeId;
         this.typeId.setParent(this);

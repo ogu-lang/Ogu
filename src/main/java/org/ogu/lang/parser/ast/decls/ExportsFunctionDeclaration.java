@@ -1,6 +1,6 @@
 package org.ogu.lang.parser.ast.decls;
 
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class ExportsFunctionDeclaration extends ExportsDeclaration {
                 '}';
     }
 
-    public ExportsFunctionDeclaration(OguIdentifier referenceName, List<Decorator> decorators) {
+    public ExportsFunctionDeclaration(IdentifierNode referenceName, List<Decorator> decorators) {
         super(referenceName, decorators);
     }
 

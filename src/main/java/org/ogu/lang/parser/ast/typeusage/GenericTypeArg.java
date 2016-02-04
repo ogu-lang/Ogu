@@ -2,8 +2,8 @@ package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguName;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
+import org.ogu.lang.parser.ast.NameNode;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +15,10 @@ import java.util.List;
  */
 public class GenericTypeArg extends TypeArg {
 
-    private OguTypeIdentifier name;
-    private List<OguName> args;
+    private TypeIdentifierNode name;
+    private List<NameNode> args;
 
-    public GenericTypeArg(OguTypeIdentifier name, List<OguName> args) {
+    public GenericTypeArg(TypeIdentifierNode name, List<NameNode> args) {
         super();
         this.name = name;
         this.name.setParent(this);

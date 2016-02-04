@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.expressions;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.ArrayList;
@@ -17,10 +17,10 @@ import java.util.List;
  */
 public class SetConstraint extends Expression {
 
-    List<OguIdentifier> ids;
+    List<IdentifierNode> ids;
     Expression expression;
 
-    public SetConstraint(List<OguIdentifier> ids, Expression expression) {
+    public SetConstraint(List<IdentifierNode> ids, Expression expression) {
         super();
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);
@@ -29,7 +29,7 @@ public class SetConstraint extends Expression {
         this.expression.setParent(this);
     }
 
-    public SetConstraint(OguIdentifier id, Expression expression) {
+    public SetConstraint(IdentifierNode id, Expression expression) {
         this(ImmutableList.of(id), expression);
     }
 

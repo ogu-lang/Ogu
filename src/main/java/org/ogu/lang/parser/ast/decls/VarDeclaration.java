@@ -2,10 +2,9 @@ package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.expressions.Expression;
 import org.ogu.lang.parser.ast.typeusage.OguType;
-import org.ogu.lang.parser.ast.typeusage.TypeArg;
 
 import java.util.List;
 
@@ -33,19 +32,19 @@ public class VarDeclaration extends FunctionalDeclaration {
     }
 
 
-    public VarDeclaration(OguIdentifier id, Expression value, List<Decorator> decorators) {
+    public VarDeclaration(IdentifierNode id, Expression value, List<Decorator> decorators) {
         super(id, decorators);
         this.value = value;
         this.value.setParent(this);
     }
 
-    public VarDeclaration(OguIdentifier id, OguType type, List<Decorator> decorators) {
+    public VarDeclaration(IdentifierNode id, OguType type, List<Decorator> decorators) {
         super(id, decorators);
         this.type = type;
         this.type.setParent(this);
     }
 
-    public VarDeclaration(OguIdentifier id, OguType type, Expression value, List<Decorator> decorators) {
+    public VarDeclaration(IdentifierNode id, OguType type, Expression value, List<Decorator> decorators) {
         super(id, decorators);
         this.type = type;
         this.type.setParent(this);

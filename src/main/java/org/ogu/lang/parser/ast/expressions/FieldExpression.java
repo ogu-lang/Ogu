@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.expressions;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 /**
@@ -12,10 +12,10 @@ import org.ogu.lang.typesystem.TypeUsage;
  */
 public class FieldExpression extends Expression {
 
-    OguIdentifier id;
+    IdentifierNode id;
     Expression expr;
 
-    public FieldExpression(OguIdentifier id, Expression expr) {
+    public FieldExpression(IdentifierNode id, Expression expr) {
         super();
         this.id = id;
         this.id.setParent(this);

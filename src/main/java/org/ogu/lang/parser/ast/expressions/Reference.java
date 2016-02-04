@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.expressions;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 /**
@@ -10,9 +10,9 @@ import org.ogu.lang.typesystem.TypeUsage;
  * Created by ediaz on 22-01-16.
  */
 public class Reference extends Expression  {
-    private OguIdentifier name;
+    private IdentifierNode name;
 
-    public Reference(OguIdentifier name) {
+    public Reference(IdentifierNode name) {
         this.name = name;
         this.name.setParent(this);
     }

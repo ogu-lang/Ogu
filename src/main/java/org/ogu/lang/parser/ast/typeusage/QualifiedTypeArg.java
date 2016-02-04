@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 
 
 /**
@@ -11,9 +11,9 @@ import org.ogu.lang.parser.ast.OguTypeIdentifier;
  */
 public class QualifiedTypeArg extends TypeArg {
 
-    private OguTypeIdentifier typeId;
+    private TypeIdentifierNode typeId;
 
-    public QualifiedTypeArg(OguTypeIdentifier typeId) {
+    public QualifiedTypeArg(TypeIdentifierNode typeId) {
         this.typeId = typeId;
         this.typeId.setParent(this);
     }

@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguName;
+import org.ogu.lang.parser.ast.NameNode;
 import java.util.List;
 
 /**
@@ -11,13 +11,13 @@ import java.util.List;
  */
 public abstract class NameDeclaration extends Declaration {
 
-    protected OguName name;
+    protected NameNode name;
 
     protected NameDeclaration(List<Decorator> decorators) {
         super(decorators);
     }
 
-    protected NameDeclaration(OguName name, List<Decorator> decorators) {
+    protected NameDeclaration(NameNode name, List<Decorator> decorators) {
         super(decorators);
         this.name = name;
         this.name.setParent(this);

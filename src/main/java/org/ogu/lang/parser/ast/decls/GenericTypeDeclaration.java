@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
 import org.ogu.lang.parser.ast.typeusage.OguType;
 
@@ -19,7 +19,7 @@ public class GenericTypeDeclaration  extends TypedefDeclaration {
 
     protected List<TypeParam> params;
 
-    public GenericTypeDeclaration(OguTypeIdentifier name, List<TypeParam> params, OguType type, List<Decorator> decorators) {
+    public GenericTypeDeclaration(TypeIdentifierNode name, List<TypeParam> params, OguType type, List<Decorator> decorators) {
         super(name, type, decorators);
         this.params = new ArrayList<>();
         this.params.addAll(params);

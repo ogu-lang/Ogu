@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.expressions;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 /**
@@ -11,10 +11,10 @@ import org.ogu.lang.typesystem.TypeUsage;
  */
 public class SelfRefExpression extends Expression {
 
-    private OguIdentifier id;
+    private IdentifierNode id;
 
 
-    public SelfRefExpression(OguIdentifier id) {
+    public SelfRefExpression(IdentifierNode id) {
         super();
         this.id = id;
         this.id.setParent(this);

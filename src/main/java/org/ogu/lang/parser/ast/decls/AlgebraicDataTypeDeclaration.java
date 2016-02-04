@@ -1,8 +1,6 @@
 package org.ogu.lang.parser.ast.decls;
 
-import org.ogu.lang.parser.ast.OguIdentifier;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
-import org.ogu.lang.parser.ast.typeusage.OguType;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +11,9 @@ import java.util.List;
  */
 public abstract class AlgebraicDataTypeDeclaration extends TypeDeclaration {
 
-    protected List<OguTypeIdentifier> deriving;
+    protected List<TypeIdentifierNode> deriving;
 
-    protected AlgebraicDataTypeDeclaration(OguTypeIdentifier name, List<OguTypeIdentifier> deriving, List<Decorator> decorators) {
+    protected AlgebraicDataTypeDeclaration(TypeIdentifierNode name, List<TypeIdentifierNode> deriving, List<Decorator> decorators) {
         super(name, decorators);
         this.deriving = new ArrayList<>();
         this.deriving.addAll(deriving);

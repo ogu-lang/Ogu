@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 
 import java.util.List;
 
@@ -12,10 +12,10 @@ import java.util.List;
  */
 public class IdAliasDeclaration extends AliasDeclaration {
 
-    private OguIdentifier aliasOrigin;
+    private IdentifierNode aliasOrigin;
 
 
-    public IdAliasDeclaration(OguIdentifier target, OguIdentifier origin, List<Decorator> decorators) {
+    public IdAliasDeclaration(IdentifierNode target, IdentifierNode origin, List<Decorator> decorators) {
         super(target, decorators);
         this.aliasOrigin = origin;
         this.aliasOrigin.setParent(this);

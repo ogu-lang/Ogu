@@ -1,6 +1,6 @@
 package org.ogu.lang.parser.ast.decls;
 
-import org.ogu.lang.parser.ast.OguName;
+import org.ogu.lang.parser.ast.NameNode;
 import org.ogu.lang.parser.ast.decls.funcdef.FunctionNode;
 import org.ogu.lang.parser.ast.decls.funcdef.FunctionNodeExpr;
 import org.ogu.lang.parser.ast.decls.funcdef.FunctionPatternParam;
@@ -19,7 +19,7 @@ public abstract class LetDeclaration extends FunctionalDeclaration {
     List<FunctionNode> body;
 
 
-    protected LetDeclaration(OguName name, List<FunctionPatternParam> params, List<Decorator> decorators) {
+    protected LetDeclaration(NameNode name, List<FunctionPatternParam> params, List<Decorator> decorators) {
         super(name, decorators);
         this.params = new ArrayList<>();
         this.params.addAll(params);

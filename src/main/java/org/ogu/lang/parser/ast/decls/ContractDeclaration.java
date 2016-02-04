@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguName;
+import org.ogu.lang.parser.ast.NameNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ public class ContractDeclaration extends TypeDeclaration {
 
     protected List<FunctionalDeclaration> members;
 
-    protected ContractDeclaration(OguName name, List<FunctionalDeclaration> members, List<Decorator> decorators) {
+    protected ContractDeclaration(NameNode name, List<FunctionalDeclaration> members, List<Decorator> decorators) {
         super(name, decorators);
         this.members = new ArrayList<>();
         this.members.addAll(members);

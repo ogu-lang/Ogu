@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +13,11 @@ import java.util.List;
  */
 public class FuncGenericTypeParam extends FunctionPatternParam {
 
-    private OguTypeIdentifier name;
+    private TypeIdentifierNode name;
     private List<FunctionPatternParam> args;
 
 
-    public FuncGenericTypeParam(OguTypeIdentifier name, List<FunctionPatternParam> args) {
+    public FuncGenericTypeParam(TypeIdentifierNode name, List<FunctionPatternParam> args) {
         super();
         this.name = name;
         this.name.setParent(this);

@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
+import org.ogu.lang.parser.ast.TypeIdentifierNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +15,10 @@ import java.util.List;
  */
 public class RecordType extends OguType {
 
-    private OguTypeIdentifier name;
+    private TypeIdentifierNode name;
     private List<RecordField> fields;
 
-    public RecordType(OguTypeIdentifier name, List<RecordField> fields) {
+    public RecordType(TypeIdentifierNode name, List<RecordField> fields) {
         super();
         this.name = name;
         this.name.setParent(this);

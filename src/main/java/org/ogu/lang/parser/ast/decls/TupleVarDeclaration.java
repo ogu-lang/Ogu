@@ -2,10 +2,9 @@ package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.expressions.Expression;
 import org.ogu.lang.parser.ast.typeusage.OguType;
-import org.ogu.lang.parser.ast.typeusage.TypeArg;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,16 +16,16 @@ import java.util.List;
 public class TupleVarDeclaration extends VarDeclaration {
 
 
-    private List<OguIdentifier> ids;
+    private List<IdentifierNode> ids;
 
-    public TupleVarDeclaration(List<OguIdentifier> ids, Expression value, List<Decorator> decorators) {
+    public TupleVarDeclaration(List<IdentifierNode> ids, Expression value, List<Decorator> decorators) {
         super(value, decorators);
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);
         this.ids.forEach((i) -> i.setParent(this));
     }
 
-    public TupleVarDeclaration(List<OguIdentifier> ids, OguType type, Expression value, List<Decorator> decorators) {
+    public TupleVarDeclaration(List<IdentifierNode> ids, OguType type, Expression value, List<Decorator> decorators) {
         super(type, value, decorators);
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);

@@ -2,7 +2,6 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguTypeIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.expressions;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.OguIdentifier;
+import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 /**
@@ -14,12 +14,12 @@ import org.ogu.lang.typesystem.TypeUsage;
  */
 public class AssignExpression extends Expression {
 
-    protected OguIdentifier id;
+    protected IdentifierNode id;
     protected Expression optArg;
     protected Expression value;
 
 
-    public AssignExpression(OguIdentifier id, Expression value) {
+    public AssignExpression(IdentifierNode id, Expression value) {
         super();
         this.id = id;
         this.id.setParent(this);
@@ -27,7 +27,7 @@ public class AssignExpression extends Expression {
         this.value.setParent(this);
     }
 
-    public AssignExpression(OguIdentifier id, Expression optArg, Expression value) {
+    public AssignExpression(IdentifierNode id, Expression optArg, Expression value) {
         super();
         this.id = id;
         this.id.setParent(this);
