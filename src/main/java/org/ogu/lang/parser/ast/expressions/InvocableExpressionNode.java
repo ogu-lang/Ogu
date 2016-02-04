@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by ediaz on 21-01-16.
  */
-public abstract class InvocableExpr extends ExpressionNode {
+public abstract class InvocableExpressionNode extends ExpressionNode {
 
     protected List<ActualParam> actualParams;
 
@@ -17,7 +17,7 @@ public abstract class InvocableExpr extends ExpressionNode {
         return actualParams;
     }
 
-    public InvocableExpr(List<ActualParam> actualParams) {
+    public InvocableExpressionNode(List<ActualParam> actualParams) {
         this.actualParams = new ArrayList<>();
         this.actualParams.addAll(actualParams);
         this.actualParams.forEach((p) -> p.setParent(this));

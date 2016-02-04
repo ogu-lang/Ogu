@@ -12,7 +12,7 @@ import java.util.List;
  * A concrete functionc all
  * Created by ediaz on 21-01-16.
  */
-public class FunctionCall extends InvocableExpr  {
+public class FunctionCallNode extends InvocableExpressionNode {
 
     private ExpressionNode function;
 
@@ -34,7 +34,7 @@ public class FunctionCall extends InvocableExpr  {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        FunctionCall that = (FunctionCall) o;
+        FunctionCallNode that = (FunctionCallNode) o;
 
         if (!actualParams.equals(that.actualParams)) return false;
         if (!function.equals(that.function)) return false;
@@ -49,7 +49,7 @@ public class FunctionCall extends InvocableExpr  {
         return result;
     }
 
-    public FunctionCall(ExpressionNode name, List<ActualParam> actualParams) {
+    public FunctionCallNode(ExpressionNode name, List<ActualParam> actualParams) {
         super(actualParams);
         this.function = name;
         this.function.setParent(this);

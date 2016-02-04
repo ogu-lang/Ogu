@@ -988,7 +988,7 @@ public class ParseTreeToAst {
             List<ActualParam> params = new ArrayList<>();
             params.add(new ActualParam(l));
             params.add(new ActualParam(r));
-            FunctionCall call = new FunctionCall(l, params);
+            FunctionCallNode call = new FunctionCallNode(l, params);
             getPositionFrom(call, ctx);
             return call;
         }
@@ -1333,7 +1333,7 @@ public class ParseTreeToAst {
         }
     }
 
-    private Constructor toAst(OguParser.ConstructorContext ctx) {
+    private ConstructorNode toAst(OguParser.ConstructorContext ctx) {
         TypeReference type = new TypeReference(toAst(ctx.tid()));
         getPositionFrom(type, ctx);
         List<ActualParam> params;
@@ -1341,7 +1341,7 @@ public class ParseTreeToAst {
             params = Collections.emptyList();
         else
             params = ctx.tuple_expr().expr().stream().map(this::toAstParam).collect(Collectors.toList());
-        Constructor ctor = new Constructor(type, params);
+        ConstructorNode ctor = new ConstructorNode(type, params);
         getPositionFrom(ctor, ctx);
         return ctor;
     }
@@ -1450,19 +1450,19 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private FunctionCall toAstFunctionCall(OguParser.ExprContext ctx) {
+    private FunctionCallNode toAstFunctionCall(OguParser.ExprContext ctx) {
         if (ctx.function != null) {
             ExpressionNode function = toAst(ctx.function);
-            FunctionCall functionCall = new FunctionCall(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
-            getPositionFrom(functionCall, ctx);
-            return functionCall;
+            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            getPositionFrom(functionCallNode, ctx);
+            return functionCallNode;
 
         }
         if (ctx.qual_function != null) {
             ExpressionNode function = toAst(ctx.qual_function);
-            FunctionCall functionCall = new FunctionCall(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
-            getPositionFrom(functionCall, ctx);
-            return functionCall;
+            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            getPositionFrom(functionCallNode, ctx);
+            return functionCallNode;
         }
 
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());

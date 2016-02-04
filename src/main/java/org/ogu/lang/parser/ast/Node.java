@@ -1,7 +1,7 @@
 package org.ogu.lang.parser.ast;
 
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
-import org.ogu.lang.parser.ast.expressions.InvocableExpr;
+import org.ogu.lang.parser.ast.expressions.InvocableExpressionNode;
 import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.resolvers.ResolverRegistry;
 import org.ogu.lang.resolvers.SymbolResolver;
@@ -64,7 +64,7 @@ public abstract class Node implements Symbol {
     }
 
 
-    public Optional<List<? extends FormalParameter>> findFormalParametersFor(InvocableExpr invocable) {
+    public Optional<List<? extends FormalParameter>> findFormalParametersFor(InvocableExpressionNode invocable) {
         throw new UnsupportedOperationException(this.getClass().getCanonicalName());
     }
 

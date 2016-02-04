@@ -11,11 +11,11 @@ import java.util.List;
  * Constructor Call (new T(expr))
  * Created by ediaz on 23-01-16.
  */
-public class Constructor extends InvocableExpr {
+public class ConstructorNode extends InvocableExpressionNode {
 
     protected TypeReference type;
 
-    public Constructor(TypeReference type, List<ActualParam> params) {
+    public ConstructorNode(TypeReference type, List<ActualParam> params) {
         super(params);
         this.type = type;
         this.type.setParent(this);
