@@ -1415,20 +1415,20 @@ public class ParseTreeToAst {
 
     private ExpressionNode toAst(OguParser.AtomContext ctx) {
         if (ctx.string_literal != null) {
-            StringLiteral lit = new StringLiteral(idText(ctx.STRING().getSymbol()));
+            StringLiteralNode lit = new StringLiteralNode(idText(ctx.STRING().getSymbol()));
             getPositionFrom(lit, ctx);
             return lit;
         }
         if (ctx.INT() != null) {
             String itxt = ctx.INT().getText().replace("_", "");
             BigInteger bi = new BigInteger(itxt);
-            IntLiteral lit = new IntLiteral(bi);
+            IntLiteralNode lit = new IntLiteralNode(bi);
             getPositionFrom(lit, ctx);
             return lit;
         }
         if (ctx.CHAR() != null) {
             String ctxt = ctx.CHAR().getText();
-            CharLiteral cl = new CharLiteral(ctxt);
+            CharLiteralNode cl = new CharLiteralNode(ctxt);
             getPositionFrom(cl, ctx);
             return cl;
         }
@@ -1436,13 +1436,13 @@ public class ParseTreeToAst {
         if (ctx.FLOAT() != null) {
             String dtxt = ctx.FLOAT().getText().replace("_", "");
             BigDecimal bd = new BigDecimal(dtxt);
-            FloatLiteral lit = new FloatLiteral(bd);
+            FloatLiteralNode lit = new FloatLiteralNode(bd);
             getPositionFrom(lit, ctx);
             return lit;
         }
         if (ctx.DATE() != null) {
             String dtxt = ctx.DATE().getText();
-            DateLiteral lit = new DateLiteral(dtxt);
+            DateLiteralNode lit = new DateLiteralNode(dtxt);
             getPositionFrom(lit, ctx);
             return lit;
         }

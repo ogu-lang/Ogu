@@ -10,11 +10,11 @@ import java.util.Collections;
 /**
  * Created by ediaz on 27-01-16.
  */
-public class IntLiteral extends ExpressionNode {
+public class IntLiteralNode extends ExpressionNode {
 
     BigInteger value;
 
-    public IntLiteral(BigInteger value) {
+    public IntLiteralNode(BigInteger value) {
         super();
         this.value = value;
     }

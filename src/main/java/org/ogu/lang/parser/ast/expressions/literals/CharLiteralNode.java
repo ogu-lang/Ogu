@@ -4,25 +4,22 @@ import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 
 /**
+ * Char literal (TODO: parse escape sequcence)
  * Created by ediaz on 27-01-16.
  */
-public class FloatLiteral extends ExpressionNode {
+public class CharLiteralNode extends ExpressionNode {
 
-    BigDecimal value;
+    String value; //TODO parse and use char instead
 
-    public FloatLiteral(BigDecimal value) {
+    public CharLiteralNode(String value) {
+        // TODO PARSE
         super();
         this.value = value;
     }
 
-    @Override
-    public String toString() {
-        return "FLOAT("+value+")";
-    }
 
     @Override
     public TypeUsage calcType() {

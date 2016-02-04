@@ -10,11 +10,11 @@ import org.ogu.lang.typesystem.TypeUsage;
  * An String Litearl
  * Created by ediaz on 22-01-16.
  */
-public class StringLiteral extends ExpressionNode {
+public class StringLiteralNode extends ExpressionNode {
 
     private String value;
 
-    public StringLiteral(String value) {
+    public StringLiteralNode(String value) {
         this.value = value;
     }
 
@@ -34,7 +34,7 @@ public class StringLiteral extends ExpressionNode {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        StringLiteral that = (StringLiteral) o;
+        StringLiteralNode that = (StringLiteralNode) o;
 
         if (!value.equals(that.value)) return false;
 
