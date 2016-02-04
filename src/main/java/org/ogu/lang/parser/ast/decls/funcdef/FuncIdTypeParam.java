@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
-import org.ogu.lang.parser.ast.typeusage.OguType;
+import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 /**
  * and id for pattern matching
@@ -12,10 +12,10 @@ import org.ogu.lang.parser.ast.typeusage.OguType;
 public class FuncIdTypeParam extends FunctionPatternParam {
 
     private IdentifierNode id;
-    private OguType type;
+    private TypeNode type;
 
 
-    public FuncIdTypeParam(IdentifierNode id, OguType type) {
+    public FuncIdTypeParam(IdentifierNode id, TypeNode type) {
         super();
         this.id = id;
         this.id.setParent(this);

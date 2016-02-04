@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
-import org.ogu.lang.parser.ast.typeusage.OguType;
+import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class SimpleTypeDeclaration extends TypedefDeclaration {
 
-    public SimpleTypeDeclaration(TypeIdentifierNode name, OguType type, List<Decorator> decorators) {
+    public SimpleTypeDeclaration(TypeIdentifierNode name, TypeNode type, List<Decorator> decorators) {
         super(name, type, decorators);
     }
 

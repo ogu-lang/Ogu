@@ -7,9 +7,9 @@ import org.ogu.lang.parser.ast.Node;
  * ()
  * Created by ediaz on 30-01-16.
  */
-public class UnitType extends OguType {
+public class UnitTypeNode extends TypeNode {
 
-    public  UnitType() {
+    public UnitTypeNode() {
         super();
     }
 

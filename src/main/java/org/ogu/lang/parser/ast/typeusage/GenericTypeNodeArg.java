@@ -2,22 +2,23 @@ package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
+import org.ogu.lang.parser.ast.NameNode;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * type StrMap v = {String -> v}
- * val m : MapStr Int
+ * Generic args:
+ *
  * Created by ediaz on 02-02-16.
  */
-public class GenericType extends OguType {
+public class GenericTypeNodeArg extends TypeNodeArg {
 
     private TypeIdentifierNode name;
-    private List<OguType> args;
+    private List<NameNode> args;
 
-    public GenericType(TypeIdentifierNode name, List<OguType> args) {
+    public GenericTypeNodeArg(TypeIdentifierNode name, List<NameNode> args) {
         super();
         this.name = name;
         this.name.setParent(this);

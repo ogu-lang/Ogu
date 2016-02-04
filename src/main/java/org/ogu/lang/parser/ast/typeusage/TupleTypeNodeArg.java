@@ -10,11 +10,11 @@ import java.util.List;
  * [Type]
  * Created by ediaz on 30-01-16.
  */
-public class TupleTypeArg extends TypeArg {
+public class TupleTypeNodeArg extends TypeNodeArg {
 
-    private List<TypeArg> args;
+    private List<TypeNodeArg> args;
 
-    public TupleTypeArg(List<TypeArg> args) {
+    public TupleTypeNodeArg(List<TypeNodeArg> args) {
         this.args = new ArrayList<>();
         this.args.addAll(args);
         this.args.forEach((a) -> a.setParent(this));

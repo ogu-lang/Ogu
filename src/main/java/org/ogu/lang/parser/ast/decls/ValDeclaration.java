@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.expressions.Expression;
-import org.ogu.lang.parser.ast.typeusage.OguType;
+import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 import java.util.List;
 
@@ -15,9 +15,9 @@ import java.util.List;
 public class ValDeclaration extends FunctionalDeclaration {
 
     protected Expression value;
-    protected OguType type;
+    protected TypeNode type;
 
-    protected ValDeclaration(OguType type,  Expression value, List<Decorator> decorators) {
+    protected ValDeclaration(TypeNode type, Expression value, List<Decorator> decorators) {
         super(decorators);
         this.type = type;
         this.type.setParent(this);
@@ -38,7 +38,7 @@ public class ValDeclaration extends FunctionalDeclaration {
         this.value.setParent(this);
     }
 
-    public ValDeclaration(IdentifierNode id, OguType returnType, Expression value, List<Decorator> decorators) {
+    public ValDeclaration(IdentifierNode id, TypeNode returnType, Expression value, List<Decorator> decorators) {
         super(id, decorators);
         this.type = returnType;
         this.type.setParent(this);

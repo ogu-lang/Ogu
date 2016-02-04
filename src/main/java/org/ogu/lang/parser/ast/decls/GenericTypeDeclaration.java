@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
-import org.ogu.lang.parser.ast.typeusage.OguType;
+import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ public class GenericTypeDeclaration  extends TypedefDeclaration {
 
     protected List<TypeParam> params;
 
-    public GenericTypeDeclaration(TypeIdentifierNode name, List<TypeParam> params, OguType type, List<Decorator> decorators) {
+    public GenericTypeDeclaration(TypeIdentifierNode name, List<TypeParam> params, TypeNode type, List<Decorator> decorators) {
         super(name, type, decorators);
         this.params = new ArrayList<>();
         this.params.addAll(params);

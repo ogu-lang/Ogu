@@ -8,12 +8,12 @@ import org.ogu.lang.parser.ast.IdentifierNode;
  * An id used as parameter for a type
  * Created by ediaz on 23-01-16.
  */
-public  class IdTypeArg extends OguType {
+public  class IdTypeNodeArg extends TypeNode {
 
     private IdentifierNode id;
 
 
-    public IdTypeArg(IdentifierNode id) {
+    public IdTypeNodeArg(IdentifierNode id) {
         super();
         this.id = id;
         this.id.setParent(this);

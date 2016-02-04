@@ -7,12 +7,12 @@ import org.ogu.lang.parser.ast.Node;
  * [Type]
  * Created by ediaz on 30-01-16.
  */
-public class MapType extends OguType {
+public class MapTypeNode extends TypeNode {
 
-    private OguType key;
-    private OguType val;
+    private TypeNode key;
+    private TypeNode val;
 
-    public MapType(OguType key, OguType val) {
+    public MapTypeNode(TypeNode key, TypeNode val) {
         super();
         this.key = key;
         this.key.setParent(this);

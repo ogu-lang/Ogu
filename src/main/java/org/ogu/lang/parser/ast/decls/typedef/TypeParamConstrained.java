@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.decls.typedef;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.typeusage.OguType;
+import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 
 /**
@@ -12,9 +12,9 @@ import org.ogu.lang.parser.ast.typeusage.OguType;
  */
 public class TypeParamConstrained extends TypeParam {
 
-    private OguType constraint;
+    private TypeNode constraint;
 
-    public TypeParamConstrained(String id, OguType constraint) {
+    public TypeParamConstrained(String id, TypeNode constraint) {
         super(id);
         this.constraint = constraint;
         this.constraint.setParent(this);

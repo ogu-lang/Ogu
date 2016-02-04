@@ -7,11 +7,11 @@ import org.ogu.lang.parser.ast.Node;
  * [Type]
  * Created by ediaz on 30-01-16.
  */
-public class VectorType extends OguType {
+public class VectorTypeNodeArg extends TypeNodeArg {
 
-    private OguType base;
+    private TypeNodeArg base;
 
-    public VectorType(OguType base) {
+    public VectorTypeNodeArg(TypeNodeArg base) {
         this.base = base;
         this.base.setParent(this);
     }

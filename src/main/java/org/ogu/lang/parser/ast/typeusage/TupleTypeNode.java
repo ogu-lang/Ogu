@@ -10,11 +10,11 @@ import java.util.List;
  * [Type]
  * Created by ediaz on 30-01-16.
  */
-public class TupleType extends OguType {
+public class TupleTypeNode extends TypeNode {
 
-    private List<OguType> bases;
+    private List<TypeNode> bases;
 
-    public TupleType(List<OguType> bases) {
+    public TupleTypeNode(List<TypeNode> bases) {
         this.bases = new ArrayList<>();
         this.bases.addAll(bases);
         this.bases.forEach((b) -> b.setParent(this));

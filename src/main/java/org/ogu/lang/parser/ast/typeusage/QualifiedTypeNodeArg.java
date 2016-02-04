@@ -9,11 +9,11 @@ import org.ogu.lang.parser.ast.TypeIdentifierNode;
  * A type like M1.M2.T
  * Created by ediaz on 23-01-16.
  */
-public class QualifiedType extends OguType {
+public class QualifiedTypeNodeArg extends TypeNodeArg {
 
     private TypeIdentifierNode typeId;
 
-    public QualifiedType(TypeIdentifierNode typeId) {
+    public QualifiedTypeNodeArg(TypeIdentifierNode typeId) {
         this.typeId = typeId;
         this.typeId.setParent(this);
     }
@@ -22,7 +22,6 @@ public class QualifiedType extends OguType {
     public String toString() {
         return typeId.toString();
     }
-
     @Override
     public Iterable<Node> getChildren() {
         return ImmutableList.of(typeId);

@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.expressions;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
-import org.ogu.lang.parser.ast.typeusage.OguType;
+import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 /**
  * Argument to a lambda expression
@@ -12,14 +12,14 @@ import org.ogu.lang.parser.ast.typeusage.OguType;
 public class LambdaArg extends Node {
 
     private IdentifierNode id;
-    private OguType type;
+    private TypeNode type;
 
     public LambdaArg(IdentifierNode id) {
         this.id = id;
         this.id.setParent(this);
     }
 
-    public LambdaArg(IdentifierNode id, OguType type) {
+    public LambdaArg(IdentifierNode id, TypeNode type) {
         this.id = id;
         this.id.setParent(this);
         this.type = type;

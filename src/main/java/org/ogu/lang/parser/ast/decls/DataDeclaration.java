@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
-import org.ogu.lang.parser.ast.typeusage.OguType;
+import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +16,9 @@ import java.util.List;
 public class DataDeclaration extends AlgebraicDataTypeDeclaration {
 
     private List<TypeParam> params;
-    private List<OguType> values;
+    private List<TypeNode> values;
 
-    public DataDeclaration(TypeIdentifierNode name, List<TypeParam> params, List<OguType> values, List<TypeIdentifierNode> deriving, List<Decorator> decorators) {
+    public DataDeclaration(TypeIdentifierNode name, List<TypeParam> params, List<TypeNode> values, List<TypeIdentifierNode> deriving, List<Decorator> decorators) {
         super(name, deriving, decorators);
         this.params = new ArrayList<>();
         this.params.addAll(params);
