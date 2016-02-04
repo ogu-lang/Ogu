@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.expressions.literals;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.typesystem.ReferenceTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
 
@@ -10,7 +10,7 @@ import org.ogu.lang.typesystem.TypeUsage;
  * An String Litearl
  * Created by ediaz on 22-01-16.
  */
-public class DateLiteral extends Expression {
+public class DateLiteral extends ExpressionNode {
 
     private String value;
 

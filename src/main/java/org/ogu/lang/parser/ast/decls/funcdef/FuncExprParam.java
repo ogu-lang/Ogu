@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 
 /**
  * and id for pattern matching
@@ -10,10 +10,10 @@ import org.ogu.lang.parser.ast.expressions.Expression;
  */
 public class FuncExprParam extends FunctionPatternParam {
 
-    private Expression expr;
+    private ExpressionNode expr;
 
 
-    public FuncExprParam(Expression expr) {
+    public FuncExprParam(ExpressionNode expr) {
         super();
         this.expr = expr;
         this.expr.setParent(this);

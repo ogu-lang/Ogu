@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.modules;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.*;
-import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,17 +19,17 @@ public class ModuleNode extends Node {
     private List<AliasDeclaration> aliases = new ArrayList<>();
     private List<ExportsDeclaration> exports = new ArrayList<>();
     private List<ExportableDeclaration> declarations = new ArrayList<>();
-    private List<Expression> program = new ArrayList<>();
+    private List<ExpressionNode> program = new ArrayList<>();
 
     public List<AliasDeclaration> getAliases() { return aliases; }
 
-    public List<Expression> getProgram() {
+    public List<ExpressionNode> getProgram() {
         return program;
     }
 
-    public void add(Expression expression) {
-        program.add(expression);
-        expression.setParent(this);
+    public void add(ExpressionNode expressionNode) {
+        program.add(expressionNode);
+        expressionNode.setParent(this);
     }
 
     public void add(AliasDeclaration alias) {

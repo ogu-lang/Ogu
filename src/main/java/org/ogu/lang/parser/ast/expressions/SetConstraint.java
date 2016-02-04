@@ -15,29 +15,29 @@ import java.util.List;
  * [imc p a | (p, a) <- lista]
  * Created by ediaz on 31-01-16.
  */
-public class SetConstraint extends Expression {
+public class SetConstraint extends ExpressionNode {
 
     List<IdentifierNode> ids;
-    Expression expression;
+    ExpressionNode expressionNode;
 
-    public SetConstraint(List<IdentifierNode> ids, Expression expression) {
+    public SetConstraint(List<IdentifierNode> ids, ExpressionNode expressionNode) {
         super();
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);
         this.ids.forEach((i) -> i.setParent(this));
-        this.expression = expression;
-        this.expression.setParent(this);
+        this.expressionNode = expressionNode;
+        this.expressionNode.setParent(this);
     }
 
-    public SetConstraint(IdentifierNode id, Expression expression) {
-        this(ImmutableList.of(id), expression);
+    public SetConstraint(IdentifierNode id, ExpressionNode expressionNode) {
+        this(ImmutableList.of(id), expressionNode);
     }
 
     @Override
     public String toString() {
         return "SetConstraint {" +
                 "ids = "+ids +
-                ", expression = "+ expression +
+                ", expression = "+ expressionNode +
                 '}';
     }
 
@@ -49,7 +49,7 @@ public class SetConstraint extends Expression {
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().addAll(ids).add(expression).build();
+        return ImmutableList.<Node>builder().addAll(ids).add(expressionNode).build();
     }
 
 }

@@ -3,7 +3,6 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.FunctionalDeclaration;
-import org.ogu.lang.parser.ast.expressions.Expression;
 
 /**
  * An expression inside a function

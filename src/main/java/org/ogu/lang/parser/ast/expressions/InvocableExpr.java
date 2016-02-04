@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by ediaz on 21-01-16.
  */
-public abstract class InvocableExpr extends Expression {
+public abstract class InvocableExpr extends ExpressionNode {
 
     protected List<ActualParam> actualParams;
 

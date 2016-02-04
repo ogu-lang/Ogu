@@ -4,7 +4,7 @@ import org.ogu.lang.parser.ast.NameNode;
 import org.ogu.lang.parser.ast.decls.funcdef.FunctionNode;
 import org.ogu.lang.parser.ast.decls.funcdef.FunctionNodeExpr;
 import org.ogu.lang.parser.ast.decls.funcdef.FunctionPatternParam;
-import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public abstract class LetDeclaration extends FunctionalDeclaration {
         node.setParent(this);
     }
 
-    public void add(Expression expr) {
+    public void add(ExpressionNode expr) {
         this.add(new FunctionNodeExpr(expr));
     }
 }

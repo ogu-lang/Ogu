@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.expressions.control;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 
 /**
  * case s of
@@ -12,10 +12,10 @@ import org.ogu.lang.parser.ast.expressions.Expression;
  */
 public class CaseGuard extends Node {
 
-    private Expression cond;
-    private Expression result;
+    private ExpressionNode cond;
+    private ExpressionNode result;
 
-    public CaseGuard(Expression cond, Expression result) {
+    public CaseGuard(ExpressionNode cond, ExpressionNode result) {
         this.cond = cond;
         this.cond.setParent(this);
         this.result = result;

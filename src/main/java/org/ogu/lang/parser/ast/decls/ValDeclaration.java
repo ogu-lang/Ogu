@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
-import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 import java.util.List;
@@ -14,10 +14,10 @@ import java.util.List;
  */
 public class ValDeclaration extends FunctionalDeclaration {
 
-    protected Expression value;
+    protected ExpressionNode value;
     protected TypeNode type;
 
-    protected ValDeclaration(TypeNode type, Expression value, List<Decorator> decorators) {
+    protected ValDeclaration(TypeNode type, ExpressionNode value, List<Decorator> decorators) {
         super(decorators);
         this.type = type;
         this.type.setParent(this);
@@ -25,20 +25,20 @@ public class ValDeclaration extends FunctionalDeclaration {
         this.value.setParent(this);
     }
 
-    protected ValDeclaration(Expression value, List<Decorator> decorators) {
+    protected ValDeclaration(ExpressionNode value, List<Decorator> decorators) {
         super(decorators);
         this.value = value;
         this.value.setParent(this);
     }
 
 
-    public ValDeclaration(IdentifierNode id, Expression value, List<Decorator> decorators) {
+    public ValDeclaration(IdentifierNode id, ExpressionNode value, List<Decorator> decorators) {
         super(id, decorators);
         this.value = value;
         this.value.setParent(this);
     }
 
-    public ValDeclaration(IdentifierNode id, TypeNode returnType, Expression value, List<Decorator> decorators) {
+    public ValDeclaration(IdentifierNode id, TypeNode returnType, ExpressionNode value, List<Decorator> decorators) {
         super(id, decorators);
         this.type = returnType;
         this.type.setParent(this);

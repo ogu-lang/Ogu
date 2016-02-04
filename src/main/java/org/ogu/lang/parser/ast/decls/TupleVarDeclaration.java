@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
-import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 import java.util.ArrayList;
@@ -18,14 +18,14 @@ public class TupleVarDeclaration extends VarDeclaration {
 
     private List<IdentifierNode> ids;
 
-    public TupleVarDeclaration(List<IdentifierNode> ids, Expression value, List<Decorator> decorators) {
+    public TupleVarDeclaration(List<IdentifierNode> ids, ExpressionNode value, List<Decorator> decorators) {
         super(value, decorators);
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);
         this.ids.forEach((i) -> i.setParent(this));
     }
 
-    public TupleVarDeclaration(List<IdentifierNode> ids, TypeNode type, Expression value, List<Decorator> decorators) {
+    public TupleVarDeclaration(List<IdentifierNode> ids, TypeNode type, ExpressionNode value, List<Decorator> decorators) {
         super(type, value, decorators);
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);

@@ -10,13 +10,13 @@ import org.ogu.lang.parser.ast.Node;
 public class ActualParam extends Node {
 
     private String name;
-    private Expression value;
+    private ExpressionNode value;
 
     public String getName() {
         return name;
     }
 
-    public Expression getValue() {
+    public ExpressionNode getValue() {
         return value;
     }
 
@@ -48,13 +48,13 @@ public class ActualParam extends Node {
         return result;
     }
 
-    public ActualParam(Expression value) {
+    public ActualParam(ExpressionNode value) {
         this.value = value;
         this.value.setParent(this);
     }
 
 
-    public ActualParam(String name, Expression value) {
+    public ActualParam(String name, ExpressionNode value) {
         this.name = name;
         this.value = value;
         this.value.setParent(this);

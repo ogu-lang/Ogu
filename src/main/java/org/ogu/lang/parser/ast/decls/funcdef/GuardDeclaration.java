@@ -2,8 +2,8 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.expressions.Expression;
-import org.ogu.lang.parser.ast.expressions.control.DoExpression;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
+import org.ogu.lang.parser.ast.expressions.control.DoExpressionNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +13,11 @@ import java.util.List;
  */
 public class GuardDeclaration extends FunctionNode {
 
-    private Expression base;
-    private List<Expression> args;
-    private DoExpression block;
+    private ExpressionNode base;
+    private List<ExpressionNode> args;
+    private DoExpressionNode block;
 
-    public GuardDeclaration(Expression base, List<Expression> args, DoExpression block) {
+    public GuardDeclaration(ExpressionNode base, List<ExpressionNode> args, DoExpressionNode block) {
         super();
         this.base = base;
         this.base.setParent(this);

@@ -1,27 +1,22 @@
-package org.ogu.lang.parser.ast.expressions.literals;
+package org.ogu.lang.parser.ast.expressions;
 
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 
 /**
- * Created by ediaz on 27-01-16.
+ * Created by ediaz on 31-01-16.
  */
-public class FloatLiteral extends ExpressionNode {
+public class EmptyListExpressionNode extends ListExpressionNode {
 
-    BigDecimal value;
-
-    public FloatLiteral(BigDecimal value) {
+    public EmptyListExpressionNode() {
         super();
-        this.value = value;
     }
 
     @Override
     public String toString() {
-        return "FLOAT("+value+")";
+        return "EmptyList []";
     }
 
     @Override

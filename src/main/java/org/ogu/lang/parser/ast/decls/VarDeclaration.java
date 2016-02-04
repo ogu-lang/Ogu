@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
-import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 import java.util.List;
@@ -14,10 +14,10 @@ import java.util.List;
  */
 public class VarDeclaration extends FunctionalDeclaration {
 
-    protected Expression value;
+    protected ExpressionNode value;
     protected TypeNode type;
 
-    protected VarDeclaration(TypeNode type, Expression value, List<Decorator> decorators) {
+    protected VarDeclaration(TypeNode type, ExpressionNode value, List<Decorator> decorators) {
         super(decorators);
         this.type = type;
         this.type.setParent(this);
@@ -25,14 +25,14 @@ public class VarDeclaration extends FunctionalDeclaration {
         this.value.setParent(this);
     }
 
-    protected VarDeclaration(Expression value, List<Decorator> decorators) {
+    protected VarDeclaration(ExpressionNode value, List<Decorator> decorators) {
         super(decorators);
         this.value = value;
         this.value.setParent(this);
     }
 
 
-    public VarDeclaration(IdentifierNode id, Expression value, List<Decorator> decorators) {
+    public VarDeclaration(IdentifierNode id, ExpressionNode value, List<Decorator> decorators) {
         super(id, decorators);
         this.value = value;
         this.value.setParent(this);
@@ -44,7 +44,7 @@ public class VarDeclaration extends FunctionalDeclaration {
         this.type.setParent(this);
     }
 
-    public VarDeclaration(IdentifierNode id, TypeNode type, Expression value, List<Decorator> decorators) {
+    public VarDeclaration(IdentifierNode id, TypeNode type, ExpressionNode value, List<Decorator> decorators) {
         super(id, decorators);
         this.type = type;
         this.type.setParent(this);

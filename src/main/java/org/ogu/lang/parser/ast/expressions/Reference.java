@@ -9,7 +9,7 @@ import org.ogu.lang.typesystem.TypeUsage;
  * A reference to a type, a val, a var o a function
  * Created by ediaz on 22-01-16.
  */
-public class Reference extends Expression  {
+public class Reference extends ExpressionNode {
     private IdentifierNode name;
 
     public Reference(IdentifierNode name) {

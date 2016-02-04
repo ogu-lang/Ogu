@@ -14,9 +14,9 @@ import java.util.List;
  */
 public class FunctionCall extends InvocableExpr  {
 
-    private Expression function;
+    private ExpressionNode function;
 
-    public Expression getFunction() {
+    public ExpressionNode getFunction() {
         return function;
     }
 
@@ -49,7 +49,7 @@ public class FunctionCall extends InvocableExpr  {
         return result;
     }
 
-    public FunctionCall(Expression name, List<ActualParam> actualParams) {
+    public FunctionCall(ExpressionNode name, List<ActualParam> actualParams) {
         super(actualParams);
         this.function = name;
         this.function.setParent(this);

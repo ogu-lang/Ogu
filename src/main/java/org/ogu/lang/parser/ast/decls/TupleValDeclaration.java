@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
-import org.ogu.lang.parser.ast.expressions.Expression;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public class TupleValDeclaration extends ValDeclaration {
     private List<IdentifierNode> ids;
     private Map<IdentifierNode, TypeNode> types;
 
-    public TupleValDeclaration(List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types, Expression value, List<Decorator> decorators) {
+    public TupleValDeclaration(List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types, ExpressionNode value, List<Decorator> decorators) {
         super(value, decorators);
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);
