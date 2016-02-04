@@ -16,9 +16,9 @@ import java.util.List;
 public class RecordTypeNode extends TypeNode {
 
     private TypeIdentifierNode name;
-    private List<RecordField> fields;
+    private List<RecordFieldNode> fields;
 
-    public RecordTypeNode(TypeIdentifierNode name, List<RecordField> fields) {
+    public RecordTypeNode(TypeIdentifierNode name, List<RecordFieldNode> fields) {
         super();
         this.name = name;
         this.name.setParent(this);

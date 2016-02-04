@@ -676,14 +676,14 @@ public class ParseTreeToAst {
 
     private FunctionalDeclaration toAst(OguParser.Func_declContext ctx, List<Decorator> decorators) {
         if (ctx.name.f_id != null) {
-            List<TypeNodeArg> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
+            List<TypeArgNode> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
             FunctionDeclaration funcDecl = new FunctionDeclaration(toAst(ctx.name), params, decorators);
             getPositionFrom(funcDecl, ctx);
             return funcDecl;
         }
         if (ctx.name.f_op != null) {
             // op params...
-            List<TypeNodeArg> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
+            List<TypeArgNode> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
             OpDeclaration opDecl = new OpDeclaration(toAst(ctx.name.f_op), params, decorators);
             getPositionFrom(opDecl, ctx);
             return opDecl;
@@ -697,15 +697,15 @@ public class ParseTreeToAst {
         return op;
     }
 
-    private TypeNodeArg toAst(OguParser.Func_decl_argContext ctx) {
+    private TypeArgNode toAst(OguParser.Func_decl_argContext ctx) {
         if (ctx.unit() != null)
-            return new UnitTypeNodeArg();
+            return new UnitTypeArgNode();
         if (ctx.fda_id != null)
-            return new QualifiedTypeNodeArg(TypeIdentifierNode.create(idText(ctx.fda_id)));
+            return new QualifiedTypeArgNode(TypeIdentifierNode.create(idText(ctx.fda_id)));
         if (!ctx.fda_tid.isEmpty()) {
             TypeIdentifierNode id = TypeIdentifierNode.create(ctx.fda_tid.stream().map(this::idText).collect(Collectors.toList()));
             if (ctx.tid_or_id_arg == null || ctx.tid_or_id_arg.isEmpty()){
-                return new QualifiedTypeNodeArg(id);
+                return new QualifiedTypeArgNode(id);
             } else {
                 List<NameNode> args = new ArrayList<>();
                 for (OguParser.Tid_or_idContext ti:ctx.tid_or_id_arg)
@@ -713,22 +713,22 @@ public class ParseTreeToAst {
                         args.add(IdentifierNode.create(idText(ti.i)));
                     else
                         args.add(TypeIdentifierNode.create(idText(ti.t)));
-                GenericTypeNodeArg genType = new GenericTypeNodeArg(id, args);
+                GenericTypeArgNode genType = new GenericTypeArgNode(id, args);
                 getPositionFrom(genType, ctx);
                 return genType;
             }
         }
         if (ctx.vector() != null) {
-            TypeNodeArg arg = toAst(ctx.vector().func_decl_arg());
-            VectorTypeNodeArg vec = new VectorTypeNodeArg(arg);
+            TypeArgNode arg = toAst(ctx.vector().func_decl_arg());
+            VectorTypeArgNode vec = new VectorTypeArgNode(arg);
             getPositionFrom(vec, ctx);
             return vec;
         }
         if (ctx.tuple() != null) {
-            List<TypeNodeArg> args = new ArrayList<>();
+            List<TypeArgNode> args = new ArrayList<>();
             for (OguParser.Func_decl_argContext ct:ctx.tuple().func_decl_arg())
                 args.add(toAst(ct));
-            TupleTypeNodeArg tuple = new TupleTypeNodeArg(args);
+            TupleTypeArgNode tuple = new TupleTypeArgNode(args);
             getPositionFrom(tuple, ctx);
             return tuple;
         }
@@ -847,7 +847,7 @@ public class ParseTreeToAst {
 
         if (ctx.tid() != null) {
             if (ctx.t_a.isEmpty()) {
-                return new QualifiedTypeNodeArg(toAst(ctx.tid()));
+                return new QualifiedTypeArgNode(toAst(ctx.tid()));
             } else {
                 List<TypeNode> args = new ArrayList<>();
                 for (OguParser.Tid_argsContext ac:ctx.t_a)
@@ -864,7 +864,7 @@ public class ParseTreeToAst {
             return type;
         }
         if (ctx.i != null) {
-            IdTypeNodeArg type = new IdTypeNodeArg(IdentifierNode.create(idText(ctx.i)));
+            IdTypeArgNode type = new IdTypeArgNode(IdentifierNode.create(idText(ctx.i)));
             getPositionFrom(type, ctx);
             return type;
         }
@@ -876,7 +876,7 @@ public class ParseTreeToAst {
 
     private TypeNode toAst(OguParser.Tid_argsContext ctx) {
         if (ctx.i != null) {
-            IdTypeNodeArg type = new IdTypeNodeArg(IdentifierNode.create(idText(ctx.i)));
+            IdTypeArgNode type = new IdTypeArgNode(IdentifierNode.create(idText(ctx.i)));
             getPositionFrom(type, ctx);
             return type;
         }
@@ -893,7 +893,7 @@ public class ParseTreeToAst {
     }
 
     private RecordTypeNode toAst(OguParser.Record_typeContext ctx) {
-        List<RecordField> fields = new ArrayList<>();
+        List<RecordFieldNode> fields = new ArrayList<>();
         for (OguParser.FldDeclContext fc:ctx.fldDecl()) {
             fields.add(toAst(fc));
         }
@@ -904,7 +904,7 @@ public class ParseTreeToAst {
     }
 
     private AnonRecordTypeNode toAst(OguParser.Anon_record_typeContext ctx) {
-        List<RecordField> fields = new ArrayList<>();
+        List<RecordFieldNode> fields = new ArrayList<>();
         for (OguParser.FldDeclContext fc:ctx.fldDecl()) {
             fields.add(toAst(fc));
         }
@@ -913,10 +913,10 @@ public class ParseTreeToAst {
         return record;
     }
 
-    private RecordField toAst(OguParser.FldDeclContext ctx) {
+    private RecordFieldNode toAst(OguParser.FldDeclContext ctx) {
         IdentifierNode id = IdentifierNode.create(idText(ctx.i));
         TypeNode type = toAst(ctx.t);
-        RecordField fld = new RecordField(id, type);
+        RecordFieldNode fld = new RecordFieldNode(id, type);
         getPositionFrom(fld, ctx);
         return fld;
     }

@@ -9,12 +9,12 @@ import org.ogu.lang.parser.ast.IdentifierNode;
  * {name:String, age:Int}
  * Created by ediaz on 01-02-16.
  */
-public class RecordField extends Node {
+public class RecordFieldNode extends Node {
 
     private IdentifierNode name;
     private TypeNode type;
 
-    public RecordField(IdentifierNode name, TypeNode type) {
+    public RecordFieldNode(IdentifierNode name, TypeNode type) {
         super();
         this.name = name;
         this.name.setParent(this);

@@ -8,9 +8,9 @@ import java.util.Collections;
  * Unit type (def foo : -> ())
  * Created by ediaz on 23-01-16.
  */
-public class UnitTypeNodeArg extends TypeNodeArg {
+public class UnitTypeArgNode extends TypeArgNode {
 
-    public UnitTypeNodeArg() {
+    public UnitTypeArgNode() {
 
     }
 

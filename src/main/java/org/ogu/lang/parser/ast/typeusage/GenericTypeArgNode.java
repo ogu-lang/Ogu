@@ -13,12 +13,12 @@ import java.util.List;
  *
  * Created by ediaz on 02-02-16.
  */
-public class GenericTypeNodeArg extends TypeNodeArg {
+public class GenericTypeArgNode extends TypeArgNode {
 
     private TypeIdentifierNode name;
     private List<NameNode> args;
 
-    public GenericTypeNodeArg(TypeIdentifierNode name, List<NameNode> args) {
+    public GenericTypeArgNode(TypeIdentifierNode name, List<NameNode> args) {
         super();
         this.name = name;
         this.name.setParent(this);

@@ -13,9 +13,9 @@ import java.util.List;
  * Created by ediaz on 01-02-16.
  */
 public class AnonRecordTypeNode extends TypeNode {
-  private List<RecordField> fields;
+  private List<RecordFieldNode> fields;
 
-    public AnonRecordTypeNode(List<RecordField> fields) {
+    public AnonRecordTypeNode(List<RecordFieldNode> fields) {
         super();
         this.fields = new ArrayList<>();
         this.fields.addAll(fields);
