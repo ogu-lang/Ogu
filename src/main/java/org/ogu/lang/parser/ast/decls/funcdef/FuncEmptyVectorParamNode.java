@@ -8,10 +8,10 @@ import java.util.Collections;
  * and id for pattern matching
  * Created by ediaz on 23-01-16.
  */
-public class FuncEmptyVectorParam extends FunctionPatternParam {
+public class FuncEmptyVectorParamNode extends FunctionPatternParamNode {
 
 
-    public FuncEmptyVectorParam() {
+    public FuncEmptyVectorParamNode() {
         super();
     }
 

@@ -11,11 +11,11 @@ import java.util.Collections;
  * A semantic error on Alias declaration
  * Created by ediaz on 22-01-16.
  */
-public class ErrorAlias extends AliasDeclarationNode {
+public class ErrorAliasNode extends AliasDeclarationNode {
 
     private String message;
 
-    public ErrorAlias(String message, Position position) {
+    public ErrorAliasNode(String message, Position position) {
         super(Collections.emptyList());
         this.message = message;
         this.setPosition(position);

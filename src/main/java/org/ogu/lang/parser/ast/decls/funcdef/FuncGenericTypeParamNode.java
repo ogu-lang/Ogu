@@ -11,13 +11,13 @@ import java.util.List;
  * and id for pattern matching
  * Created by ediaz on 23-01-16.
  */
-public class FuncGenericTypeParam extends FunctionPatternParam {
+public class FuncGenericTypeParamNode extends FunctionPatternParamNode {
 
     private TypeIdentifierNode name;
-    private List<FunctionPatternParam> args;
+    private List<FunctionPatternParamNode> args;
 
 
-    public FuncGenericTypeParam(TypeIdentifierNode name, List<FunctionPatternParam> args) {
+    public FuncGenericTypeParamNode(TypeIdentifierNode name, List<FunctionPatternParamNode> args) {
         super();
         this.name = name;
         this.name.setParent(this);

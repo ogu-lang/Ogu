@@ -10,12 +10,12 @@ import org.ogu.lang.parser.ast.expressions.ExpressionNode;
  *    ....
  * Created by ediaz on 30-01-16.
  */
-public class CaseGuard extends Node {
+public class CaseGuardNode extends Node {
 
     private ExpressionNode cond;
     private ExpressionNode result;
 
-    public CaseGuard(ExpressionNode cond, ExpressionNode result) {
+    public CaseGuardNode(ExpressionNode cond, ExpressionNode result) {
         this.cond = cond;
         this.cond.setParent(this);
         this.result = result;

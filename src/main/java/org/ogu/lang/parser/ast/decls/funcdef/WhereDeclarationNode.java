@@ -9,16 +9,16 @@ import org.ogu.lang.parser.ast.decls.TupleValDeclarationNode;
  * where ....
  * Created by ediaz on 01-02-16.
  */
-public class WhereDeclaration extends FunctionNode {
+public class WhereDeclarationNode extends FunctionNode {
 
     private TupleValDeclarationNode tupleDeclaration;
     private LetDeclarationNode letDeclaration;
 
-    public WhereDeclaration(TupleValDeclarationNode tupleDeclaration) {
+    public WhereDeclarationNode(TupleValDeclarationNode tupleDeclaration) {
         this.tupleDeclaration = tupleDeclaration;
     }
 
-    public WhereDeclaration(LetDeclarationNode letDeclaration) {
+    public WhereDeclarationNode(LetDeclarationNode letDeclaration) {
         this.letDeclaration = letDeclaration;
     }
 

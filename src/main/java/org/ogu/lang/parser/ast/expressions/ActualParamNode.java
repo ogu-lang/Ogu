@@ -7,7 +7,7 @@ import org.ogu.lang.parser.ast.Node;
  * Parameters passed to a function call
  * Created by ediaz on 21-01-16.
  */
-public class ActualParam extends Node {
+public class ActualParamNode extends Node {
 
     private String name;
     private ExpressionNode value;
@@ -23,9 +23,9 @@ public class ActualParam extends Node {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ActualParam)) return false;
+        if (!(o instanceof ActualParamNode)) return false;
 
-        ActualParam that = (ActualParam) o;
+        ActualParamNode that = (ActualParamNode) o;
 
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         return value.equals(that.value);
@@ -48,13 +48,13 @@ public class ActualParam extends Node {
         return result;
     }
 
-    public ActualParam(ExpressionNode value) {
+    public ActualParamNode(ExpressionNode value) {
         this.value = value;
         this.value.setParent(this);
     }
 
 
-    public ActualParam(String name, ExpressionNode value) {
+    public ActualParamNode(String name, ExpressionNode value) {
         this.name = name;
         this.value = value;
         this.value.setParent(this);
@@ -69,8 +69,8 @@ public class ActualParam extends Node {
         return name != null;
     }
 
-    public ActualParam toUnnamed() {
-        return new ActualParam(value);
+    public ActualParamNode toUnnamed() {
+        return new ActualParamNode(value);
     }
 
 }

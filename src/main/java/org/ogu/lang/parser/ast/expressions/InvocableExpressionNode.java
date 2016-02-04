@@ -11,16 +11,16 @@ import java.util.List;
  */
 public abstract class InvocableExpressionNode extends ExpressionNode {
 
-    protected List<ActualParam> actualParams;
+    protected List<ActualParamNode> actualParamNodes;
 
-    public List<ActualParam> getActualParams() {
-        return actualParams;
+    public List<ActualParamNode> getActualParamNodes() {
+        return actualParamNodes;
     }
 
-    public InvocableExpressionNode(List<ActualParam> actualParams) {
-        this.actualParams = new ArrayList<>();
-        this.actualParams.addAll(actualParams);
-        this.actualParams.forEach((p) -> p.setParent(this));
+    public InvocableExpressionNode(List<ActualParamNode> actualParamNodes) {
+        this.actualParamNodes = new ArrayList<>();
+        this.actualParamNodes.addAll(actualParamNodes);
+        this.actualParamNodes.forEach((p) -> p.setParent(this));
     }
 
     protected abstract List<? extends FormalParameter> formalParameters(SymbolResolver resolver);

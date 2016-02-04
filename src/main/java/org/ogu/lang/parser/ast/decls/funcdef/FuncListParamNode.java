@@ -10,12 +10,12 @@ import java.util.List;
  * and id for pattern matching
  * Created by ediaz on 23-01-16.
  */
-public class FuncListParam extends FunctionPatternParam {
+public class FuncListParamNode extends FunctionPatternParamNode {
 
-    private List<FunctionPatternParam> params;
+    private List<FunctionPatternParamNode> params;
 
 
-    public FuncListParam(List<FunctionPatternParam> params) {
+    public FuncListParamNode(List<FunctionPatternParamNode> params) {
         super();
         this.params = new ArrayList<>();
         this.params.addAll(params);

@@ -2,32 +2,32 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.expressions.ExpressionNode;
+import org.ogu.lang.parser.ast.IdentifierNode;
 
 /**
  * and id for pattern matching
  * Created by ediaz on 23-01-16.
  */
-public class FuncExprParam extends FunctionPatternParam {
+public class FuncIdParamNode extends FunctionPatternParamNode {
 
-    private ExpressionNode expr;
+    private IdentifierNode id;
 
 
-    public FuncExprParam(ExpressionNode expr) {
+    public FuncIdParamNode(IdentifierNode id) {
         super();
-        this.expr = expr;
-        this.expr.setParent(this);
+        this.id = id;
+        this.id.setParent(this);
     }
 
     @Override
     public String toString() {
-        return "FuncExprParam{"+
-                "expr="+expr+
+        return "FuncArg_MatchId{"+
+                "id="+id+
                 '}';
     }
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.of(expr);
+        return ImmutableList.of(id);
     }
 }

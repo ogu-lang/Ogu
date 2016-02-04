@@ -25,7 +25,7 @@ public class FunctionCallNode extends InvocableExpressionNode {
 
         return "FunctionCall{" +
                 "function='" + function + '\'' +
-                ", actualParams=" + actualParams +
+                ", actualParams=" + actualParamNodes +
                 '}';
     }
 
@@ -36,7 +36,7 @@ public class FunctionCallNode extends InvocableExpressionNode {
 
         FunctionCallNode that = (FunctionCallNode) o;
 
-        if (!actualParams.equals(that.actualParams)) return false;
+        if (!actualParamNodes.equals(that.actualParamNodes)) return false;
         if (!function.equals(that.function)) return false;
 
         return true;
@@ -45,24 +45,24 @@ public class FunctionCallNode extends InvocableExpressionNode {
     @Override
     public int hashCode() {
         int result = function.hashCode();
-        result = 31 * result + actualParams.hashCode();
+        result = 31 * result + actualParamNodes.hashCode();
         return result;
     }
 
-    public FunctionCallNode(ExpressionNode name, List<ActualParam> actualParams) {
-        super(actualParams);
+    public FunctionCallNode(ExpressionNode name, List<ActualParamNode> actualParamNodes) {
+        super(actualParamNodes);
         this.function = name;
         this.function.setParent(this);
     }
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().add(function).addAll(actualParams).build();
+        return ImmutableList.<Node>builder().add(function).addAll(actualParamNodes).build();
     }
 
     @Override
     public TypeUsage calcType() {
-        return function.calcType().asInvocable().internalInvocableDefinitionFor(actualParams).get().asFunction().getReturnType();
+        return function.calcType().asInvocable().internalInvocableDefinitionFor(actualParamNodes).get().asFunction().getReturnType();
     }
 
 

@@ -10,12 +10,12 @@ import java.util.List;
  * and id for pattern matching
  * Created by ediaz on 23-01-16.
  */
-public class FuncVectorParam extends FunctionPatternParam {
+public class FuncVectorParamNode extends FunctionPatternParamNode {
 
-    private List<FunctionPatternParam> args;
+    private List<FunctionPatternParamNode> args;
 
 
-    public FuncVectorParam(List<FunctionPatternParam> args) {
+    public FuncVectorParamNode(List<FunctionPatternParamNode> args) {
         super();
         this.args = new ArrayList<>();
         this.args.addAll(args);

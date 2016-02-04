@@ -15,9 +15,9 @@ import java.util.List;
 public class CaseExpressionNode extends ExpressionNode {
 
     private ExpressionNode selector;
-    private List<CaseGuard> guards;
+    private List<CaseGuardNode> guards;
 
-    public CaseExpressionNode(ExpressionNode selector, List<CaseGuard> guards) {
+    public CaseExpressionNode(ExpressionNode selector, List<CaseGuardNode> guards) {
         super();
         this.selector = selector;
         this.selector.setParent(this);

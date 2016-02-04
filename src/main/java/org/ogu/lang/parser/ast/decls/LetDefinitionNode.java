@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast.decls;
 
 
 import org.ogu.lang.parser.ast.IdentifierNode;
-import org.ogu.lang.parser.ast.decls.funcdef.FunctionPatternParam;
+import org.ogu.lang.parser.ast.decls.funcdef.FunctionPatternParamNode;
 
 import java.util.List;
 
@@ -10,11 +10,11 @@ import java.util.List;
  * let
  * Created by ediaz on 23-01-16.
  */
-public class LetDefinition extends LetDeclarationNode {
+public class LetDefinitionNode extends LetDeclarationNode {
 
 
 
-    public LetDefinition(IdentifierNode name, List<FunctionPatternParam> params, List<DecoratorNode> decoratorNodes) {
+    public LetDefinitionNode(IdentifierNode name, List<FunctionPatternParamNode> params, List<DecoratorNode> decoratorNodes) {
         super(name, params, decoratorNodes);
     }
 

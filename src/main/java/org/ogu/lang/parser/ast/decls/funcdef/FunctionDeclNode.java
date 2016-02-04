@@ -8,11 +8,11 @@ import org.ogu.lang.parser.ast.decls.FunctionalDeclarationNode;
  * An expression inside a function
  * Created by ediaz on 23-01-16.
  */
-public class FunctionNodeDecl extends FunctionNode {
+public class FunctionDeclNode extends FunctionNode {
     private FunctionalDeclarationNode declaration;
 
 
-    public FunctionNodeDecl(FunctionalDeclarationNode declaration) {
+    public FunctionDeclNode(FunctionalDeclarationNode declaration) {
         this.declaration = declaration;
         this.declaration.setParent(this);
     }

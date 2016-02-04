@@ -15,7 +15,7 @@ public class ConstructorNode extends InvocableExpressionNode {
 
     protected TypeReferenceNode type;
 
-    public ConstructorNode(TypeReferenceNode type, List<ActualParam> params) {
+    public ConstructorNode(TypeReferenceNode type, List<ActualParamNode> params) {
         super(params);
         this.type = type;
         this.type.setParent(this);
@@ -25,13 +25,13 @@ public class ConstructorNode extends InvocableExpressionNode {
     public String toString() {
         return "Constructor {"+
                 "type = "+type +
-                "params = "+actualParams +
+                "params = "+ actualParamNodes +
                 '}';
     }
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().add(type).addAll(actualParams).build();
+        return ImmutableList.<Node>builder().add(type).addAll(actualParamNodes).build();
     }
 
     @Override

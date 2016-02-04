@@ -1,7 +1,7 @@
 package org.ogu.lang.parser.ast.decls;
 
 import org.ogu.lang.parser.ast.OperatorNode;
-import org.ogu.lang.parser.ast.decls.funcdef.FunctionPatternParam;
+import org.ogu.lang.parser.ast.decls.funcdef.FunctionPatternParamNode;
 
 import java.util.List;
 
@@ -11,9 +11,9 @@ import java.util.List;
  *     let a - b = ...
  * Created by ediaz on 26-01-16.
  */
-public class OpDefinition extends LetDeclarationNode {
+public class OpDefinitionNode extends LetDeclarationNode {
 
-    public OpDefinition(OperatorNode name, List<FunctionPatternParam> params, List<DecoratorNode> decoratorNodes) {
+    public OpDefinitionNode(OperatorNode name, List<FunctionPatternParamNode> params, List<DecoratorNode> decoratorNodes) {
         super(name, params, decoratorNodes);
     }
 

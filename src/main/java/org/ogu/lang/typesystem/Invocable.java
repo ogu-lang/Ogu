@@ -1,7 +1,7 @@
 package org.ogu.lang.typesystem;
 
 import org.ogu.lang.definitions.InternalInvocableDefinition;
-import org.ogu.lang.parser.ast.expressions.ActualParam;
+import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +11,6 @@ import java.util.Optional;
  */
 public interface Invocable {
 
-    Optional<? extends InternalInvocableDefinition> internalInvocableDefinitionFor(List<ActualParam> actualParams);
+    Optional<? extends InternalInvocableDefinition> internalInvocableDefinitionFor(List<ActualParamNode> actualParamNodes);
 
 }

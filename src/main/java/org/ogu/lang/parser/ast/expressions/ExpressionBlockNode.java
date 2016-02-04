@@ -11,11 +11,11 @@ import java.util.List;
  * Expression Block, start with INDENT and stop with DEDENT
  * Created by ediaz on 30-01-16.
  */
-public class ExpressionNodeBlock extends ExpressionNode {
+public class ExpressionBlockNode extends ExpressionNode {
 
     List<ExpressionNode> block;
 
-    public ExpressionNodeBlock(List<ExpressionNode> block) {
+    public ExpressionBlockNode(List<ExpressionNode> block) {
         super();
         this.block = new ArrayList<>();
         this.block.addAll(block);

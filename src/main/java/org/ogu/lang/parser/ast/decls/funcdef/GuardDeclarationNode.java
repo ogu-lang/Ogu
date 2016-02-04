@@ -11,13 +11,13 @@ import java.util.List;
 /**
  * Created by ediaz on 01-02-16.
  */
-public class GuardDeclaration extends FunctionNode {
+public class GuardDeclarationNode extends FunctionNode {
 
     private ExpressionNode base;
     private List<ExpressionNode> args;
     private DoExpressionNode block;
 
-    public GuardDeclaration(ExpressionNode base, List<ExpressionNode> args, DoExpressionNode block) {
+    public GuardDeclarationNode(ExpressionNode base, List<ExpressionNode> args, DoExpressionNode block) {
         super();
         this.base = base;
         this.base.setParent(this);

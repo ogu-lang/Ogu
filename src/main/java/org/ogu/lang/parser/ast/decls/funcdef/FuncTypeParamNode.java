@@ -8,12 +8,12 @@ import org.ogu.lang.parser.ast.TypeIdentifierNode;
  * and id for pattern matching
  * Created by ediaz on 23-01-16.
  */
-public class FuncTypeParam extends FunctionPatternParam {
+public class FuncTypeParamNode extends FunctionPatternParamNode {
 
     private TypeIdentifierNode typeId;
 
 
-    public FuncTypeParam(TypeIdentifierNode typeId) {
+    public FuncTypeParamNode(TypeIdentifierNode typeId) {
         super();
         this.typeId = typeId;
         this.typeId.setParent(this);
