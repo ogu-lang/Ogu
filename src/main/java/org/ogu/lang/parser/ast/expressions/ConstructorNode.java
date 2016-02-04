@@ -13,9 +13,9 @@ import java.util.List;
  */
 public class ConstructorNode extends InvocableExpressionNode {
 
-    protected TypeReference type;
+    protected TypeReferenceNode type;
 
-    public ConstructorNode(TypeReference type, List<ActualParam> params) {
+    public ConstructorNode(TypeReferenceNode type, List<ActualParam> params) {
         super(params);
         this.type = type;
         this.type.setParent(this);

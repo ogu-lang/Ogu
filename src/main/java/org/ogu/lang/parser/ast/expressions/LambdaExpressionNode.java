@@ -14,10 +14,10 @@ import java.util.List;
  */
 public class LambdaExpressionNode extends ExpressionNode {
 
-    private List<LambdaArg> args;
+    private List<LambdaArgNode> args;
     private DoExpressionNode doExpr;
 
-    public LambdaExpressionNode(List<LambdaArg> args, DoExpressionNode expr) {
+    public LambdaExpressionNode(List<LambdaArgNode> args, DoExpressionNode expr) {
         this.args = new ArrayList<>();
         this.args.addAll(args);
         this.doExpr = expr;

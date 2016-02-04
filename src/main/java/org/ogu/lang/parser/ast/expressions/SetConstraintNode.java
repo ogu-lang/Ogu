@@ -15,12 +15,12 @@ import java.util.List;
  * [imc p a | (p, a) <- lista]
  * Created by ediaz on 31-01-16.
  */
-public class SetConstraint extends ExpressionNode {
+public class SetConstraintNode extends ExpressionNode {
 
     List<IdentifierNode> ids;
     ExpressionNode expressionNode;
 
-    public SetConstraint(List<IdentifierNode> ids, ExpressionNode expressionNode) {
+    public SetConstraintNode(List<IdentifierNode> ids, ExpressionNode expressionNode) {
         super();
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);
@@ -29,7 +29,7 @@ public class SetConstraint extends ExpressionNode {
         this.expressionNode.setParent(this);
     }
 
-    public SetConstraint(IdentifierNode id, ExpressionNode expressionNode) {
+    public SetConstraintNode(IdentifierNode id, ExpressionNode expressionNode) {
         this(ImmutableList.of(id), expressionNode);
     }
 

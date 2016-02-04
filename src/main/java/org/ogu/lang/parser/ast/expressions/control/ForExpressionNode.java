@@ -3,17 +3,17 @@ package org.ogu.lang.parser.ast.expressions.control;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
-import org.ogu.lang.parser.ast.expressions.SetConstraint;
+import org.ogu.lang.parser.ast.expressions.SetConstraintNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 /**
  * Created by ediaz on 31-01-16.
  */
 public class ForExpressionNode extends ExpressionNode {
-    private SetConstraint forCond;
+    private SetConstraintNode forCond;
     private DoExpressionNode doBlock;
 
-    public ForExpressionNode(SetConstraint forCond, DoExpressionNode doBlock) {
+    public ForExpressionNode(SetConstraintNode forCond, DoExpressionNode doBlock) {
         super();
         this.forCond = forCond;
         this.doBlock = doBlock;

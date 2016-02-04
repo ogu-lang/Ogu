@@ -9,11 +9,11 @@ import org.ogu.lang.typesystem.TypeUsage;
  * A type reference appears in constructors
  * Created by ediaz on 23-01-16.
  */
-public class TypeReference extends ExpressionNode {
+public class TypeReferenceNode extends ExpressionNode {
 
     private TypeIdentifierNode type;
 
-    public TypeReference(TypeIdentifierNode type) {
+    public TypeReferenceNode(TypeIdentifierNode type) {
         this.type = type;
         this.type.setParent(this);
     }

@@ -16,9 +16,9 @@ public class ListByComprehensionExpressionNode extends ListExpressionNode {
 
 
     ExpressionNode value;
-    List<SetConstraint> constraints;
+    List<SetConstraintNode> constraints;
 
-    public ListByComprehensionExpressionNode(ExpressionNode value, List<SetConstraint> constraints) {
+    public ListByComprehensionExpressionNode(ExpressionNode value, List<SetConstraintNode> constraints) {
         super();
         this.value = value;
         this.value.setParent(this);

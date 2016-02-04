@@ -9,17 +9,17 @@ import org.ogu.lang.parser.ast.typeusage.TypeNode;
  * Argument to a lambda expression
  * Created by ediaz on 01-02-16.
  */
-public class LambdaArg extends Node {
+public class LambdaArgNode extends Node {
 
     private IdentifierNode id;
     private TypeNode type;
 
-    public LambdaArg(IdentifierNode id) {
+    public LambdaArgNode(IdentifierNode id) {
         this.id = id;
         this.id.setParent(this);
     }
 
-    public LambdaArg(IdentifierNode id, TypeNode type) {
+    public LambdaArgNode(IdentifierNode id, TypeNode type) {
         this.id = id;
         this.id.setParent(this);
         this.type = type;
