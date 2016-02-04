@@ -22,4 +22,9 @@ public class UnitTypeNode extends TypeNode {
     public Iterable<Node> getChildren() {
         return Collections.emptyList();
     }
+
+    @Override
+    public String getName() {
+        return null;
+    }
 }

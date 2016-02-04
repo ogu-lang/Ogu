@@ -19,6 +19,9 @@ public  class IdTypeArgNode extends TypeNode {
         this.id.setParent(this);
     }
 
+    public String getName() {
+        return id.getName();
+    }
 
     @Override
     public String toString() {

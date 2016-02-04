@@ -6,6 +6,7 @@ import org.ogu.lang.compiler.errorhandling.ErrorCollector;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.resolvers.SymbolResolver;
+import org.ogu.lang.util.Feedback;
 import org.ogu.lang.util.Logger;
 
 import java.util.ArrayList;
@@ -40,9 +41,9 @@ public class Compilation {
 
         List<ClassFileDefinition> classFileDefinitions = new ArrayList<>();
 
-        if (options.isDebug()) {
+        if (options.isShowTree()) {
             for (Node node : module.getChildren()) {
-                Logger.debug("Node: "+node+" context: "+node.contextName());
+                Feedback.message("Node: "+node+" context: "+node.contextName());
             }
         }
 

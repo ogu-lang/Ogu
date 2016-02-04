@@ -26,4 +26,9 @@ public class VectorTypeNode extends TypeNode {
     public Iterable<Node> getChildren() {
         return ImmutableList.of(base);
     }
+
+    @Override
+    public String getName() {
+        return null;
+    }
 }

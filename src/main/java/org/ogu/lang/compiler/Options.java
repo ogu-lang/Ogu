@@ -55,6 +55,10 @@ public class Options {
 
     public void setParseOnly(boolean parseOnly) { this.parseOnly = parseOnly; }
 
+    public boolean isShowTree() { return showTree; }
+
+    public void setShowTree(boolean showTree) { this.showTree = showTree; }
+
     public List<String> getSources() {
         return sources;
     }
@@ -81,6 +85,9 @@ public class Options {
 
     @Parameter(names = {"-d", "--debug"})
     private boolean debug = false;
+
+    @Parameter(names = {"-t", "--tree"})
+    private boolean showTree;
 
     @Parameter(names = {"-h", "--help"})
     private boolean help = false;

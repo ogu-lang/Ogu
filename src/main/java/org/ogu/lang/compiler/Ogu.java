@@ -25,7 +25,6 @@ public class Ogu {
 	public static void main(String[] args) throws Exception {
 
 		message(Compiler.VERSION);
-		message(WELCOME);
 
         Options options = new Options();
         JCommander commander = null;
@@ -37,6 +36,10 @@ public class Ogu {
             return;
         }
 
+        if (options.isVerbose()) {
+            message(WELCOME);
+        }
+
         if (options.isHelp()) {
             message(HELP_MESSAGE);
             commander.usage();
@@ -44,7 +47,9 @@ public class Ogu {
         }
 
         if (options.getSources().isEmpty()) {
-            message(ERROR_NO_FILES_TO_COMPILE);
+            if (options.isVerbose()) {
+                message(ERROR_NO_FILES_TO_COMPILE);
+            }
             commander.usage();
             return;
         }
@@ -73,7 +78,9 @@ public class Ogu {
                 saveClassFile(classFileDefinition, options);
             }
         }
-		message(GOODBYE);
+        if (options.isVerbose()) {
+            message(GOODBYE);
+        }
 	}
 
 

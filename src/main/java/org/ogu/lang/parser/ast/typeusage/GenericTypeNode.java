@@ -26,6 +26,22 @@ public class GenericTypeNode extends TypeNode {
         this.args.forEach((a) -> a.setParent(this));
     }
 
+    public String getName() {
+        return name.getName();
+    }
+
+    public List<TypeNode> getArgs() {
+        return args;
+    }
+
+    public TypeNode getArg(int i) {
+        return args.get(i);
+    }
+
+    public void setArg(int i, TypeNode newType) {
+        args.set(i, newType);
+    }
+
     @Override
     public String toString() {
         return "GenericType{"+

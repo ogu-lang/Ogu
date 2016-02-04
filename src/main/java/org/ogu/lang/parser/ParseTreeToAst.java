@@ -63,6 +63,9 @@ public class ParseTreeToAst {
                 module.add((AliasDeclarationNode) memberNode);
             else if (memberNode instanceof ExportableDeclarationNode)
                 module.add((ExportableDeclarationNode) memberNode);
+            else {
+                Logger.debug("WTF!");
+            }
         }
 
         for (OguParser.Module_usesContext usesDeclarationContext : ctx.module_uses()) {
@@ -195,12 +198,37 @@ public class ParseTreeToAst {
         List<TypeParamNode> params = new ArrayList<>();
         for (OguParser.TypeContext typeContext : types) {
             TypeNode type = toAst(typeContext);
-            TypeParamNode p = new TypeParamNode(type);
+            Logger.debug("type is "+type.getClass().getCanonicalName());
+            TypeParamNode p = determineConstraint(type, constraints);
             getPositionFrom(p, ctx);
             params.add(p);
         }
         return params;
 
+    }
+
+    private TypeParamNode determineConstraint(TypeNode type, Map<String, TypeNode> constraints) {
+        if (type instanceof IdTypeArgNode) {
+            if (constraints.containsKey(type.getName())) {
+                TypeNode tnode = constraints.get(type.getName());
+                return new TypeParamConstrainedNode(type.getName(), tnode);
+            }
+        }
+        if (type instanceof TupleTypeNode) {
+            TupleTypeNode tt = (TupleTypeNode) type;
+            if (tt.getBases().size() == 1 && tt.getBase(0) instanceof GenericTypeNode) {
+                GenericTypeNode gt = (GenericTypeNode) tt.getBase(0);
+                for (int i = 0; i < gt.getArgs().size(); i++) {
+                    TypeNode t = gt.getArg(i);
+                    if (constraints.containsKey(t.getName())) {
+                        TypeNode ct = constraints.get(t.getName());
+                        gt.setArg(i, new ConstrainedTypeNode(new IdentifierNode(t.getName()), ct));
+                    }
+                }
+
+            }
+        }
+        return new TypeParamNode(type);
     }
 
     private ClassDeclarationNode toAst(OguParser.Class_defContext ctx, List<DecoratorNode> decs) {
@@ -367,6 +395,7 @@ public class ParseTreeToAst {
             TypeNode type = toAst(tac.type());
             for (Token id : tac.ids) {
                 cons.put(idText(id), type);
+                Logger.debug("CONSTRAINT: "+idText(id)+" -> "+type);
             }
         }
     }
@@ -374,17 +403,21 @@ public class ParseTreeToAst {
     private FunctionalDeclarationNode toAst(OguParser.Func_defContext ctx, List<DecoratorNode> decoratorNodes) {
         if (ctx.let_func_name != null) {
             if (ctx.let_func_name.lid_val_id != null) {
+                // let is really a val
                 IdentifierNode funcId = IdentifierNode.create(idText(ctx.let_func_name.lid_val_id));
                 TypeNode type = toAst(ctx.let_func_name.t);
                 if (ctx.let_func_args != null && !ctx.let_func_args.isEmpty()) {
                     return new ErrorFunctionalDeclarationNode("error.let_as_val.no_params", getPosition(ctx));
                 }
+                Logger.debug("let is val: "+ctx.getText());
                 ExpressionNode expr = toAst(ctx.let_expr());
                 ValDeclarationNode val = new ValDeclarationNode(funcId, type, expr, decoratorNodes);
                 getPositionFrom(val, ctx);
                 return val;
             }
             if (ctx.let_func_name.lid_fun_id != null) {
+                Logger.debug("let is func: "+ctx.getText());
+
                 IdentifierNode funcId = IdentifierNode.create(idText(ctx.let_func_name.lid_fun_id));
                 List<FunctionPatternParamNode> params = funcArgsToAst(ctx.let_func_args);
                 LetDefinitionNode funcdef = new LetDefinitionNode(funcId, params, decoratorNodes);
@@ -454,8 +487,8 @@ public class ParseTreeToAst {
         }
         if (ctx.expr() != null) {
             funcdef.add(toAst(ctx.expr()));
-            if (ctx.where() != null)
-                parseWhere(ctx.where(), funcdef);
+            if (ctx.let_where() != null)
+                parseWhere(ctx.let_where().where(), funcdef);
             return;
         }
         if (ctx.guards() != null) {

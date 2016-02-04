@@ -21,6 +21,14 @@ public class TupleTypeNode extends TypeNode {
     }
 
 
+    public List<TypeNode> getBases() {
+        return bases;
+    }
+
+    public TypeNode getBase(int i) {
+        return bases.get(i);
+    }
+
     @Override
     public String toString() {
         return "("+bases+')';

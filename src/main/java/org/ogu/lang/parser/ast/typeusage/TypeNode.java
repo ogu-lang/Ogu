@@ -7,4 +7,7 @@ import org.ogu.lang.parser.ast.Node;
  * Created by ediaz on 24-01-16.
  */
 public abstract class TypeNode extends Node {
+    public String getName()  {
+        return null;
+    }
 }

@@ -40,7 +40,7 @@ public class DataDeclarationNode extends AlgebraicDataTypeDeclarationNode {
 
     @Override
     public String toString() {
-        return "Enum{" +
+        return "Data{" +
                 "name='" + name + '\''+
                 ", params=" + params +
                 ", values=" + values +

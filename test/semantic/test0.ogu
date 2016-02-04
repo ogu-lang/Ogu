@@ -1,0 +1,9 @@
+module Test0
+
+type Str = [Char]
+
+def greet : Str -> ()
+
+let greet msg = println! msg
+
+greet "hello world\n"
