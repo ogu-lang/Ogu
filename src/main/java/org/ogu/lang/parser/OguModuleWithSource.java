@@ -1,6 +1,6 @@
 package org.ogu.lang.parser;
 
-import org.ogu.lang.parser.ast.modules.OguModule;
+import org.ogu.lang.parser.ast.modules.ModuleNode;
 
 import java.io.File;
 
@@ -11,9 +11,9 @@ import java.io.File;
 public class OguModuleWithSource {
 
     private File source;
-    private OguModule module;
+    private ModuleNode module;
 
-    public OguModuleWithSource(File source, OguModule module) {
+    public OguModuleWithSource(File source, ModuleNode module) {
         this.source = source;
         this.module = module;
     }
@@ -22,7 +22,7 @@ public class OguModuleWithSource {
         return source;
     }
 
-    public OguModule getModule() {
+    public ModuleNode getModule() {
         return module;
     }
 

@@ -2,7 +2,7 @@ package org.ogu.lang.parser.ast;
 
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
 import org.ogu.lang.parser.ast.expressions.InvocableExpr;
-import org.ogu.lang.parser.ast.modules.OguModule;
+import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.resolvers.ResolverRegistry;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
@@ -96,8 +96,8 @@ public abstract class Node implements Symbol {
         if (parent == null) {
             return "";
         }
-        if (parent instanceof OguModule) {
-            OguModule module = (OguModule)parent;
+        if (parent instanceof ModuleNode) {
+            ModuleNode module = (ModuleNode)parent;
             return module.getNameDefinition().getName();
         }
         return parent.contextName();

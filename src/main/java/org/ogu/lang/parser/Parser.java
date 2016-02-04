@@ -2,7 +2,7 @@ package org.ogu.lang.parser;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.compiler.Options;
-import org.ogu.lang.parser.ast.modules.OguModule;
+import org.ogu.lang.parser.ast.modules.ModuleNode;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,7 +26,7 @@ public class Parser {
         this.options = options;
     }
 
-    public OguModule parse(File file, InputStream inputStream) throws IOException {
+    public ModuleNode parse(File file, InputStream inputStream) throws IOException {
         return new ParseTreeToAst().toAst(file, internalParser.produceParseTree(file, inputStream));
     }
 

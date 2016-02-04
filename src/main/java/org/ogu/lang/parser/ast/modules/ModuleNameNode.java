@@ -7,11 +7,11 @@ import org.ogu.lang.parser.ast.Node;
 /**
  * Created by ediaz on 21-01-16.
  */
-public class ModuleNameDefinition extends Node {
+public class ModuleNameNode extends Node {
 
     private String name;
 
-    public ModuleNameDefinition(String name) {
+    public ModuleNameNode(String name) {
         if (!JvmNameUtils.isValidQualifiedName(name)) {
             throw new IllegalArgumentException(name);
         }
@@ -39,7 +39,7 @@ public class ModuleNameDefinition extends Node {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ModuleNameDefinition that = (ModuleNameDefinition) o;
+        ModuleNameNode that = (ModuleNameNode) o;
 
         return name.equals(that.name);
 

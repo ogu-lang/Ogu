@@ -49,8 +49,8 @@ public class ParseTreeToAst {
         return new Point(token.getLine(), token.getCharPositionInLine() + token.getText().length());
     }
 
-    public OguModule toAst(File file, org.ogu.lang.antlr.OguParser.ModuleContext ctx) {
-        OguModule module = new OguModule();
+    public ModuleNode toAst(File file, org.ogu.lang.antlr.OguParser.ModuleContext ctx) {
+        ModuleNode module = new ModuleNode();
         getPositionFrom(module, ctx);
         module.setName(toAst(file, ctx.moduleHeader));
 
@@ -74,10 +74,10 @@ public class ParseTreeToAst {
         return module;
     }
 
-    private ModuleNameDefinition toAst(File file, OguParser.Module_headerContext ctx) {
+    private ModuleNameNode toAst(File file, OguParser.Module_headerContext ctx) {
         if (ctx == null)
-            return new ModuleNameDefinition(buildModuleNameFromFileName(file.getName()));
-        return new ModuleNameDefinition(toAst(ctx.name).qualifiedName());
+            return new ModuleNameNode(buildModuleNameFromFileName(file.getName()));
+        return new ModuleNameNode(toAst(ctx.name).qualifiedName());
     }
 
     private TypeIdentifierNode toAst(OguParser.Module_nameContext ctx) {

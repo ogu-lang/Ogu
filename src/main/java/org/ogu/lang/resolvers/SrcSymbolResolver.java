@@ -3,7 +3,7 @@ package org.ogu.lang.resolvers;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.AliasDeclaration;
 import org.ogu.lang.parser.ast.decls.ExportableDeclaration;
-import org.ogu.lang.parser.ast.modules.OguModule;
+import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.symbols.Symbol;
 
 import java.util.HashMap;
@@ -22,11 +22,11 @@ public class SrcSymbolResolver implements SymbolResolver {
 
     private SymbolResolver parent = null;
 
-    public SrcSymbolResolver(List<OguModule> modules) {
+    public SrcSymbolResolver(List<ModuleNode> modules) {
         this.aliasDefinitions = new HashMap<>();
         this.declarations = new HashMap<>();
 
-        for (OguModule module : modules) {
+        for (ModuleNode module : modules) {
             for (AliasDeclaration aliasDeclaration : module.getAliases())  {
                 aliasDefinitions.put(aliasDeclaration.getName(), aliasDeclaration);
             }

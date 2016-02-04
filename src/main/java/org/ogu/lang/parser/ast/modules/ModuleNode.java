@@ -12,9 +12,9 @@ import java.util.List;
  * A Module
  * Created by ediaz on 20-01-16.
  */
-public class OguModule extends Node {
+public class ModuleNode extends Node {
 
-    ModuleNameDefinition nameDefinition;
+    ModuleNameNode nameDefinition;
     private List<UsesDeclaration> uses = new ArrayList<>();
     private List<AliasDeclaration> aliases = new ArrayList<>();
     private List<ExportsDeclaration> exports = new ArrayList<>();
@@ -53,7 +53,7 @@ public class OguModule extends Node {
             usesDeclaration.setParent(this);
     }
 
-    public void setName(ModuleNameDefinition nameDefinition) {
+    public void setName(ModuleNameNode nameDefinition) {
         if (this.nameDefinition != null) {
             this.nameDefinition.setParent(this);
         }
@@ -72,7 +72,7 @@ public class OguModule extends Node {
                 .addAll(uses).build();
     }
 
-    public ModuleNameDefinition getNameDefinition() {
+    public ModuleNameNode getNameDefinition() {
         return nameDefinition;
     }
 

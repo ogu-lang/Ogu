@@ -10,12 +10,11 @@ import com.beust.jcommander.JCommander;
 import org.ogu.lang.classloading.ClassFileDefinition;
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
 import org.ogu.lang.parser.OguModuleWithSource;
-import org.ogu.lang.parser.ast.modules.OguModule;
+import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.parser.ast.Position;
 import org.ogu.lang.resolvers.*;
 import org.ogu.lang.resolvers.compiled.JarTypeResolver;
 import org.ogu.lang.resolvers.jdk.JdkTypeResolver;
-import org.ogu.lang.util.Feedback;
 import org.ogu.lang.util.Logger;
 import org.ogu.lang.util.Messages;
 
@@ -78,12 +77,12 @@ public class Ogu {
 	}
 
 
-    private static SymbolResolver getResolver(List<String> sources, List<String> classPathElements, List<OguModule> oguModules) {
+    private static SymbolResolver getResolver(List<String> sources, List<String> classPathElements, List<ModuleNode> moduleNodes) {
         TypeResolver typeResolver = new ComposedTypeResolver(ImmutableList.<TypeResolver>builder()
                 .add(JdkTypeResolver.getInstance())
                 .addAll(classPathElements.stream().map(Ogu::toTypeResolver).collect(Collectors.toList()))
                 .build());
-        return new ComposedSymbolResolver(ImmutableList.of(new InModuleSymbolResolver(typeResolver), new SrcSymbolResolver(oguModules)));
+        return new ComposedSymbolResolver(ImmutableList.of(new InModuleSymbolResolver(typeResolver), new SrcSymbolResolver(moduleNodes)));
     }
 
     private static TypeResolver toTypeResolver(String classPathElement) {

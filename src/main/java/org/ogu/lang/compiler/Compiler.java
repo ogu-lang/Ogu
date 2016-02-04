@@ -2,7 +2,7 @@ package org.ogu.lang.compiler;
 
 import org.ogu.lang.classloading.ClassFileDefinition;
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
-import org.ogu.lang.parser.ast.modules.OguModule;
+import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.resolvers.ResolverRegistry;
 import org.ogu.lang.resolvers.SymbolResolver;
 
@@ -25,7 +25,7 @@ public class Compiler {
     }
 
 
-    public List<ClassFileDefinition> compile(OguModule module, ErrorCollector errorCollector) {
+    public List<ClassFileDefinition> compile(ModuleNode module, ErrorCollector errorCollector) {
         ResolverRegistry.INSTANCE.record(module, resolver);
         return new Compilation(resolver, errorCollector, options).compile(module);
     }
