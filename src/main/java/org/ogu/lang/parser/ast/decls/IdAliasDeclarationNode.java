@@ -15,8 +15,8 @@ public class IdAliasDeclarationNode extends AliasDeclarationNode {
     private IdentifierNode aliasOrigin;
 
 
-    public IdAliasDeclarationNode(IdentifierNode target, IdentifierNode origin, List<Decorator> decorators) {
-        super(target, decorators);
+    public IdAliasDeclarationNode(IdentifierNode target, IdentifierNode origin, List<DecoratorNode> decoratorNodes) {
+        super(target, decoratorNodes);
         this.aliasOrigin = origin;
         this.aliasOrigin.setParent(this);
     }

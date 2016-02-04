@@ -14,8 +14,8 @@ public class LetDefinition extends LetDeclarationNode {
 
 
 
-    public LetDefinition(IdentifierNode name, List<FunctionPatternParam> params, List<Decorator> decorators) {
-        super(name, params, decorators);
+    public LetDefinition(IdentifierNode name, List<FunctionPatternParam> params, List<DecoratorNode> decoratorNodes) {
+        super(name, params, decoratorNodes);
     }
 
 
@@ -26,7 +26,7 @@ public class LetDefinition extends LetDeclarationNode {
                 "name='" + name + '\''+
                 ", params=" + params +
                 ", body=" + body +
-                ", decorators=" + decorators +
+                ", decorators=" + decoratorNodes +
                 '}';
     }
 

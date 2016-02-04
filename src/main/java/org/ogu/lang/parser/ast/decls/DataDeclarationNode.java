@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
-import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
+import org.ogu.lang.parser.ast.decls.typedef.TypeParamNode;
 import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 import java.util.ArrayList;
@@ -15,11 +15,11 @@ import java.util.List;
  */
 public class DataDeclarationNode extends AlgebraicDataTypeDeclarationNode {
 
-    private List<TypeParam> params;
+    private List<TypeParamNode> params;
     private List<TypeNode> values;
 
-    public DataDeclarationNode(TypeIdentifierNode name, List<TypeParam> params, List<TypeNode> values, List<TypeIdentifierNode> deriving, List<Decorator> decorators) {
-        super(name, deriving, decorators);
+    public DataDeclarationNode(TypeIdentifierNode name, List<TypeParamNode> params, List<TypeNode> values, List<TypeIdentifierNode> deriving, List<DecoratorNode> decoratorNodes) {
+        super(name, deriving, decoratorNodes);
         this.params = new ArrayList<>();
         this.params.addAll(params);
         this.params.forEach((p) -> p.setParent(this));
@@ -35,7 +35,7 @@ public class DataDeclarationNode extends AlgebraicDataTypeDeclarationNode {
                 .addAll(params)
                 .addAll(values)
                 .addAll(deriving)
-                .addAll(decorators).build();
+                .addAll(decoratorNodes).build();
     }
 
     @Override
@@ -45,7 +45,7 @@ public class DataDeclarationNode extends AlgebraicDataTypeDeclarationNode {
                 ", params=" + params +
                 ", values=" + values +
                 ", deriving=" + deriving +
-                ", decorators=" + decorators +
+                ", decorators=" + decoratorNodes +
                 '}';
     }
 }

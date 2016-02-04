@@ -11,12 +11,12 @@ import java.util.List;
  */
 public abstract class ExportableDeclarationNode extends NameDeclarationNode {
 
-    protected ExportableDeclarationNode(List<Decorator> decorators) {
-        super(decorators);
+    protected ExportableDeclarationNode(List<DecoratorNode> decoratorNodes) {
+        super(decoratorNodes);
     }
 
 
-    protected ExportableDeclarationNode(NameNode name, List<Decorator> decorators) {
-        super(name, decorators);
+    protected ExportableDeclarationNode(NameNode name, List<DecoratorNode> decoratorNodes) {
+        super(name, decoratorNodes);
     }
 }

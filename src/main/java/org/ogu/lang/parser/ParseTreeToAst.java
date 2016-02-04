@@ -8,9 +8,9 @@ import org.ogu.lang.antlr.OguParser;
 import org.ogu.lang.parser.ast.*;
 import org.ogu.lang.parser.ast.decls.*;
 import org.ogu.lang.parser.ast.decls.funcdef.*;
-import org.ogu.lang.parser.ast.decls.typedef.ClassParam;
-import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
-import org.ogu.lang.parser.ast.decls.typedef.TypeParamConstrained;
+import org.ogu.lang.parser.ast.decls.typedef.ClassParamNode;
+import org.ogu.lang.parser.ast.decls.typedef.TypeParamNode;
+import org.ogu.lang.parser.ast.decls.typedef.TypeParamConstrainedNode;
 import org.ogu.lang.parser.ast.expressions.*;
 import org.ogu.lang.parser.ast.expressions.control.*;
 import org.ogu.lang.parser.ast.expressions.literals.*;
@@ -111,7 +111,7 @@ public class ParseTreeToAst {
         return tname;
     }
 
-    private ExportsDeclarationNode toAst(OguParser.Export_nameContext ctx, List<Decorator> decs) {
+    private ExportsDeclarationNode toAst(OguParser.Export_nameContext ctx, List<DecoratorNode> decs) {
         ExportsDeclarationNode result;
         if (ctx.ID() != null)
             result = new ExportsFunctionDeclarationNode(new IdentifierNode(idText(ctx.ID().getSymbol())), decs);
@@ -125,7 +125,7 @@ public class ParseTreeToAst {
     }
 
     private Node toAst(OguParser.Module_declContext ctx) {
-        List<Decorator> decs = toAstDecorators(ctx.decs);
+        List<DecoratorNode> decs = toAstDecorators(ctx.decs);
 
         if (ctx.alias_def() != null) {
             return toAst(ctx.alias_def(), decs);
@@ -179,23 +179,23 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private InstanceDeclarationNode toAst(OguParser.Instance_defContext ctx, List<Decorator> decs) {
+    private InstanceDeclarationNode toAst(OguParser.Instance_defContext ctx, List<DecoratorNode> decs) {
         TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
         Map<String,TypeNode> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
-        List<TypeParam> params = getInstaceTypeParamList(ctx, ctx.params, constraints);
+        List<TypeParamNode> params = getInstaceTypeParamList(ctx, ctx.params, constraints);
         List<FunctionalDeclarationNode> members = internalDeclToAst(ctx.internal_decl());
         InstanceDeclarationNode instance = new InstanceDeclarationNode(name, params, members, decs);
         getPositionFrom(instance, ctx);
         return instance;
     }
 
-    private List<TypeParam> getInstaceTypeParamList(OguParser.Instance_defContext ctx, List<OguParser.TypeContext> types, Map<String, TypeNode> constraints) {
-        List<TypeParam> params = new ArrayList<>();
+    private List<TypeParamNode> getInstaceTypeParamList(OguParser.Instance_defContext ctx, List<OguParser.TypeContext> types, Map<String, TypeNode> constraints) {
+        List<TypeParamNode> params = new ArrayList<>();
         for (OguParser.TypeContext typeContext : types) {
             TypeNode type = toAst(typeContext);
-            TypeParam p = new TypeParam(type);
+            TypeParamNode p = new TypeParamNode(type);
             getPositionFrom(p, ctx);
             params.add(p);
         }
@@ -203,15 +203,15 @@ public class ParseTreeToAst {
 
     }
 
-    private ClassDeclarationNode toAst(OguParser.Class_defContext ctx, List<Decorator> decs) {
+    private ClassDeclarationNode toAst(OguParser.Class_defContext ctx, List<DecoratorNode> decs) {
         boolean isMutable = ctx.mut != null;
         TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
         Map<String,TypeNode> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
-        List<TypeParam> genParams = getTypeParamList(ctx, ctx.params, constraints);
+        List<TypeParamNode> genParams = getTypeParamList(ctx, ctx.params, constraints);
         List<FunctionalDeclarationNode> members = internalDeclToAst(ctx.internal_decl());
-        List<ClassParam> params = new ArrayList<>();
+        List<ClassParamNode> params = new ArrayList<>();
         if (ctx.class_params() != null)
             params = toAst(ctx.class_params());
         ClassDeclarationNode clazz = new ClassDeclarationNode(name, isMutable, genParams, params, members, decs);
@@ -219,26 +219,26 @@ public class ParseTreeToAst {
         return clazz;
     }
 
-    private List<ClassParam> toAst(OguParser.Class_paramsContext ctx) {
-        List<ClassParam> result = new ArrayList<>();
+    private List<ClassParamNode> toAst(OguParser.Class_paramsContext ctx) {
+        List<ClassParamNode> result = new ArrayList<>();
         for (OguParser.Class_paramContext cp:ctx.class_param()) {
             result.addAll(toAst(cp));
         }
         return result;
     }
 
-    private List<ClassParam> toAst(OguParser.Class_paramContext ctx) {
+    private List<ClassParamNode> toAst(OguParser.Class_paramContext ctx) {
         TypeNode type = toAst(ctx.type());
-        List<ClassParam> result = new ArrayList<>();
+        List<ClassParamNode> result = new ArrayList<>();
         for (TerminalNode cid:ctx.ID()) {
             IdentifierNode id = IdentifierNode.create(cid.getText());
-            result.add(new ClassParam(id, type));
+            result.add(new ClassParamNode(id, type));
         }
         return result;
     }
 
 
-    private EnumDeclarationNode toAst(OguParser.Enum_defContext ctx, List<Decorator> decs) {
+    private EnumDeclarationNode toAst(OguParser.Enum_defContext ctx, List<DecoratorNode> decs) {
         TypeIdentifierNode name = new TypeIdentifierNode(ctx.en.getText());
         List<IdentifierNode> values = ctx.values.stream().map((t) -> new IdentifierNode(idText(t))).collect(Collectors.toList());
         List<TypeIdentifierNode> deriving = toDerivingAst(ctx.deriving());
@@ -258,13 +258,13 @@ public class ParseTreeToAst {
         return deriving;
     }
 
-    private DataDeclarationNode toAst(OguParser.Data_defContext ctx, List<Decorator> decs) {
+    private DataDeclarationNode toAst(OguParser.Data_defContext ctx, List<DecoratorNode> decs) {
         TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
         Map<String, TypeNode> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
 
-        List<TypeParam> params;
+        List<TypeParamNode> params;
         if (ctx.typedef_params() != null)
             params = getTypeParamList(ctx, ctx.typedef_params().params, constraints);
         else
@@ -286,13 +286,13 @@ public class ParseTreeToAst {
         return types;
     }
 
-    private TraitDeclarationNode toAst(OguParser.Trait_defContext ctx, List<Decorator> decs) {
+    private TraitDeclarationNode toAst(OguParser.Trait_defContext ctx, List<DecoratorNode> decs) {
         boolean isMutable = ctx.mut != null;
         TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
         Map<String,TypeNode> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
-        List<TypeParam> params = getTypeParamList(ctx, ctx.params, constraints);
+        List<TypeParamNode> params = getTypeParamList(ctx, ctx.params, constraints);
         List<FunctionalDeclarationNode> members = internalDeclToAst(ctx.internal_decl());
         TraitDeclarationNode trait = new TraitDeclarationNode(name, isMutable, params, members, decs);
         getPositionFrom(trait, ctx);
@@ -308,7 +308,7 @@ public class ParseTreeToAst {
     }
 
     private FunctionalDeclarationNode toAst(OguParser.Internal_declContext ctx) {
-        List<Decorator> decs = toAstDecorators(ctx.decorators());
+        List<DecoratorNode> decs = toAstDecorators(ctx.decorators());
 
         if (ctx.func_decl() != null)
             return toAst(ctx.func_decl(), decs);
@@ -322,7 +322,7 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private TypedefDeclarationNode toAst(OguParser.Type_defContext ctx, List<Decorator> decs) {
+    private TypedefDeclarationNode toAst(OguParser.Type_defContext ctx, List<DecoratorNode> decs) {
         Map<String,TypeNode> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
@@ -337,25 +337,25 @@ public class ParseTreeToAst {
             return tdecl;
         } else {
             // TODO Warning if are unused contraints
-            List<TypeParam> params = getTypeParamList(ctx, ctx.typedef_params().params, constraints);
+            List<TypeParamNode> params = getTypeParamList(ctx, ctx.typedef_params().params, constraints);
             GenericTypeDeclarationNode tdecl = new GenericTypeDeclarationNode(name, params, type, decs);
             getPositionFrom(tdecl, ctx);
             return tdecl;
         }
     }
 
-    private List<TypeParam> getTypeParamList(ParserRuleContext ctx, List<Token> tokens, Map<String,TypeNode> constraints) {
+    private List<TypeParamNode> getTypeParamList(ParserRuleContext ctx, List<Token> tokens, Map<String,TypeNode> constraints) {
         if (ctx == null)
             return Collections.emptyList();
 
-        List<TypeParam> params = new ArrayList<>();
+        List<TypeParamNode> params = new ArrayList<>();
         for (Token token : tokens) {
             String id = idText(token);
-            TypeParam p;
+            TypeParamNode p;
             if (constraints.containsKey(id))
-                p = new TypeParamConstrained(id, constraints.get(id));
+                p = new TypeParamConstrainedNode(id, constraints.get(id));
             else
-                p = new TypeParam(id);
+                p = new TypeParamNode(id);
             getPositionFrom(p, ctx);
             params.add(p);
         }
@@ -371,7 +371,7 @@ public class ParseTreeToAst {
         }
     }
 
-    private FunctionalDeclarationNode toAst(OguParser.Func_defContext ctx, List<Decorator> decorators) {
+    private FunctionalDeclarationNode toAst(OguParser.Func_defContext ctx, List<DecoratorNode> decoratorNodes) {
         if (ctx.let_func_name != null) {
             if (ctx.let_func_name.lid_val_id != null) {
                 IdentifierNode funcId = IdentifierNode.create(idText(ctx.let_func_name.lid_val_id));
@@ -380,14 +380,14 @@ public class ParseTreeToAst {
                     return new ErrorFunctionalDeclarationNode("error.let_as_val.no_params", getPosition(ctx));
                 }
                 ExpressionNode expr = toAst(ctx.let_expr());
-                ValDeclarationNode val = new ValDeclarationNode(funcId, type, expr, decorators);
+                ValDeclarationNode val = new ValDeclarationNode(funcId, type, expr, decoratorNodes);
                 getPositionFrom(val, ctx);
                 return val;
             }
             if (ctx.let_func_name.lid_fun_id != null) {
                 IdentifierNode funcId = IdentifierNode.create(idText(ctx.let_func_name.lid_fun_id));
                 List<FunctionPatternParam> params = funcArgsToAst(ctx.let_func_args);
-                LetDefinition funcdef = new LetDefinition(funcId, params, decorators);
+                LetDefinition funcdef = new LetDefinition(funcId, params, decoratorNodes);
                 getPositionFrom(funcdef, ctx);
                 if (ctx.let_expr() != null) {
                     toAst(ctx.let_expr(), funcdef);
@@ -401,7 +401,7 @@ public class ParseTreeToAst {
             params.add(toAst(ctx.left));
             params.add(toAst(ctx.right));
             OperatorNode op = ctx.infix_op != null ? toAst(ctx.infix_op) : toAst(ctx.prefix_op);
-            OpDefinition opDef = new OpDefinition(op, params, decorators);
+            OpDefinition opDef = new OpDefinition(op, params, decoratorNodes);
             getPositionFrom(opDef, ctx);
             if (ctx.let_expr() != null) {
                 toAst(ctx.let_expr(), opDef);
@@ -416,7 +416,7 @@ public class ParseTreeToAst {
             Map<IdentifierNode, TypeNode> types = new HashMap<>();
             lidsToAst(ctx.tup, ids, types);
             ExpressionNode value = toAst(ctx.expr());
-            TupleValDeclarationNode decl = new TupleValDeclarationNode(ids, types, value, decorators);
+            TupleValDeclarationNode decl = new TupleValDeclarationNode(ids, types, value, decoratorNodes);
             getPositionFrom(decl, ctx);
             return decl;
         }
@@ -644,47 +644,47 @@ public class ParseTreeToAst {
         return new FuncIdParam(IdentifierNode.create(idText(tok)));
     }
 
-    private List<Decorator> toAstDecorators(OguParser.DecoratorsContext decs) {
+    private List<DecoratorNode> toAstDecorators(OguParser.DecoratorsContext decs) {
         if (decs == null)
             return Collections.emptyList();
         return decs.dec.stream().map(this::toAst).collect(Collectors.toList());
     }
 
-    private Decorator toAst(OguParser.DecoratorContext ctx) {
+    private DecoratorNode toAst(OguParser.DecoratorContext ctx) {
         String decoratorId = idText(ctx.dec_id);
         if ("extern".equals(decoratorId)) {
             List<String> decoratorArgs = ctx.dec_args.stream().map(this::idText).collect(Collectors.toList());
             if (decoratorArgs.size() != 2)
-                return new DecoratorError(message("error.decorator.wrong_size_of_arguments"), getPosition(ctx));
-            Decorator decorator = new ExternDecorator(decoratorArgs.get(0), decoratorArgs.get(1));
-            getPositionFrom(decorator, ctx);
-            return decorator;
+                return new ErrorDecoratorNode(message("error.decorator.wrong_size_of_arguments"), getPosition(ctx));
+            DecoratorNode decoratorNode = new ExternDecoratorNode(decoratorArgs.get(0), decoratorArgs.get(1));
+            getPositionFrom(decoratorNode, ctx);
+            return decoratorNode;
         }
         if ("primitive".equals(decoratorId)) {
-            Decorator decorator = new PrimitiveDecorator();
-            getPositionFrom(decorator, ctx);
-            return decorator;
+            DecoratorNode decoratorNode = new PrimitiveDecoratorNode();
+            getPositionFrom(decoratorNode, ctx);
+            return decoratorNode;
         }
         if ("entrypoint".equals(decoratorId)) {
-            Decorator decorator = new EntryPointDecorator();
-            getPositionFrom(decorator, ctx);
-            return decorator;
+            DecoratorNode decoratorNode = new EntryPointDecoratorNode();
+            getPositionFrom(decoratorNode, ctx);
+            return decoratorNode;
         }
         Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private FunctionalDeclarationNode toAst(OguParser.Func_declContext ctx, List<Decorator> decorators) {
+    private FunctionalDeclarationNode toAst(OguParser.Func_declContext ctx, List<DecoratorNode> decoratorNodes) {
         if (ctx.name.f_id != null) {
             List<TypeArgNode> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
-            FunctionDeclarationNode funcDecl = new FunctionDeclarationNode(toAst(ctx.name), params, decorators);
+            FunctionDeclarationNode funcDecl = new FunctionDeclarationNode(toAst(ctx.name), params, decoratorNodes);
             getPositionFrom(funcDecl, ctx);
             return funcDecl;
         }
         if (ctx.name.f_op != null) {
             // op params...
             List<TypeArgNode> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
-            OpDeclarationNode opDecl = new OpDeclarationNode(toAst(ctx.name.f_op), params, decorators);
+            OpDeclarationNode opDecl = new OpDeclarationNode(toAst(ctx.name.f_op), params, decoratorNodes);
             getPositionFrom(opDecl, ctx);
             return opDecl;
         }
@@ -742,20 +742,20 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private List<ExportsDeclarationNode> toAst(OguParser.Module_exportsContext ctx, List<Decorator> decorators) {
+    private List<ExportsDeclarationNode> toAst(OguParser.Module_exportsContext ctx, List<DecoratorNode> decoratorNodes) {
         if (ctx.export_name() != null)
-            return ctx.exports.stream().map((e) -> toAst(e, decorators)).collect(Collectors.toList());
+            return ctx.exports.stream().map((e) -> toAst(e, decoratorNodes)).collect(Collectors.toList());
         throw new UnsupportedOperationException(ctx.toString());
     }
 
 
-    private List<UsesDeclarationNode> toAst(OguParser.Module_usesContext ctx, List<Decorator> decs) {
+    private List<UsesDeclarationNode> toAst(OguParser.Module_usesContext ctx, List<DecoratorNode> decs) {
         if (ctx.module_name() != null)
             return ctx.imports.stream().map((i) -> new UsesDeclarationNode(toAst(i), decs)).collect(Collectors.toList());
         throw new UnsupportedOperationException(ctx.toString());
     }
 
-    private AliasDeclarationNode toAst(OguParser.Alias_defContext ctx, List<Decorator> decs) {
+    private AliasDeclarationNode toAst(OguParser.Alias_defContext ctx, List<DecoratorNode> decs) {
         OguParser.Alias_targetContext target = ctx.alias_target();
         OguParser.Alias_originContext origin = ctx.alias_origin();
         if (target.alias_tid != null) {
@@ -776,7 +776,7 @@ public class ParseTreeToAst {
     }
 
 
-    private VarDeclarationNode toAst(OguParser.VarContext ctx, List<Decorator> decs) {
+    private VarDeclarationNode toAst(OguParser.VarContext ctx, List<DecoratorNode> decs) {
         if (ctx.vid().i != null) {
             IdentifierNode id =  IdentifierNode.create(idText(ctx.vid().i));
             VarDeclarationNode var;
@@ -794,14 +794,14 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private ValDeclarationNode toAst(OguParser.Val_defContext ctx, List<Decorator> decorators) {
+    private ValDeclarationNode toAst(OguParser.Val_defContext ctx, List<DecoratorNode> decoratorNodes) {
         if (ctx.val_id != null) {
             if (ctx.type() == null) {
-                ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.expr()), decorators);
+                ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.expr()), decoratorNodes);
                 getPositionFrom(val, ctx);
                 return val;
             }
-            ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decorators);
+            ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decoratorNodes);
             getPositionFrom(val, ctx);
             return val;
         }

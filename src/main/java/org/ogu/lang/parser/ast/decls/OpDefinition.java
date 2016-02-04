@@ -13,8 +13,8 @@ import java.util.List;
  */
 public class OpDefinition extends LetDeclarationNode {
 
-    public OpDefinition(OperatorNode name, List<FunctionPatternParam> params, List<Decorator> decorators) {
-        super(name, params, decorators);
+    public OpDefinition(OperatorNode name, List<FunctionPatternParam> params, List<DecoratorNode> decoratorNodes) {
+        super(name, params, decoratorNodes);
     }
 
 
@@ -24,7 +24,7 @@ public class OpDefinition extends LetDeclarationNode {
                 "op='" + name + '\''+
                 ", params=" + params +
                 ", body=" + body +
-                ", decorators=" + decorators +
+                ", decorators=" + decoratorNodes +
                 '}';
     }
 

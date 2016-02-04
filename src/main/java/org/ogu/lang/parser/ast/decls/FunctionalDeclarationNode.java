@@ -12,8 +12,8 @@ public abstract class FunctionalDeclarationNode extends ExportableDeclarationNod
 
     private ContractDeclarationNode contract;
 
-    protected FunctionalDeclarationNode(List<Decorator> decorators) {
-        super(decorators);
+    protected FunctionalDeclarationNode(List<DecoratorNode> decoratorNodes) {
+        super(decoratorNodes);
     }
 
 
@@ -25,7 +25,7 @@ public abstract class FunctionalDeclarationNode extends ExportableDeclarationNod
         return this.contract;
     }
 
-    protected FunctionalDeclarationNode(NameNode name, List<Decorator> decorators) {
-        super(name, decorators);
+    protected FunctionalDeclarationNode(NameNode name, List<DecoratorNode> decoratorNodes) {
+        super(name, decoratorNodes);
     }
 }

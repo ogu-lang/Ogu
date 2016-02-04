@@ -20,8 +20,8 @@ public class TupleValDeclarationNode extends ValDeclarationNode {
     private List<IdentifierNode> ids;
     private Map<IdentifierNode, TypeNode> types;
 
-    public TupleValDeclarationNode(List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types, ExpressionNode value, List<Decorator> decorators) {
-        super(value, decorators);
+    public TupleValDeclarationNode(List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+        super(value, decoratorNodes);
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);
         this.ids.forEach((i) -> i.setParent(this));
@@ -33,7 +33,7 @@ public class TupleValDeclarationNode extends ValDeclarationNode {
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().addAll(ids).addAll(types.values()).add(value).addAll(decorators).build();
+        return ImmutableList.<Node>builder().addAll(ids).addAll(types.values()).add(value).addAll(decoratorNodes).build();
     }
 
     @Override
@@ -42,7 +42,7 @@ public class TupleValDeclarationNode extends ValDeclarationNode {
                 "ids='" + ids + '\''+
                 ", types="+types+
                 ", value=" + value +
-                ", decorators" + decorators +
+                ", decorators" + decoratorNodes +
                 '}';
     }
 

@@ -17,29 +17,29 @@ public class ValDeclarationNode extends FunctionalDeclarationNode {
     protected ExpressionNode value;
     protected TypeNode type;
 
-    protected ValDeclarationNode(TypeNode type, ExpressionNode value, List<Decorator> decorators) {
-        super(decorators);
+    protected ValDeclarationNode(TypeNode type, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+        super(decoratorNodes);
         this.type = type;
         this.type.setParent(this);
         this.value = value;
         this.value.setParent(this);
     }
 
-    protected ValDeclarationNode(ExpressionNode value, List<Decorator> decorators) {
-        super(decorators);
+    protected ValDeclarationNode(ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+        super(decoratorNodes);
         this.value = value;
         this.value.setParent(this);
     }
 
 
-    public ValDeclarationNode(IdentifierNode id, ExpressionNode value, List<Decorator> decorators) {
-        super(id, decorators);
+    public ValDeclarationNode(IdentifierNode id, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+        super(id, decoratorNodes);
         this.value = value;
         this.value.setParent(this);
     }
 
-    public ValDeclarationNode(IdentifierNode id, TypeNode returnType, ExpressionNode value, List<Decorator> decorators) {
-        super(id, decorators);
+    public ValDeclarationNode(IdentifierNode id, TypeNode returnType, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+        super(id, decoratorNodes);
         this.type = returnType;
         this.type.setParent(this);
         this.value = value;
@@ -49,9 +49,9 @@ public class ValDeclarationNode extends FunctionalDeclarationNode {
     @Override
     public Iterable<Node> getChildren() {
         if (type == null)
-            return ImmutableList.<Node>builder().add(name).add(value).addAll(decorators).build();
+            return ImmutableList.<Node>builder().add(name).add(value).addAll(decoratorNodes).build();
         else
-            return ImmutableList.<Node>builder().add(name).add(type).add(value).addAll(decorators).build();
+            return ImmutableList.<Node>builder().add(name).add(type).add(value).addAll(decoratorNodes).build();
 
     }
 
@@ -61,7 +61,7 @@ public class ValDeclarationNode extends FunctionalDeclarationNode {
                 "id='" + name + '\''+
                 ", type="+type+
                 ", value=" + value +
-                ", decorators" + decorators +
+                ", decorators" + decoratorNodes +
                 '}';
     }
 

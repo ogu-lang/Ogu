@@ -23,8 +23,8 @@ public class UsesDeclarationNode extends NameDeclarationNode {
                 '}';
     }
 
-    public UsesDeclarationNode(TypeIdentifierNode name, List<Decorator> decorators) {
-        super(name, decorators);
+    public UsesDeclarationNode(TypeIdentifierNode name, List<DecoratorNode> decoratorNodes) {
+        super(name, decoratorNodes);
     }
 
     public  Optional<Symbol> findAmongImported(String name, SymbolResolver resolver) {

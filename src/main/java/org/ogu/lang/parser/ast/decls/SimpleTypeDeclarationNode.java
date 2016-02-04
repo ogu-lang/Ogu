@@ -13,8 +13,8 @@ import java.util.List;
  */
 public class SimpleTypeDeclarationNode extends TypedefDeclarationNode {
 
-    public SimpleTypeDeclarationNode(TypeIdentifierNode name, TypeNode type, List<Decorator> decorators) {
-        super(name, type, decorators);
+    public SimpleTypeDeclarationNode(TypeIdentifierNode name, TypeNode type, List<DecoratorNode> decoratorNodes) {
+        super(name, type, decoratorNodes);
     }
 
 
@@ -23,7 +23,7 @@ public class SimpleTypeDeclarationNode extends TypedefDeclarationNode {
         return "SimpleTypeDeclaration{"+
                 "name="+name+
                 ", type="+type+
-                ", decorators="+decorators+
+                ", decorators="+ decoratorNodes +
                 '}';
     }
 
@@ -33,6 +33,6 @@ public class SimpleTypeDeclarationNode extends TypedefDeclarationNode {
         return ImmutableList.<Node>builder()
                 .add(name)
                 .add(type)
-                .addAll(decorators).build();
+                .addAll(decoratorNodes).build();
     }
 }

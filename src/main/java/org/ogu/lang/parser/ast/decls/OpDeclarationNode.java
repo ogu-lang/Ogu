@@ -16,8 +16,8 @@ public class OpDeclarationNode extends FunctionalDeclarationNode {
 
     private List<TypeArgNode> params;
 
-    public OpDeclarationNode(OperatorNode name, List<TypeArgNode> params, List<Decorator> decorators) {
-        super(name, decorators);
+    public OpDeclarationNode(OperatorNode name, List<TypeArgNode> params, List<DecoratorNode> decoratorNodes) {
+        super(name, decoratorNodes);
         this.params = new ArrayList<>();
         this.params.addAll(params);
         this.params.forEach((p) -> p.setParent(this));

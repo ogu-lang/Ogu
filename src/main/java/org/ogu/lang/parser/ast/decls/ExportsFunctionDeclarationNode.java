@@ -14,12 +14,12 @@ public class ExportsFunctionDeclarationNode extends ExportsDeclarationNode {
     public String toString() {
         return "ExportsFunctionDeclaration{" +
                 "reference=" + name +
-                ", decorators=" + decorators +
+                ", decorators=" + decoratorNodes +
                 '}';
     }
 
-    public ExportsFunctionDeclarationNode(IdentifierNode referenceName, List<Decorator> decorators) {
-        super(referenceName, decorators);
+    public ExportsFunctionDeclarationNode(IdentifierNode referenceName, List<DecoratorNode> decoratorNodes) {
+        super(referenceName, decoratorNodes);
     }
 
 }

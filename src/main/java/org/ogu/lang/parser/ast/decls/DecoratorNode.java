@@ -9,11 +9,11 @@ import java.util.List;
  * Decorator over declarations
  * Created by ediaz on 23-01-16.
  */
-public abstract class Decorator extends Node {
+public abstract class DecoratorNode extends Node {
 
     protected List<String> args;
 
-    protected Decorator(List<String> args) {
+    protected DecoratorNode(List<String> args) {
         this.args = new ArrayList<>();
         this.args.addAll(args);
     }

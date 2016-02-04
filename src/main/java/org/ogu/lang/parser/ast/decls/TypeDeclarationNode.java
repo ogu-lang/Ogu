@@ -9,7 +9,7 @@ import java.util.List;
  */
 public abstract class TypeDeclarationNode extends ExportableDeclarationNode {
 
-    protected TypeDeclarationNode(NameNode name, List<Decorator> decorators) {
-        super(name, decorators);
+    protected TypeDeclarationNode(NameNode name, List<DecoratorNode> decoratorNodes) {
+        super(name, decoratorNodes);
     }
 }

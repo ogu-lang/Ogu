@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
-import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
+import org.ogu.lang.parser.ast.decls.typedef.TypeParamNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +14,11 @@ import java.util.List;
  */
 public class TraitDeclarationNode extends ContractDeclarationNode {
 
-    private List<TypeParam> params;
+    private List<TypeParamNode> params;
     private boolean isMutable;
 
-    public TraitDeclarationNode(TypeIdentifierNode name, boolean isMutable, List<TypeParam> params, List<FunctionalDeclarationNode> members, List<Decorator> decorators) {
-        super(name, members, decorators);
+    public TraitDeclarationNode(TypeIdentifierNode name, boolean isMutable, List<TypeParamNode> params, List<FunctionalDeclarationNode> members, List<DecoratorNode> decoratorNodes) {
+        super(name, members, decoratorNodes);
         this.isMutable = isMutable;
         this.params = new ArrayList<>();
         this.params.addAll(params);
@@ -31,7 +31,7 @@ public class TraitDeclarationNode extends ContractDeclarationNode {
                 .add(name)
                 .addAll(params)
                 .addAll(members)
-                .addAll(decorators).build();
+                .addAll(decoratorNodes).build();
     }
 
     @Override
@@ -41,7 +41,7 @@ public class TraitDeclarationNode extends ContractDeclarationNode {
                 ", isMutable=" + isMutable +
                 ", params=" + params +
                 ", members=" + members +
-                ", decorators=" + decorators +
+                ", decorators=" + decoratorNodes +
                 '}';
     }
 

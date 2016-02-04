@@ -13,8 +13,8 @@ public abstract class AlgebraicDataTypeDeclarationNode extends TypeDeclarationNo
 
     protected List<TypeIdentifierNode> deriving;
 
-    protected AlgebraicDataTypeDeclarationNode(TypeIdentifierNode name, List<TypeIdentifierNode> deriving, List<Decorator> decorators) {
-        super(name, decorators);
+    protected AlgebraicDataTypeDeclarationNode(TypeIdentifierNode name, List<TypeIdentifierNode> deriving, List<DecoratorNode> decoratorNodes) {
+        super(name, decoratorNodes);
         this.deriving = new ArrayList<>();
         this.deriving.addAll(deriving);
         this.deriving.forEach((d) -> d.setParent(this));

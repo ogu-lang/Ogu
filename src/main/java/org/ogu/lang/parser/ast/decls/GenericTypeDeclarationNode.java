@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
-import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
+import org.ogu.lang.parser.ast.decls.typedef.TypeParamNode;
 import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
 import java.util.ArrayList;
@@ -17,10 +17,10 @@ import java.util.List;
  */
 public class GenericTypeDeclarationNode extends TypedefDeclarationNode {
 
-    protected List<TypeParam> params;
+    protected List<TypeParamNode> params;
 
-    public GenericTypeDeclarationNode(TypeIdentifierNode name, List<TypeParam> params, TypeNode type, List<Decorator> decorators) {
-        super(name, type, decorators);
+    public GenericTypeDeclarationNode(TypeIdentifierNode name, List<TypeParamNode> params, TypeNode type, List<DecoratorNode> decoratorNodes) {
+        super(name, type, decoratorNodes);
         this.params = new ArrayList<>();
         this.params.addAll(params);
         this.params.forEach((p) -> p.setParent(this));
@@ -34,7 +34,7 @@ public class GenericTypeDeclarationNode extends TypedefDeclarationNode {
                 "name="+name+
                 ", type="+type+
                 ", params="+params+
-                ", decorators="+decorators+
+                ", decorators="+ decoratorNodes +
                 '}';
     }
 
@@ -45,6 +45,6 @@ public class GenericTypeDeclarationNode extends TypedefDeclarationNode {
                 .add(name)
                 .add(type)
                 .addAll(params)
-                .addAll(decorators).build();
+                .addAll(decoratorNodes).build();
     }
 }

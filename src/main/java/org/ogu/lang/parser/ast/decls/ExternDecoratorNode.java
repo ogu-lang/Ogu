@@ -10,9 +10,9 @@ import java.util.Collections;
  * Allows integration with other languages
  * Created by ediaz on 23-01-16.
  */
-public class ExternDecorator extends Decorator {
+public class ExternDecoratorNode extends DecoratorNode {
 
-    public ExternDecorator(String language, String signature) {
+    public ExternDecoratorNode(String language, String signature) {
         super(ImmutableList.<String>builder().add(language).add(signature).build());
     }
 

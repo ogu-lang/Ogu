@@ -18,15 +18,15 @@ public class TupleVarDeclarationNode extends VarDeclarationNode {
 
     private List<IdentifierNode> ids;
 
-    public TupleVarDeclarationNode(List<IdentifierNode> ids, ExpressionNode value, List<Decorator> decorators) {
-        super(value, decorators);
+    public TupleVarDeclarationNode(List<IdentifierNode> ids, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+        super(value, decoratorNodes);
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);
         this.ids.forEach((i) -> i.setParent(this));
     }
 
-    public TupleVarDeclarationNode(List<IdentifierNode> ids, TypeNode type, ExpressionNode value, List<Decorator> decorators) {
-        super(type, value, decorators);
+    public TupleVarDeclarationNode(List<IdentifierNode> ids, TypeNode type, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+        super(type, value, decoratorNodes);
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);
         this.ids.forEach((i) -> i.setParent(this));
@@ -36,9 +36,9 @@ public class TupleVarDeclarationNode extends VarDeclarationNode {
     @Override
     public Iterable<Node> getChildren() {
         if (type == null)
-            return ImmutableList.<Node>builder().addAll(ids).add(value).addAll(decorators).build();
+            return ImmutableList.<Node>builder().addAll(ids).add(value).addAll(decoratorNodes).build();
         else
-            return ImmutableList.<Node>builder().addAll(ids).add(type).add(value).addAll(decorators).build();
+            return ImmutableList.<Node>builder().addAll(ids).add(type).add(value).addAll(decoratorNodes).build();
     }
 
     @Override
@@ -47,7 +47,7 @@ public class TupleVarDeclarationNode extends VarDeclarationNode {
                 "ids='" + ids + '\''+
                 ", i="+type+
                 ", value=" + value +
-                ", decorators" + decorators +
+                ", decorators" + decoratorNodes +
                 '}';
     }
 

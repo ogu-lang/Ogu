@@ -10,11 +10,11 @@ import org.ogu.lang.parser.ast.typeusage.TypeNode;
  *       type (n:Ord) => List n = ...
  * Created by ediaz on 24-01-16.
  */
-public class TypeParamConstrained extends TypeParam {
+public class TypeParamConstrainedNode extends TypeParamNode {
 
     private TypeNode constraint;
 
-    public TypeParamConstrained(String id, TypeNode constraint) {
+    public TypeParamConstrainedNode(String id, TypeNode constraint) {
         super(id);
         this.constraint = constraint;
         this.constraint.setParent(this);

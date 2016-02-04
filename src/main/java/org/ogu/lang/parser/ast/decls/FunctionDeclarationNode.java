@@ -17,8 +17,8 @@ public class FunctionDeclarationNode extends FunctionalDeclarationNode {
     private TypeArgNode returnType;
 
 
-    public FunctionDeclarationNode(IdentifierNode id, List<TypeArgNode> paramTypes, List<Decorator> decorators) {
-        super(id, decorators);
+    public FunctionDeclarationNode(IdentifierNode id, List<TypeArgNode> paramTypes, List<DecoratorNode> decoratorNodes) {
+        super(id, decoratorNodes);
         this.paramTypes = new ArrayList<>();
         this.paramTypes.addAll(paramTypes.subList(0, paramTypes.size()-1));
         this.paramTypes.forEach((p) -> p.setParent(this));
@@ -34,7 +34,7 @@ public class FunctionDeclarationNode extends FunctionalDeclarationNode {
                 "id ='" + name + '\'' +
                 ", returnType =" + returnType+
                 ", paramTypes =" + paramTypes +
-                ", decorators = " + decorators +
+                ", decorators = " + decoratorNodes +
                 '}';
     }
 

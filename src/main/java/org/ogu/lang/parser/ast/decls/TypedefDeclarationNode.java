@@ -15,8 +15,8 @@ public abstract  class TypedefDeclarationNode extends TypeDeclarationNode {
 
     protected TypeNode type;
 
-    protected TypedefDeclarationNode(TypeIdentifierNode name, TypeNode type, List<Decorator> decorators)  {
-        super(name, decorators);
+    protected TypedefDeclarationNode(TypeIdentifierNode name, TypeNode type, List<DecoratorNode> decoratorNodes)  {
+        super(name, decoratorNodes);
         this.type = type;
         this.type.setParent(this);
     }
@@ -26,7 +26,7 @@ public abstract  class TypedefDeclarationNode extends TypeDeclarationNode {
         return "TypeDeclaration{"+
                 "name="+name+
                 ", type="+type+
-                ", decorators="+decorators+
+                ", decorators="+ decoratorNodes +
                 '}';
     }
 
@@ -36,7 +36,7 @@ public abstract  class TypedefDeclarationNode extends TypeDeclarationNode {
         return ImmutableList.<Node>builder()
                 .add(name)
                 .add(type)
-                .addAll(decorators).build();
+                .addAll(decoratorNodes).build();
     }
 
 }

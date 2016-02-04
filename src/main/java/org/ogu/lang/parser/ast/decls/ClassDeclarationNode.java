@@ -3,8 +3,8 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
-import org.ogu.lang.parser.ast.decls.typedef.ClassParam;
-import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
+import org.ogu.lang.parser.ast.decls.typedef.ClassParamNode;
+import org.ogu.lang.parser.ast.decls.typedef.TypeParamNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,18 +14,18 @@ import java.util.List;
  */
 public class ClassDeclarationNode extends ContractDeclarationNode {
 
-    private List<TypeParam> genParams;
-    private List<ClassParam> clasParams;
+    private List<TypeParamNode> genParams;
+    private List<ClassParamNode> clasParams;
     private boolean isMutable;
 
-    public ClassDeclarationNode(TypeIdentifierNode name, boolean isMutable, List<TypeParam> genParams, List<ClassParam> classParams, List<FunctionalDeclarationNode> members, List<Decorator> decorators) {
-        super(name, members, decorators);
+    public ClassDeclarationNode(TypeIdentifierNode name, boolean isMutable, List<TypeParamNode> genParams, List<ClassParamNode> classParamNodes, List<FunctionalDeclarationNode> members, List<DecoratorNode> decoratorNodes) {
+        super(name, members, decoratorNodes);
         this.isMutable = isMutable;
         this.genParams = new ArrayList<>();
         this.genParams.addAll(genParams);
         this.genParams.forEach((p) -> p.setParent(this));
         this.clasParams = new ArrayList<>();
-        this.clasParams = classParams;
+        this.clasParams = classParamNodes;
         this.clasParams.forEach((p) -> p.setParent(this));
     }
 
@@ -36,7 +36,7 @@ public class ClassDeclarationNode extends ContractDeclarationNode {
                 .addAll(genParams)
                 .addAll(clasParams)
                 .addAll(members)
-                .addAll(decorators).build();
+                .addAll(decoratorNodes).build();
     }
 
     @Override
@@ -47,7 +47,7 @@ public class ClassDeclarationNode extends ContractDeclarationNode {
                 ", genParams=" + genParams+
                 ", params=" + clasParams+
                 ", members=" + members +
-                ", decorators=" + decorators +
+                ", decorators=" + decoratorNodes +
                 '}';
     }
 

@@ -1,6 +1,5 @@
 package org.ogu.lang.parser.ast.decls;
 
-import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 
 import java.util.Collections;
@@ -10,9 +9,9 @@ import java.util.Collections;
  * Allows integration with other languages
  * Created by ediaz on 23-01-16.
  */
-public class PrimitiveDecorator extends Decorator {
+public class PrimitiveDecoratorNode extends DecoratorNode {
 
-    public PrimitiveDecorator() {
+    public PrimitiveDecoratorNode() {
         super(Collections.emptyList());
     }
 

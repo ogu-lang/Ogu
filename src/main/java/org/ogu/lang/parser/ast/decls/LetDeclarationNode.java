@@ -19,8 +19,8 @@ public abstract class LetDeclarationNode extends FunctionalDeclarationNode {
     List<FunctionNode> body;
 
 
-    protected LetDeclarationNode(NameNode name, List<FunctionPatternParam> params, List<Decorator> decorators) {
-        super(name, decorators);
+    protected LetDeclarationNode(NameNode name, List<FunctionPatternParam> params, List<DecoratorNode> decoratorNodes) {
+        super(name, decoratorNodes);
         this.params = new ArrayList<>();
         this.params.addAll(params);
         this.params.forEach((p) -> p.setParent(this));

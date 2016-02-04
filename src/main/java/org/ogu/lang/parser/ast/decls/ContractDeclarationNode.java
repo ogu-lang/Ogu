@@ -16,8 +16,8 @@ public class ContractDeclarationNode extends TypeDeclarationNode {
 
     protected List<FunctionalDeclarationNode> members;
 
-    protected ContractDeclarationNode(NameNode name, List<FunctionalDeclarationNode> members, List<Decorator> decorators) {
-        super(name, decorators);
+    protected ContractDeclarationNode(NameNode name, List<FunctionalDeclarationNode> members, List<DecoratorNode> decoratorNodes) {
+        super(name, decoratorNodes);
         this.members = new ArrayList<>();
         this.members.addAll(members);
         this.members.forEach((m) -> m.setParent(this));
@@ -28,7 +28,7 @@ public class ContractDeclarationNode extends TypeDeclarationNode {
         return ImmutableList.<Node>builder()
                 .add(name)
                 .addAll(members)
-                .addAll(decorators).build();
+                .addAll(decoratorNodes).build();
     }
 
     @Override
@@ -36,7 +36,7 @@ public class ContractDeclarationNode extends TypeDeclarationNode {
         return "ContractDeclaration{" +
                 "name='" + name + '\''+
                 ", members=" + members +
-                ", decorators=" + decorators +
+                ", decorators=" + decoratorNodes +
                 '}';
     }
 }

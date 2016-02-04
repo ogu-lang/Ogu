@@ -16,8 +16,8 @@ public class TypeAliasDeclarationNode extends AliasDeclarationNode {
     private TypeIdentifierNode aliasOrigin;
 
 
-    public TypeAliasDeclarationNode(TypeIdentifierNode target, TypeIdentifierNode origin, List<Decorator> decorators) {
-        super(target, decorators);
+    public TypeAliasDeclarationNode(TypeIdentifierNode target, TypeIdentifierNode origin, List<DecoratorNode> decoratorNodes) {
+        super(target, decoratorNodes);
         this.aliasOrigin = origin;
         this.aliasOrigin.setParent(this);
     }
@@ -27,12 +27,12 @@ public class TypeAliasDeclarationNode extends AliasDeclarationNode {
         return "TypeAliasDeclaration{" +
                 "aliasTarget=" + name +
                 ", aliasOrigin=" + aliasOrigin +
-                ", decorators="+ decorators +
+                ", decorators="+ decoratorNodes +
                 '}';
     }
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().add(name).add(aliasOrigin).addAll(decorators).build();
+        return ImmutableList.<Node>builder().add(name).add(aliasOrigin).addAll(decoratorNodes).build();
     }
 }

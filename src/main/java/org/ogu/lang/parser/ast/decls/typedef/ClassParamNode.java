@@ -11,12 +11,12 @@ import org.ogu.lang.parser.ast.typeusage.TypeNode;
  * class ID(param:T)
  * Created by ediaz on 25-01-16.
  */
-public class ClassParam extends Node {
+public class ClassParamNode extends Node {
 
     private IdentifierNode id;
     private TypeNode type;
 
-    public ClassParam(IdentifierNode id, TypeNode type) {
+    public ClassParamNode(IdentifierNode id, TypeNode type) {
         this.id = id;
         this.id.setParent(this);
         this.type = type;

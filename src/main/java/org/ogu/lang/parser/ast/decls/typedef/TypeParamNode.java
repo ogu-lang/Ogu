@@ -10,16 +10,16 @@ import java.util.Collections;
  * Used in generic types
  * Created by ediaz on 24-01-16.
  */
-public class TypeParam extends Node {
+public class TypeParamNode extends Node {
 
     protected String id;
     protected TypeNode type;
 
-    public TypeParam(String id) {
+    public TypeParamNode(String id) {
         this.id = id;
     }
 
-    public TypeParam(TypeNode type) {
+    public TypeParamNode(TypeNode type) {
         this.type = type;
         this.type.setParent(this);
     }

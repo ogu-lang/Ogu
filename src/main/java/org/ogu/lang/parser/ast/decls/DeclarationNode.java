@@ -12,24 +12,24 @@ import java.util.List;
  */
 public abstract class DeclarationNode extends Node {
 
-    protected List<Decorator> decorators;
+    protected List<DecoratorNode> decoratorNodes;
 
-    protected DeclarationNode(List<Decorator> decorators) {
-        this.decorators = new ArrayList<>();
-        this.decorators.addAll(decorators);
-        this.decorators.forEach((p) -> p.setParent(this));
+    protected DeclarationNode(List<DecoratorNode> decoratorNodes) {
+        this.decoratorNodes = new ArrayList<>();
+        this.decoratorNodes.addAll(decoratorNodes);
+        this.decoratorNodes.forEach((p) -> p.setParent(this));
     }
 
     @Override
     public Iterable<Node> getChildren() {
         return ImmutableList.<Node>builder()
-                .addAll(decorators).build();
+                .addAll(decoratorNodes).build();
     }
 
     @Override
     public String toString() {
         return "Declaration{" +
-                "decorators='" +decorators + '\''+
+                "decorators='" + decoratorNodes + '\''+
                 '}';
     }
 }

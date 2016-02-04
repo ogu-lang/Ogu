@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
-import org.ogu.lang.parser.ast.decls.typedef.TypeParam;
+import org.ogu.lang.parser.ast.decls.typedef.TypeParamNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +14,10 @@ import java.util.List;
  */
 public class InstanceDeclarationNode extends ContractDeclarationNode {
 
-    private List<TypeParam> params;
+    private List<TypeParamNode> params;
 
-    public InstanceDeclarationNode(TypeIdentifierNode name, List<TypeParam> params, List<FunctionalDeclarationNode> members, List<Decorator> decorators) {
-        super(name, members, decorators);
+    public InstanceDeclarationNode(TypeIdentifierNode name, List<TypeParamNode> params, List<FunctionalDeclarationNode> members, List<DecoratorNode> decoratorNodes) {
+        super(name, members, decoratorNodes);
         this.params = new ArrayList<>();
         this.params.addAll(params);
         this.params.forEach((p) -> p.setParent(this));
@@ -31,7 +31,7 @@ public class InstanceDeclarationNode extends ContractDeclarationNode {
                 .add(name)
                 .addAll(params)
                 .addAll(members)
-                .addAll(decorators).build();
+                .addAll(decoratorNodes).build();
     }
 
     @Override
@@ -40,7 +40,7 @@ public class InstanceDeclarationNode extends ContractDeclarationNode {
                 "name='" + name + '\''+
                 ", params=" + params+
                 ", members=" + members +
-                ", decorators=" + decorators +
+                ", decorators=" + decoratorNodes +
                 '}';
     }
 }

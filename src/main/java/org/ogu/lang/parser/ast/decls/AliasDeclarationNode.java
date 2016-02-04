@@ -10,8 +10,8 @@ import java.util.List;
  */
 public abstract class AliasDeclarationNode extends NameDeclarationNode {
 
-    protected AliasDeclarationNode(List<Decorator> decorators) { super(decorators); }
-    protected AliasDeclarationNode(NameNode id, List<Decorator> decorators) {
-        super(id, decorators);
+    protected AliasDeclarationNode(List<DecoratorNode> decoratorNodes) { super(decoratorNodes); }
+    protected AliasDeclarationNode(NameNode id, List<DecoratorNode> decoratorNodes) {
+        super(id, decoratorNodes);
     }
 }

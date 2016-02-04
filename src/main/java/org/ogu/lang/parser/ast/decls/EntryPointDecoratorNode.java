@@ -9,9 +9,9 @@ import java.util.Collections;
  * Allows integration with other languages
  * Created by ediaz on 23-01-16.
  */
-public class EntryPointDecorator extends Decorator {
+public class EntryPointDecoratorNode extends DecoratorNode {
 
-    public EntryPointDecorator() {
+    public EntryPointDecoratorNode() {
         super(Collections.emptyList());
     }
 

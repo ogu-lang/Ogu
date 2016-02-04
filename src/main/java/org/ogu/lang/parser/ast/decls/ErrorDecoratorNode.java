@@ -11,11 +11,11 @@ import java.util.Collections;
  * Semantic error on decorator
  * Created by ediaz on 23-01-16.
  */
-public class DecoratorError extends Decorator {
+public class ErrorDecoratorNode extends DecoratorNode {
 
     private String message;
 
-    public DecoratorError(String message, Position position) {
+    public ErrorDecoratorNode(String message, Position position) {
         super(Collections.emptyList());
         this.message = message;
         this.setPosition(position);

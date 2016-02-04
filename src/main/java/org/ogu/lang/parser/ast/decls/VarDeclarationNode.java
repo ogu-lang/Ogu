@@ -17,35 +17,35 @@ public class VarDeclarationNode extends FunctionalDeclarationNode {
     protected ExpressionNode value;
     protected TypeNode type;
 
-    protected VarDeclarationNode(TypeNode type, ExpressionNode value, List<Decorator> decorators) {
-        super(decorators);
+    protected VarDeclarationNode(TypeNode type, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+        super(decoratorNodes);
         this.type = type;
         this.type.setParent(this);
         this.value = value;
         this.value.setParent(this);
     }
 
-    protected VarDeclarationNode(ExpressionNode value, List<Decorator> decorators) {
-        super(decorators);
+    protected VarDeclarationNode(ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+        super(decoratorNodes);
         this.value = value;
         this.value.setParent(this);
     }
 
 
-    public VarDeclarationNode(IdentifierNode id, ExpressionNode value, List<Decorator> decorators) {
-        super(id, decorators);
+    public VarDeclarationNode(IdentifierNode id, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+        super(id, decoratorNodes);
         this.value = value;
         this.value.setParent(this);
     }
 
-    public VarDeclarationNode(IdentifierNode id, TypeNode type, List<Decorator> decorators) {
-        super(id, decorators);
+    public VarDeclarationNode(IdentifierNode id, TypeNode type, List<DecoratorNode> decoratorNodes) {
+        super(id, decoratorNodes);
         this.type = type;
         this.type.setParent(this);
     }
 
-    public VarDeclarationNode(IdentifierNode id, TypeNode type, ExpressionNode value, List<Decorator> decorators) {
-        super(id, decorators);
+    public VarDeclarationNode(IdentifierNode id, TypeNode type, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+        super(id, decoratorNodes);
         this.type = type;
         this.type.setParent(this);
         this.value = value;
@@ -55,13 +55,13 @@ public class VarDeclarationNode extends FunctionalDeclarationNode {
     @Override
     public Iterable<Node> getChildren() {
         if (type == null) {
-            return ImmutableList.<Node>builder().add(name).add(value).addAll(decorators).build();
+            return ImmutableList.<Node>builder().add(name).add(value).addAll(decoratorNodes).build();
         } else {
             if (value == null)
-                return ImmutableList.<Node>builder().add(name).add(type).addAll(decorators).build();
+                return ImmutableList.<Node>builder().add(name).add(type).addAll(decoratorNodes).build();
 
             else
-                return ImmutableList.<Node>builder().add(name).add(value).add(type).addAll(decorators).build();
+                return ImmutableList.<Node>builder().add(name).add(value).add(type).addAll(decoratorNodes).build();
         }
     }
 
@@ -71,7 +71,7 @@ public class VarDeclarationNode extends FunctionalDeclarationNode {
                 "id='" + name + '\''+
                 ", type="+type+
                 ", value=" + value +
-                ", decorators" + decorators +
+                ", decorators" + decoratorNodes +
                 '}';
     }
 }

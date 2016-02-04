@@ -15,12 +15,12 @@ public class ExportsTypeDeclarationNode extends ExportsDeclarationNode {
     public String toString() {
         return "ExportsTypeDeclaration{" +
                 "type=" + name +
-                ", decorators" + decorators +
+                ", decorators" + decoratorNodes +
                 '}';
     }
 
-    public ExportsTypeDeclarationNode(TypeIdentifierNode type, List<Decorator> decorators) {
-        super(type, decorators);
+    public ExportsTypeDeclarationNode(TypeIdentifierNode type, List<DecoratorNode> decoratorNodes) {
+        super(type, decoratorNodes);
     }
 
 

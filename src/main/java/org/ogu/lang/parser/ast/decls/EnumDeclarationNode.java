@@ -15,8 +15,8 @@ public class EnumDeclarationNode extends AlgebraicDataTypeDeclarationNode {
 
     private List<IdentifierNode> values;
 
-    public EnumDeclarationNode(TypeIdentifierNode name, List<IdentifierNode> values, List<TypeIdentifierNode> deriving, List<Decorator> decorators) {
-        super(name, deriving, decorators);
+    public EnumDeclarationNode(TypeIdentifierNode name, List<IdentifierNode> values, List<TypeIdentifierNode> deriving, List<DecoratorNode> decoratorNodes) {
+        super(name, deriving, decoratorNodes);
         this.values = new ArrayList<>();
         this.values.addAll(values);
     }
@@ -28,7 +28,7 @@ public class EnumDeclarationNode extends AlgebraicDataTypeDeclarationNode {
                 .add(name)
                 .addAll(values)
                 .addAll(deriving)
-                .addAll(decorators).build();
+                .addAll(decoratorNodes).build();
     }
 
     @Override
@@ -37,7 +37,7 @@ public class EnumDeclarationNode extends AlgebraicDataTypeDeclarationNode {
                 "name='" + name + '\''+
                 ", values=" + values +
                 ", deriving=" + deriving +
-                ", decorators=" + decorators +
+                ", decorators=" + decoratorNodes +
                 '}';
     }
 

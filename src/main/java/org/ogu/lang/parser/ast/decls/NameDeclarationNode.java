@@ -13,12 +13,12 @@ public abstract class NameDeclarationNode extends DeclarationNode {
 
     protected NameNode name;
 
-    protected NameDeclarationNode(List<Decorator> decorators) {
-        super(decorators);
+    protected NameDeclarationNode(List<DecoratorNode> decoratorNodes) {
+        super(decoratorNodes);
     }
 
-    protected NameDeclarationNode(NameNode name, List<Decorator> decorators) {
-        super(decorators);
+    protected NameDeclarationNode(NameNode name, List<DecoratorNode> decoratorNodes) {
+        super(decoratorNodes);
         this.name = name;
         this.name.setParent(this);
     }
@@ -33,14 +33,14 @@ public abstract class NameDeclarationNode extends DeclarationNode {
     public Iterable<Node> getChildren() {
         return ImmutableList.<Node>builder()
                 .add(name)
-                .addAll(decorators).build();
+                .addAll(decoratorNodes).build();
     }
 
     @Override
     public String toString() {
         return "Declaration{" +
                 "name='" + name + '\''+
-                ", decorators=" + decorators +
+                ", decorators=" + decoratorNodes +
                 '}';
     }
 }
