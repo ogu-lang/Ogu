@@ -24,7 +24,7 @@ public class FunctionCallNode extends InvocableExpressionNode {
     public String toString() {
 
         return "FunctionCall{" +
-                "function='" + function + '\'' +
+                "function=(" + function + ')' +
                 ", actualParams=" + actualParamNodes +
                 '}';
     }

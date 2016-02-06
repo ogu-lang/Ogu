@@ -1010,9 +1010,6 @@ public class ParseTreeToAst {
             return toAst(ctx.vector_expr());
         }
 
-        if (ctx.constructor() != null) {
-            return toAst(ctx.constructor());
-        }
 
         if (ctx.infix_id != null) {
             ReferenceNode name = new ReferenceNode(IdentifierNode.create(idText(ctx.infix_id)));
@@ -1366,6 +1363,7 @@ public class ParseTreeToAst {
         }
     }
 
+    /*
     private ConstructorNode toAst(OguParser.ConstructorContext ctx) {
         TypeReferenceNode type = new TypeReferenceNode(toAst(ctx.tid()));
         getPositionFrom(type, ctx);
@@ -1377,7 +1375,7 @@ public class ParseTreeToAst {
         ConstructorNode ctor = new ConstructorNode(type, params);
         getPositionFrom(ctor, ctx);
         return ctor;
-    }
+    } */
 
     private ActualParamNode toAstParam(OguParser.ExprContext ctx) {
         ActualParamNode param = new ActualParamNode(toAst(ctx));

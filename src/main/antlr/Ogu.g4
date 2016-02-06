@@ -263,7 +263,6 @@ expr
 	| self_id
 	| function=func_name (params+=expr)+
 	| qual_function=qual_func_name (params+=expr)*
-	| constructor
 	| ref=ID
 	| primary
 	| paren_expr
@@ -305,8 +304,6 @@ neg_expr
     : '(' '-' e=expr ')'
     | '-' (a=atom);
 
-constructor
-    : 'new' tid '(' tuple_expr? ')' ;
 
 tuple_expr
     : e+=expr (',' e+=expr)*

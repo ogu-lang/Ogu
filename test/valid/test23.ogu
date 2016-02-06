@@ -34,10 +34,19 @@ mut class Stack t () where
 mut class Auto(modelo:String) = Auto(modelo, 0)
 mut class Auto() = Auto("Sin modelo", 0)
 
-
 class (t:Ord) => Stack' t () where
 
     let pop = 0
 
 
 data (t:Ord) => Maybe t = Nothing | Some t
+
+
+
+var auto = Auto("Ford", 2015)
+
+avanzar! auto 100
+
+set kilometraje auto = (kilometraje auto) + 200
+
+println "el kilometrake de tu auto es: " ++ (kilometraje auto) ;; imprime 300

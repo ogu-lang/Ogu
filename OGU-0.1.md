@@ -526,17 +526,15 @@ De este modo podemos declarar así:
     val edades : (StrMap Int) = {"Pedro"->25, "Juan"->30, "Diego"->40}
 
 
-## Traits genéricas
+## Traits 
 
 Un trait es como los type class de Haskell
 
     trait YesNo a where
         def yesno :: a -> Bool
 
-esta type class genérica con un método llamado yesno que recibe el argumento y debe retornar Bool.
 
-
-Una vez que tenemos definida una type class podemos usarla para instanciarla en otros tipos del siguiente modo:
+Una vez que tenemos definida un trait podemos  instanciarlo en otros tipos del siguiente modo:
 
     instance YesNo Int where
         let yesno 0 = false
@@ -547,6 +545,9 @@ Una vez que tenemos definida una type class podemos usarla para instanciarla en 
         let yesno _  = true
 
 (Notar la indentación)
+
+Esto permite definir "protocolo" para tipos, es una forma de herencia más flexible que la Interfaces de java o que los 
+traits de Scala.
 
 # Tipos algebraicos
 
@@ -679,6 +680,8 @@ Podemos usar la notación <-
     
 Esto sólo sirve para variables mutables.
     
+   
+Una clase en Ogú es una forma conveniente de combinar un tipo record (declarado con data), un trait y una instance.  
     
 En Ogú los métodos son funciones que se restringen a la clase y que siempre reciben un parámetro (self).
 Se invocan como cualquier función, en Ogú no existe la notación objeto . metodo.
@@ -706,6 +709,36 @@ Veamos otro ejemplo:
      push! stack 20
      pop! stack ;; <- retorna 20
 
+
+Sin clases tendríamos que haber hecho lo siguiente:
+
+    data Stack = StackData { _data : [Int] }
+    
+    trait Stackable t where
+    
+        def push! : t -> Int -> ()
+        def pop! : t -> Int
+        def empty? : t -> Boolean
+        
+    instance Stackable Stack where
+    
+        val _self : Stack
+        
+        let push! _self x:Int = set _data _self = x :: _data _self
+        
+        let pop! _self = 
+           val result = head (_data _self)
+           set _data _self = tail (_data _self)
+           result
+           
+        let empty? self = empty? (_data _self)
+
+        
+    var stack = Stack { _data = [] }
+    push! stack 10
+    push! stack 20
+    pop! stack ;; <- retorna 20
+    
 
 Esta es una definición de una clase mutable (con estado).
 Es una convención en Ogú que las funciones que mutan una clase deben llevar el signo ! al final del nombre, 

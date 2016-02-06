@@ -168,7 +168,7 @@ def _javaStringToString : JavaString -> String
 let _javaStringToString str = toCharArray str
 
 def _stringToJavaString : String -> JavaString
-let _stringToJavaString str = new JavaString(str)
+let _stringToJavaString str = JavaString(str)
 
 #{extern "jvm" "Ljava/lang/System;"}
 alias System = Java.Lang.System
@@ -198,7 +198,7 @@ let println! str =
 
 
 
-val _stdIn : BufferedReader = new BufferedReader (new InputStreamReader (_stdIn))
+val _stdIn = BufferedReader (InputStreamReader _stdIn)
 
 
 def readln! : String
