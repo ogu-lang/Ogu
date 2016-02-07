@@ -52,7 +52,7 @@ export_name : TID | ID  ;
 
 module_uses : decs=decorators? 'uses' imports+=module_name (',' imports+=module_name)* NL* ;
 
-module_body : (members+=module_decl NL*)* ;
+module_body : (members+=module_decl NL*)* (expr NL*)* ;
 
 module_decl
     : decs=decorators?
@@ -118,11 +118,10 @@ func_decl :
       | '->'? func_decl_arg
       );
 
-var :  'var' vid (':' type)? ('=' expr)? ;
+var :  'var' vid=ID (':' type)? ('=' expr)?
+    |  'var'  '(' vidt (',' vidt)* ')' ('=' expr)? ;
 
-vid : i=ID | '(' vidt (',' vidt)* ')' ;
-
-vidt : ID (':' type)? ;
+vidt : i=ID (':' t=type)? ;
 
 func_decl_arg
 	: unit

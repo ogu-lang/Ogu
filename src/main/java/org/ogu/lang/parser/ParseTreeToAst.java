@@ -462,6 +462,17 @@ public class ParseTreeToAst {
         }
     }
 
+    private void vidtToAst(List<OguParser.VidtContext> vidt, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
+        for (OguParser.VidtContext ctx : vidt) {
+            IdentifierNode id = IdentifierNode.create(idText(ctx.i));
+            ids.add(id);
+            if (ctx.type() != null) {
+                TypeNode type = toAst(ctx.type());
+                types.put(id, type);
+            }
+        }
+    }
+
     private ExpressionNode toAst(OguParser.Let_exprContext ctx) {
         if (ctx.expr() != null) {
             return toAst(ctx.expr());
@@ -789,8 +800,8 @@ public class ParseTreeToAst {
 
 
     private VarDeclarationNode toAst(OguParser.VarContext ctx, List<DecoratorNode> decs) {
-        if (ctx.vid().i != null) {
-            IdentifierNode id =  IdentifierNode.create(idText(ctx.vid().i));
+        if (ctx.vid != null) {
+            IdentifierNode id =  IdentifierNode.create(idText(ctx.vid));
             VarDeclarationNode var;
             if (ctx.type() == null) {
                 var = new VarDeclarationNode(id, toAst(ctx.expr()), decs);
@@ -802,8 +813,15 @@ public class ParseTreeToAst {
             }
             getPositionFrom(var, ctx);
             return var;
+        } else {
+            List<IdentifierNode> ids = new ArrayList<>();
+            Map<IdentifierNode, TypeNode> types = new HashMap<>();
+            vidtToAst(ctx.vidt(), ids, types);
+            ExpressionNode value = toAst(ctx.expr());
+            TupleVarDeclarationNode decl = new TupleVarDeclarationNode(ids, types, value, decs);
+            getPositionFrom(decl, ctx);
+            return decl;
         }
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
     private ValDeclarationNode toAst(OguParser.Val_defContext ctx, List<DecoratorNode> decoratorNodes) {
