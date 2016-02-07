@@ -1,0 +1,6 @@
+
+var (a,a) = (0,1) ; repeat a
+
+val (b,b) = (0,1) ; repeat b
+
+let (c,c) = (0,1) ; repeat c

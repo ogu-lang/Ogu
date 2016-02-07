@@ -434,12 +434,12 @@ public class ParseTreeToAst {
             return opDef;
         }
 
-
-
         if (!ctx.tup.isEmpty()) {
             List<IdentifierNode> ids = new ArrayList<>();
             Map<IdentifierNode, TypeNode> types = new HashMap<>();
-            lidsToAst(ctx.tup, ids, types);
+            ErrorValDeclarationNode error = lidsToAst(ctx.tup, ids, types);
+            if (error != null)
+                return error;
             ExpressionNode value = toAst(ctx.expr());
             TupleValDeclarationNode decl = new TupleValDeclarationNode(ids, types, value, decoratorNodes);
             getPositionFrom(decl, ctx);
@@ -449,28 +449,39 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private void lidsToAst(List<OguParser.LidContext> lids, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
+    private ErrorValDeclarationNode lidsToAst(List<OguParser.LidContext> lids, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
         for(OguParser.LidContext ctx : lids) {
+            IdentifierNode id;
             if (ctx.lid_fun_id !=null) {
-                ids.add(IdentifierNode.create(idText(ctx.lid_fun_id)));
+                id = IdentifierNode.create(idText(ctx.lid_fun_id));
             } else {
-                IdentifierNode id = IdentifierNode.create(idText(ctx.lid_val_id));
-                TypeNode type = toAst(ctx.type());
-                ids.add(id);
-                types.put(id, type);
+                id = IdentifierNode.create(idText(ctx.lid_val_id));
             }
-        }
-    }
 
-    private void vidtToAst(List<OguParser.VidtContext> vidt, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
-        for (OguParser.VidtContext ctx : vidt) {
-            IdentifierNode id = IdentifierNode.create(idText(ctx.i));
+            if (ids.contains(id)) {
+                return new ErrorValDeclarationNode(message("error.declare_duplicate_id") + id.getName(), getPosition(ctx));
+            }
             ids.add(id);
             if (ctx.type() != null) {
                 TypeNode type = toAst(ctx.type());
                 types.put(id, type);
             }
         }
+        return null;
+    }
+
+    private ErrorVarDeclarationNode vidtToAst(List<OguParser.VidtContext> vidt, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
+        for (OguParser.VidtContext ctx : vidt) {
+            IdentifierNode id = IdentifierNode.create(idText(ctx.i));
+            if (ids.contains(id))
+                return new ErrorVarDeclarationNode(message("error.declare_duplicate_id") + id.getName(), getPosition(ctx));
+            ids.add(id);
+            if (ctx.type() != null) {
+                TypeNode type = toAst(ctx.type());
+                types.put(id, type);
+            }
+        }
+        return null;
     }
 
     private ExpressionNode toAst(OguParser.Let_exprContext ctx) {
@@ -816,7 +827,9 @@ public class ParseTreeToAst {
         } else {
             List<IdentifierNode> ids = new ArrayList<>();
             Map<IdentifierNode, TypeNode> types = new HashMap<>();
-            vidtToAst(ctx.vidt(), ids, types);
+            ErrorVarDeclarationNode error = vidtToAst(ctx.vidt(), ids, types);
+            if (error != null)
+                return error;
             ExpressionNode value = toAst(ctx.expr());
             TupleVarDeclarationNode decl = new TupleVarDeclarationNode(ids, types, value, decs);
             getPositionFrom(decl, ctx);
@@ -824,18 +837,29 @@ public class ParseTreeToAst {
         }
     }
 
-    private ValDeclarationNode toAst(OguParser.Val_defContext ctx, List<DecoratorNode> decoratorNodes) {
+    private ValDeclarationNode toAst(OguParser.Val_defContext ctx, List<DecoratorNode> decs) {
         if (ctx.val_id != null) {
             if (ctx.type() == null) {
-                ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.expr()), decoratorNodes);
+                ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.expr()), decs);
                 getPositionFrom(val, ctx);
                 return val;
             }
-            ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decoratorNodes);
+            ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decs);
             getPositionFrom(val, ctx);
             return val;
+        } else {
+            List<IdentifierNode> ids = new ArrayList<>();
+            Map<IdentifierNode, TypeNode> types = new HashMap<>();
+            ErrorValDeclarationNode error  = lidsToAst(ctx.lid(), ids, types);
+            if (error != null) {
+                return error;
+            } else {
+                ExpressionNode expr = toAst(ctx.expr());
+                TupleValDeclarationNode vals = new TupleValDeclarationNode(ids, types, expr, decs);
+                getPositionFrom(expr, ctx);
+                return vals;
+            }
         }
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
     private TypeNode toAst(OguParser.TypeContext ctx) {
