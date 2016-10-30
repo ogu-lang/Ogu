@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class Compiler {
 
-    public static String VERSION = "Ogu compiler version 0.1.3 (Plunke)";
+    public static String VERSION = "Ogu compiler version 0.1.4 (Plunke)";
 
     private SymbolResolver resolver;
     private Options options;

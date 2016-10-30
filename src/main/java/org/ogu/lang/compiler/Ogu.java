@@ -15,6 +15,7 @@ import org.ogu.lang.parser.ast.Position;
 import org.ogu.lang.resolvers.*;
 import org.ogu.lang.resolvers.compiled.JarTypeResolver;
 import org.ogu.lang.resolvers.jdk.JdkTypeResolver;
+import org.ogu.lang.util.Feedback;
 import org.ogu.lang.util.Logger;
 import org.ogu.lang.util.Messages;
 
@@ -53,6 +54,7 @@ public class Ogu {
             commander.usage();
             return;
         }
+        message("parse ");
 
         Logger.configure(options);
 
@@ -72,8 +74,10 @@ public class Ogu {
 
         SymbolResolver resolver = getResolver(options.getSources(), options.getClassPathElements(), oguModules.stream().map(OguModuleWithSource::getModule).collect(Collectors.toList()));
 
+        Feedback.message("instance...");
         Compiler instance = new Compiler(resolver, options);
         for (OguModuleWithSource oguModule : oguModules) {
+            Feedback.message("add module:" + oguModule.getModule().describe());
             for (ClassFileDefinition classFileDefinition : instance.compile(oguModule.getModule(), new ErrorPrinter(oguModule.getSource().getPath()))) {
                 saveClassFile(classFileDefinition, options);
             }
@@ -106,6 +110,7 @@ public class Ogu {
 
 
     private static void saveClassFile(ClassFileDefinition classFileDefinition, Options options) {
+        System.out.println("escribiendo archivo: "+classFileDefinition.getName());
         File output = null;
         try {
             output = new File(new File(options.getDestinationDir()).getAbsolutePath() + "/" + classFileDefinition.getName().replaceAll("\\.", "/") + ".class");

@@ -7,6 +7,16 @@ import java.util.List;
 
 /**
  * Compiler Options
+ * Options for Plunke version:
+ *      -nc --nocore: doesn't include core library
+ *      -p --parse: parse only
+ *      -o --output: set destination directory for classes
+ *      -cp --classpath: define classpath
+ *      -v  --verbose: verbose compilation
+ *      -d  --debug: debugging output
+ *      -t --tree: show compilation tree
+ *      -h --help: shows help
+ *
  * Created by ediaz on 20-01-16.
  */
 public class Options {
