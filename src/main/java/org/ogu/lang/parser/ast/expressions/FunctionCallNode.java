@@ -6,6 +6,7 @@ import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.typesystem.TypeUsage;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -71,5 +72,12 @@ public class FunctionCallNode extends InvocableExpressionNode {
         return function.findFormalParametersFor(this).get();
     }
 
+    public List<ExpressionNode> getActualParamValuesInOrder() {
+        List<ExpressionNode> values = new LinkedList<>();
+        for (ActualParamNode actualParam : actualParamNodes) {
+            values.add(actualParam.getValue());
+        }
+        return values;
+    }
 
 }

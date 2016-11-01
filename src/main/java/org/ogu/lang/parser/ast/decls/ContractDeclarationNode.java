@@ -1,11 +1,14 @@
 package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
+import org.ogu.lang.definitions.InternalFunctionDefinition;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.NameNode;
+import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A Contract is a declarations that contains methods
@@ -38,5 +41,10 @@ public class ContractDeclarationNode extends TypeDeclarationNode {
                 ", members=" + members +
                 ", decorators=" + decoratorNodes +
                 '}';
+    }
+
+    @Override
+    public Optional<InternalFunctionDefinition> findFunction(String functionName, List<ActualParamNode> actualParams) {
+        return null;
     }
 }

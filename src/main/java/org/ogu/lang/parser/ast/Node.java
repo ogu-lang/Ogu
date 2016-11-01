@@ -7,6 +7,7 @@ import org.ogu.lang.resolvers.ResolverRegistry;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.List;
 import java.util.Optional;
@@ -108,6 +109,11 @@ public abstract class Node implements Symbol {
             throw new IllegalStateException("Not validated");
         }
         return valid;
+    }
+
+    @Override
+    public TypeUsage calcType() {
+        throw new UnsupportedOperationException(this.getClass().getCanonicalName());
     }
 
     /**

@@ -68,7 +68,10 @@ alias_def : 'alias' alias_target '=' alias_origin NL*;
 
 alias_target : alias_tid=TID | alias_id=ID;
 
-alias_origin :  alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_origin_id=ID)? ;
+alias_origin : jvm_id=jvm_origin
+             | alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_origin_id=ID)? ;
+
+jvm_origin : 'jvm' src=STRING ;
 
 enum_def : 'enum' en=TID '=' values+=ID ('|' values+=ID)* deriving? ;
 

@@ -54,7 +54,6 @@ public class Ogu {
             commander.usage();
             return;
         }
-        message("parse ");
 
         Logger.configure(options);
 
@@ -72,9 +71,9 @@ public class Ogu {
         }
 
 
-        SymbolResolver resolver = getResolver(options.getSources(), options.getClassPathElements(), oguModules.stream().map(OguModuleWithSource::getModule).collect(Collectors.toList()));
+        SymbolResolver resolver = getResolver(options.getSources(), options.getClassPathElements(),
+                                     oguModules.stream().map(OguModuleWithSource::getModule).collect(Collectors.toList()));
 
-        Feedback.message("instance...");
         Compiler instance = new Compiler(resolver, options);
         for (OguModuleWithSource oguModule : oguModules) {
             Feedback.message("add module:" + oguModule.getModule().describe());

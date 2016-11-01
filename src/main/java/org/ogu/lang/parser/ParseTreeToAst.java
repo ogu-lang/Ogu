@@ -793,6 +793,7 @@ public class ParseTreeToAst {
         OguParser.Alias_targetContext target = ctx.alias_target();
         OguParser.Alias_originContext origin = ctx.alias_origin();
         if (target.alias_tid != null) {
+
             if (origin.alias_origin_id != null) {
                 return new ErrorAliasNode(message("error.alias.tid_no_tid"), getPosition(ctx));
             }
@@ -800,6 +801,12 @@ public class ParseTreeToAst {
             getPositionFrom(decl, ctx);
             return decl;
         } else {
+            if (origin.jvm_id != null) {
+                String src = origin.jvm_origin().src.getText();
+                System.out.println("origing src jvm = "+src);
+                AliasJvmInteropDeclarationNode decl = new AliasJvmInteropDeclarationNode(toOguIdentifier(target), decs, src);
+                return decl;
+            }
             if (origin.alias_origin_id == null) {
                 return new ErrorAliasNode(message("error.alias.id_no_id"), getPosition(ctx));
             }

@@ -6,11 +6,13 @@ import org.ogu.lang.classloading.ClassFileDefinition;
 import org.ogu.lang.codegen.jvm.JvmNameUtils;
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
 import org.ogu.lang.parser.ast.Node;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.util.Feedback;
 import org.ogu.lang.util.Logger;
 
+import java.beans.Expression;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +32,7 @@ public class Compilation {
     private ErrorCollector errorCollector;
     private Options options;
     private ClassWriter cw;
+    private final CompilationOfStatements compilationOfStatements = new CompilationOfStatements(this);
 
     public Compilation(SymbolResolver resolver, ErrorCollector errorCollector, Options options) {
         this.resolver = resolver;
@@ -52,9 +55,13 @@ public class Compilation {
             }
         }
 
+        for (Node node : module.getChildren()) {
+        }
+
         classFileDefinitions.add(compileProgram(module));
         return classFileDefinitions;
     }
+
 
     private ClassFileDefinition compileProgram(ModuleNode module) {
 
@@ -67,6 +74,11 @@ public class Compilation {
         cw.visit(JAVA_8_CLASS_VERSION, ACC_PUBLIC + ACC_SUPER, internalName, null, "java/lang/Object", null);
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, "main", "([Ljava/lang/String;)V", null, null);
         mv.visitCode();
+
+        for (ExpressionNode expr : module.getProgram()) {
+            compilationOfStatements.compile(expr).operate(mv);
+        }
+
         mv.visitInsn(RETURN);
         mv.visitMaxs(0, 0);
         return endClass(canonicalName);
@@ -79,4 +91,9 @@ public class Compilation {
         cw = null;
         return new ClassFileDefinition(canonicalName, programByteCode);
     }
+
+    SymbolResolver getResolver() {
+        return resolver;
+    }
+
 }

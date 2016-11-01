@@ -7,7 +7,7 @@ import org.ogu.lang.parser.ast.Node;
 /**
  * Created by ediaz on 21-01-16.
  */
-public class ModuleNameNode extends Node {
+public class ModuleNameNode extends Node  {
 
     private String name;
 
