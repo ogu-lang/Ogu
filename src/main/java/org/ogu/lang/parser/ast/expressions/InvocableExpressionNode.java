@@ -61,6 +61,7 @@ public abstract class InvocableExpressionNode extends ExpressionNode {
             if (formalParams.get(i).isNode() && formalParams.get(i).asNode().getParent() == null) {
                 throw new IllegalStateException();
             }
+            Logger.debug("desugarizando param = "+param);
             TypeUsage actualParamType = param.getValue().calcType();
             TypeUsage formalParamType = formalParams.get(i).getType();
             if (!actualParamType.canBeAssignedTo(formalParamType)) {

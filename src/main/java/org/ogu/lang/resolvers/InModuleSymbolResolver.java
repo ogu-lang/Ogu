@@ -4,6 +4,7 @@ import org.ogu.lang.codegen.jvm.JvmMethodDefinition;
 import org.ogu.lang.codegen.jvm.JvmNameUtils;
 import org.ogu.lang.definitions.TypeDefinition;
 import org.ogu.lang.parser.ast.Node;
+import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.expressions.FunctionCallNode;
@@ -51,7 +52,15 @@ public class InModuleSymbolResolver implements SymbolResolver {
 
     @Override
     public Optional<Symbol> findSymbol(String name, Node context) {
-        return null;
+        if (context == null) {
+            Optional<TypeDefinition> typeDefinition = typeResolver.resolveAbsoluteTypeName(name);
+            if (typeDefinition.isPresent()) {
+                return Optional.of(typeDefinition.get());
+            }
+            return Optional.empty();
+        } else {
+            return context.findSymbol(name, this);
+        }
     }
 
     @Override
@@ -61,6 +70,19 @@ public class InModuleSymbolResolver implements SymbolResolver {
             throw new IllegalArgumentException(typeName);
         }
         return findTypeDefinitionInHelper(typeName, context, null, resolver);
+    }
+
+    @Override
+    public Optional<TypeDefinition> findTypeDefinitionFromJvmSignature(String jvmSignature, Node context, SymbolResolver resolver) {
+        String[] parts = jvmSignature.split(":");
+        if (parts.length != 2) {
+            throw new IllegalStateException("invalid jvmSignature "+jvmSignature);
+        }
+        String[] parts2 = parts[0].split("/");
+        if (parts2.length != 2) {
+            throw new IllegalStateException("invalid jvmSignature "+jvmSignature);
+        }
+        return findTypeDefinitionIn(parts2[0], context, resolver);
     }
 
     @Override
@@ -85,6 +107,7 @@ public class InModuleSymbolResolver implements SymbolResolver {
 
     private Optional<TypeDefinition> findTypeDefinitionInHelper(String typeName, Node context,
                                                                 Node previousContext, SymbolResolver resolver) {
+
         if (!JvmNameUtils.isValidQualifiedName(typeName)) {
             throw new IllegalArgumentException(typeName);
         }
@@ -95,6 +118,13 @@ public class InModuleSymbolResolver implements SymbolResolver {
                 return result;
             }
 
+            return typeResolver.resolveAbsoluteTypeName(typeName);
+        }
+        if (context instanceof AliasJvmInteropDeclarationNode) {
+            Optional<TypeDefinition> result = typeResolver.resolveAbsoluteTypeName(typeName);
+            if (result.isPresent()) {
+                return result;
+            }
             return typeResolver.resolveAbsoluteTypeName(typeName);
         }
         for (Node child : context.getChildren()) {

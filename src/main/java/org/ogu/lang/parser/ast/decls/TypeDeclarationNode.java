@@ -51,7 +51,7 @@ public abstract class TypeDeclarationNode extends ExportableDeclarationNode impl
     }
 
     @Override
-    public TypeUsage getFieldType(String fieldName, boolean staticContext) {
+    public TypeUsage getFieldType(String fieldName) {
         return null;
     }
 
@@ -99,4 +99,16 @@ public abstract class TypeDeclarationNode extends ExportableDeclarationNode impl
     public <T extends TypeUsage> Map<String, TypeUsage> associatedTypeParametersToName(List<T> typeParams) {
         return null;
     }
+
+
+    @Override
+    public TypeUsage getFieldTypeFromJvmSignature(String jvmSignature) {
+        return null;
+    }
+
+    @Override
+    public Optional<InternalFunctionDefinition> findFunctionFromJvmSignature(String jvmSignature) {
+        throw new UnsupportedOperationException("por implementar findFunction: "+jvmSignature);
+    }
+
 }

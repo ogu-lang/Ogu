@@ -1,6 +1,7 @@
 package org.ogu.lang.resolvers.jdk;
 
 import org.ogu.lang.codegen.jvm.JvmConstructorDefinition;
+import org.ogu.lang.codegen.jvm.JvmNameUtils;
 import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.compiler.AmbiguousCallException;
 import org.ogu.lang.definitions.TypeDefinition;
@@ -12,6 +13,7 @@ import org.ogu.lang.typesystem.ArrayTypeUsage;
 import org.ogu.lang.typesystem.PrimitiveTypeUsage;
 import org.ogu.lang.typesystem.ReferenceTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.util.Logger;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -128,6 +130,39 @@ public class ReflectionBasedMethodResolution {
             throw new RuntimeException("unresolved method " + name + " for " + argsTypes);
         }
         return methodOrConstructor.method;
+    }
+
+    // EDC: find a method by a Java internal signature, for example: "java.io.PrintStream/println:(Ljava/lang/String;)V"
+    public static Optional<Method> findMethodByJvmSignature(String jvmSignature) {
+        if (!JvmNameUtils.isMethodSignature(jvmSignature)) {
+            throw new RuntimeException("Firma jvm no es un método: "+jvmSignature);
+        }
+        String[] parts1 = jvmSignature.split(":");
+        if (parts1.length != 2) {
+            throw new RuntimeException("Firma jvm inválida: "+jvmSignature);
+        }
+        String[] parts2 = parts1[0].split("/");
+        if (parts2.length != 2) {
+            throw new RuntimeException("Firma jvm inválida"+jvmSignature);
+        }
+
+        try {
+            String clazzName = parts2[0];
+            String methodName = parts2[1];
+            String methodSignature = parts1[1];
+            String targetSignature = methodName+":"+methodSignature;
+            Class<?> clazz = ClassLoader.getSystemClassLoader().loadClass(clazzName);
+            Method[] methods = clazz.getMethods();
+            for (Method m : methods) {
+                String signature = m.getName() +":" + ReflectionTypeDefinitionFactory.calcSignature(m);
+                if (targetSignature.equals(signature)) {
+                    return Optional.of(m);
+                }
+            }
+            return Optional.empty();
+        } catch(ClassNotFoundException e) {
+            throw new RuntimeException("No existe la firma que estas buscando: "+jvmSignature);
+        }
     }
 
     public static Optional<Method> findMethodAmongActualParams(String name, List<ActualParamNode> argsTypes, SymbolResolver resolver, List<Method> methods) {

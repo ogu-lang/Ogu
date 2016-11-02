@@ -18,6 +18,10 @@ public class UnitTypeNode extends TypeNode {
     }
 
     @Override
+    public boolean isVoid() { return true; }
+
+
+    @Override
     public String toString() {
         return "Unit!";
     }

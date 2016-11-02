@@ -5,6 +5,7 @@ import org.ogu.lang.definitions.InternalFunctionDefinition;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.NameNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
+import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,11 @@ public class ContractDeclarationNode extends TypeDeclarationNode {
                 ", members=" + members +
                 ", decorators=" + decoratorNodes +
                 '}';
+    }
+
+    @Override
+    public TypeUsage getFieldType(String fieldName) {
+        return null;
     }
 
     @Override

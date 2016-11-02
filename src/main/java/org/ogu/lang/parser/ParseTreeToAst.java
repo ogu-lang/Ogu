@@ -802,8 +802,7 @@ public class ParseTreeToAst {
             return decl;
         } else {
             if (origin.jvm_id != null) {
-                String src = origin.jvm_origin().src.getText();
-                System.out.println("origing src jvm = "+src);
+                String src = origin.jvm_origin().src.getText().replaceAll("\"z", "");
                 AliasJvmInteropDeclarationNode decl = new AliasJvmInteropDeclarationNode(toOguIdentifier(target), decs, src);
                 return decl;
             }
@@ -1075,6 +1074,25 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
+
+    private ExpressionNode toAst(OguParser.Param_exprContext ctx) {
+
+        if (ctx.self_id() != null) {
+            return toAst(ctx.self_id());
+        }
+
+        if (ctx.ref != null) {
+            ReferenceNode ref = new ReferenceNode(IdentifierNode.create(idText(ctx.ref)));
+            getPositionFrom(ref, ctx);
+            return ref;
+        }
+        if (ctx.primary() != null) {
+            return toAst(ctx.primary());
+        }
+
+        Logger.debug(ctx.getText());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
     private SelfRefExpressionNode toAst(OguParser.Self_idContext ctx) {
         SelfRefExpressionNode expr = new SelfRefExpressionNode(IdentifierNode.create(idText(ctx.i)));
         getPositionFrom(expr, ctx);
@@ -1385,7 +1403,7 @@ public class ParseTreeToAst {
         return ctor;
     } */
 
-    private ActualParamNode toAstParam(OguParser.ExprContext ctx) {
+    private ActualParamNode toAstParam(OguParser.Param_exprContext ctx) {
         ActualParamNode param = new ActualParamNode(toAst(ctx));
         getPositionFrom(param, ctx);
         return param;
@@ -1489,14 +1507,14 @@ public class ParseTreeToAst {
     private FunctionCallNode toAstFunctionCall(OguParser.ExprContext ctx) {
         if (ctx.function != null) {
             ExpressionNode function = toAst(ctx.function);
-            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.params_expr().param_expr().stream().map(this::toAstParam).collect(Collectors.toList()));
             getPositionFrom(functionCallNode, ctx);
             return functionCallNode;
 
         }
         if (ctx.qual_function != null) {
             ExpressionNode function = toAst(ctx.qual_function);
-            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.params_expr().param_expr().stream().map(this::toAstParam).collect(Collectors.toList()));
             getPositionFrom(functionCallNode, ctx);
             return functionCallNode;
         }

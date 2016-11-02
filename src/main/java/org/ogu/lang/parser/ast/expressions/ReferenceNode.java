@@ -5,9 +5,12 @@ import org.ogu.lang.parser.analysis.exceptions.UnsolvedSymbolException;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.resolvers.SymbolResolver;
+import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.symbols.Symbol;
 import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.util.Logger;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -33,6 +36,7 @@ public class ReferenceNode extends ExpressionNode {
     @Override
     public TypeUsage calcType() {
         Optional<Symbol> declaration = symbolResolver().findSymbol(name.qualifiedName(), this);
+
         if (declaration.isPresent()) {
             return declaration.get().calcType();
         } else {
@@ -62,5 +66,19 @@ public class ReferenceNode extends ExpressionNode {
         } else {
             throw new UnsolvedSymbolException(this);
         }
+    }
+
+    @Override
+    public Optional<List<? extends FormalParameter>> findFormalParametersFor(InvocableExpressionNode invocable) {
+        return resolve(symbolResolver()).findFormalParametersFor(invocable);
+        /*
+        if (invocable instanceof FunctionCallNode) {
+            Logger.debug("name("+name+").calcType() = "+name.calcType());
+            return name.calcType().asInvocable().internalInvocableDefinitionFor(invocable.getActualParamNodes()).map(
+                    (iid) -> iid.getFormalParameters());
+        } else {
+            throw new UnsupportedOperationException(invocable.getClass().getCanonicalName());
+        }
+        */
     }
 }

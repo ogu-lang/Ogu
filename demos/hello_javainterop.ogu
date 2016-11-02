@@ -1,6 +1,7 @@
 
 ; java interop
-alias out = jvm "java.lang.System/out"
-alias println = jvm "java.io.PrintStream/println"
+alias out = jvm "java.lang.System/out:java/io/PrintStream"
 
-println out "Hello world"
+alias println = jvm "java.io.PrintStream/println:(Ljava/lang/String;)V"
+
+println out "Ola amiko mio de mi"

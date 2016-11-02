@@ -1,7 +1,6 @@
 package org.ogu.lang.resolvers;
 
 import org.ogu.lang.definitions.TypeDefinition;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +28,13 @@ public class ComposedTypeResolver implements TypeResolver {
 
     @Override
     public Optional<TypeDefinition> resolveAbsoluteTypeName(String typeName) {
-        return null;
+        for (TypeResolver element : elements) {
+            Optional<TypeDefinition> partial = element.resolveAbsoluteTypeName(typeName);
+            if (partial.isPresent()) {
+                return partial;
+            }
+        }
+        return Optional.empty();
     }
 
 

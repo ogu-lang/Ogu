@@ -3,6 +3,7 @@ package org.ogu.lang.resolvers;
 import org.ogu.lang.codegen.jvm.JvmMethodDefinition;
 import org.ogu.lang.definitions.TypeDefinition;
 import org.ogu.lang.parser.analysis.exceptions.UnsolvedFunctionException;
+import org.ogu.lang.parser.analysis.exceptions.UnsolvedSymbolException;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.AliasDeclarationNode;
 import org.ogu.lang.parser.ast.decls.ExportableDeclarationNode;
@@ -11,6 +12,7 @@ import org.ogu.lang.parser.ast.expressions.FunctionCallNode;
 import org.ogu.lang.parser.ast.modules.ModuleNameNode;
 import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.util.Logger;
 
 import java.util.*;
 
@@ -78,6 +80,11 @@ public class SrcSymbolResolver implements SymbolResolver {
         } else {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public Optional<TypeDefinition> findTypeDefinitionFromJvmSignature(String jvmSignature, Node context, SymbolResolver resolver) {
+        throw new UnsolvedSymbolException(context, jvmSignature);
     }
 
     @Override

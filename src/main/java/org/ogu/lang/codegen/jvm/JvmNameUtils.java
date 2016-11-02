@@ -1,6 +1,7 @@
 package org.ogu.lang.codegen.jvm;
 
 import com.google.common.collect.ImmutableSet;
+import org.ogu.lang.util.Logger;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -42,9 +43,11 @@ public final class JvmNameUtils {
             return false;
         }
         char firstChar = name.charAt(0);
+
         if (firstChar != '$' && firstChar != '_' && !Character.isLetter(firstChar)) {
             return false;
         }
+
         for (int i=0; i<name.length(); i++){
             char c = name.charAt(i);
             if (c != '$' && c != '_' && !Character.isLetter(c) && !Character.isDigit(c)) {
@@ -105,6 +108,11 @@ public final class JvmNameUtils {
     public static boolean isPrimitiveTypeName(String name) {
         Set<String> names = ImmutableSet.of("boolean", "char", "byte", "short", "int", "long", "float", "double");
         return names.contains(name);
+    }
+
+
+    public static boolean isMethodSignature(String signature) {
+        return signature.indexOf('(') < signature.indexOf(')');
     }
 
     public static String canonicalToSimple(String qualifiedName) {

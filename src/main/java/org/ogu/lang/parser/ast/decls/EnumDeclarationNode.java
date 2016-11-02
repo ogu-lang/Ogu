@@ -6,6 +6,7 @@ import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
+import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,11 @@ public class EnumDeclarationNode extends AlgebraicDataTypeDeclarationNode {
                 ", deriving=" + deriving +
                 ", decorators=" + decoratorNodes +
                 '}';
+    }
+
+    @Override
+    public TypeUsage getFieldType(String fieldName) {
+        return null;
     }
 
     @Override

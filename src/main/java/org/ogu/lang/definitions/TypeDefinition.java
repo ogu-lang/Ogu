@@ -39,7 +39,8 @@ public interface TypeDefinition extends Symbol, Named {
     }
 
 
-    TypeUsage getFieldType(String fieldName, boolean staticContext);
+    TypeUsage getFieldType(String fieldName);
+    TypeUsage getFieldTypeFromJvmSignature(String jvmSignature);
 
     Symbol getFieldOnInstance(String fieldName, Symbol instance);
 
@@ -119,7 +120,18 @@ public interface TypeDefinition extends Symbol, Named {
         }
     }
 
+    default InternalFunctionDefinition getFunctionFromJvmSignature(String jvmSignature) {
+        Optional<InternalFunctionDefinition> function = findFunctionFromJvmSignature(jvmSignature);
+        if (function.isPresent()) {
+            return function.get();
+        } else {
+            throw new UnsupportedOperationException("No pudo encontrar funcion con esta firma: "+jvmSignature);
+        }
+    }
+
     JvmMethodDefinition findFunctionFor(String name, List<JvmType> argsTypes, boolean staticContext);
+
+    Optional<InternalFunctionDefinition> findFunctionFromJvmSignature(String jvmSignature);
 
     Optional<InternalFunctionDefinition> findFunction(String functionName, List<ActualParamNode> actualParams);
 

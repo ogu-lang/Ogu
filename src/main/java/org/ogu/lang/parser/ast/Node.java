@@ -1,6 +1,8 @@
 package org.ogu.lang.parser.ast;
 
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
+import org.ogu.lang.parser.ast.expressions.ExpressionBlockNode;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.expressions.InvocableExpressionNode;
 import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.resolvers.ResolverRegistry;
@@ -126,5 +128,13 @@ public abstract class Node implements Symbol {
 
     public String describe() {
         return this.toString();
+    }
+
+    public Optional<Symbol> findSymbol(String name, SymbolResolver resolver) {
+        if (parent == null) {
+            return Optional.empty();
+        }  else {
+            return parent.findSymbol(name, resolver);
+        }
     }
 }

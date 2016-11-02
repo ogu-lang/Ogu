@@ -250,6 +250,8 @@ expr
 	| lambda_expr
 	| yield_expr
 	| recur_expr
+    | function=func_name (params=params_expr)?
+	| qual_function=qual_func_name (params=params_expr)?
 	| assign_expr
 	|<assoc=right> l=expr o=('>>'|'<<'|'|>'|'<|') r=expr  // composition
     | l=expr o='@' r=expr
@@ -263,14 +265,23 @@ expr
     | l=expr o='||' r=expr
 	| l_infix=expr '`' infix_id=ID '`' r_infix=expr
 	| self_id
-	| function=func_name (params+=expr)+
-	| qual_function=qual_func_name (params+=expr)*
 	| ref=ID
 	| primary
 	| paren_expr
     | vector_expr
     | dict_expr
 	;
+
+params_expr
+    : param_expr+
+    ;
+
+param_expr
+    : self_id
+    | ref=ID
+    | primary
+    | paren_expr
+    ;
 
 self_id
     : '$' i=ID ;

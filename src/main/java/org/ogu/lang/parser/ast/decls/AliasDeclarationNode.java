@@ -15,4 +15,11 @@ public abstract class AliasDeclarationNode extends NameDeclarationNode  {
     protected AliasDeclarationNode(NameNode id, List<DecoratorNode> decoratorNodes) {
         super(id, decoratorNodes);
     }
+
+    @Override
+    public String toString() {
+        return "AliasDeclaration{" +
+                "decorators='" + decoratorNodes + '\''+
+                '}';
+    }
 }

@@ -5,6 +5,7 @@ import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.util.Logger;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +26,7 @@ public class FunctionCallNode extends InvocableExpressionNode {
     public String toString() {
 
         return "FunctionCall{" +
-                "function=(" + function + ')' +
+                "function=" + function +
                 ", actualParams=" + actualParamNodes +
                 '}';
     }
@@ -63,6 +64,8 @@ public class FunctionCallNode extends InvocableExpressionNode {
 
     @Override
     public TypeUsage calcType() {
+        Logger.debug("calc type a function "+function+ " = "+function.calcType()+" asInvocable() = "+function.calcType().asInvocable()
+        +" actualParamNodes = "+actualParamNodes);
         return function.calcType().asInvocable().internalInvocableDefinitionFor(actualParamNodes).get().asFunction().getReturnType();
     }
 

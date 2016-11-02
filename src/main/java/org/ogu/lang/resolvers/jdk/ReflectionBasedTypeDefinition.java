@@ -81,9 +81,7 @@ public class ReflectionBasedTypeDefinition implements TypeDefinition {
             throw new IllegalArgumentException();
         }
         methods.forEach((m)-> {
-            if (!Modifier.isStatic(m.getModifiers())) {
-                throw new IllegalArgumentException("Non static method given: " + m);
-            }
+           // Logger.debug("method m = "+m);
         });
         if (methods.size() != 1) {
             throw new UnsupportedOperationException();
@@ -143,6 +141,8 @@ public class ReflectionBasedTypeDefinition implements TypeDefinition {
     public JvmMethodDefinition findFunctionFor(String name, List<JvmType> argsTypes, boolean staticContext) {
         return ReflectionTypeDefinitionFactory.toFunctionDefinition(ReflectionBasedMethodResolution.findMethodAmong(name, argsTypes, resolver, staticContext, Arrays.asList(clazz.getMethods())));
     }
+
+
 
     @Override
     public TypeUsage calcType() {
@@ -212,21 +212,17 @@ public class ReflectionBasedTypeDefinition implements TypeDefinition {
 
 
     @Override
-    public TypeUsage getFieldType(String fieldName, boolean staticContext) {
+    public TypeUsage getFieldType(String fieldName) {
         for (Field field : clazz.getFields()) {
             if (field.getName().equals(fieldName)) {
-                if (Modifier.isStatic(field.getModifiers()) == staticContext) {
                     return ReflectionTypeDefinitionFactory.toTypeUsage(field.getType(), resolver);
-                }
             }
         }
 
         List<Method> methods = new LinkedList<>();
         for (Method method : clazz.getMethods()) {
             if (method.getName().equals(fieldName)) {
-                if (Modifier.isStatic(method.getModifiers()) == staticContext) {
                     methods.add(method);
-                }
             }
         }
         if (!methods.isEmpty()) {
@@ -237,6 +233,15 @@ public class ReflectionBasedTypeDefinition implements TypeDefinition {
         throw new UnsupportedOperationException(fieldName);
     }
 
+    @Override
+    public TypeUsage getFieldTypeFromJvmSignature(String jvmSignature) {
+        String[] parts = jvmSignature.split(":");
+        if (parts.length != 2) {
+            throw new IllegalStateException("invalid jvmSignature " + jvmSignature);
+        }
+        String[] parts2 = parts[0].split("/");
+        return getFieldType(parts2[1]);
+    }
 
     @Override
     public Symbol getFieldOnInstance(String fieldName, Symbol instance) {
@@ -278,6 +283,15 @@ public class ReflectionBasedTypeDefinition implements TypeDefinition {
         } else {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public Optional<InternalFunctionDefinition> findFunctionFromJvmSignature(String jvmSignature) {
+        Optional<Method> res = ReflectionBasedMethodResolution.findMethodByJvmSignature(jvmSignature);
+        if (res.isPresent()) {
+            return Optional.of(toInternalFunctionDefinition(res.get()));
+        }
+        return Optional.empty();
     }
 
     @Override

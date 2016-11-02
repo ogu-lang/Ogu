@@ -48,6 +48,17 @@ public class ComposedSymbolResolver  implements SymbolResolver {
     }
 
     @Override
+    public Optional<TypeDefinition> findTypeDefinitionFromJvmSignature(String jvmSignature, Node context, SymbolResolver resolver) {
+        for (SymbolResolver element : elements) {
+            Optional<TypeDefinition> definition = element.findTypeDefinitionFromJvmSignature(jvmSignature, context, resolver);
+            if (definition.isPresent()) {
+                return definition;
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public Optional<JvmMethodDefinition> findJvmDefinition(FunctionCallNode functionCall) {
         for (SymbolResolver element : elements) {
             Optional<JvmMethodDefinition> partial = element.findJvmDefinition(functionCall);
@@ -62,8 +73,10 @@ public class ComposedSymbolResolver  implements SymbolResolver {
     @Override
     public Optional<Symbol> findSymbol(String name, Node context) {
         for (SymbolResolver element : elements) {
+            //Logger.debug("findSymbol@ComposedSymbolResolver element="+element);
             Optional<Symbol> res = element.findSymbol(name, context);
             if (res.isPresent()) {
+                //Logger.debug("encontrado!! "+res);
                 return res;
             }
         }

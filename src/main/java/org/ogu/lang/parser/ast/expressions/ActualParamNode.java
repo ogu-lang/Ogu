@@ -31,7 +31,7 @@ public class ActualParamNode extends Node {
     @Override
     public String toString() {
         return "ActualParam{" +
-                ", value=" + value +
+                "value=" + value +
                 '}';
     }
 

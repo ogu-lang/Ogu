@@ -7,6 +7,7 @@ import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParamNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 import org.ogu.lang.parser.ast.typeusage.TypeNode;
+import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,11 @@ public class GenericTypeDeclarationNode extends TypedefDeclarationNode {
                 .add(type)
                 .addAll(params)
                 .addAll(decoratorNodes).build();
+    }
+
+    @Override
+    public TypeUsage getFieldType(String fieldName) {
+        return null;
     }
 
     @Override
