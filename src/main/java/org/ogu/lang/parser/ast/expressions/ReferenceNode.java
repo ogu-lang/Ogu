@@ -29,6 +29,10 @@ public class ReferenceNode extends ExpressionNode {
         this.name.setParent(this);
     }
 
+    public String getName() {
+        return name.getName();
+    }
+
     @Override
     public String toString() {
 

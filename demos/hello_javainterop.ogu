@@ -1,6 +1,6 @@
 
 ; java interop
-alias out = jvm "java.lang.System/out:java/io/PrintStream"
+alias out = jvm "java.lang.System/out:Ljava/io/PrintStream;"
 
 alias println = jvm "java.io.PrintStream/println:(Ljava/lang/String;)V"
 

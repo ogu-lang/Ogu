@@ -1,32 +1,32 @@
 package org.ogu.lang.compiler;
 
 import com.google.common.collect.ImmutableList;
-import org.ogu.lang.codegen.bytecode_generation.BytecodeSequence;
-import org.ogu.lang.codegen.bytecode_generation.ComposedBytecodeSequence;
-import org.ogu.lang.codegen.bytecode_generation.MethodInvocationBS;
-import org.ogu.lang.codegen.bytecode_generation.NoOp;
+import org.ogu.lang.codegen.bytecode_generation.*;
+import org.ogu.lang.codegen.bytecode_generation.pushpop.PushLocalVar;
 import org.ogu.lang.codegen.bytecode_generation.pushpop.PushStaticField;
+import org.ogu.lang.codegen.bytecode_generation.pushpop.PushStringConst;
 import org.ogu.lang.codegen.jvm.JvmInvocableDefinition;
 import org.ogu.lang.codegen.jvm.JvmMethodDefinition;
 import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.parser.analysis.exceptions.UnsolvedFunctionException;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
-import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.expressions.FunctionCallNode;
 import org.ogu.lang.parser.ast.expressions.ReferenceNode;
-import org.ogu.lang.parser.ast.expressions.control.FuncDeclExpressionNode;
+import org.ogu.lang.parser.ast.expressions.literals.StringLiteralNode;
 import org.ogu.lang.resolvers.jdk.ReflectionBasedField;
 import org.ogu.lang.resolvers.jdk.ReflectionBasedSetOfOverloadedMethods;
 import org.ogu.lang.resolvers.jdk.ReflectionBasedTypeDefinition;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.typesystem.TypeUsage;
 import org.ogu.lang.util.Logger;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.ogu.lang.codegen.bytecode_generation.OpcodesUtils.loadTypeFor;
 import static org.ogu.lang.compiler.BoxUnboxing.box;
 
 /**
@@ -43,7 +43,26 @@ public class CompilationOfStatements {
     private BytecodeSequence codeToExecuteBeforeReturning;
 
     BytecodeSequence compile(ExpressionNode expressionNode) {
-        if (expressionNode instanceof FunctionCallNode) {
+        return pushExpression(expressionNode);
+    }
+
+    BytecodeSequence pushExpression(ExpressionNode expressionNode) {
+        if (expressionNode instanceof StringLiteralNode) {
+            return new PushStringConst(((StringLiteralNode) expressionNode).getValue());
+        }
+        else if (expressionNode instanceof ReferenceNode) {
+            ReferenceNode reference = (ReferenceNode)  expressionNode;
+            Optional<Integer> index = compilation.getLocalVarsSymbolTable().findIndex(reference.getName());
+            if (index.isPresent()) {
+                TypeUsage type = compilation.getLocalVarsSymbolTable().findDeclaration(reference.getName()).get().calcType();
+                return new PushLocalVar(loadTypeForTypeUsage(type), index.get());
+            } else if (compilation.getLocalVarsSymbolTable().hasAlias(reference.getName())) {
+                return compilation.getLocalVarsSymbolTable().getAlias(reference.getName());
+            } else {
+                return push(reference.resolve(compilation.getResolver()));
+            }
+        }
+        else if (expressionNode instanceof FunctionCallNode) {
             FunctionCallNode functionCall = (FunctionCallNode) expressionNode;
             functionCall.desugarize(compilation.getResolver());
             BytecodeSequence instancePush = pushInstance(functionCall);
@@ -92,7 +111,6 @@ public class CompilationOfStatements {
         if (function instanceof ReferenceNode) {
             ReferenceNode reference = (ReferenceNode) function;
             Symbol declaration = reference.resolve(compilation.getResolver());
-            Logger.debug("declaration is :"+declaration);
             if (declaration instanceof ReflectionBasedSetOfOverloadedMethods) {
                 ReflectionBasedSetOfOverloadedMethods methods = (ReflectionBasedSetOfOverloadedMethods) declaration;
                 if (methods.isStatic()) {
@@ -101,14 +119,17 @@ public class CompilationOfStatements {
                     return push(methods.getInstance());
                 }
             } else if (declaration instanceof AliasJvmInteropDeclarationNode) {
-                return NoOp.getInstance();
+                if (functionCall.isMethodFunction()) {
+                    return push(functionCall.getObjectParam().getValue());
+                } else {
+                    return NoOp.getInstance();
+                }
             }
         }
         throw new UnsupportedOperationException(function.getClass().getCanonicalName());
     }
 
     BytecodeSequence push(Symbol symbol) {
-        Logger.debug("push("+symbol+")");
         if (symbol.isNode()) {
             return push(symbol.asNode());
         } else if (symbol instanceof ReflectionBasedField) {
@@ -127,7 +148,19 @@ public class CompilationOfStatements {
 
     BytecodeSequence push(Node node) {
         Logger.debug("push node = "+node+" "+node.toString());
-
+        if (node instanceof ExpressionNode) {
+            return pushExpression((ExpressionNode) node);
+        }
+        else if (node instanceof AliasJvmInteropDeclarationNode) {
+            //
+            AliasJvmInteropDeclarationNode alias = (AliasJvmInteropDeclarationNode) node;
+            return new PushStaticField(alias.getStaticField());
+        }
         throw new UnsupportedOperationException();
+    }
+
+
+    int loadTypeForTypeUsage(TypeUsage type) {
+        return loadTypeFor(type.jvmType());
     }
 }

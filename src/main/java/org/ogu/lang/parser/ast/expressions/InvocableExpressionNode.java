@@ -42,6 +42,15 @@ public abstract class InvocableExpressionNode extends ExpressionNode {
     private boolean desugarized = false;
     private ActualParamNode self = null;
 
+    public boolean isMethodFunction() {
+        return self != null;
+    }
+
+    // if isMethodFunction must push this object
+    public ActualParamNode getObjectParam() {
+        return self;
+    }
+
     private void concreteDesugarize(SymbolResolver resolver) {
         Map<String, ActualParamNode> paramAssigned = new HashMap<>();
 

@@ -166,6 +166,37 @@ public class ReflectionBasedMethodResolution {
     }
 
 
+    // EDC: find a method by a Java internal signature, for example: "java.io.PrintStream/println:(Ljava/lang/String;)V"
+    public static Optional<Field> findFieldByJvmSignature(String jvmSignature) {
+        String[] parts1 = jvmSignature.split(":");
+        if (parts1.length != 2) {
+            throw new RuntimeException("Firma jvm inválida: " + jvmSignature);
+        }
+        String[] parts2 = parts1[0].split("/");
+        if (parts2.length != 2) {
+            throw new RuntimeException("Firma jvm inválida" + jvmSignature);
+        }
+
+        try {
+            String clazzName = parts2[0];
+            String fieldName = parts2[1];
+            String fieldSignature = parts1[1];
+            Class<?> clazz = ClassLoader.getSystemClassLoader().loadClass(clazzName);
+            Field[] fields = clazz.getFields();
+            for (Field f : fields) {
+                Logger.debug("f ="+f.getName()+" fn="+fieldName);
+                Logger.debug("fs ="+ReflectionTypeDefinitionFactory.calcSignature(f)+" fs="+fieldSignature);
+
+                if (fieldName.equals(f.getName()) && fieldSignature.equals(ReflectionTypeDefinitionFactory.calcSignature(f))) {
+                    Logger.debug("Eureka!!");
+                    return Optional.of(f);
+                }
+            }
+            return Optional.empty();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("No existe la firma que estas buscando: " + jvmSignature);
+        }
+    }
 
     public static Optional<Method> findMethodAmongActualParams(String name, List<ActualParamNode> argsTypes, SymbolResolver resolver, List<Method> methods) {
         List<MethodOrConstructor> methodOrConstructors = methods.stream()

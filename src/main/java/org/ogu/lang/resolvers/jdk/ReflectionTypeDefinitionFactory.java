@@ -11,6 +11,7 @@ import org.ogu.lang.typesystem.ReferenceTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -71,6 +72,10 @@ public class ReflectionTypeDefinitionFactory {
     public static String calcSignature(Method method) {
         List<String> paramTypesSignatures = Arrays.stream(method.getParameterTypes()).map((t) -> calcSignature(t)).collect(Collectors.toList());
         return "(" + String.join("", paramTypesSignatures) + ")" + calcSignature(method.getReturnType());
+    }
+
+    public static String calcSignature(Field field) {
+        return calcSignature(field.getType());
     }
 
 

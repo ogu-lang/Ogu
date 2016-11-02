@@ -1,5 +1,6 @@
 package org.ogu.lang.parser.ast.decls;
 
+import org.ogu.lang.codegen.jvm.JvmFieldDefinition;
 import org.ogu.lang.codegen.jvm.JvmMethodDefinition;
 import org.ogu.lang.codegen.jvm.JvmNameUtils;
 import org.ogu.lang.definitions.InternalFunctionDefinition;
@@ -18,6 +19,7 @@ import org.ogu.lang.typesystem.ReferenceTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
 import org.ogu.lang.util.Logger;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,21 +68,15 @@ public class AliasJvmInteropDeclarationNode extends AliasDeclarationNode {
         return Optional.of(def.getFormalParameters());
     }
 
-    public Symbol getInstance() {
-        TypeDefinition td = typeDefinition(symbolResolver());
-        if (JvmNameUtils.isMethodSignature(jvmSignature)) {
-            List<Method> methods = new ArrayList<>();
-            Optional<Method> m =  ReflectionBasedMethodResolution.findMethodByJvmSignature(jvmSignature);
-            if (m.isPresent())
-                methods.add(m.get());
-
-            String[] parts1 = jvmSignature.split(":");
-            String[] parts2 = parts1[0].split("/");
-            String field = parts2[1];
-            Logger.debug("buscando field "+field);
-            return td.getFieldOnInstance(field, this);
+    public JvmFieldDefinition getStaticField() {
+        Optional<Field> fieldOpt = ReflectionBasedMethodResolution.findFieldByJvmSignature(jvmSignature);
+        if (!fieldOpt.isPresent()) {
+            throw new RuntimeException("No existe campo con esta firma:"+jvmSignature);
         }
-        throw  new RuntimeException("no puedo crear getInstance()");
+        Field field = fieldOpt.get();
+        TypeUsage fieldType = ReflectionTypeDefinitionFactory.toTypeUsage(field.getType(), symbolResolver());
+        TypeUsage ownerType = ReflectionTypeDefinitionFactory.toTypeUsage(field.getDeclaringClass(), symbolResolver());
+        return new JvmFieldDefinition(ownerType.jvmType().getInternalName(), field.getName(), fieldType.jvmType().getSignature(), true);
     }
 
     public JvmMethodDefinition findFunctionFor(List<ActualParamNode> argsTypes, SymbolResolver resolver) {
@@ -88,6 +84,7 @@ public class AliasJvmInteropDeclarationNode extends AliasDeclarationNode {
         if (!m.isPresent()) {
             throw new RuntimeException("No existe un metodo con esta firma: "+jvmSignature);
         }
+
         return ReflectionTypeDefinitionFactory.toFunctionDefinition(m.get());
     }
 

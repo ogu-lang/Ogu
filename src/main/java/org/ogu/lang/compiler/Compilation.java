@@ -73,6 +73,9 @@ public class Compilation {
 
 
     private ClassFileDefinition compileProgram(ModuleNode module) {
+        if (localVarsSymbolTable == null) {
+            localVarsSymbolTable = LocalVarsSymbolTable.forInstanceMethod();
+        }
 
         String canonicalName = module.getNameDefinition().contextName();
         String internalName = JvmNameUtils.canonicalToInternal(canonicalName);
@@ -121,6 +124,16 @@ public class Compilation {
 
     SymbolResolver getResolver() {
         return resolver;
+    }
+
+    private LocalVarsSymbolTable localVarsSymbolTable;
+
+    LocalVarsSymbolTable getLocalVarsSymbolTable() {
+        return localVarsSymbolTable;
+    }
+
+    public void setLocalVarsSymbolTable(LocalVarsSymbolTable localVarsSymbolTable) {
+        this.localVarsSymbolTable = localVarsSymbolTable;
     }
 
 }
