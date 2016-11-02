@@ -1,6 +1,5 @@
 package org.ogu.lang.resolvers.jdk;
 
-import jdk.nashorn.internal.ir.FunctionCall;
 import org.ogu.lang.codegen.jvm.JvmMethodDefinition;
 import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.parser.ast.Node;

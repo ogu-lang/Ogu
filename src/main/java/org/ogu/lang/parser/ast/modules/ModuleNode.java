@@ -5,9 +5,12 @@ import org.ogu.lang.definitions.TypeDefinition;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.*;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
+import org.ogu.lang.resolvers.SymbolResolver;
+import org.ogu.lang.symbols.Symbol;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -91,6 +94,34 @@ public class ModuleNode extends Node {
 
     public List<TypeDeclarationNode> getTopLevelTypeDefinitions() {
         return topNodes.stream().filter((n)-> (n instanceof TypeDeclarationNode)).map((n) -> (TypeDeclarationNode)n).collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<Symbol> findSymbol(String name, SymbolResolver resolver) {
+        for (UsesDeclarationNode usesDeclarationNode : uses) {
+            Optional<Symbol> used = usesDeclarationNode.findAmongImported(name, resolver);
+            if (used.isPresent()) {
+                return Optional.of(used.get());
+            }
+        }
+        for (AliasDeclarationNode aliasDeclarationNode : aliases) {
+            if (aliasDeclarationNode.getName().equals(name)) {
+                return Optional.of(aliasDeclarationNode);
+            }
+        }
+        for (ExportsDeclarationNode export : exports) {
+            if (export.getName().equals(name)) {
+                return Optional.of(export);
+            }
+        }
+        for (ExportableDeclarationNode decl : declarations) {
+            if (decl.getName().equals(name)) {
+                return Optional.of(decl);
+            }
+        }
+
+        String qName = nameDefinition.getName() + "." + name;
+        return resolver.getRoot().findSymbol(qName, null);
     }
 
 }

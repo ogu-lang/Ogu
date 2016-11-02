@@ -40,11 +40,10 @@ public abstract class InvocableExpressionNode extends ExpressionNode {
     }
 
     private boolean desugarized = false;
+    private ActualParamNode self = null;
 
     private void concreteDesugarize(SymbolResolver resolver) {
         Map<String, ActualParamNode> paramAssigned = new HashMap<>();
-
-        Logger.debug("Desugarizando "+this);
 
         List<? extends FormalParameter> formalParams = formalParameters(resolver);
         formalParams.forEach((fp) -> {
@@ -52,7 +51,12 @@ public abstract class InvocableExpressionNode extends ExpressionNode {
                 fp.asNode().setParent(this);
             }
         });
-        if (actualParamNodes.size() != formalParams.size()) {
+
+        if (formalParams.size() < actualParamNodes.size()) {
+            self = actualParamNodes.get(0);
+            actualParamNodes.remove(0);
+        }
+        if (formalParams.size() != actualParamNodes.size()) {
             throw new IllegalArgumentException("no coincide la cantidad de parámetros al invocar la función");
         }
 
@@ -61,9 +65,11 @@ public abstract class InvocableExpressionNode extends ExpressionNode {
             if (formalParams.get(i).isNode() && formalParams.get(i).asNode().getParent() == null) {
                 throw new IllegalStateException();
             }
-            Logger.debug("desugarizando param = "+param);
             TypeUsage actualParamType = param.getValue().calcType();
             TypeUsage formalParamType = formalParams.get(i).getType();
+            Logger.debug("desugarizando formalParam = "+formalParams.get(i));
+
+            Logger.debug("actualParamType = ["+actualParamType.jvmType()+ "] formalParamType=["+formalParamType.jvmType()+"]");
             if (!actualParamType.canBeAssignedTo(formalParamType)) {
                 throw new UnsolvedInvocableException(this);
             }
@@ -77,7 +83,5 @@ public abstract class InvocableExpressionNode extends ExpressionNode {
                 throw new IllegalArgumentException("parametro no asignado: "+formalParameter.getName());
             }
         }
-
-
     }
 }

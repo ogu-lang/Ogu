@@ -15,7 +15,7 @@ public abstract class ExpressionNode extends Node {
 
     public abstract TypeUsage calcType();
 
-    public JvmMethodDefinition findFunctionFor(List<ActualParamNode> argsTypes, SymbolResolver resolver, boolean staticContext) {
+    public JvmMethodDefinition findFunctionFor(List<ActualParamNode> argsTypes, SymbolResolver resolver) {
         throw new UnsupportedOperationException("On " + this.getClass().getCanonicalName());
     }
 

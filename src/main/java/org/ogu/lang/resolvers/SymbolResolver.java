@@ -31,7 +31,6 @@ public interface SymbolResolver {
         SymbolResolver resolver = ResolverRegistry.INSTANCE.requireResolver(context);
         Optional<TypeDefinition> result = findTypeDefinitionIn(typeName, context, resolver.getRoot());
         if (result.isPresent()) {
-            Logger.debug("!!!??? "+typeName+" "+context);
             return result.get();
         } else {
             throw new UnsolvedSymbolException(context, typeName);

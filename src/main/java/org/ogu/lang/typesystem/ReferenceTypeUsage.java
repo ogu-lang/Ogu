@@ -7,6 +7,7 @@ import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.resolvers.jdk.ReflectionTypeDefinitionFactory;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.util.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -219,4 +220,7 @@ public class ReferenceTypeUsage implements TypeUsage {
     public String describe() {
         return getQualifiedName();
     }
+
+    @Override
+    public String toString() { return describe(); }
 }

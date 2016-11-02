@@ -1,9 +1,12 @@
 package org.ogu.lang.parser.ast.expressions;
 
 import com.google.common.collect.ImmutableList;
+import org.ogu.lang.codegen.jvm.JvmMethodDefinition;
+import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.parser.analysis.exceptions.UnsolvedSymbolException;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
+import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.symbols.Symbol;
@@ -12,6 +15,7 @@ import org.ogu.lang.util.Logger;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * A reference to a type, a val, a var o a function
@@ -71,14 +75,24 @@ public class ReferenceNode extends ExpressionNode {
     @Override
     public Optional<List<? extends FormalParameter>> findFormalParametersFor(InvocableExpressionNode invocable) {
         return resolve(symbolResolver()).findFormalParametersFor(invocable);
-        /*
-        if (invocable instanceof FunctionCallNode) {
-            Logger.debug("name("+name+").calcType() = "+name.calcType());
-            return name.calcType().asInvocable().internalInvocableDefinitionFor(invocable.getActualParamNodes()).map(
-                    (iid) -> iid.getFormalParameters());
+    }
+
+    @Override
+    public JvmMethodDefinition findFunctionFor(List<ActualParamNode> actualParamNodes, SymbolResolver resolver) {
+        List<JvmType> argsTypes = actualParamNodes.stream().map((ap)->ap.getValue().calcType().jvmType()).collect(Collectors.toList());
+        Optional<Symbol> declaration = resolver.findSymbol(name.getName(), this);
+        if (declaration.isPresent()) {
+            Symbol decl = declaration.get();
+            if (decl instanceof ExpressionNode) {
+                return ((ExpressionNode) decl).findFunctionFor(actualParamNodes, resolver);
+            } else if (decl instanceof AliasJvmInteropDeclarationNode) {
+                return ((AliasJvmInteropDeclarationNode) decl).findFunctionFor(actualParamNodes, resolver);
+            }
+            else {
+                throw new UnsupportedOperationException(declaration.get().getClass().getCanonicalName());
+            }
         } else {
-            throw new UnsupportedOperationException(invocable.getClass().getCanonicalName());
+            throw new UnsolvedSymbolException(this);
         }
-        */
     }
 }

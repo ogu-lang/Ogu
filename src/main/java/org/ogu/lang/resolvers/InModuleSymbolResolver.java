@@ -9,6 +9,7 @@ import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.expressions.FunctionCallNode;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.util.Logger;
 
 import java.util.List;
 import java.util.Optional;
@@ -95,8 +96,7 @@ public class InModuleSymbolResolver implements SymbolResolver {
                 })
                 .collect(Collectors.toList());
         ExpressionNode function = functionCall.getFunction();
-        boolean staticContext = function.isType(this);
-        return Optional.of(function.findFunctionFor(argsTypes, this, staticContext));
+        return Optional.of(function.findFunctionFor(argsTypes, this));
     }
 
     @Override

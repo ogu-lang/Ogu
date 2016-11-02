@@ -5,16 +5,23 @@ import org.ogu.lang.codegen.bytecode_generation.BytecodeSequence;
 import org.ogu.lang.codegen.bytecode_generation.ComposedBytecodeSequence;
 import org.ogu.lang.codegen.bytecode_generation.MethodInvocationBS;
 import org.ogu.lang.codegen.bytecode_generation.NoOp;
+import org.ogu.lang.codegen.bytecode_generation.pushpop.PushStaticField;
 import org.ogu.lang.codegen.jvm.JvmInvocableDefinition;
 import org.ogu.lang.codegen.jvm.JvmMethodDefinition;
 import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.parser.analysis.exceptions.UnsolvedFunctionException;
+import org.ogu.lang.parser.ast.Node;
+import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.expressions.FunctionCallNode;
 import org.ogu.lang.parser.ast.expressions.ReferenceNode;
 import org.ogu.lang.parser.ast.expressions.control.FuncDeclExpressionNode;
+import org.ogu.lang.resolvers.jdk.ReflectionBasedField;
+import org.ogu.lang.resolvers.jdk.ReflectionBasedSetOfOverloadedMethods;
+import org.ogu.lang.resolvers.jdk.ReflectionBasedTypeDefinition;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.util.Logger;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -81,16 +88,46 @@ public class CompilationOfStatements {
 
     BytecodeSequence pushInstance(FunctionCallNode functionCall) {
         ExpressionNode function = functionCall.getFunction();
+        Logger.debug("function @ pushInstance = "+function+ " fcal="+functionCall);
         if (function instanceof ReferenceNode) {
             ReferenceNode reference = (ReferenceNode) function;
             Symbol declaration = reference.resolve(compilation.getResolver());
-            if (declaration instanceof FuncDeclExpressionNode) {
-                FuncDeclExpressionNode funcDecl = (FuncDeclExpressionNode) declaration;
+            Logger.debug("declaration is :"+declaration);
+            if (declaration instanceof ReflectionBasedSetOfOverloadedMethods) {
+                ReflectionBasedSetOfOverloadedMethods methods = (ReflectionBasedSetOfOverloadedMethods) declaration;
+                if (methods.isStatic()) {
+                    return NoOp.getInstance();
+                } else {
+                    return push(methods.getInstance());
+                }
+            } else if (declaration instanceof AliasJvmInteropDeclarationNode) {
                 return NoOp.getInstance();
             }
         }
         throw new UnsupportedOperationException(function.getClass().getCanonicalName());
     }
 
+    BytecodeSequence push(Symbol symbol) {
+        Logger.debug("push("+symbol+")");
+        if (symbol.isNode()) {
+            return push(symbol.asNode());
+        } else if (symbol instanceof ReflectionBasedField) {
+            ReflectionBasedField reflectionBaseField = (ReflectionBasedField) symbol;
+            if (reflectionBaseField.isStatic()) {
+                return new PushStaticField(reflectionBaseField.toJvmField(compilation.getResolver()));
+            } else {
+                throw new UnsupportedOperationException();
+            }
+        } else if (symbol instanceof ReflectionBasedTypeDefinition) {
+        }
 
+            throw new UnsupportedOperationException();
+    }
+
+
+    BytecodeSequence push(Node node) {
+        Logger.debug("push node = "+node+" "+node.toString());
+
+        throw new UnsupportedOperationException();
+    }
 }

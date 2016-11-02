@@ -50,8 +50,6 @@ public class SrcSymbolResolver implements SymbolResolver {
 
     }
 
-
-
     @Override
     public SymbolResolver getParent() {
         return parent;
@@ -64,6 +62,7 @@ public class SrcSymbolResolver implements SymbolResolver {
 
     @Override
     public Optional<Symbol> findSymbol(String name, Node context) {
+
         if (aliasDefinitions.containsKey(name)) {
             return Optional.of(aliasDefinitions.get(name));
         }

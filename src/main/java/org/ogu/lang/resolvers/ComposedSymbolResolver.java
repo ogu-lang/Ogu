@@ -5,6 +5,7 @@ import org.ogu.lang.definitions.TypeDefinition;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.expressions.FunctionCallNode;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.util.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,10 +74,8 @@ public class ComposedSymbolResolver  implements SymbolResolver {
     @Override
     public Optional<Symbol> findSymbol(String name, Node context) {
         for (SymbolResolver element : elements) {
-            //Logger.debug("findSymbol@ComposedSymbolResolver element="+element);
             Optional<Symbol> res = element.findSymbol(name, context);
             if (res.isPresent()) {
-                //Logger.debug("encontrado!! "+res);
                 return res;
             }
         }

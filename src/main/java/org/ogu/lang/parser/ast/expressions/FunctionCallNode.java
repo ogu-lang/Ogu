@@ -3,7 +3,9 @@ package org.ogu.lang.parser.ast.expressions;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.resolvers.SymbolResolver;
+import org.ogu.lang.resolvers.jdk.ReflectionBasedSetOfOverloadedMethods;
 import org.ogu.lang.symbols.FormalParameter;
+import org.ogu.lang.symbols.Symbol;
 import org.ogu.lang.typesystem.TypeUsage;
 import org.ogu.lang.util.Logger;
 
@@ -83,4 +85,14 @@ public class FunctionCallNode extends InvocableExpressionNode {
         return values;
     }
 
+    public boolean isStatic() {
+        Symbol f = function;
+        if (f instanceof ReferenceNode) {
+            f = ((ReferenceNode) function).resolve(symbolResolver());
+        }
+        if (f instanceof ReflectionBasedSetOfOverloadedMethods) {
+            return ((ReflectionBasedSetOfOverloadedMethods) f).isStatic();
+        }
+        throw new UnsupportedOperationException(f.getClass().getCanonicalName());
+    }
 }

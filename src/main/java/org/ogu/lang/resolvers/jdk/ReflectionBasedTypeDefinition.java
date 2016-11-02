@@ -14,6 +14,7 @@ import org.ogu.lang.symbols.Symbol;
 import org.ogu.lang.typesystem.InvocableReferenceTypeUsage;
 import org.ogu.lang.typesystem.ReferenceTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.util.Logger;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -198,6 +199,12 @@ public class ReflectionBasedTypeDefinition implements TypeDefinition {
         // TODO consider inherited fields and methods
         return false;
     }
+
+    @Override
+    public Symbol getField(String fieldName) {
+        return internalGetField(fieldName, null);
+    }
+
     @Override
     public List<InternalConstructorDefinition> getConstructors() {
         return Arrays.stream(clazz.getConstructors())
@@ -253,6 +260,7 @@ public class ReflectionBasedTypeDefinition implements TypeDefinition {
      * Instance null means get static fields.
      */
     private Symbol internalGetField(String fieldName, Symbol instance) {
+        Logger.debug("internalGetField("+fieldName+") clazz="+clazz);
         boolean isStatic = instance == null;
         for (Field field : clazz.getFields()) {
             if (field.getName().equals(fieldName) && Modifier.isStatic(field.getModifiers()) == isStatic) {
