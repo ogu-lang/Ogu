@@ -2,6 +2,7 @@ package org.ogu.lang.compiler;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.codegen.bytecode_generation.*;
+import org.ogu.lang.codegen.bytecode_generation.pushpop.PushIntConst;
 import org.ogu.lang.codegen.bytecode_generation.pushpop.PushLocalVar;
 import org.ogu.lang.codegen.bytecode_generation.pushpop.PushStaticField;
 import org.ogu.lang.codegen.bytecode_generation.pushpop.PushStringConst;
@@ -14,6 +15,7 @@ import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.expressions.FunctionCallNode;
 import org.ogu.lang.parser.ast.expressions.ReferenceNode;
+import org.ogu.lang.parser.ast.expressions.literals.IntLiteralNode;
 import org.ogu.lang.parser.ast.expressions.literals.StringLiteralNode;
 import org.ogu.lang.resolvers.jdk.ReflectionBasedField;
 import org.ogu.lang.resolvers.jdk.ReflectionBasedSetOfOverloadedMethods;
@@ -47,6 +49,9 @@ public class CompilationOfStatements {
     }
 
     BytecodeSequence pushExpression(ExpressionNode expressionNode) {
+        if (expressionNode instanceof IntLiteralNode) {
+            return new PushIntConst(((IntLiteralNode) expressionNode).getValue());
+        }
         if (expressionNode instanceof StringLiteralNode) {
             return new PushStringConst(((StringLiteralNode) expressionNode).getValue());
         }

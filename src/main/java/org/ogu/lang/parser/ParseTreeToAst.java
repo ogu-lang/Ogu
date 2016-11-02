@@ -1478,7 +1478,7 @@ public class ParseTreeToAst {
         }
         if (ctx.INT() != null) {
             String itxt = ctx.INT().getText().replace("_", "");
-            BigInteger bi = new BigInteger(itxt);
+            int bi = new Integer(itxt);
             IntLiteralNode lit = new IntLiteralNode(bi);
             getPositionFrom(lit, ctx);
             return lit;
@@ -1510,7 +1510,10 @@ public class ParseTreeToAst {
     private FunctionCallNode toAstFunctionCall(OguParser.ExprContext ctx) {
         if (ctx.function != null) {
             ExpressionNode function = toAst(ctx.function);
-            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.params_expr().param_expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            List<ActualParamNode> actualParams = new ArrayList<>();
+            if (ctx.params_expr() != null)
+                actualParams.addAll(ctx.params_expr().param_expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            FunctionCallNode functionCallNode = new FunctionCallNode(function, actualParams);
             getPositionFrom(functionCallNode, ctx);
             return functionCallNode;
 

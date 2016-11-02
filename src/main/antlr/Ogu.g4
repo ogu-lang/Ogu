@@ -281,6 +281,7 @@ param_expr
     | ref=ID
     | primary
     | paren_expr
+    | expr
     ;
 
 self_id

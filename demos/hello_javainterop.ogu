@@ -3,7 +3,11 @@
 alias out = jvm "java.lang.System/out:Ljava/io/PrintStream;"
 
 alias println = jvm "java.io.PrintStream/println:(Ljava/lang/String;)V"
+alias printlni = jvm "java.io.PrintStream/println:(I)V"
 
 println out "Ola amiko mio de mi"
 
-println out (2 + 2)
+printlni out 2
+
+
+
