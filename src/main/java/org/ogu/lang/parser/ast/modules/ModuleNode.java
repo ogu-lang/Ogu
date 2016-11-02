@@ -73,11 +73,12 @@ public class ModuleNode extends Node {
     public Iterable<Node> getChildren() {
         return ImmutableList.<Node>builder()
                 .add(nameDefinition)
-                .addAll(program)
-                .addAll(declarations)
+                .addAll(uses)
                 .addAll(aliases)
+                .addAll(declarations)
                 .addAll(exports)
-                .addAll(uses).build();
+                .addAll(program)
+                .build();
     }
 
     public ModuleNameNode getNameDefinition() {
