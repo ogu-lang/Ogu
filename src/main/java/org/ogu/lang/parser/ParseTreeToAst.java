@@ -1090,6 +1090,9 @@ public class ParseTreeToAst {
             return toAst(ctx.primary());
         }
 
+        if (ctx.paren_expr() != null) {
+            return toAst(ctx.paren_expr());
+        }
         Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }

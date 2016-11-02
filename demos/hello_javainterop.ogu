@@ -5,3 +5,5 @@ alias out = jvm "java.lang.System/out:Ljava/io/PrintStream;"
 alias println = jvm "java.io.PrintStream/println:(Ljava/lang/String;)V"
 
 println out "Ola amiko mio de mi"
+
+println out (2 + 2)

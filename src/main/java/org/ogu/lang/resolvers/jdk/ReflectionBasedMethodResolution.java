@@ -184,11 +184,7 @@ public class ReflectionBasedMethodResolution {
             Class<?> clazz = ClassLoader.getSystemClassLoader().loadClass(clazzName);
             Field[] fields = clazz.getFields();
             for (Field f : fields) {
-                Logger.debug("f ="+f.getName()+" fn="+fieldName);
-                Logger.debug("fs ="+ReflectionTypeDefinitionFactory.calcSignature(f)+" fs="+fieldSignature);
-
                 if (fieldName.equals(f.getName()) && fieldSignature.equals(ReflectionTypeDefinitionFactory.calcSignature(f))) {
-                    Logger.debug("Eureka!!");
                     return Optional.of(f);
                 }
             }
