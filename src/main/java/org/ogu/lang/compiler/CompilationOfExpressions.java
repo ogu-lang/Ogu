@@ -35,11 +35,11 @@ import static org.ogu.lang.compiler.BoxUnboxing.box;
 /**
  * Created by ediaz on 10/30/16.
  */
-public class CompilationOfStatements {
+public class CompilationOfExpressions {
 
     private final Compilation compilation;
 
-    public CompilationOfStatements(Compilation compilation) {
+    public CompilationOfExpressions(Compilation compilation) {
         this.compilation = compilation;
     }
 

@@ -122,7 +122,8 @@ En el primer caso el resultado es 7. En el segundo caso también es 7. Sin embar
     2 + max 4 5 // (+ 2 (max 4 5)
     max 4 + 5 2 // error
 
-El tercer caso es un error porque se interpreta como ((max 4) + 5 2), (max 4) es una función parcial cuyo segundo argumento debería ser otro número o una función, 
+El tercer caso es un error porque se interpreta como ((max 4) + 5 2), (max 4) es una función parcial cuyo segundo 
+argumento debería ser otro número o una función, 
 pero el argumento recibido es + 5 2, esa es una expresión sin sentido en Ogú.
 
 Sin embargo se puede hacer lo siguiente:
