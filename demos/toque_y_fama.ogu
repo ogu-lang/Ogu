@@ -1,11 +1,12 @@
 ; toque y fama en ogú
 uses Math.Random
 
-let toques_y_famas [] _ _ = (0,0)
-let toques_y_famas (n::ns) (x::xs) ys
-    | n == x = (t, f+1)
-    | otherwise = if n `elem` ys then (t+1,f) else (t,f)
-    where (t,f) = toques_y_famas ns xs ys
+let toques_y_famas num sec =
+    var (toques, famas) = (0,0)
+    for (i,n) <- zipWithIndex num do
+       for (j,m) <- zipWithIndex sec do
+           if n == m then famas <- famas + 1 else toques <- toques + 1
+    (toques, famas)
 
 let validar n xs = if (length num) == n then num else []
     where num = if all (isDigit 10) xs then map (toDigit 10) xs |> uniq else []
@@ -32,7 +33,7 @@ while not salir do
     else
         if let num = validar tam accion then
             println! "tu ingresaste " ++ (show num)
-            let (toques, famas) = (toques num sec, famas num sec)
+            let (toques, famas) = toques_y_famas num sec
             println! "resultado: " ++ (show (toques - famas)) ++ " Toques " ++ (show famas) ++ "Famas"
             when famas == tam do
                 println! "Ganaste! Acertaste al intento " ++ (show intentos) ++ "! La secuencia era " ++ (show sec)

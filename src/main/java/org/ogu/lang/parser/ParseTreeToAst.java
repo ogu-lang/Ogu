@@ -19,8 +19,6 @@ import org.ogu.lang.parser.ast.typeusage.*;
 import org.ogu.lang.util.Logger;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -434,12 +432,12 @@ public class ParseTreeToAst {
             return opDef;
         }
 
-
-
         if (!ctx.tup.isEmpty()) {
             List<IdentifierNode> ids = new ArrayList<>();
             Map<IdentifierNode, TypeNode> types = new HashMap<>();
-            lidsToAst(ctx.tup, ids, types);
+            ErrorValDeclarationNode error = lidsToAst(ctx.tup, ids, types);
+            if (error != null)
+                return error;
             ExpressionNode value = toAst(ctx.expr());
             TupleValDeclarationNode decl = new TupleValDeclarationNode(ids, types, value, decoratorNodes);
             getPositionFrom(decl, ctx);
@@ -449,17 +447,39 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private void lidsToAst(List<OguParser.LidContext> lids, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
+    private ErrorValDeclarationNode lidsToAst(List<OguParser.LidContext> lids, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
         for(OguParser.LidContext ctx : lids) {
+            IdentifierNode id;
             if (ctx.lid_fun_id !=null) {
-                ids.add(IdentifierNode.create(idText(ctx.lid_fun_id)));
+                id = IdentifierNode.create(idText(ctx.lid_fun_id));
             } else {
-                IdentifierNode id = IdentifierNode.create(idText(ctx.lid_val_id));
+                id = IdentifierNode.create(idText(ctx.lid_val_id));
+            }
+
+            if (ids.contains(id)) {
+                return new ErrorValDeclarationNode(message("error.declare_duplicate_id") + id.getName(), getPosition(ctx));
+            }
+            ids.add(id);
+            if (ctx.type() != null) {
                 TypeNode type = toAst(ctx.type());
-                ids.add(id);
                 types.put(id, type);
             }
         }
+        return null;
+    }
+
+    private ErrorVarDeclarationNode vidtToAst(List<OguParser.VidtContext> vidt, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
+        for (OguParser.VidtContext ctx : vidt) {
+            IdentifierNode id = IdentifierNode.create(idText(ctx.i));
+            if (ids.contains(id))
+                return new ErrorVarDeclarationNode(message("error.declare_duplicate_id") + id.getName(), getPosition(ctx));
+            ids.add(id);
+            if (ctx.type() != null) {
+                TypeNode type = toAst(ctx.type());
+                types.put(id, type);
+            }
+        }
+        return null;
     }
 
     private ExpressionNode toAst(OguParser.Let_exprContext ctx) {
@@ -771,6 +791,7 @@ public class ParseTreeToAst {
         OguParser.Alias_targetContext target = ctx.alias_target();
         OguParser.Alias_originContext origin = ctx.alias_origin();
         if (target.alias_tid != null) {
+
             if (origin.alias_origin_id != null) {
                 return new ErrorAliasNode(message("error.alias.tid_no_tid"), getPosition(ctx));
             }
@@ -778,6 +799,11 @@ public class ParseTreeToAst {
             getPositionFrom(decl, ctx);
             return decl;
         } else {
+            if (origin.jvm_id != null) {
+                String src = origin.jvm_origin().src.getText().replaceAll("\"z", "");
+                AliasJvmInteropDeclarationNode decl = new AliasJvmInteropDeclarationNode(toOguIdentifier(target), decs, src);
+                return decl;
+            }
             if (origin.alias_origin_id == null) {
                 return new ErrorAliasNode(message("error.alias.id_no_id"), getPosition(ctx));
             }
@@ -789,8 +815,8 @@ public class ParseTreeToAst {
 
 
     private VarDeclarationNode toAst(OguParser.VarContext ctx, List<DecoratorNode> decs) {
-        if (ctx.vid().i != null) {
-            IdentifierNode id =  IdentifierNode.create(idText(ctx.vid().i));
+        if (ctx.vid != null) {
+            IdentifierNode id =  IdentifierNode.create(idText(ctx.vid));
             VarDeclarationNode var;
             if (ctx.type() == null) {
                 var = new VarDeclarationNode(id, toAst(ctx.expr()), decs);
@@ -802,22 +828,42 @@ public class ParseTreeToAst {
             }
             getPositionFrom(var, ctx);
             return var;
+        } else {
+            List<IdentifierNode> ids = new ArrayList<>();
+            Map<IdentifierNode, TypeNode> types = new HashMap<>();
+            ErrorVarDeclarationNode error = vidtToAst(ctx.vidt(), ids, types);
+            if (error != null)
+                return error;
+            ExpressionNode value = toAst(ctx.expr());
+            TupleVarDeclarationNode decl = new TupleVarDeclarationNode(ids, types, value, decs);
+            getPositionFrom(decl, ctx);
+            return decl;
         }
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private ValDeclarationNode toAst(OguParser.Val_defContext ctx, List<DecoratorNode> decoratorNodes) {
+    private ValDeclarationNode toAst(OguParser.Val_defContext ctx, List<DecoratorNode> decs) {
         if (ctx.val_id != null) {
             if (ctx.type() == null) {
-                ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.expr()), decoratorNodes);
+                ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.expr()), decs);
                 getPositionFrom(val, ctx);
                 return val;
             }
-            ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decoratorNodes);
+            ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decs);
             getPositionFrom(val, ctx);
             return val;
+        } else {
+            List<IdentifierNode> ids = new ArrayList<>();
+            Map<IdentifierNode, TypeNode> types = new HashMap<>();
+            ErrorValDeclarationNode error  = lidsToAst(ctx.lid(), ids, types);
+            if (error != null) {
+                return error;
+            } else {
+                ExpressionNode expr = toAst(ctx.expr());
+                TupleValDeclarationNode vals = new TupleValDeclarationNode(ids, types, expr, decs);
+                getPositionFrom(expr, ctx);
+                return vals;
+            }
         }
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
     private TypeNode toAst(OguParser.TypeContext ctx) {
@@ -1010,6 +1056,12 @@ public class ParseTreeToAst {
         if (ctx.o != null) {
             ExpressionNode left = toAst(ctx.l);
             ExpressionNode right = toAst(ctx.r);
+            String op = ctx.o.getText();
+            if (op.equals("*") || op.equals("/") || op.equals("//") || op.equals("+") || op.equals("-")) {
+                MathOpExpressionNode expr = new MathOpExpressionNode(new OperatorNode(ctx.o.getText()), left, right);
+                getPositionFrom(expr, ctx);
+                return expr;
+            }
             BinaryOpExpressionNode expr = new BinaryOpExpressionNode(new OperatorNode(ctx.o.getText()), left, right);
             getPositionFrom(expr, ctx);
             return expr;
@@ -1026,6 +1078,28 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
+
+    private ExpressionNode toAst(OguParser.Param_exprContext ctx) {
+
+        if (ctx.self_id() != null) {
+            return toAst(ctx.self_id());
+        }
+
+        if (ctx.ref != null) {
+            ReferenceNode ref = new ReferenceNode(IdentifierNode.create(idText(ctx.ref)));
+            getPositionFrom(ref, ctx);
+            return ref;
+        }
+        if (ctx.primary() != null) {
+            return toAst(ctx.primary());
+        }
+
+        if (ctx.paren_expr() != null) {
+            return toAst(ctx.paren_expr());
+        }
+        Logger.debug(ctx.getText());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
     private SelfRefExpressionNode toAst(OguParser.Self_idContext ctx) {
         SelfRefExpressionNode expr = new SelfRefExpressionNode(IdentifierNode.create(idText(ctx.i)));
         getPositionFrom(expr, ctx);
@@ -1336,7 +1410,7 @@ public class ParseTreeToAst {
         return ctor;
     } */
 
-    private ActualParamNode toAstParam(OguParser.ExprContext ctx) {
+    private ActualParamNode toAstParam(OguParser.Param_exprContext ctx) {
         ActualParamNode param = new ActualParamNode(toAst(ctx));
         getPositionFrom(param, ctx);
         return param;
@@ -1408,7 +1482,7 @@ public class ParseTreeToAst {
         }
         if (ctx.INT() != null) {
             String itxt = ctx.INT().getText().replace("_", "");
-            BigInteger bi = new BigInteger(itxt);
+            int bi = new Integer(itxt);
             IntLiteralNode lit = new IntLiteralNode(bi);
             getPositionFrom(lit, ctx);
             return lit;
@@ -1422,8 +1496,8 @@ public class ParseTreeToAst {
 
         if (ctx.FLOAT() != null) {
             String dtxt = ctx.FLOAT().getText().replace("_", "");
-            BigDecimal bd = new BigDecimal(dtxt);
-            FloatLiteralNode lit = new FloatLiteralNode(bd);
+            double bd = new Double(dtxt);
+            DoubleLiteralNode lit = new DoubleLiteralNode(bd);
             getPositionFrom(lit, ctx);
             return lit;
         }
@@ -1440,14 +1514,17 @@ public class ParseTreeToAst {
     private FunctionCallNode toAstFunctionCall(OguParser.ExprContext ctx) {
         if (ctx.function != null) {
             ExpressionNode function = toAst(ctx.function);
-            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            List<ActualParamNode> actualParams = new ArrayList<>();
+            if (ctx.params_expr() != null)
+                actualParams.addAll(ctx.params_expr().param_expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            FunctionCallNode functionCallNode = new FunctionCallNode(function, actualParams);
             getPositionFrom(functionCallNode, ctx);
             return functionCallNode;
 
         }
         if (ctx.qual_function != null) {
             ExpressionNode function = toAst(ctx.qual_function);
-            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.params_expr().param_expr().stream().map(this::toAstParam).collect(Collectors.toList()));
             getPositionFrom(functionCallNode, ctx);
             return functionCallNode;
         }

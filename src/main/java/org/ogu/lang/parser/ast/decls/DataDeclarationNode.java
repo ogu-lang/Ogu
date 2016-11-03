@@ -1,13 +1,17 @@
 package org.ogu.lang.parser.ast.decls;
 
 import com.google.common.collect.ImmutableList;
+import org.ogu.lang.definitions.InternalFunctionDefinition;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParamNode;
+import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 import org.ogu.lang.parser.ast.typeusage.TypeNode;
+import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * data Data I J = A I | B J | ...
@@ -47,5 +51,15 @@ public class DataDeclarationNode extends AlgebraicDataTypeDeclarationNode {
                 ", deriving=" + deriving +
                 ", decorators=" + decoratorNodes +
                 '}';
+    }
+
+    @Override
+    public TypeUsage getFieldType(String fieldName) {
+        return null;
+    }
+
+    @Override
+    public Optional<InternalFunctionDefinition> findFunction(String functionName, List<ActualParamNode> actualParams) {
+        return null;
     }
 }

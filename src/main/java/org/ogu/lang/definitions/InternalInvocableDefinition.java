@@ -4,6 +4,7 @@ import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ediaz on 21-01-16.
@@ -16,6 +17,10 @@ public abstract class InternalInvocableDefinition {
         this.formalParameters = formalParameters;
     }
 
+    public List<? extends FormalParameter> getFormalParameters() {
+        return formalParameters;
+    }
+
     public abstract InternalConstructorDefinition asConstructor();
 
     public abstract InternalFunctionDefinition asFunction();
@@ -25,4 +30,6 @@ public abstract class InternalInvocableDefinition {
     public abstract boolean isFunction();
 
     public abstract TypeUsage getReturnType();
+
+    public abstract InternalInvocableDefinition apply(Map<String, TypeUsage> typeParams);
 }

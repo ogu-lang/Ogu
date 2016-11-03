@@ -64,16 +64,22 @@ instance Num Integer where
     #{extern "jvm" "java/math/BigInteger.add:(Ljava/math/BigInteger;)V"}
     let x + y = add x y
 
+    #{extern "jvm" "java/math/BigInteger.substract:(Ljava/math/BigInteger;)V"}
     let x - y = substract x y
 
+    #{extern "jvm" "java/math/BigInteger.multiply:(Ljava/math/BigInteger;)V"}
     let x * y = multiply x y
 
+    #{extern "jvm" "java/math/BigInteger.divide:(Ljava/math/BigInteger;)V"}
     let x / y = divide x y
 
+    #{extern "jvm" "java/math/BigInteger.negate(Ljava/math/BigInteger;)V"}
     let neg x = negate x
 
+    #{extern "jvm" "java/math/BigInteger.abs(Ljava/math/BigInteger;)V"}
     let abs x = abs x
 
+    #{extern "jvm" "java/math/BigInteger.sgn(Ljava/math/BigInteger;)V"}
     let sgn x = signum x
 
 #{primitive}

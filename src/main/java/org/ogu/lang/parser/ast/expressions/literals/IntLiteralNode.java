@@ -2,6 +2,7 @@ package org.ogu.lang.parser.ast.expressions.literals;
 
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
+import org.ogu.lang.typesystem.PrimitiveTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
 
 import java.math.BigInteger;
@@ -12,9 +13,9 @@ import java.util.Collections;
  */
 public class IntLiteralNode extends ExpressionNode {
 
-    BigInteger value;
+    int value;
 
-    public IntLiteralNode(BigInteger value) {
+    public IntLiteralNode(int value) {
         super();
         this.value = value;
     }
@@ -26,11 +27,15 @@ public class IntLiteralNode extends ExpressionNode {
 
     @Override
     public TypeUsage calcType() {
-        return null;
+        return PrimitiveTypeUsage.INT;
     }
 
     @Override
     public Iterable<Node> getChildren() {
         return Collections.emptyList();
+    }
+
+    public int getValue() {
+        return value;
     }
 }

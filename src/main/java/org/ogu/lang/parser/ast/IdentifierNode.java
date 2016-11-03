@@ -1,7 +1,13 @@
 package org.ogu.lang.parser.ast;
 
+import org.ogu.lang.parser.analysis.exceptions.UnsolvedSymbolException;
+import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.util.Logger;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -9,12 +15,27 @@ import java.util.stream.Collectors;
  */
 public class IdentifierNode extends NameNode {
 
+    private TypeUsage precalculatedType;
+
     public IdentifierNode(TypeIdentifierNode base, String name) {
         super(base, name);
     }
 
     public IdentifierNode(String name) {
         super(name);
+    }
+
+    @Override
+    public TypeUsage calcType() {
+        if (precalculatedType != null) {
+            return precalculatedType;
+        }
+        Optional<Symbol> declaration = symbolResolver().findSymbol(name, this);
+        if (declaration.isPresent()) {
+            return declaration.get().calcType();
+        } else {
+            throw new UnsolvedSymbolException(this);
+        }
     }
 
     public static IdentifierNode create(List<String> base, String name) {

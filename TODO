@@ -1,4 +1,5 @@
 TODO LIST
 
+- bug with function call as parameters: f g a parses as (f g a) instead of (f (g a))
 - write instructions for building
 - semantic analysis

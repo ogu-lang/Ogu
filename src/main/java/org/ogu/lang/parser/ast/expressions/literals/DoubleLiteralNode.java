@@ -2,6 +2,7 @@ package org.ogu.lang.parser.ast.expressions.literals;
 
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
+import org.ogu.lang.typesystem.PrimitiveTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
 
 import java.math.BigDecimal;
@@ -10,23 +11,25 @@ import java.util.Collections;
 /**
  * Created by ediaz on 27-01-16.
  */
-public class FloatLiteralNode extends ExpressionNode {
+public class DoubleLiteralNode extends ExpressionNode {
 
-    BigDecimal value;
+    double value;
 
-    public FloatLiteralNode(BigDecimal value) {
+    public DoubleLiteralNode(double value) {
         super();
         this.value = value;
     }
 
+    public double getValue() { return value; }
+
     @Override
     public String toString() {
-        return "FLOAT("+value+")";
+        return "DOUBLE("+value+")";
     }
 
     @Override
     public TypeUsage calcType() {
-        return null;
+        return PrimitiveTypeUsage.DOUBLE;
     }
 
     @Override

@@ -38,6 +38,13 @@ After that you should see the following on your console:
 	Chau, chau amiko mio de mi.
 
 
+LICENSE
+-------
+
+For releases 0.1.x parts of the code were based on Turin Programming Language by Federico Tomassetti:
+
+    https://github.com/ftomassetti/turin-programming-language
+
 
 
 This software is distributed under a BSD License, see LICENSE file for details

@@ -33,7 +33,7 @@ public class TupleValDeclarationNode extends ValDeclarationNode {
 
     @Override
     public Iterable<Node> getChildren() {
-        return ImmutableList.<Node>builder().addAll(ids).addAll(types.values()).add(value).addAll(decoratorNodes).build();
+        return ImmutableList.<Node>builder().addAll(ids).addAll(types.keySet()).addAll(types.values()).add(value).addAll(decoratorNodes).build();
     }
 
     @Override
