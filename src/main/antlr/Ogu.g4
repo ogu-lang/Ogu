@@ -127,13 +127,14 @@ var :  'var' vid=ID (':' type)? ('=' expr)?
 vidt : i=ID (':' t=type)? ;
 
 func_decl_arg
-	: unit
-	| divergence
+	: divergence
 	| vector
+    | unit
 	| tuple
 	| '(' func_decl_arg (<assoc=right> '->'func_decl_arg)+ ')'
 	| '{' func_decl_arg ('->' func_decl_arg)* '}'
 	| fda_id=ID
+	| fda_or1=func_decl_arg '|' fda_or2=func_decl_arg (<assoc=right>'|' fda_orn+=func_decl_arg)*
 	| fda_tid+=TID ('.' fda_tid+=TID)* (tid_or_id_arg+=tid_or_id)*
 	;
 
@@ -147,6 +148,19 @@ divergence : '!' ;
 vector : '[' func_decl_arg ']' ;
 
 tuple : '(' func_decl_arg (',' func_decl_arg)* ')' ;
+
+type : vector_type
+     | unit
+     | tuple_type
+     | anon_record_type
+     | record_type
+     | map_type
+     | type '->' type (<assoc=right>'->' type)*
+     | gt=tid (t_a+=tid_args)*
+     | type '|' type (<assoc=right>'|' type)*
+     | nat=('i8' | 'u8' | 'i16' | 'u16' | 'i32' | 'u32' | 'i64' | 'u64' | 'f32' | 'f64')
+     | i=ID
+     ;
 
 func_name_decl : f_id=ID | f_op=op | '(' f_op=op ')';
 
@@ -211,18 +225,7 @@ let_decl
 
 block : INDENT (let_decl NL*)* DEDENT ;
 
-type : vector_type
-     | unit
-     | tuple_type
-     | anon_record_type
-     | record_type
-     | map_type
-     | type '->' type (<assoc=right>'->' type)*
-     | gt=tid (t_a+=tid_args)*
-     | type '|' type (<assoc=left>'|' type)*
-     | nat=('i8' | 'u8' | 'i16' | 'u16' | 'i32' | 'u32' | 'i64' | 'u64' | 'f32' | 'f64')
-     | i=ID
-     ;
+
 
 vector_type : '[' vt=type ']' ;
 
