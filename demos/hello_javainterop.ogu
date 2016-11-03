@@ -14,7 +14,7 @@ printlnd out 2.0
 
 printlni out (2+2)
 
-printlni out (2*3)
+printlnd out (2.0*3.0)
 
 
 

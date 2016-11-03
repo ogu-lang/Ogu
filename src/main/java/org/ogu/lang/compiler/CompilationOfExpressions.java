@@ -73,13 +73,7 @@ public class CompilationOfStatements {
         }
         else if (expressionNode instanceof MathOpExpressionNode) {
             MathOpExpressionNode mathOperation = (MathOpExpressionNode) expressionNode;
-            // TODO do proper conversions
-            if (!mathOperation.getLeft().calcType().sameType(PrimitiveTypeUsage.INT)) {
-                throw new UnsupportedOperationException();
-            }
-            if (!mathOperation.getRight().calcType().sameType(PrimitiveTypeUsage.INT)) {
-                throw new UnsupportedOperationException();
-            }
+
             JvmTypeCategory leftTypeCategory = mathOperation.getLeft().calcType().jvmType().typeCategory();
             return new ComposedBytecodeSequence(ImmutableList.of(
                     pushExpression(mathOperation.getLeft()),

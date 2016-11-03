@@ -85,7 +85,7 @@ public class Options {
     private boolean parseOnly = false;
 
     @Parameter(names = {"-o", "--output"})
-    private String destinationDir = "ogu_classes";
+    private String destinationDir = ".";
 
     @Parameter(names = {"-cp", "--classpath"}, variableArity = true)
     private List<String> classPathElements = new ArrayList<>();

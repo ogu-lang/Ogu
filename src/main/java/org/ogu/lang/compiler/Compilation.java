@@ -11,9 +11,7 @@ import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.util.Feedback;
-import org.ogu.lang.util.Logger;
 
-import java.beans.Expression;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +32,7 @@ public class Compilation {
     private ErrorCollector errorCollector;
     private Options options;
     private ClassWriter cw;
-    private final CompilationOfStatements compilationOfStatements = new CompilationOfStatements(this);
+    private final CompilationOfExpressions compilationOfExpressions = new CompilationOfExpressions(this);
 
     public Compilation(SymbolResolver resolver, ErrorCollector errorCollector, Options options) {
         this.resolver = resolver;
@@ -94,7 +92,7 @@ public class Compilation {
 
 
         for (ExpressionNode expr : module.getProgram()) {
-            compilationOfStatements.compile(expr).operate(mv);
+            compilationOfExpressions.compile(expr).operate(mv);
         }
 
         mv.visitInsn(RETURN);
