@@ -8,6 +8,12 @@ Using Semantic Versioning [http://semver.org/](http://semver.org/)
 
 ## [Unreleased]
 
+## [0.1.4] - 2016-11-03
+
+### Added
+
+- First jvm code generation compiles demo/hello_javainterop.ogu to a .class file for jvm
+
 ## [0.1.3] - 2016-02-02
 
 - Generates an AST for grammar (~ 90% of coverage).
