@@ -1,12 +1,16 @@
 package org.ogu.lang.parser.ast;
 
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
+import org.ogu.lang.parser.ast.expressions.ExpressionBlockNode;
+import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.expressions.InvocableExpressionNode;
 import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.resolvers.ResolverRegistry;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.util.Logger;
 
 import java.util.List;
 import java.util.Optional;
@@ -110,6 +114,11 @@ public abstract class Node implements Symbol {
         return valid;
     }
 
+    @Override
+    public TypeUsage calcType() {
+        throw new UnsupportedOperationException(this.getClass().getCanonicalName());
+    }
+
     /**
      * @return if the node is valid
      */
@@ -120,5 +129,13 @@ public abstract class Node implements Symbol {
 
     public String describe() {
         return this.toString();
+    }
+
+    public Optional<Symbol> findSymbol(String name, SymbolResolver resolver) {
+        if (parent == null) {
+            return Optional.empty();
+        }  else {
+            return parent.findSymbol(name, resolver);
+        }
     }
 }

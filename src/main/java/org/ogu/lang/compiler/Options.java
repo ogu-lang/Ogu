@@ -7,6 +7,16 @@ import java.util.List;
 
 /**
  * Compiler Options
+ * Options for Plunke version:
+ *      -nc --nocore: doesn't include core library
+ *      -p --parse: parse only
+ *      -o --output: set destination directory for classes
+ *      -cp --classpath: define classpath
+ *      -v  --verbose: verbose compilation
+ *      -d  --debug: debugging output
+ *      -t --tree: show compilation tree
+ *      -h --help: shows help
+ *
  * Created by ediaz on 20-01-16.
  */
 public class Options {
@@ -55,6 +65,10 @@ public class Options {
 
     public void setParseOnly(boolean parseOnly) { this.parseOnly = parseOnly; }
 
+    public boolean isShowTree() { return showTree; }
+
+    public void setShowTree(boolean showTree) { this.showTree = showTree; }
+
     public List<String> getSources() {
         return sources;
     }
@@ -71,7 +85,7 @@ public class Options {
     private boolean parseOnly = false;
 
     @Parameter(names = {"-o", "--output"})
-    private String destinationDir = "ogu_classes";
+    private String destinationDir = ".";
 
     @Parameter(names = {"-cp", "--classpath"}, variableArity = true)
     private List<String> classPathElements = new ArrayList<>();
@@ -81,6 +95,9 @@ public class Options {
 
     @Parameter(names = {"-d", "--debug"})
     private boolean debug = false;
+
+    @Parameter(names = {"-t", "--tree"})
+    private boolean showTree;
 
     @Parameter(names = {"-h", "--help"})
     private boolean help = false;

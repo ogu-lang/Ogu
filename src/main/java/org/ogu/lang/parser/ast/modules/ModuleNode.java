@@ -1,12 +1,17 @@
 package org.ogu.lang.parser.ast.modules;
 
 import com.google.common.collect.ImmutableList;
+import org.ogu.lang.definitions.TypeDefinition;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.*;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
+import org.ogu.lang.resolvers.SymbolResolver;
+import org.ogu.lang.symbols.Symbol;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * A Module
@@ -14,6 +19,7 @@ import java.util.List;
  */
 public class ModuleNode extends Node {
 
+    private List<Node> topNodes = new ArrayList<>();
     ModuleNameNode nameDefinition;
     private List<UsesDeclarationNode> uses = new ArrayList<>();
     private List<AliasDeclarationNode> aliases = new ArrayList<>();
@@ -25,6 +31,11 @@ public class ModuleNode extends Node {
 
     public List<ExpressionNode> getProgram() {
         return program;
+    }
+
+    public void add(TypeDeclarationNode typeDefinition) {
+        topNodes.add(typeDefinition);
+        typeDefinition.setParent(this);
     }
 
     public void add(ExpressionNode expressionNode) {
@@ -65,11 +76,12 @@ public class ModuleNode extends Node {
     public Iterable<Node> getChildren() {
         return ImmutableList.<Node>builder()
                 .add(nameDefinition)
-                .addAll(program)
-                .addAll(declarations)
+                .addAll(uses)
                 .addAll(aliases)
+                .addAll(declarations)
                 .addAll(exports)
-                .addAll(uses).build();
+                .addAll(program)
+                .build();
     }
 
     public ModuleNameNode getNameDefinition() {
@@ -79,4 +91,37 @@ public class ModuleNode extends Node {
     public List<ExportableDeclarationNode> getDeclarations() {
         return declarations;
     }
+
+    public List<TypeDeclarationNode> getTopLevelTypeDefinitions() {
+        return topNodes.stream().filter((n)-> (n instanceof TypeDeclarationNode)).map((n) -> (TypeDeclarationNode)n).collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<Symbol> findSymbol(String name, SymbolResolver resolver) {
+        for (UsesDeclarationNode usesDeclarationNode : uses) {
+            Optional<Symbol> used = usesDeclarationNode.findAmongImported(name, resolver);
+            if (used.isPresent()) {
+                return Optional.of(used.get());
+            }
+        }
+        for (AliasDeclarationNode aliasDeclarationNode : aliases) {
+            if (aliasDeclarationNode.getName().equals(name)) {
+                return Optional.of(aliasDeclarationNode);
+            }
+        }
+        for (ExportsDeclarationNode export : exports) {
+            if (export.getName().equals(name)) {
+                return Optional.of(export);
+            }
+        }
+        for (ExportableDeclarationNode decl : declarations) {
+            if (decl.getName().equals(name)) {
+                return Optional.of(decl);
+            }
+        }
+
+        String qName = nameDefinition.getName() + "." + name;
+        return resolver.getRoot().findSymbol(qName, null);
+    }
+
 }

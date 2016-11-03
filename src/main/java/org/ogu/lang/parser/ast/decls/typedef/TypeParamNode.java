@@ -29,7 +29,7 @@ public class TypeParamNode extends Node {
     public String toString() {
         return "TypeParam {" +
                 "id=" + id +
-                "type=" + type +
+                ", type=" + type +
                 '}';
     }
 

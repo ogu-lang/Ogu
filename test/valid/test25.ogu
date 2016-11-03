@@ -1,0 +1,17 @@
+
+; read http://debasishg.blogspot.cl/2010/01/case-for-orthogonality-in-design.html?m=1
+
+trait Eq a where
+   
+   def (==) : a -> a -> Bool
+
+
+data Tree a = Leaf a | Branch (Leaf a) (Leaf a)
+ 
+
+instance (a:Eq) => Eq (Tree a) where
+
+   let Leaf a == Leaf b = a == b
+   let (Branch l1 r1) == (Branch l2 r2) = (l1 == l2) && (r1 == r2)
+   let _ == _ = false
+

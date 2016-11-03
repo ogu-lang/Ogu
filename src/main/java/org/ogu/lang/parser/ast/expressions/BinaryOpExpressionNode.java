@@ -6,14 +6,14 @@ import org.ogu.lang.parser.ast.OperatorNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 /**
- * Bi
+ * BinaryOps
  * Created by ediaz on 27-01-16.
  */
 public class BinaryOpExpressionNode extends ExpressionNode {
 
-    OperatorNode op;
-    ExpressionNode leftExpr;
-    ExpressionNode rightExpr;
+    protected OperatorNode op;
+    private ExpressionNode leftExpr;
+    private ExpressionNode rightExpr;
 
 
     public BinaryOpExpressionNode(OperatorNode op, ExpressionNode left, ExpressionNode right) {
@@ -26,6 +26,17 @@ public class BinaryOpExpressionNode extends ExpressionNode {
         this.rightExpr.setParent(this);
     }
 
+    public ExpressionNode getLeft() {
+        return leftExpr;
+    }
+
+    public ExpressionNode getRight() {
+        return rightExpr;
+    }
+
+
+
+
     @Override
     public String toString() {
         return "BinaryOp {"+
@@ -37,7 +48,7 @@ public class BinaryOpExpressionNode extends ExpressionNode {
 
     @Override
     public TypeUsage calcType() {
-        return null;
+        return leftExpr.calcType();
     }
 
     @Override

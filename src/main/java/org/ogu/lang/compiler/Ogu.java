@@ -15,6 +15,7 @@ import org.ogu.lang.parser.ast.Position;
 import org.ogu.lang.resolvers.*;
 import org.ogu.lang.resolvers.compiled.JarTypeResolver;
 import org.ogu.lang.resolvers.jdk.JdkTypeResolver;
+import org.ogu.lang.util.Feedback;
 import org.ogu.lang.util.Logger;
 import org.ogu.lang.util.Messages;
 
@@ -25,7 +26,6 @@ public class Ogu {
 	public static void main(String[] args) throws Exception {
 
 		message(Compiler.VERSION);
-		message(WELCOME);
 
         Options options = new Options();
         JCommander commander = null;
@@ -37,6 +37,10 @@ public class Ogu {
             return;
         }
 
+        if (options.isVerbose()) {
+            message(WELCOME);
+        }
+
         if (options.isHelp()) {
             message(HELP_MESSAGE);
             commander.usage();
@@ -44,7 +48,9 @@ public class Ogu {
         }
 
         if (options.getSources().isEmpty()) {
-            message(ERROR_NO_FILES_TO_COMPILE);
+            if (options.isVerbose()) {
+                message(ERROR_NO_FILES_TO_COMPILE);
+            }
             commander.usage();
             return;
         }
@@ -65,15 +71,19 @@ public class Ogu {
         }
 
 
-        SymbolResolver resolver = getResolver(options.getSources(), options.getClassPathElements(), oguModules.stream().map(OguModuleWithSource::getModule).collect(Collectors.toList()));
+        SymbolResolver resolver = getResolver(options.getSources(), options.getClassPathElements(),
+                                     oguModules.stream().map(OguModuleWithSource::getModule).collect(Collectors.toList()));
 
         Compiler instance = new Compiler(resolver, options);
         for (OguModuleWithSource oguModule : oguModules) {
+            Feedback.message("add module:" + oguModule.getModule().describe());
             for (ClassFileDefinition classFileDefinition : instance.compile(oguModule.getModule(), new ErrorPrinter(oguModule.getSource().getPath()))) {
                 saveClassFile(classFileDefinition, options);
             }
         }
-		message(GOODBYE);
+        if (options.isVerbose()) {
+            message(GOODBYE);
+        }
 	}
 
 
@@ -99,6 +109,7 @@ public class Ogu {
 
 
     private static void saveClassFile(ClassFileDefinition classFileDefinition, Options options) {
+        System.out.println("escribiendo archivo: "+classFileDefinition.getName());
         File output = null;
         try {
             output = new File(new File(options.getDestinationDir()).getAbsolutePath() + "/" + classFileDefinition.getName().replaceAll("\\.", "/") + ".class");

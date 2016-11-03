@@ -1,0 +1,11 @@
+def ifact : [Integer]
+
+let ifact = go 1 1
+  where go f i = f :: go (f * i) (i + 1)
+
+let sum_fact n = sum (take n ifact)
+
+let sum_fact' n = go 1 1 1
+  where go acc fact i
+          | i <= n = go (acc + fact) (fact * i) (i + 1)
+          | otherwise = acc

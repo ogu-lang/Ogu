@@ -1,5 +1,6 @@
 package org.ogu.lang.resolvers.jdk;
 
+import org.ogu.lang.codegen.jvm.JvmNameUtils;
 import org.ogu.lang.definitions.TypeDefinition;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.resolvers.TypeResolver;
@@ -32,9 +33,11 @@ public class JdkTypeResolver implements TypeResolver {
 
     @Override
     public Optional<TypeDefinition> resolveAbsoluteTypeName(String typeName) {
-        return null;
+        if (!JvmNameUtils.isValidQualifiedName(typeName)) {
+            throw new IllegalArgumentException(typeName);
+        }
+        return ReflectionTypeDefinitionFactory.getInstance().findTypeDefinition(typeName, symbolResolver());
     }
-
 
     @Override
     public boolean existPackage(String packageName) {

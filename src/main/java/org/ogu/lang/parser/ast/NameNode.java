@@ -9,7 +9,7 @@ import java.util.Collections;
  * There are 2: Type Identifier and Simple Identifier (vars, vals and funcs).
  * Created by ediaz on 22-01-16.
  */
-public class NameNode extends Node {
+public abstract class NameNode extends Node {
 
     protected NameNode base;
     protected String name;

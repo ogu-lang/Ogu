@@ -19,8 +19,6 @@ import org.ogu.lang.parser.ast.typeusage.*;
 import org.ogu.lang.util.Logger;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,6 +61,9 @@ public class ParseTreeToAst {
                 module.add((AliasDeclarationNode) memberNode);
             else if (memberNode instanceof ExportableDeclarationNode)
                 module.add((ExportableDeclarationNode) memberNode);
+            else {
+                Logger.debug("WTF!");
+            }
         }
 
         for (OguParser.Module_usesContext usesDeclarationContext : ctx.module_uses()) {
@@ -195,12 +196,37 @@ public class ParseTreeToAst {
         List<TypeParamNode> params = new ArrayList<>();
         for (OguParser.TypeContext typeContext : types) {
             TypeNode type = toAst(typeContext);
-            TypeParamNode p = new TypeParamNode(type);
+            Logger.debug("type is "+type.getClass().getCanonicalName());
+            TypeParamNode p = determineConstraint(type, constraints);
             getPositionFrom(p, ctx);
             params.add(p);
         }
         return params;
 
+    }
+
+    private TypeParamNode determineConstraint(TypeNode type, Map<String, TypeNode> constraints) {
+        if (type instanceof IdTypeArgNode) {
+            if (constraints.containsKey(type.getName())) {
+                TypeNode tnode = constraints.get(type.getName());
+                return new TypeParamConstrainedNode(type.getName(), tnode);
+            }
+        }
+        if (type instanceof TupleTypeNode) {
+            TupleTypeNode tt = (TupleTypeNode) type;
+            if (tt.getBases().size() == 1 && tt.getBase(0) instanceof GenericTypeNode) {
+                GenericTypeNode gt = (GenericTypeNode) tt.getBase(0);
+                for (int i = 0; i < gt.getArgs().size(); i++) {
+                    TypeNode t = gt.getArg(i);
+                    if (constraints.containsKey(t.getName())) {
+                        TypeNode ct = constraints.get(t.getName());
+                        gt.setArg(i, new ConstrainedTypeNode(new IdentifierNode(t.getName()), ct));
+                    }
+                }
+
+            }
+        }
+        return new TypeParamNode(type);
     }
 
     private ClassDeclarationNode toAst(OguParser.Class_defContext ctx, List<DecoratorNode> decs) {
@@ -279,11 +305,7 @@ public class ParseTreeToAst {
     private List<TypeNode> toAst(OguParser.Data_type_declContext ctx, List<TypeIdentifierNode> deriving) {
         if (ctx.deriving() != null)
             deriving.addAll(toDerivingAst(ctx.deriving()));
-        List<TypeNode> types = new ArrayList<>();
-        for (OguParser.TypeContext t : ctx.t) {
-            types.add(toAst(t));
-        }
-        return types;
+        return ctx.t.stream().map(this::toAst).collect(Collectors.toList());
     }
 
     private TraitDeclarationNode toAst(OguParser.Trait_defContext ctx, List<DecoratorNode> decs) {
@@ -300,11 +322,7 @@ public class ParseTreeToAst {
     }
 
     private List<FunctionalDeclarationNode> internalDeclToAst(List<OguParser.Internal_declContext> decls) {
-        List<FunctionalDeclarationNode> members = new ArrayList<>();
-        for (OguParser.Internal_declContext decl : decls) {
-            members.add(toAst(decl));
-        }
-        return members;
+        return decls.stream().map(this::toAst).collect(Collectors.toList());
     }
 
     private FunctionalDeclarationNode toAst(OguParser.Internal_declContext ctx) {
@@ -367,6 +385,7 @@ public class ParseTreeToAst {
             TypeNode type = toAst(tac.type());
             for (Token id : tac.ids) {
                 cons.put(idText(id), type);
+                Logger.debug("CONSTRAINT: "+idText(id)+" -> "+type);
             }
         }
     }
@@ -374,17 +393,21 @@ public class ParseTreeToAst {
     private FunctionalDeclarationNode toAst(OguParser.Func_defContext ctx, List<DecoratorNode> decoratorNodes) {
         if (ctx.let_func_name != null) {
             if (ctx.let_func_name.lid_val_id != null) {
+                // let is really a val
                 IdentifierNode funcId = IdentifierNode.create(idText(ctx.let_func_name.lid_val_id));
                 TypeNode type = toAst(ctx.let_func_name.t);
                 if (ctx.let_func_args != null && !ctx.let_func_args.isEmpty()) {
                     return new ErrorFunctionalDeclarationNode("error.let_as_val.no_params", getPosition(ctx));
                 }
+                Logger.debug("let is val: "+ctx.getText());
                 ExpressionNode expr = toAst(ctx.let_expr());
                 ValDeclarationNode val = new ValDeclarationNode(funcId, type, expr, decoratorNodes);
                 getPositionFrom(val, ctx);
                 return val;
             }
             if (ctx.let_func_name.lid_fun_id != null) {
+                Logger.debug("let is func: "+ctx.getText());
+
                 IdentifierNode funcId = IdentifierNode.create(idText(ctx.let_func_name.lid_fun_id));
                 List<FunctionPatternParamNode> params = funcArgsToAst(ctx.let_func_args);
                 LetDefinitionNode funcdef = new LetDefinitionNode(funcId, params, decoratorNodes);
@@ -409,12 +432,12 @@ public class ParseTreeToAst {
             return opDef;
         }
 
-
-
         if (!ctx.tup.isEmpty()) {
             List<IdentifierNode> ids = new ArrayList<>();
             Map<IdentifierNode, TypeNode> types = new HashMap<>();
-            lidsToAst(ctx.tup, ids, types);
+            ErrorValDeclarationNode error = lidsToAst(ctx.tup, ids, types);
+            if (error != null)
+                return error;
             ExpressionNode value = toAst(ctx.expr());
             TupleValDeclarationNode decl = new TupleValDeclarationNode(ids, types, value, decoratorNodes);
             getPositionFrom(decl, ctx);
@@ -424,17 +447,39 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private void lidsToAst(List<OguParser.LidContext> lids, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
+    private ErrorValDeclarationNode lidsToAst(List<OguParser.LidContext> lids, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
         for(OguParser.LidContext ctx : lids) {
+            IdentifierNode id;
             if (ctx.lid_fun_id !=null) {
-                ids.add(IdentifierNode.create(idText(ctx.lid_fun_id)));
+                id = IdentifierNode.create(idText(ctx.lid_fun_id));
             } else {
-                IdentifierNode id = IdentifierNode.create(idText(ctx.lid_val_id));
+                id = IdentifierNode.create(idText(ctx.lid_val_id));
+            }
+
+            if (ids.contains(id)) {
+                return new ErrorValDeclarationNode(message("error.declare_duplicate_id") + id.getName(), getPosition(ctx));
+            }
+            ids.add(id);
+            if (ctx.type() != null) {
                 TypeNode type = toAst(ctx.type());
-                ids.add(id);
                 types.put(id, type);
             }
         }
+        return null;
+    }
+
+    private ErrorVarDeclarationNode vidtToAst(List<OguParser.VidtContext> vidt, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
+        for (OguParser.VidtContext ctx : vidt) {
+            IdentifierNode id = IdentifierNode.create(idText(ctx.i));
+            if (ids.contains(id))
+                return new ErrorVarDeclarationNode(message("error.declare_duplicate_id") + id.getName(), getPosition(ctx));
+            ids.add(id);
+            if (ctx.type() != null) {
+                TypeNode type = toAst(ctx.type());
+                types.put(id, type);
+            }
+        }
+        return null;
     }
 
     private ExpressionNode toAst(OguParser.Let_exprContext ctx) {
@@ -454,8 +499,8 @@ public class ParseTreeToAst {
         }
         if (ctx.expr() != null) {
             funcdef.add(toAst(ctx.expr()));
-            if (ctx.where() != null)
-                parseWhere(ctx.where(), funcdef);
+            if (ctx.let_where() != null)
+                parseWhere(ctx.let_where().where(), funcdef);
             return;
         }
         if (ctx.guards() != null) {
@@ -513,9 +558,7 @@ public class ParseTreeToAst {
 
     private GuardDeclarationNode toAst(OguParser.GuardContext ctx) {
         ExpressionNode base = toAst(ctx.be);
-        List<ExpressionNode> args = new ArrayList<>();
-        for (OguParser.ExprContext c : ctx.ae)
-            args.add(toAst(c));
+        List<ExpressionNode> args = ctx.ae.stream().map(this::toAst).collect(Collectors.toList());
         List<ExpressionNode> exprs = new ArrayList<>();
         if (ctx.de != null)
             exprs.add(toAst(ctx.de));
@@ -565,17 +608,13 @@ public class ParseTreeToAst {
 
     private FunctionPatternParamNode toAst(OguParser.Let_arg_tuple_or_listContext ctx) {
         if (ctx.la != null && !ctx.la.isEmpty()) {
-            List<FunctionPatternParamNode> args = new ArrayList<>();
-            for (OguParser.Let_arg_atomContext ac:ctx.la)
-                args.add(toAst(ac));
+            List<FunctionPatternParamNode> args = ctx.la.stream().map(this::toAst).collect(Collectors.toList());
             FuncListParamNode param = new FuncListParamNode(args);
             getPositionFrom(param, ctx);
             return param;
         }
         if (ctx.ta != null && !ctx.ta.isEmpty()) {
-            List<FunctionPatternParamNode> args = new ArrayList<>();
-            for (OguParser.Let_arg_atomContext ac:ctx.ta)
-                args.add(toAst(ac));
+            List<FunctionPatternParamNode> args = ctx.ta.stream().map(this::toAst).collect(Collectors.toList());
             FuncTupleParamNode param = new FuncTupleParamNode(args);
             getPositionFrom(param, ctx);
             return param;
@@ -590,10 +629,7 @@ public class ParseTreeToAst {
             getPositionFrom(param, ctx);
             return param;
         }
-        List<FunctionPatternParamNode> args = new ArrayList<>();
-        for (OguParser.Let_arg_atomContext ac:ctx.la) {
-             args.add(toAst(ac));
-        }
+        List<FunctionPatternParamNode> args = ctx.la.stream().map(this::toAst).collect(Collectors.toList());
         FuncVectorParamNode param = new FuncVectorParamNode(args);
         getPositionFrom(param, ctx);
         return param;
@@ -622,9 +658,7 @@ public class ParseTreeToAst {
                 getPositionFrom(typeParam, ctx);
                 return typeParam;
             } else {
-                List<FunctionPatternParamNode> args = new ArrayList<>();
-                for (OguParser.Let_argContext ac:ctx.la)
-                    args.add(toAst(ac));
+                List<FunctionPatternParamNode> args = ctx.la.stream().map(this::toAst).collect(Collectors.toList());
                 FuncGenericTypeParamNode typeParam = new FuncGenericTypeParamNode(tid, args);
                 getPositionFrom(typeParam, ctx);
                 return typeParam;
@@ -725,9 +759,7 @@ public class ParseTreeToAst {
             return vec;
         }
         if (ctx.tuple() != null) {
-            List<TypeArgNode> args = new ArrayList<>();
-            for (OguParser.Func_decl_argContext ct:ctx.tuple().func_decl_arg())
-                args.add(toAst(ct));
+            List<TypeArgNode> args = ctx.tuple().func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
             TupleTypeArgNode tuple = new TupleTypeArgNode(args);
             getPositionFrom(tuple, ctx);
             return tuple;
@@ -759,6 +791,7 @@ public class ParseTreeToAst {
         OguParser.Alias_targetContext target = ctx.alias_target();
         OguParser.Alias_originContext origin = ctx.alias_origin();
         if (target.alias_tid != null) {
+
             if (origin.alias_origin_id != null) {
                 return new ErrorAliasNode(message("error.alias.tid_no_tid"), getPosition(ctx));
             }
@@ -766,6 +799,11 @@ public class ParseTreeToAst {
             getPositionFrom(decl, ctx);
             return decl;
         } else {
+            if (origin.jvm_id != null) {
+                String src = origin.jvm_origin().src.getText().replaceAll("\"z", "");
+                AliasJvmInteropDeclarationNode decl = new AliasJvmInteropDeclarationNode(toOguIdentifier(target), decs, src);
+                return decl;
+            }
             if (origin.alias_origin_id == null) {
                 return new ErrorAliasNode(message("error.alias.id_no_id"), getPosition(ctx));
             }
@@ -777,8 +815,8 @@ public class ParseTreeToAst {
 
 
     private VarDeclarationNode toAst(OguParser.VarContext ctx, List<DecoratorNode> decs) {
-        if (ctx.vid().i != null) {
-            IdentifierNode id =  IdentifierNode.create(idText(ctx.vid().i));
+        if (ctx.vid != null) {
+            IdentifierNode id =  IdentifierNode.create(idText(ctx.vid));
             VarDeclarationNode var;
             if (ctx.type() == null) {
                 var = new VarDeclarationNode(id, toAst(ctx.expr()), decs);
@@ -790,22 +828,42 @@ public class ParseTreeToAst {
             }
             getPositionFrom(var, ctx);
             return var;
+        } else {
+            List<IdentifierNode> ids = new ArrayList<>();
+            Map<IdentifierNode, TypeNode> types = new HashMap<>();
+            ErrorVarDeclarationNode error = vidtToAst(ctx.vidt(), ids, types);
+            if (error != null)
+                return error;
+            ExpressionNode value = toAst(ctx.expr());
+            TupleVarDeclarationNode decl = new TupleVarDeclarationNode(ids, types, value, decs);
+            getPositionFrom(decl, ctx);
+            return decl;
         }
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private ValDeclarationNode toAst(OguParser.Val_defContext ctx, List<DecoratorNode> decoratorNodes) {
+    private ValDeclarationNode toAst(OguParser.Val_defContext ctx, List<DecoratorNode> decs) {
         if (ctx.val_id != null) {
             if (ctx.type() == null) {
-                ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.expr()), decoratorNodes);
+                ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.expr()), decs);
                 getPositionFrom(val, ctx);
                 return val;
             }
-            ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decoratorNodes);
+            ValDeclarationNode val = new ValDeclarationNode(IdentifierNode.create(idText(ctx.val_id)), toAst(ctx.type()), toAst(ctx.expr()), decs);
             getPositionFrom(val, ctx);
             return val;
+        } else {
+            List<IdentifierNode> ids = new ArrayList<>();
+            Map<IdentifierNode, TypeNode> types = new HashMap<>();
+            ErrorValDeclarationNode error  = lidsToAst(ctx.lid(), ids, types);
+            if (error != null) {
+                return error;
+            } else {
+                ExpressionNode expr = toAst(ctx.expr());
+                TupleValDeclarationNode vals = new TupleValDeclarationNode(ids, types, expr, decs);
+                getPositionFrom(expr, ctx);
+                return vals;
+            }
         }
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
     private TypeNode toAst(OguParser.TypeContext ctx) {
@@ -821,10 +879,7 @@ public class ParseTreeToAst {
             return utype;
         }
         if (ctx.tuple_type() != null) {
-            List<TypeNode> types = new ArrayList<>();
-            for (OguParser.TypeContext type : ctx.tuple_type().type()) {
-                types.add(toAst(type));
-            }
+            List<TypeNode> types = ctx.tuple_type().type().stream().map(this::toAst).collect(Collectors.toList());
             TupleTypeNode ttype = new TupleTypeNode(types);
             getPositionFrom(ttype, ctx);
             return ttype;
@@ -849,9 +904,7 @@ public class ParseTreeToAst {
             if (ctx.t_a.isEmpty()) {
                 return new QualifiedTypeArgNode(toAst(ctx.tid()));
             } else {
-                List<TypeNode> args = new ArrayList<>();
-                for (OguParser.Tid_argsContext ac:ctx.t_a)
-                    args.add(toAst(ac));
+                List<TypeNode> args = ctx.t_a.stream().map(this::toAst).collect(Collectors.toList());
                 TypeIdentifierNode tName = toAst(ctx.gt);
                 GenericTypeNode type = new GenericTypeNode(tName, args);
                 getPositionFrom(type, ctx);
@@ -893,10 +946,7 @@ public class ParseTreeToAst {
     }
 
     private RecordTypeNode toAst(OguParser.Record_typeContext ctx) {
-        List<RecordFieldNode> fields = new ArrayList<>();
-        for (OguParser.FldDeclContext fc:ctx.fldDecl()) {
-            fields.add(toAst(fc));
-        }
+        List<RecordFieldNode> fields = ctx.fldDecl().stream().map(this::toAst).collect(Collectors.toList());
         TypeIdentifierNode name = TypeIdentifierNode.create(idText(ctx.ti));
         RecordTypeNode record = new RecordTypeNode(name, fields);
         getPositionFrom(record, ctx);
@@ -904,10 +954,7 @@ public class ParseTreeToAst {
     }
 
     private AnonRecordTypeNode toAst(OguParser.Anon_record_typeContext ctx) {
-        List<RecordFieldNode> fields = new ArrayList<>();
-        for (OguParser.FldDeclContext fc:ctx.fldDecl()) {
-            fields.add(toAst(fc));
-        }
+        List<RecordFieldNode> fields = ctx.fldDecl().stream().map(this::toAst).collect(Collectors.toList());
         AnonRecordTypeNode record = new AnonRecordTypeNode(fields);
         getPositionFrom(record, ctx);
         return record;
@@ -977,12 +1024,8 @@ public class ParseTreeToAst {
             return toAst(ctx.vector_expr());
         }
 
-        if (ctx.constructor() != null) {
-            return toAst(ctx.constructor());
-        }
 
         if (ctx.infix_id != null) {
-            ReferenceNode name = new ReferenceNode(IdentifierNode.create(idText(ctx.infix_id)));
             ExpressionNode l = toAst(ctx.l_infix);
             ExpressionNode r = toAst(ctx.r_infix);
             List<ActualParamNode> params = new ArrayList<>();
@@ -1013,6 +1056,12 @@ public class ParseTreeToAst {
         if (ctx.o != null) {
             ExpressionNode left = toAst(ctx.l);
             ExpressionNode right = toAst(ctx.r);
+            String op = ctx.o.getText();
+            if (op.equals("*") || op.equals("/") || op.equals("//") || op.equals("+") || op.equals("-")) {
+                MathOpExpressionNode expr = new MathOpExpressionNode(new OperatorNode(ctx.o.getText()), left, right);
+                getPositionFrom(expr, ctx);
+                return expr;
+            }
             BinaryOpExpressionNode expr = new BinaryOpExpressionNode(new OperatorNode(ctx.o.getText()), left, right);
             getPositionFrom(expr, ctx);
             return expr;
@@ -1029,6 +1078,28 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
+
+    private ExpressionNode toAst(OguParser.Param_exprContext ctx) {
+
+        if (ctx.self_id() != null) {
+            return toAst(ctx.self_id());
+        }
+
+        if (ctx.ref != null) {
+            ReferenceNode ref = new ReferenceNode(IdentifierNode.create(idText(ctx.ref)));
+            getPositionFrom(ref, ctx);
+            return ref;
+        }
+        if (ctx.primary() != null) {
+            return toAst(ctx.primary());
+        }
+
+        if (ctx.paren_expr() != null) {
+            return toAst(ctx.paren_expr());
+        }
+        Logger.debug(ctx.getText());
+        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
+    }
     private SelfRefExpressionNode toAst(OguParser.Self_idContext ctx) {
         SelfRefExpressionNode expr = new SelfRefExpressionNode(IdentifierNode.create(idText(ctx.i)));
         getPositionFrom(expr, ctx);
@@ -1087,9 +1158,7 @@ public class ParseTreeToAst {
     }
 
     private RecurExpressionNode toAst(OguParser.Recur_exprContext ctx) {
-        List<ExpressionNode> args = new ArrayList<>();
-        for (OguParser.ExprContext ce:ctx.expr())
-            args.add(toAst(ce));
+        List<ExpressionNode> args = ctx.expr().stream().map(this::toAst).collect(Collectors.toList());
         RecurExpressionNode expr = new RecurExpressionNode(args);
         getPositionFrom(expr, ctx);
         return expr;
@@ -1224,19 +1293,13 @@ public class ParseTreeToAst {
 
     private ListExpressionNode toAst(OguParser.List_exprContext ctx) {
         if (ctx.e == null) {
-            List<RangeExpressionNode> ranges = new ArrayList<>();
-            for (OguParser.Range_exprContext r : ctx.le) {
-                ranges.add(toAst(r));
-            }
+            List<RangeExpressionNode> ranges = ctx.le.stream().map(this::toAst).collect(Collectors.toList());
             ListByExtensionExpressionNode lexpr = new ListByExtensionExpressionNode(ranges);
             getPositionFrom(lexpr, ctx);
             return lexpr;
         } else {
             ExpressionNode value = toAst(ctx.e);
-            List<SetConstraintNode> constraints = new ArrayList<>();
-            for (OguParser.Set_constraint_exprContext sc:ctx.se) {
-                constraints.add(toAst(sc));
-            }
+            List<SetConstraintNode> constraints = ctx.se.stream().map(this::toAst).collect(Collectors.toList());
             ListByComprehensionExpressionNode list = new ListByComprehensionExpressionNode(value, constraints);
             getPositionFrom(list, ctx);
             return list;
@@ -1333,6 +1396,7 @@ public class ParseTreeToAst {
         }
     }
 
+    /*
     private ConstructorNode toAst(OguParser.ConstructorContext ctx) {
         TypeReferenceNode type = new TypeReferenceNode(toAst(ctx.tid()));
         getPositionFrom(type, ctx);
@@ -1344,9 +1408,9 @@ public class ParseTreeToAst {
         ConstructorNode ctor = new ConstructorNode(type, params);
         getPositionFrom(ctor, ctx);
         return ctor;
-    }
+    } */
 
-    private ActualParamNode toAstParam(OguParser.ExprContext ctx) {
+    private ActualParamNode toAstParam(OguParser.Param_exprContext ctx) {
         ActualParamNode param = new ActualParamNode(toAst(ctx));
         getPositionFrom(param, ctx);
         return param;
@@ -1363,10 +1427,7 @@ public class ParseTreeToAst {
     private ExpressionNode toAst(OguParser.Tuple_exprContext ctx) {
         if (ctx.e.size() == 1)
             return toAst(ctx.e.get(0));
-        List<ExpressionNode> exprs = new ArrayList<>();
-        for (OguParser.ExprContext ec : ctx.e) {
-            exprs.add(toAst(ec));
-        }
+        List<ExpressionNode> exprs = ctx.e.stream().map(this::toAst).collect(Collectors.toList());
         TupleExpressionNode tuple = new TupleExpressionNode(exprs);
         getPositionFrom(tuple, ctx);
         return tuple;
@@ -1421,7 +1482,7 @@ public class ParseTreeToAst {
         }
         if (ctx.INT() != null) {
             String itxt = ctx.INT().getText().replace("_", "");
-            BigInteger bi = new BigInteger(itxt);
+            int bi = new Integer(itxt);
             IntLiteralNode lit = new IntLiteralNode(bi);
             getPositionFrom(lit, ctx);
             return lit;
@@ -1435,8 +1496,8 @@ public class ParseTreeToAst {
 
         if (ctx.FLOAT() != null) {
             String dtxt = ctx.FLOAT().getText().replace("_", "");
-            BigDecimal bd = new BigDecimal(dtxt);
-            FloatLiteralNode lit = new FloatLiteralNode(bd);
+            double bd = new Double(dtxt);
+            DoubleLiteralNode lit = new DoubleLiteralNode(bd);
             getPositionFrom(lit, ctx);
             return lit;
         }
@@ -1453,14 +1514,17 @@ public class ParseTreeToAst {
     private FunctionCallNode toAstFunctionCall(OguParser.ExprContext ctx) {
         if (ctx.function != null) {
             ExpressionNode function = toAst(ctx.function);
-            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            List<ActualParamNode> actualParams = new ArrayList<>();
+            if (ctx.params_expr() != null)
+                actualParams.addAll(ctx.params_expr().param_expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            FunctionCallNode functionCallNode = new FunctionCallNode(function, actualParams);
             getPositionFrom(functionCallNode, ctx);
             return functionCallNode;
 
         }
         if (ctx.qual_function != null) {
             ExpressionNode function = toAst(ctx.qual_function);
-            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.params_expr().param_expr().stream().map(this::toAstParam).collect(Collectors.toList()));
             getPositionFrom(functionCallNode, ctx);
             return functionCallNode;
         }

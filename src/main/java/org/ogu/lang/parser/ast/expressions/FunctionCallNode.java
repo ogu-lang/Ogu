@@ -3,9 +3,13 @@ package org.ogu.lang.parser.ast.expressions;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.resolvers.SymbolResolver;
+import org.ogu.lang.resolvers.jdk.ReflectionBasedSetOfOverloadedMethods;
 import org.ogu.lang.symbols.FormalParameter;
+import org.ogu.lang.symbols.Symbol;
 import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.util.Logger;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -24,7 +28,7 @@ public class FunctionCallNode extends InvocableExpressionNode {
     public String toString() {
 
         return "FunctionCall{" +
-                "function='" + function + '\'' +
+                "function=" + function +
                 ", actualParams=" + actualParamNodes +
                 '}';
     }
@@ -62,6 +66,8 @@ public class FunctionCallNode extends InvocableExpressionNode {
 
     @Override
     public TypeUsage calcType() {
+        Logger.debug("calc type a function "+function+ " = "+function.calcType()+" asInvocable() = "+function.calcType().asInvocable()
+        +" actualParamNodes = "+actualParamNodes);
         return function.calcType().asInvocable().internalInvocableDefinitionFor(actualParamNodes).get().asFunction().getReturnType();
     }
 
@@ -71,5 +77,22 @@ public class FunctionCallNode extends InvocableExpressionNode {
         return function.findFormalParametersFor(this).get();
     }
 
+    public List<ExpressionNode> getActualParamValuesInOrder() {
+        List<ExpressionNode> values = new LinkedList<>();
+        for (ActualParamNode actualParam : actualParamNodes) {
+            values.add(actualParam.getValue());
+        }
+        return values;
+    }
 
+    public boolean isStatic() {
+        Symbol f = function;
+        if (f instanceof ReferenceNode) {
+            f = ((ReferenceNode) function).resolve(symbolResolver());
+        }
+        if (f instanceof ReflectionBasedSetOfOverloadedMethods) {
+            return ((ReflectionBasedSetOfOverloadedMethods) f).isStatic();
+        }
+        throw new UnsupportedOperationException(f.getClass().getCanonicalName());
+    }
 }

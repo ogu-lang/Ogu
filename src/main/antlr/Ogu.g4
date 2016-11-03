@@ -52,7 +52,7 @@ export_name : TID | ID  ;
 
 module_uses : decs=decorators? 'uses' imports+=module_name (',' imports+=module_name)* NL* ;
 
-module_body : (members+=module_decl NL*)* ;
+module_body : (members+=module_decl NL*)* (expr NL*)* ;
 
 module_decl
     : decs=decorators?
@@ -68,7 +68,10 @@ alias_def : 'alias' alias_target '=' alias_origin NL*;
 
 alias_target : alias_tid=TID | alias_id=ID;
 
-alias_origin :  alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_origin_id=ID)? ;
+alias_origin : jvm_id=jvm_origin
+             | alias_origin_tid+=TID ('.' alias_origin_tid+=TID)* ('.' alias_origin_id=ID)? ;
+
+jvm_origin : 'jvm' src=STRING ;
 
 enum_def : 'enum' en=TID '=' values+=ID ('|' values+=ID)* deriving? ;
 
@@ -118,11 +121,10 @@ func_decl :
       | '->'? func_decl_arg
       );
 
-var :  'var' vid (':' type)? ('=' expr)? ;
+var :  'var' vid=ID (':' type)? ('=' expr)?
+    |  'var'  '(' vidt (',' vidt)* ')' ('=' expr)? ;
 
-vid : i=ID | '(' vidt (',' vidt)* ')' ;
-
-vidt : ID (':' type)? ;
+vidt : i=ID (':' t=type)? ;
 
 func_decl_arg
 	: unit
@@ -248,6 +250,8 @@ expr
 	| lambda_expr
 	| yield_expr
 	| recur_expr
+    | function=func_name (params=params_expr)?
+	| qual_function=qual_func_name (params=params_expr)?
 	| assign_expr
 	|<assoc=right> l=expr o=('>>'|'<<'|'|>'|'<|') r=expr  // composition
     | l=expr o='@' r=expr
@@ -261,15 +265,24 @@ expr
     | l=expr o='||' r=expr
 	| l_infix=expr '`' infix_id=ID '`' r_infix=expr
 	| self_id
-	| function=func_name (params+=expr)+
-	| qual_function=qual_func_name (params+=expr)*
-	| constructor
 	| ref=ID
 	| primary
 	| paren_expr
     | vector_expr
     | dict_expr
 	;
+
+params_expr
+    : param_expr+
+    ;
+
+param_expr
+    : self_id
+    | ref=ID
+    | primary
+    | paren_expr
+    | expr
+    ;
 
 self_id
     : '$' i=ID ;
@@ -305,8 +318,6 @@ neg_expr
     : '(' '-' e=expr ')'
     | '-' (a=atom);
 
-constructor
-    : 'new' tid '(' tuple_expr? ')' ;
 
 tuple_expr
     : e+=expr (',' e+=expr)*

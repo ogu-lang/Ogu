@@ -2,13 +2,18 @@ package org.ogu.lang.symbols;
 
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.QualifiedName;
+import org.ogu.lang.parser.ast.expressions.InvocableExpressionNode;
+import org.ogu.lang.typesystem.TypeUsage;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by ediaz on 20-01-16.
  */
 public interface Symbol {
 
-    //TypeUsage calcType();
+    TypeUsage calcType();
 
     /**
      * Is this symbol an AST node?
@@ -34,7 +39,7 @@ public interface Symbol {
         }
     }
 
-    //default Optional<List<? extends FormalParameter>> findFormalParametersFor(InvokableExpr invokable) {
-    //    throw new UnsupportedOperationException();
-    //}
+    default Optional<List<? extends FormalParameter>> findFormalParametersFor(InvocableExpressionNode invokable) {
+        throw new UnsupportedOperationException();
+    }
 }

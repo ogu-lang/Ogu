@@ -5,4 +5,6 @@ package org.ogu.lang.parser.ast.typeusage;
  * Created by ediaz on 23-01-16.
  */
 public abstract class TypeArgNode extends TypeNode {
+
+
 }

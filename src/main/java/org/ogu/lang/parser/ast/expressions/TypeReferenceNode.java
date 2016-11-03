@@ -35,4 +35,9 @@ public class TypeReferenceNode extends ExpressionNode {
     public Iterable<Node> getChildren() {
         return ImmutableList.of(type);
     }
+
+    public static TypeReferenceNode create(String qualifiedName) {
+        TypeIdentifierNode type = TypeIdentifierNode.create(qualifiedName);
+        return new TypeReferenceNode(type);
+    }
 }

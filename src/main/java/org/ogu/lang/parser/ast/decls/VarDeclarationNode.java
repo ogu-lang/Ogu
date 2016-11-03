@@ -6,6 +6,7 @@ import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.typeusage.TypeNode;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,6 +17,10 @@ public class VarDeclarationNode extends FunctionalDeclarationNode {
 
     protected ExpressionNode value;
     protected TypeNode type;
+
+    protected VarDeclarationNode() {
+        super(Collections.emptyList());
+    }
 
     protected VarDeclarationNode(TypeNode type, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
         super(decoratorNodes);
