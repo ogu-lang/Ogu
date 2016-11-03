@@ -4,10 +4,17 @@ alias out = jvm "java.lang.System/out:Ljava/io/PrintStream;"
 
 alias println = jvm "java.io.PrintStream/println:(Ljava/lang/String;)V"
 alias printlni = jvm "java.io.PrintStream/println:(I)V"
+alias printlnd = jvm "java.io.PrintStream/println:(D)V"
 
 println out "Ola amiko mio de mi"
 
 printlni out 2
+
+printlnd out 2.0
+
+printlni out (2+2)
+
+printlni out (2*3)
 
 
 

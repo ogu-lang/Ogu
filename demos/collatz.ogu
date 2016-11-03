@@ -7,7 +7,8 @@ let chain n
   | odd  n = n :: chain (n*3 + 1)
 
 ;for all starting numbers between 1 and 100, how many chains have a length greater than 15? 
-def numLongChains : -> Int
+def numLongChains : Int
 
 let numLongChains = map chain [1..100] |> filter (\xs -> length xs > 15) |> length
 
+println! numLongChains

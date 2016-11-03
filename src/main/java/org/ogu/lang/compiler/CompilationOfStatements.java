@@ -2,25 +2,26 @@ package org.ogu.lang.compiler;
 
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.codegen.bytecode_generation.*;
-import org.ogu.lang.codegen.bytecode_generation.pushpop.PushIntConst;
-import org.ogu.lang.codegen.bytecode_generation.pushpop.PushLocalVar;
-import org.ogu.lang.codegen.bytecode_generation.pushpop.PushStaticField;
-import org.ogu.lang.codegen.bytecode_generation.pushpop.PushStringConst;
+import org.ogu.lang.codegen.bytecode_generation.pushpop.*;
 import org.ogu.lang.codegen.jvm.JvmInvocableDefinition;
 import org.ogu.lang.codegen.jvm.JvmMethodDefinition;
 import org.ogu.lang.codegen.jvm.JvmType;
+import org.ogu.lang.codegen.jvm.JvmTypeCategory;
 import org.ogu.lang.parser.analysis.exceptions.UnsolvedFunctionException;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.expressions.FunctionCallNode;
+import org.ogu.lang.parser.ast.expressions.MathOpExpressionNode;
 import org.ogu.lang.parser.ast.expressions.ReferenceNode;
+import org.ogu.lang.parser.ast.expressions.literals.DoubleLiteralNode;
 import org.ogu.lang.parser.ast.expressions.literals.IntLiteralNode;
 import org.ogu.lang.parser.ast.expressions.literals.StringLiteralNode;
 import org.ogu.lang.resolvers.jdk.ReflectionBasedField;
 import org.ogu.lang.resolvers.jdk.ReflectionBasedSetOfOverloadedMethods;
 import org.ogu.lang.resolvers.jdk.ReflectionBasedTypeDefinition;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.typesystem.PrimitiveTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
 import org.ogu.lang.util.Logger;
 
@@ -52,7 +53,10 @@ public class CompilationOfStatements {
         if (expressionNode instanceof IntLiteralNode) {
             return new PushIntConst(((IntLiteralNode) expressionNode).getValue());
         }
-        if (expressionNode instanceof StringLiteralNode) {
+        else if (expressionNode instanceof DoubleLiteralNode) {
+            return new PushDoubleConst(((DoubleLiteralNode) expressionNode).getValue());
+        }
+        else if (expressionNode instanceof StringLiteralNode) {
             return new PushStringConst(((StringLiteralNode) expressionNode).getValue());
         }
         else if (expressionNode instanceof ReferenceNode) {
@@ -66,6 +70,22 @@ public class CompilationOfStatements {
             } else {
                 return push(reference.resolve(compilation.getResolver()));
             }
+        }
+        else if (expressionNode instanceof MathOpExpressionNode) {
+            MathOpExpressionNode mathOperation = (MathOpExpressionNode) expressionNode;
+            // TODO do proper conversions
+            if (!mathOperation.getLeft().calcType().sameType(PrimitiveTypeUsage.INT)) {
+                throw new UnsupportedOperationException();
+            }
+            if (!mathOperation.getRight().calcType().sameType(PrimitiveTypeUsage.INT)) {
+                throw new UnsupportedOperationException();
+            }
+            JvmTypeCategory leftTypeCategory = mathOperation.getLeft().calcType().jvmType().typeCategory();
+            return new ComposedBytecodeSequence(ImmutableList.of(
+                    pushExpression(mathOperation.getLeft()),
+                    pushExpression(mathOperation.getRight()),
+                    BytecodeUtils.createMathOperation(leftTypeCategory, mathOperation.getOperator())));
+
         }
         else if (expressionNode instanceof FunctionCallNode) {
             FunctionCallNode functionCall = (FunctionCallNode) expressionNode;

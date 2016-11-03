@@ -19,8 +19,6 @@ import org.ogu.lang.parser.ast.typeusage.*;
 import org.ogu.lang.util.Logger;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -1058,6 +1056,12 @@ public class ParseTreeToAst {
         if (ctx.o != null) {
             ExpressionNode left = toAst(ctx.l);
             ExpressionNode right = toAst(ctx.r);
+            String op = ctx.o.getText();
+            if (op.equals("*") || op.equals("/") || op.equals("//") || op.equals("+") || op.equals("-")) {
+                MathOpExpressionNode expr = new MathOpExpressionNode(new OperatorNode(ctx.o.getText()), left, right);
+                getPositionFrom(expr, ctx);
+                return expr;
+            }
             BinaryOpExpressionNode expr = new BinaryOpExpressionNode(new OperatorNode(ctx.o.getText()), left, right);
             getPositionFrom(expr, ctx);
             return expr;
@@ -1492,8 +1496,8 @@ public class ParseTreeToAst {
 
         if (ctx.FLOAT() != null) {
             String dtxt = ctx.FLOAT().getText().replace("_", "");
-            BigDecimal bd = new BigDecimal(dtxt);
-            FloatLiteralNode lit = new FloatLiteralNode(bd);
+            double bd = new Double(dtxt);
+            DoubleLiteralNode lit = new DoubleLiteralNode(bd);
             getPositionFrom(lit, ctx);
             return lit;
         }
