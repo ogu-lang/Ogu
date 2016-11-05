@@ -10,7 +10,7 @@ import java.util.List;
  * A common alias (for vals, defs, lets) not Types
  * Created by ediaz on 22-01-16.
  */
-public class IdAliasDeclarationNode extends AliasDeclarationNode {
+public class IdAliasDeclarationNode extends  AliasDeclarationNode {
 
     private IdentifierNode aliasOrigin;
 

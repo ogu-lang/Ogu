@@ -5,21 +5,22 @@ alias out = jvm "java.lang.System/out:Ljava/io/PrintStream;"
 alias printlns = jvm "java.io.PrintStream/println:(Ljava/lang/String;)V"
 alias printlni = jvm "java.io.PrintStream/println:(I)V"
 alias printlnd = jvm "java.io.PrintStream/println:(D)V"
-alias String   = jvm "java.lang.String"
+alias Str      = jvm "java.lang.String"
 alias Int      = jvm "java.lang.Integer"
 
+
 ;def println! : (a:String|Int|Double) => a -> ()
-let println! s:String = printlns out s
-;let println! i:Int    = printlni out i
+;let println! s:Str = printlns out s
+let println! i:Int = printlni out i
 ;let println! d:Double = printlnd out str
 
-println! "Ola amiko mio de mi"
+;println! "Ola amiko mio de mi"
 println! 2
 ; println! 2.0
 ; println! 2 + 2
 ; println! 2.0 * 3.0
 
-printlns out "Ola amiko mio de mi"
+;printlns out "Ola amiko mio de mi"
 
 printlni out 2
 

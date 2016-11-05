@@ -69,7 +69,8 @@ public class QualifiedTypeArgUsageNode extends TypeArgUsageWrapperNode {
 
     @Override
     public String toString() {
-        return typeId.toString();
+        return "QualifiedTypeArgUsageNode{"
+            +"typeid="+typeId +'}';
     }
 
     @Override

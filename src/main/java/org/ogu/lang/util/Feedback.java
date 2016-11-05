@@ -1,5 +1,7 @@
 package org.ogu.lang.util;
 
+import org.ogu.lang.symbols.Symbol;
+
 /**
  * Shows messages in stdout to user
  * Created by ediaz on 24-01-16.
@@ -26,6 +28,6 @@ public class Feedback {
         System.out.println(" / _` | |/ / _` | '__| '__| | | |");
         System.out.println( "| (_| |   < (_| | |  | |  | |_| |");
         System.out.println( " \\__,_|_|\\_\\__,_|_|  |_|   \\__,_|");
-
+        System.out.println();
     }
 }

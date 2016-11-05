@@ -14,6 +14,7 @@ import org.ogu.lang.parser.ast.decls.typedef.TypeParamConstrainedNode;
 import org.ogu.lang.parser.ast.expressions.*;
 import org.ogu.lang.parser.ast.expressions.control.*;
 import org.ogu.lang.parser.ast.expressions.literals.*;
+import org.ogu.lang.parser.ast.decls.AliasTypeJvmInteropDeclarationNode;
 import org.ogu.lang.parser.ast.modules.*;
 import org.ogu.lang.parser.ast.typeusage.*;
 import org.ogu.lang.util.Logger;

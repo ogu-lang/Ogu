@@ -144,7 +144,6 @@ public class CompilationOfExpressions {
 
     BytecodeSequence pushInstance(FunctionCallNode functionCall) {
         ExpressionNode function = functionCall.getFunction();
-        Logger.debug("function @ pushInstance = "+function+ " fcal="+functionCall);
         if (function instanceof ReferenceNode) {
             ReferenceNode reference = (ReferenceNode) function;
             Symbol declaration = reference.resolve(compilation.getResolver());

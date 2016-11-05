@@ -12,7 +12,7 @@ import java.util.List;
  * In thid case target and origin are type names.
  * Created by ediaz on 22-01-16.
  */
-public class TypeAliasDeclarationNode extends AliasDeclarationNode {
+public class TypeAliasDeclarationNode extends  AliasDeclarationNode {
 
     private TypeIdentifierNode aliasOrigin;
 
