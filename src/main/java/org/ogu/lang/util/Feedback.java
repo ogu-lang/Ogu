@@ -17,6 +17,15 @@ public class Feedback {
     }
 
     public static void message(String msg) {
-        System.out.println(msg);;
+        System.out.println(msg);
+    }
+
+    public static void akarru() {
+        System.out.println("       _");
+        System.out.println( "  __ _| | ____ _ _ __ _ __ _   _");
+        System.out.println(" / _` | |/ / _` | '__| '__| | | |");
+        System.out.println( "| (_| |   < (_| | |  | |  | |_| |");
+        System.out.println( " \\__,_|_|\\_\\__,_|_|  |_|   \\__,_|");
+
     }
 }
