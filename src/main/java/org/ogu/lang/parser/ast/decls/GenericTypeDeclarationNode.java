@@ -6,7 +6,7 @@ import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParamNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
-import org.ogu.lang.parser.ast.typeusage.TypeNode;
+import org.ogu.lang.parser.ast.typeusage.TypeUsageWrapperNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class GenericTypeDeclarationNode extends TypedefDeclarationNode {
 
     protected List<TypeParamNode> params;
 
-    public GenericTypeDeclarationNode(TypeIdentifierNode name, List<TypeParamNode> params, TypeNode type, List<DecoratorNode> decoratorNodes) {
+    public GenericTypeDeclarationNode(TypeIdentifierNode name, List<TypeParamNode> params, TypeUsageWrapperNode type, List<DecoratorNode> decoratorNodes) {
         super(name, type, decoratorNodes);
         this.params = new ArrayList<>();
         this.params.addAll(params);

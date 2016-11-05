@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+java -jar ./build/libs/ogu-0.1.3-all.jar $@

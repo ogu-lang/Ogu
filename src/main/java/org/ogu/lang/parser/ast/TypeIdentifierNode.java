@@ -1,5 +1,7 @@
 package org.ogu.lang.parser.ast;
 
+import org.ogu.lang.util.Logger;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +20,7 @@ public class TypeIdentifierNode extends NameNode {
     }
 
     public static TypeIdentifierNode create(List<String> base) {
+
         if (base.isEmpty()) {
             throw new IllegalArgumentException();
         } else if (base.size() == 1) {

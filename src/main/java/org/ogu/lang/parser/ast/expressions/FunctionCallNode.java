@@ -66,11 +66,12 @@ public class FunctionCallNode extends InvocableExpressionNode {
 
     @Override
     public TypeUsage calcType() {
-        Logger.debug("calc type a function "+function+ " = "+function.calcType()+" asInvocable() = "+function.calcType().asInvocable()
-        +" actualParamNodes = "+actualParamNodes);
-        return function.calcType().asInvocable().internalInvocableDefinitionFor(actualParamNodes).get().asFunction().getReturnType();
+        if (function.calcType().isInvocable()) {
+            return function.calcType().asInvocable().internalInvocableDefinitionFor(actualParamNodes).get().asFunction().getReturnType();
+        } else {
+            return function.calcType();
+        }
     }
-
 
     @Override
     protected List<? extends FormalParameter> formalParameters(SymbolResolver resolver) {

@@ -7,6 +7,8 @@ import org.ogu.lang.parser.analysis.exceptions.UnsolvedSymbolException;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
+import org.ogu.lang.parser.ast.decls.LetDeclarationNode;
+import org.ogu.lang.parser.ast.typeusage.TypeUsageNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.symbols.Symbol;
@@ -41,9 +43,14 @@ public class ReferenceNode extends ExpressionNode {
                 '}';
     }
 
+    private TypeUsageNode precalculatedType;
+
     @Override
     public TypeUsage calcType() {
-        Optional<Symbol> declaration = symbolResolver().findSymbol(name.qualifiedName(), this);
+        if (precalculatedType != null) {
+            return precalculatedType;
+        }
+        Optional<Symbol> declaration = symbolResolver().findSymbol(getName(), this);
 
         if (declaration.isPresent()) {
             return declaration.get().calcType();
@@ -83,7 +90,7 @@ public class ReferenceNode extends ExpressionNode {
 
     @Override
     public JvmMethodDefinition findFunctionFor(List<ActualParamNode> actualParamNodes, SymbolResolver resolver) {
-        List<JvmType> argsTypes = actualParamNodes.stream().map((ap)->ap.getValue().calcType().jvmType()).collect(Collectors.toList());
+        List<JvmType> argsTypes = actualParamNodes.stream().map((ap) -> ap.getValue().calcType().jvmType()).collect(Collectors.toList());
         Optional<Symbol> declaration = resolver.findSymbol(name.getName(), this);
         if (declaration.isPresent()) {
             Symbol decl = declaration.get();
@@ -91,12 +98,17 @@ public class ReferenceNode extends ExpressionNode {
                 return ((ExpressionNode) decl).findFunctionFor(actualParamNodes, resolver);
             } else if (decl instanceof AliasJvmInteropDeclarationNode) {
                 return ((AliasJvmInteropDeclarationNode) decl).findFunctionFor(actualParamNodes, resolver);
-            }
-            else {
+            } else if (decl instanceof LetDeclarationNode) {
+                LetDeclarationNode letDecl = (LetDeclarationNode) decl;
+                if (letDecl.match(argsTypes, resolver)) {
+                    return letDecl.jvmMethodDefinition(resolver);
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            } else {
                 throw new UnsupportedOperationException(declaration.get().getClass().getCanonicalName());
             }
-        } else {
-            throw new UnsolvedSymbolException(this);
         }
+        throw new UnsolvedSymbolException(this);
     }
 }

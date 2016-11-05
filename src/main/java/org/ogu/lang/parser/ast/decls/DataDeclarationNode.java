@@ -6,7 +6,7 @@ import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.parser.ast.decls.typedef.TypeParamNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
-import org.ogu.lang.parser.ast.typeusage.TypeNode;
+import org.ogu.lang.parser.ast.typeusage.TypeUsageWrapperNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.ArrayList;
@@ -20,9 +20,9 @@ import java.util.Optional;
 public class DataDeclarationNode extends AlgebraicDataTypeDeclarationNode {
 
     private List<TypeParamNode> params;
-    private List<TypeNode> values;
+    private List<TypeUsageWrapperNode> values;
 
-    public DataDeclarationNode(TypeIdentifierNode name, List<TypeParamNode> params, List<TypeNode> values, List<TypeIdentifierNode> deriving, List<DecoratorNode> decoratorNodes) {
+    public DataDeclarationNode(TypeIdentifierNode name, List<TypeParamNode> params, List<TypeUsageWrapperNode> values, List<TypeIdentifierNode> deriving, List<DecoratorNode> decoratorNodes) {
         super(name, deriving, decoratorNodes);
         this.params = new ArrayList<>();
         this.params.addAll(params);

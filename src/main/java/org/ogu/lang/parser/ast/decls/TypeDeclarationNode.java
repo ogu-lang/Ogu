@@ -8,6 +8,7 @@ import org.ogu.lang.definitions.InternalFunctionDefinition;
 import org.ogu.lang.definitions.TypeDefinition;
 import org.ogu.lang.parser.ast.NameNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
+import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.Symbol;
 import org.ogu.lang.typesystem.ReferenceTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
@@ -110,5 +111,6 @@ public abstract class TypeDeclarationNode extends ExportableDeclarationNode impl
     public Optional<InternalFunctionDefinition> findFunctionFromJvmSignature(String jvmSignature) {
         throw new UnsupportedOperationException("por implementar findFunction: "+jvmSignature);
     }
+
 
 }

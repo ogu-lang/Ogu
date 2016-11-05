@@ -182,7 +182,7 @@ public class ParseTreeToAst {
 
     private InstanceDeclarationNode toAst(OguParser.Instance_defContext ctx, List<DecoratorNode> decs) {
         TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
-        Map<String,TypeNode> constraints = new HashMap<>();
+        Map<String,TypeUsageWrapperNode> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
         List<TypeParamNode> params = getInstaceTypeParamList(ctx, ctx.params, constraints);
@@ -192,11 +192,10 @@ public class ParseTreeToAst {
         return instance;
     }
 
-    private List<TypeParamNode> getInstaceTypeParamList(OguParser.Instance_defContext ctx, List<OguParser.TypeContext> types, Map<String, TypeNode> constraints) {
+    private List<TypeParamNode> getInstaceTypeParamList(OguParser.Instance_defContext ctx, List<OguParser.TypeContext> types, Map<String, TypeUsageWrapperNode> constraints) {
         List<TypeParamNode> params = new ArrayList<>();
         for (OguParser.TypeContext typeContext : types) {
-            TypeNode type = toAst(typeContext);
-            Logger.debug("type is "+type.getClass().getCanonicalName());
+            TypeUsageWrapperNode type = toAst(typeContext);
             TypeParamNode p = determineConstraint(type, constraints);
             getPositionFrom(p, ctx);
             params.add(p);
@@ -205,22 +204,22 @@ public class ParseTreeToAst {
 
     }
 
-    private TypeParamNode determineConstraint(TypeNode type, Map<String, TypeNode> constraints) {
-        if (type instanceof IdTypeArgNode) {
+    private TypeParamNode determineConstraint(TypeUsageWrapperNode type, Map<String, TypeUsageWrapperNode> constraints) {
+        if (type instanceof IdTypeArgUsageNode) {
             if (constraints.containsKey(type.getName())) {
-                TypeNode tnode = constraints.get(type.getName());
+                TypeUsageWrapperNode tnode = constraints.get(type.getName());
                 return new TypeParamConstrainedNode(type.getName(), tnode);
             }
         }
-        if (type instanceof TupleTypeNode) {
-            TupleTypeNode tt = (TupleTypeNode) type;
-            if (tt.getBases().size() == 1 && tt.getBase(0) instanceof GenericTypeNode) {
-                GenericTypeNode gt = (GenericTypeNode) tt.getBase(0);
+        if (type instanceof TupleTypeUsageNode) {
+            TupleTypeUsageNode tt = (TupleTypeUsageNode) type;
+            if (tt.getBases().size() == 1 && tt.getBase(0) instanceof GenericTypeUsageNode) {
+                GenericTypeUsageNode gt = (GenericTypeUsageNode) tt.getBase(0);
                 for (int i = 0; i < gt.getArgs().size(); i++) {
-                    TypeNode t = gt.getArg(i);
+                    TypeUsageWrapperNode t = gt.getArg(i);
                     if (constraints.containsKey(t.getName())) {
-                        TypeNode ct = constraints.get(t.getName());
-                        gt.setArg(i, new ConstrainedTypeNode(new IdentifierNode(t.getName()), ct));
+                        TypeUsageWrapperNode ct = constraints.get(t.getName());
+                        gt.setArg(i, new ConstrainedTypeUsageNode(new IdentifierNode(t.getName()), ct));
                     }
                 }
 
@@ -232,7 +231,7 @@ public class ParseTreeToAst {
     private ClassDeclarationNode toAst(OguParser.Class_defContext ctx, List<DecoratorNode> decs) {
         boolean isMutable = ctx.mut != null;
         TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
-        Map<String,TypeNode> constraints = new HashMap<>();
+        Map<String,TypeUsageWrapperNode> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
         List<TypeParamNode> genParams = getTypeParamList(ctx, ctx.params, constraints);
@@ -254,7 +253,7 @@ public class ParseTreeToAst {
     }
 
     private List<ClassParamNode> toAst(OguParser.Class_paramContext ctx) {
-        TypeNode type = toAst(ctx.type());
+        TypeUsageWrapperNode type = toAst(ctx.type());
         List<ClassParamNode> result = new ArrayList<>();
         for (TerminalNode cid:ctx.ID()) {
             IdentifierNode id = IdentifierNode.create(cid.getText());
@@ -286,7 +285,7 @@ public class ParseTreeToAst {
 
     private DataDeclarationNode toAst(OguParser.Data_defContext ctx, List<DecoratorNode> decs) {
         TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
-        Map<String, TypeNode> constraints = new HashMap<>();
+        Map<String, TypeUsageWrapperNode> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
 
@@ -296,13 +295,13 @@ public class ParseTreeToAst {
         else
             params = Collections.emptyList();
         List<TypeIdentifierNode> deriving = new ArrayList<>();
-        List<TypeNode> values = toAst(ctx.data_type_decl(), deriving);
+        List<TypeUsageWrapperNode> values = toAst(ctx.data_type_decl(), deriving);
         DataDeclarationNode decl = new DataDeclarationNode(name, params, values, deriving, decs);
         getPositionFrom(decl, ctx);
         return decl;
     }
 
-    private List<TypeNode> toAst(OguParser.Data_type_declContext ctx, List<TypeIdentifierNode> deriving) {
+    private List<TypeUsageWrapperNode> toAst(OguParser.Data_type_declContext ctx, List<TypeIdentifierNode> deriving) {
         if (ctx.deriving() != null)
             deriving.addAll(toDerivingAst(ctx.deriving()));
         return ctx.t.stream().map(this::toAst).collect(Collectors.toList());
@@ -311,7 +310,7 @@ public class ParseTreeToAst {
     private TraitDeclarationNode toAst(OguParser.Trait_defContext ctx, List<DecoratorNode> decs) {
         boolean isMutable = ctx.mut != null;
         TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.name));
-        Map<String,TypeNode> constraints = new HashMap<>();
+        Map<String,TypeUsageWrapperNode> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
         List<TypeParamNode> params = getTypeParamList(ctx, ctx.params, constraints);
@@ -336,18 +335,17 @@ public class ParseTreeToAst {
             return toAst(ctx.func_def(), decs);
         if (ctx.var() != null)
             return toAst(ctx.var(), decs);
-        Logger.debug(ctx.getText());
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
     private TypedefDeclarationNode toAst(OguParser.Type_defContext ctx, List<DecoratorNode> decs) {
-        Map<String,TypeNode> constraints = new HashMap<>();
+        Map<String,TypeUsageWrapperNode> constraints = new HashMap<>();
         if (ctx.constraints != null)
             loadTypeConstraints(ctx.constraints, constraints);
 
 
         TypeIdentifierNode name = new TypeIdentifierNode(idText(ctx.t));
-        TypeNode type = toAst(ctx.type());
+        TypeUsageWrapperNode type = toAst(ctx.type());
         getPositionFrom(name, ctx);
         if (ctx.ta == null)  {
             SimpleTypeDeclarationNode tdecl = new SimpleTypeDeclarationNode(name, type, decs);
@@ -362,7 +360,7 @@ public class ParseTreeToAst {
         }
     }
 
-    private List<TypeParamNode> getTypeParamList(ParserRuleContext ctx, List<Token> tokens, Map<String,TypeNode> constraints) {
+    private List<TypeParamNode> getTypeParamList(ParserRuleContext ctx, List<Token> tokens, Map<String,TypeUsageWrapperNode> constraints) {
         if (ctx == null)
             return Collections.emptyList();
 
@@ -380,12 +378,11 @@ public class ParseTreeToAst {
         return params;
     }
 
-    private void loadTypeConstraints(OguParser.Typedef_args_constraintsContext ctx, Map<String, TypeNode> cons) {
+    private void loadTypeConstraints(OguParser.Typedef_args_constraintsContext ctx, Map<String, TypeUsageWrapperNode> cons) {
         for (OguParser.Typedef_arg_constraintContext tac:ctx.tac) {
-            TypeNode type = toAst(tac.type());
+            TypeUsageWrapperNode type = toAst(tac.type());
             for (Token id : tac.ids) {
                 cons.put(idText(id), type);
-                Logger.debug("CONSTRAINT: "+idText(id)+" -> "+type);
             }
         }
     }
@@ -395,7 +392,7 @@ public class ParseTreeToAst {
             if (ctx.let_func_name.lid_val_id != null) {
                 // let is really a val
                 IdentifierNode funcId = IdentifierNode.create(idText(ctx.let_func_name.lid_val_id));
-                TypeNode type = toAst(ctx.let_func_name.t);
+                TypeUsageWrapperNode type = toAst(ctx.let_func_name.t);
                 if (ctx.let_func_args != null && !ctx.let_func_args.isEmpty()) {
                     return new ErrorFunctionalDeclarationNode("error.let_as_val.no_params", getPosition(ctx));
                 }
@@ -406,8 +403,6 @@ public class ParseTreeToAst {
                 return val;
             }
             if (ctx.let_func_name.lid_fun_id != null) {
-                Logger.debug("let is func: "+ctx.getText());
-
                 IdentifierNode funcId = IdentifierNode.create(idText(ctx.let_func_name.lid_fun_id));
                 List<FunctionPatternParamNode> params = funcArgsToAst(ctx.let_func_args);
                 LetDefinitionNode funcdef = new LetDefinitionNode(funcId, params, decoratorNodes);
@@ -434,7 +429,7 @@ public class ParseTreeToAst {
 
         if (!ctx.tup.isEmpty()) {
             List<IdentifierNode> ids = new ArrayList<>();
-            Map<IdentifierNode, TypeNode> types = new HashMap<>();
+            Map<IdentifierNode, TypeUsageWrapperNode> types = new HashMap<>();
             ErrorValDeclarationNode error = lidsToAst(ctx.tup, ids, types);
             if (error != null)
                 return error;
@@ -447,7 +442,7 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private ErrorValDeclarationNode lidsToAst(List<OguParser.LidContext> lids, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
+    private ErrorValDeclarationNode lidsToAst(List<OguParser.LidContext> lids, List<IdentifierNode> ids, Map<IdentifierNode, TypeUsageWrapperNode> types) {
         for(OguParser.LidContext ctx : lids) {
             IdentifierNode id;
             if (ctx.lid_fun_id !=null) {
@@ -461,21 +456,21 @@ public class ParseTreeToAst {
             }
             ids.add(id);
             if (ctx.type() != null) {
-                TypeNode type = toAst(ctx.type());
+                TypeUsageWrapperNode type = toAst(ctx.type());
                 types.put(id, type);
             }
         }
         return null;
     }
 
-    private ErrorVarDeclarationNode vidtToAst(List<OguParser.VidtContext> vidt, List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types) {
+    private ErrorVarDeclarationNode vidtToAst(List<OguParser.VidtContext> vidt, List<IdentifierNode> ids, Map<IdentifierNode, TypeUsageWrapperNode> types) {
         for (OguParser.VidtContext ctx : vidt) {
             IdentifierNode id = IdentifierNode.create(idText(ctx.i));
             if (ids.contains(id))
                 return new ErrorVarDeclarationNode(message("error.declare_duplicate_id") + id.getName(), getPosition(ctx));
             ids.add(id);
             if (ctx.type() != null) {
-                TypeNode type = toAst(ctx.type());
+                TypeUsageWrapperNode type = toAst(ctx.type());
                 types.put(id, type);
             }
         }
@@ -540,7 +535,7 @@ public class ParseTreeToAst {
         else {
             if (!ctx.tup.isEmpty()) {
                 List<IdentifierNode> ids = new ArrayList<>();
-                Map<IdentifierNode, TypeNode> types = new HashMap<>();
+                Map<IdentifierNode, TypeUsageWrapperNode> types = new HashMap<>();
                 lidsToAst(ctx.tup, ids, types);
                 ExpressionNode value = toAst(ctx.expr());
                 TupleValDeclarationNode decl = new TupleValDeclarationNode(ids, types, value, Collections.emptyList());
@@ -643,7 +638,7 @@ public class ParseTreeToAst {
                 return id;
             }
             else {
-                TypeNode type = toAst(ctx.l_id.type());
+                TypeUsageWrapperNode type = toAst(ctx.l_id.type());
                 IdentifierNode id = IdentifierNode.create(idText(ctx.l_id.lid_val_id));
                 FuncIdTypeParamNode param = new FuncIdTypeParamNode(id, type);
                 getPositionFrom(param, ctx);
@@ -710,14 +705,14 @@ public class ParseTreeToAst {
 
     private FunctionalDeclarationNode toAst(OguParser.Func_declContext ctx, List<DecoratorNode> decoratorNodes) {
         if (ctx.name.f_id != null) {
-            List<TypeArgNode> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
+            List<TypeArgUsageWrapperNode> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
             FunctionDeclarationNode funcDecl = new FunctionDeclarationNode(toAst(ctx.name), params, decoratorNodes);
             getPositionFrom(funcDecl, ctx);
             return funcDecl;
         }
         if (ctx.name.f_op != null) {
             // op params...
-            List<TypeArgNode> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
+            List<TypeArgUsageWrapperNode> params = ctx.func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
             OpDeclarationNode opDecl = new OpDeclarationNode(toAst(ctx.name.f_op), params, decoratorNodes);
             getPositionFrom(opDecl, ctx);
             return opDecl;
@@ -731,15 +726,15 @@ public class ParseTreeToAst {
         return op;
     }
 
-    private TypeArgNode toAst(OguParser.Func_decl_argContext ctx) {
+    private TypeArgUsageWrapperNode toAst(OguParser.Func_decl_argContext ctx) {
         if (ctx.unit() != null)
-            return new UnitTypeArgNode();
+            return new UnitTypeArgUsageNode();
         if (ctx.fda_id != null)
-            return new QualifiedTypeArgNode(TypeIdentifierNode.create(idText(ctx.fda_id)));
+            return new QualifiedTypeArgUsageNode(TypeIdentifierNode.create(idText(ctx.fda_id)));
         if (!ctx.fda_tid.isEmpty()) {
             TypeIdentifierNode id = TypeIdentifierNode.create(ctx.fda_tid.stream().map(this::idText).collect(Collectors.toList()));
             if (ctx.tid_or_id_arg == null || ctx.tid_or_id_arg.isEmpty()){
-                return new QualifiedTypeArgNode(id);
+                return new QualifiedTypeArgUsageNode(id);
             } else {
                 List<NameNode> args = new ArrayList<>();
                 for (OguParser.Tid_or_idContext ti:ctx.tid_or_id_arg)
@@ -747,20 +742,20 @@ public class ParseTreeToAst {
                         args.add(IdentifierNode.create(idText(ti.i)));
                     else
                         args.add(TypeIdentifierNode.create(idText(ti.t)));
-                GenericTypeArgNode genType = new GenericTypeArgNode(id, args);
+                GenericTypeArgUsageNode genType = new GenericTypeArgUsageNode(id, args);
                 getPositionFrom(genType, ctx);
                 return genType;
             }
         }
         if (ctx.vector() != null) {
-            TypeArgNode arg = toAst(ctx.vector().func_decl_arg());
-            VectorTypeArgNode vec = new VectorTypeArgNode(arg);
+            TypeArgUsageWrapperNode arg = toAst(ctx.vector().func_decl_arg());
+            VectorTypeArgUsageNode vec = new VectorTypeArgUsageNode(arg);
             getPositionFrom(vec, ctx);
             return vec;
         }
         if (ctx.tuple() != null) {
-            List<TypeArgNode> args = ctx.tuple().func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
-            TupleTypeArgNode tuple = new TupleTypeArgNode(args);
+            List<TypeArgUsageWrapperNode> args = ctx.tuple().func_decl_arg().stream().map(this::toAst).collect(Collectors.toList());
+            TupleTypeArgUsageNode tuple = new TupleTypeArgUsageNode(args);
             getPositionFrom(tuple, ctx);
             return tuple;
         }
@@ -795,6 +790,14 @@ public class ParseTreeToAst {
             if (origin.alias_origin_id != null) {
                 return new ErrorAliasNode(message("error.alias.tid_no_tid"), getPosition(ctx));
             }
+
+            // jvm interop
+            if (origin.jvm_id != null) {
+                AliasTypeJvmInteropDeclarationNode decl = new AliasTypeJvmInteropDeclarationNode(toOguTypeIdentifier(target), origin.jvm_id.STRING().getText(), decs);
+                getPositionFrom(decl, ctx);
+                return decl;
+            }
+
             TypeAliasDeclarationNode decl = new TypeAliasDeclarationNode(toOguTypeIdentifier(target), toOguTypeIdentifier(origin), decs);
             getPositionFrom(decl, ctx);
             return decl;
@@ -830,7 +833,7 @@ public class ParseTreeToAst {
             return var;
         } else {
             List<IdentifierNode> ids = new ArrayList<>();
-            Map<IdentifierNode, TypeNode> types = new HashMap<>();
+            Map<IdentifierNode, TypeUsageWrapperNode> types = new HashMap<>();
             ErrorVarDeclarationNode error = vidtToAst(ctx.vidt(), ids, types);
             if (error != null)
                 return error;
@@ -853,7 +856,7 @@ public class ParseTreeToAst {
             return val;
         } else {
             List<IdentifierNode> ids = new ArrayList<>();
-            Map<IdentifierNode, TypeNode> types = new HashMap<>();
+            Map<IdentifierNode, TypeUsageWrapperNode> types = new HashMap<>();
             ErrorValDeclarationNode error  = lidsToAst(ctx.lid(), ids, types);
             if (error != null) {
                 return error;
@@ -866,28 +869,28 @@ public class ParseTreeToAst {
         }
     }
 
-    private TypeNode toAst(OguParser.TypeContext ctx) {
+    private TypeUsageWrapperNode toAst(OguParser.TypeContext ctx) {
         if (ctx.vector_type() != null) {
-            TypeNode type = toAst(ctx.vector_type().type());
-            VectorTypeNode vtype = new VectorTypeNode(type);
+            TypeUsageWrapperNode type = toAst(ctx.vector_type().type());
+            VectorTypeUsageNode vtype = new VectorTypeUsageNode(type);
             getPositionFrom(vtype, ctx);
             return vtype;
         }
         if (ctx.unit() != null) {
-            UnitTypeNode utype = new UnitTypeNode();
+            UnitTypeUsageNode utype = new UnitTypeUsageNode();
             getPositionFrom(utype, ctx);
             return utype;
         }
         if (ctx.tuple_type() != null) {
-            List<TypeNode> types = ctx.tuple_type().type().stream().map(this::toAst).collect(Collectors.toList());
-            TupleTypeNode ttype = new TupleTypeNode(types);
+            List<TypeUsageWrapperNode> types = ctx.tuple_type().type().stream().map(this::toAst).collect(Collectors.toList());
+            TupleTypeUsageNode ttype = new TupleTypeUsageNode(types);
             getPositionFrom(ttype, ctx);
             return ttype;
         }
         if (ctx.map_type() != null) {
-            TypeNode key = toAst(ctx.map_type().k);
-            TypeNode val = toAst(ctx.map_type().v);
-            MapTypeNode type = new MapTypeNode(key, val);
+            TypeUsageWrapperNode key = toAst(ctx.map_type().k);
+            TypeUsageWrapperNode val = toAst(ctx.map_type().v);
+            MapTypeUsageNode type = new MapTypeUsageNode(key, val);
             getPositionFrom(type, ctx);
             return type;
         }
@@ -902,22 +905,22 @@ public class ParseTreeToAst {
 
         if (ctx.tid() != null) {
             if (ctx.t_a.isEmpty()) {
-                return new QualifiedTypeArgNode(toAst(ctx.tid()));
+                return new QualifiedTypeArgUsageNode(toAst(ctx.tid()));
             } else {
-                List<TypeNode> args = ctx.t_a.stream().map(this::toAst).collect(Collectors.toList());
+                List<TypeUsageWrapperNode> args = ctx.t_a.stream().map(this::toAst).collect(Collectors.toList());
                 TypeIdentifierNode tName = toAst(ctx.gt);
-                GenericTypeNode type = new GenericTypeNode(tName, args);
+                GenericTypeUsageNode type = new GenericTypeUsageNode(tName, args);
                 getPositionFrom(type, ctx);
                 return type;
             }
         }
         if (ctx.nat != null) {
-            NativeTypeNode type = new NativeTypeNode(idText(ctx.nat));
+            NativeTypeUsageNode type = new NativeTypeUsageNode(idText(ctx.nat));
             getPositionFrom(type, ctx);
             return type;
         }
         if (ctx.i != null) {
-            IdTypeArgNode type = new IdTypeArgNode(IdentifierNode.create(idText(ctx.i)));
+            IdTypeArgUsageNode type = new IdTypeArgUsageNode(IdentifierNode.create(idText(ctx.i)));
             getPositionFrom(type, ctx);
             return type;
         }
@@ -927,9 +930,9 @@ public class ParseTreeToAst {
 
 
 
-    private TypeNode toAst(OguParser.Tid_argsContext ctx) {
+    private TypeUsageWrapperNode toAst(OguParser.Tid_argsContext ctx) {
         if (ctx.i != null) {
-            IdTypeArgNode type = new IdTypeArgNode(IdentifierNode.create(idText(ctx.i)));
+            IdTypeArgUsageNode type = new IdTypeArgUsageNode(IdentifierNode.create(idText(ctx.i)));
             getPositionFrom(type, ctx);
             return type;
         }
@@ -937,7 +940,7 @@ public class ParseTreeToAst {
             return toAst(ctx.type());
         }
         if (ctx.tid() != null) {
-            QualifiedTypeNode type = new QualifiedTypeNode(toAst(ctx.tid()));
+            QualifiedTypeUsageNode type = new QualifiedTypeUsageNode(toAst(ctx.tid()));
             getPositionFrom(type, ctx);
             return type;
         }
@@ -945,24 +948,24 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
-    private RecordTypeNode toAst(OguParser.Record_typeContext ctx) {
+    private RecordTypeUsageNode toAst(OguParser.Record_typeContext ctx) {
         List<RecordFieldNode> fields = ctx.fldDecl().stream().map(this::toAst).collect(Collectors.toList());
         TypeIdentifierNode name = TypeIdentifierNode.create(idText(ctx.ti));
-        RecordTypeNode record = new RecordTypeNode(name, fields);
+        RecordTypeUsageNode record = new RecordTypeUsageNode(name, fields);
         getPositionFrom(record, ctx);
         return record;
     }
 
-    private AnonRecordTypeNode toAst(OguParser.Anon_record_typeContext ctx) {
+    private AnonRecordTypeUsageNode toAst(OguParser.Anon_record_typeContext ctx) {
         List<RecordFieldNode> fields = ctx.fldDecl().stream().map(this::toAst).collect(Collectors.toList());
-        AnonRecordTypeNode record = new AnonRecordTypeNode(fields);
+        AnonRecordTypeUsageNode record = new AnonRecordTypeUsageNode(fields);
         getPositionFrom(record, ctx);
         return record;
     }
 
     private RecordFieldNode toAst(OguParser.FldDeclContext ctx) {
         IdentifierNode id = IdentifierNode.create(idText(ctx.i));
-        TypeNode type = toAst(ctx.t);
+        TypeUsageWrapperNode type = toAst(ctx.t);
         RecordFieldNode fld = new RecordFieldNode(id, type);
         getPositionFrom(fld, ctx);
         return fld;

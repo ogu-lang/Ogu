@@ -116,9 +116,9 @@ public class PrimitiveTypeUsage  implements TypeUsage {
     }
 
     /**
-     * In Turin all type names are capitalized, this is true also for primitive types.
+     * In Ogu all type names are capitalized, this is true also for primitive types.
      */
-    public String turinName() {
+    public String oguName() {
         return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 
@@ -127,7 +127,7 @@ public class PrimitiveTypeUsage  implements TypeUsage {
      */
     public static PrimitiveTypeUsage getByName(String name) {
         for (PrimitiveTypeUsage primitiveTypeUsage : ALL) {
-            if (primitiveTypeUsage.turinName().equals(name) || primitiveTypeUsage.name.equals(name)) {
+            if (primitiveTypeUsage.oguName().equals(name) || primitiveTypeUsage.name.equals(name)) {
                 return primitiveTypeUsage;
             }
         }

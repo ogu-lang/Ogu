@@ -302,6 +302,7 @@ public class ReflectionBasedTypeDefinition implements TypeDefinition {
         return Optional.empty();
     }
 
+
     @Override
     public List<ReferenceTypeUsage> getAllAncestors() {
         List<ReferenceTypeUsage> ancestors = new ArrayList<>();

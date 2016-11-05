@@ -6,14 +6,13 @@ import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.compiler.AmbiguousCallException;
 import org.ogu.lang.definitions.TypeDefinition;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
-import org.ogu.lang.parser.ast.typeusage.UnitTypeNode;
+import org.ogu.lang.parser.ast.typeusage.UnitTypeUsageNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameterSymbol;
 import org.ogu.lang.typesystem.ArrayTypeUsage;
 import org.ogu.lang.typesystem.PrimitiveTypeUsage;
 import org.ogu.lang.typesystem.ReferenceTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
-import org.ogu.lang.util.Logger;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -77,7 +76,7 @@ public class ReflectionBasedMethodResolution {
         if (type instanceof Class) {
             Class clazz = (Class)type;
             if (clazz.getCanonicalName().equals(void.class.getCanonicalName())) {
-                return new UnitTypeNode();
+                return new UnitTypeUsageNode();
             }
             if (clazz.isPrimitive()) {
                 return PrimitiveTypeUsage.getByName(clazz.getName());

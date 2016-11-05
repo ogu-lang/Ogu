@@ -75,6 +75,10 @@ public class InModuleSymbolResolver implements SymbolResolver {
 
     @Override
     public Optional<TypeDefinition> findTypeDefinitionFromJvmSignature(String jvmSignature, Node context, SymbolResolver resolver) {
+        if (!jvmSignature.contains(":")) {
+            return findTypeDefinitionIn(jvmSignature, context, resolver);
+        }
+
         String[] parts = jvmSignature.split(":");
         if (parts.length != 2) {
             throw new IllegalStateException("invalid jvmSignature "+jvmSignature);

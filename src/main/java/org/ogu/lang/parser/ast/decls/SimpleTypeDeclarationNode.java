@@ -5,7 +5,7 @@ import org.ogu.lang.definitions.InternalFunctionDefinition;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
-import org.ogu.lang.parser.ast.typeusage.TypeNode;
+import org.ogu.lang.parser.ast.typeusage.TypeUsageWrapperNode;
 import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.Optional;
  */
 public class SimpleTypeDeclarationNode extends TypedefDeclarationNode {
 
-    public SimpleTypeDeclarationNode(TypeIdentifierNode name, TypeNode type, List<DecoratorNode> decoratorNodes) {
+    public SimpleTypeDeclarationNode(TypeIdentifierNode name, TypeUsageWrapperNode type, List<DecoratorNode> decoratorNodes) {
         super(name, type, decoratorNodes);
     }
 

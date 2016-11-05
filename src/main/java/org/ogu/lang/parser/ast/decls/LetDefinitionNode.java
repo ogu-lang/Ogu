@@ -22,7 +22,7 @@ public class LetDefinitionNode extends LetDeclarationNode {
 
     @Override
     public String toString() {
-        return "FunctionDefinition{" +
+        return "LetDefinition{" +
                 "name='" + name + '\''+
                 ", params=" + params +
                 ", body=" + body +

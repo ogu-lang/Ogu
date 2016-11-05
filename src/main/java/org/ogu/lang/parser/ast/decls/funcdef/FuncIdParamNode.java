@@ -3,6 +3,10 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
+import org.ogu.lang.symbols.FormalParameter;
+import org.ogu.lang.typesystem.TypeUsage;
+
+import java.util.Map;
 
 /**
  * and id for pattern matching
@@ -29,5 +33,20 @@ public class FuncIdParamNode extends FunctionPatternParamNode {
     @Override
     public Iterable<Node> getChildren() {
         return ImmutableList.of(id);
+    }
+
+    @Override
+    public TypeUsage getType() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public FormalParameter apply(Map<String, TypeUsage> typeParams) {
+        return null;
     }
 }

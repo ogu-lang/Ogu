@@ -1,23 +1,26 @@
 package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
-import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * [Type]
  * Created by ediaz on 30-01-16.
  */
-public class TupleTypeArgNode extends TypeArgNode {
+public class TupleTypeArgUsageNode extends TypeArgUsageWrapperNode {
 
-    private List<TypeArgNode> args;
+    private List<TypeArgUsageWrapperNode> args;
 
-    public TupleTypeArgNode(List<TypeArgNode> args) {
+    @Override
+    public TypeUsageNode copy() {
+        return null;
+    }
+
+    public TupleTypeArgUsageNode(List<TypeArgUsageWrapperNode> args) {
         this.args = new ArrayList<>();
         this.args.addAll(args);
         this.args.forEach((a) -> a.setParent(this));
@@ -35,22 +38,8 @@ public class TupleTypeArgNode extends TypeArgNode {
     }
 
     @Override
-    public JvmType jvmType() {
-        return null;
-    }
-
-    @Override
     public boolean sameType(TypeUsage other) {
         return false;
     }
 
-    @Override
-    public boolean canBeAssignedTo(TypeUsage type) {
-        return false;
-    }
-
-    @Override
-    public <T extends TypeUsage> TypeUsage replaceTypeVariables(Map<String, T> typeParams) {
-        return null;
-    }
 }

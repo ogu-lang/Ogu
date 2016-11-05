@@ -9,6 +9,8 @@ import org.ogu.lang.parser.analysis.exceptions.UnsolvedFunctionException;
 import org.ogu.lang.parser.ast.Named;
 import org.ogu.lang.parser.ast.QualifiedName;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
+import org.ogu.lang.resolvers.SymbolResolver;
+import org.ogu.lang.resolvers.jdk.ReflectionBasedTypeDefinition;
 import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.symbols.Symbol;
 import org.ogu.lang.typesystem.Invocable;
@@ -128,6 +130,16 @@ public interface TypeDefinition extends Symbol, Named {
             throw new UnsupportedOperationException("No pudo encontrar funcion con esta firma: "+jvmSignature);
         }
     }
+
+    default TypeDefinition getClassFromJvmSignature(String jvmSignature, SymbolResolver resolver) {
+        try {
+            Class<?> clazz = ClassLoader.getSystemClassLoader().loadClass(jvmSignature);
+            return new ReflectionBasedTypeDefinition(clazz, resolver);
+        } catch (ClassNotFoundException ex) {
+            return null;
+        }
+    }
+
 
     JvmMethodDefinition findFunctionFor(String name, List<JvmType> argsTypes, boolean staticContext);
 

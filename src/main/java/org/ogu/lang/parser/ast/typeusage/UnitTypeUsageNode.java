@@ -1,29 +1,29 @@
 package org.ogu.lang.parser.ast.typeusage;
 
 import java.util.Collections;
-import java.util.Map;
 
-import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.typesystem.VoidTypeUsage;
 
 /**
  * ()
  * Created by ediaz on 30-01-16.
  */
-public class UnitTypeNode extends TypeNode {
+public class UnitTypeUsageNode extends TypeUsageWrapperNode {
 
-    public UnitTypeNode() {
-        super();
+    public UnitTypeUsageNode() {
+        super(new VoidTypeUsage());
     }
 
     @Override
-    public boolean isVoid() { return true; }
-
+    public TypeUsageNode copy() {
+        return this;
+    }
 
     @Override
     public String toString() {
-        return "Unit!";
+        return "UnitTypeUsage!";
     }
 
     @Override
@@ -36,23 +36,10 @@ public class UnitTypeNode extends TypeNode {
         return null;
     }
 
-    @Override
-    public JvmType jvmType() {
-        return JvmType.VOID;
-    }
 
     @Override
     public boolean sameType(TypeUsage other) {
         return typeUsage().sameType(other);
     }
 
-    @Override
-    public boolean canBeAssignedTo(TypeUsage type) {
-        return typeUsage().canBeAssignedTo(type);
-    }
-
-    @Override
-    public <T extends TypeUsage> TypeUsage replaceTypeVariables(Map<String, T> typeParams) {
-        return null;
-    }
 }

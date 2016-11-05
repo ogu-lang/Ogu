@@ -12,9 +12,9 @@ import org.ogu.lang.parser.ast.IdentifierNode;
 public class RecordFieldNode extends Node {
 
     private IdentifierNode name;
-    private TypeNode type;
+    private TypeUsageWrapperNode type;
 
-    public RecordFieldNode(IdentifierNode name, TypeNode type) {
+    public RecordFieldNode(IdentifierNode name, TypeUsageWrapperNode type) {
         super();
         this.name = name;
         this.name.setParent(this);

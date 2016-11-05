@@ -1,34 +1,36 @@
 package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
-import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * [Type]
  * Created by ediaz on 30-01-16.
  */
-public class TupleTypeNode extends TypeNode {
+public class TupleTypeUsageNode extends TypeUsageWrapperNode {
 
-    private List<TypeNode> bases;
+    private List<TypeUsageWrapperNode> bases;
 
-    public TupleTypeNode(List<TypeNode> bases) {
+    public TupleTypeUsageNode(List<TypeUsageWrapperNode> bases) {
         this.bases = new ArrayList<>();
         this.bases.addAll(bases);
         this.bases.forEach((b) -> b.setParent(this));
     }
 
+    @Override
+    public TypeUsageNode copy() {
+        return null;
+    }
 
-    public List<TypeNode> getBases() {
+    public List<TypeUsageWrapperNode> getBases() {
         return bases;
     }
 
-    public TypeNode getBase(int i) {
+    public TypeUsageWrapperNode getBase(int i) {
         return bases.get(i);
     }
 
@@ -43,23 +45,10 @@ public class TupleTypeNode extends TypeNode {
     }
 
 
-    @Override
-    public JvmType jvmType() {
-        return null;
-    }
 
     @Override
     public boolean sameType(TypeUsage other) {
         return false;
     }
 
-    @Override
-    public boolean canBeAssignedTo(TypeUsage type) {
-        return false;
-    }
-
-    @Override
-    public <T extends TypeUsage> TypeUsage replaceTypeVariables(Map<String, T> typeParams) {
-        return null;
-    }
 }
