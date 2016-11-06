@@ -1,6 +1,8 @@
 package org.ogu.lang.compiler;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import org.objectweb.asm.MethodVisitor;
 import org.ogu.lang.codegen.bytecode_generation.*;
 import org.ogu.lang.codegen.bytecode_generation.pushpop.*;
 import org.ogu.lang.codegen.jvm.JvmInvocableDefinition;
@@ -10,6 +12,10 @@ import org.ogu.lang.codegen.jvm.JvmTypeCategory;
 import org.ogu.lang.parser.analysis.exceptions.UnsolvedFunctionException;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
+import org.ogu.lang.parser.ast.decls.FunctionDeclarationNode;
+import org.ogu.lang.parser.ast.decls.LetDeclarationNode;
+import org.ogu.lang.parser.ast.decls.funcdef.FunctionNode;
+import org.ogu.lang.parser.ast.decls.funcdef.FunctionNodeExpr;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.expressions.FunctionCallNode;
 import org.ogu.lang.parser.ast.expressions.MathOpExpressionNode;
@@ -25,6 +31,7 @@ import org.ogu.lang.typesystem.PrimitiveTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
 import org.ogu.lang.util.Logger;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -47,6 +54,17 @@ public class CompilationOfExpressions {
 
     BytecodeSequence compile(ExpressionNode expressionNode) {
         return pushExpression(expressionNode);
+    }
+
+    // compile body of a function
+    BytecodeSequence compile(List<FunctionNode> body) {
+        List<BytecodeSequence> exprs = new ArrayList<>();
+        for (FunctionNode node : body) {
+            if (node instanceof FunctionNodeExpr) {
+                exprs.add(compile(((FunctionNodeExpr) node).getExpression()));
+            }
+        }
+        return new ComposedBytecodeSequence(exprs);
     }
 
     BytecodeSequence pushExpression(ExpressionNode expressionNode) {
@@ -126,7 +144,6 @@ public class CompilationOfExpressions {
 
     BytecodeSequence pushInstance(FunctionCallNode functionCall) {
         ExpressionNode function = functionCall.getFunction();
-        Logger.debug("function @ pushInstance = "+function+ " fcal="+functionCall);
         if (function instanceof ReferenceNode) {
             ReferenceNode reference = (ReferenceNode) function;
             Symbol declaration = reference.resolve(compilation.getResolver());
@@ -143,6 +160,8 @@ public class CompilationOfExpressions {
                 } else {
                     return NoOp.getInstance();
                 }
+            } else if (declaration instanceof LetDeclarationNode) {
+                return NoOp.getInstance();
             }
         }
         throw new UnsupportedOperationException(function.getClass().getCanonicalName());
@@ -166,7 +185,6 @@ public class CompilationOfExpressions {
 
 
     BytecodeSequence push(Node node) {
-        Logger.debug("push node = "+node+" "+node.toString());
         if (node instanceof ExpressionNode) {
             return pushExpression((ExpressionNode) node);
         }

@@ -25,7 +25,9 @@ import static org.ogu.lang.util.Feedback.message;
 public class Ogu {
 	public static void main(String[] args) throws Exception {
 
-		message(Compiler.VERSION);
+        akarru();
+
+        message(Compiler.VERSION);
 
         Options options = new Options();
         JCommander commander = null;

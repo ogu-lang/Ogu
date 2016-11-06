@@ -66,4 +66,21 @@ public class InternalFunctionDefinition extends InternalInvocableDefinition {
         return new InternalFunctionDefinition(functionName,
                 formalParametersReplaced, returnType.replaceTypeVariables(typeParams), jvmMethodDefinition);
     }
+
+    @Override
+    public int hashCode() {
+        int result = functionName.hashCode();
+        result = 31 * result + jvmMethodDefinition.hashCode();
+        result = 31 * result + returnType.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "InternalFunctionDefinition{" +
+                "functionName='" + functionName + '\'' +
+                ", jvmMethodDefinition=" + jvmMethodDefinition +
+                ", returnType=" + returnType +
+                '}';
+    }
 }

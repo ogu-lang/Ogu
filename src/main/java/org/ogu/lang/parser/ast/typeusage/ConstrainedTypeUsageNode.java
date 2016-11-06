@@ -1,13 +1,9 @@
 package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
-import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.Node;
-import org.ogu.lang.parser.ast.decls.typedef.TypeParamConstrainedNode;
 import org.ogu.lang.typesystem.TypeUsage;
-
-import java.util.Map;
 
 /**
  * A type is an arg.
@@ -18,18 +14,22 @@ import java.util.Map;
  * Here a is  ConstrainedTypeNode(a,Eq)
  * Created by ediaz on 04-02-16.
  */
-public class ConstrainedTypeNode extends TypeNode {
+public class ConstrainedTypeUsageNode extends TypeUsageWrapperNode {
 
     private IdentifierNode id;
-    private TypeNode type;
+    private TypeUsageWrapperNode type;
 
-    public ConstrainedTypeNode(IdentifierNode id, TypeNode type) {
+    public ConstrainedTypeUsageNode(IdentifierNode id, TypeUsageWrapperNode type) {
         this.id = id;
         this.id.setParent(this);
         this.type = type;
         this.type.setParent(this);
     }
 
+    @Override
+    public TypeUsageNode copy() {
+        return null;
+    }
 
     @Override
     public String toString() {
@@ -46,23 +46,11 @@ public class ConstrainedTypeNode extends TypeNode {
         return ImmutableList.<Node>builder().add(id).add(type).build();
     }
 
-    @Override
-    public JvmType jvmType() {
-        return null;
-    }
 
     @Override
     public boolean sameType(TypeUsage other) {
         return false;
     }
 
-    @Override
-    public boolean canBeAssignedTo(TypeUsage type) {
-        return false;
-    }
 
-    @Override
-    public <T extends TypeUsage> TypeUsage replaceTypeVariables(Map<String, T> typeParams) {
-        return null;
-    }
 }

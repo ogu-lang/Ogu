@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
-import org.ogu.lang.parser.ast.typeusage.TypeNode;
+import org.ogu.lang.parser.ast.typeusage.TypeUsageWrapperNode;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,13 +16,13 @@ import java.util.List;
 public class ValDeclarationNode extends FunctionalDeclarationNode {
 
     protected ExpressionNode value;
-    protected TypeNode type;
+    protected TypeUsageWrapperNode type;
 
     protected ValDeclarationNode() {
         super(Collections.emptyList());
     }
 
-    protected ValDeclarationNode(TypeNode type, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+    protected ValDeclarationNode(TypeUsageWrapperNode type, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
         super(decoratorNodes);
         this.type = type;
         this.type.setParent(this);
@@ -43,7 +43,7 @@ public class ValDeclarationNode extends FunctionalDeclarationNode {
         this.value.setParent(this);
     }
 
-    public ValDeclarationNode(IdentifierNode id, TypeNode returnType, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+    public ValDeclarationNode(IdentifierNode id, TypeUsageWrapperNode returnType, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
         super(id, decoratorNodes);
         this.type = returnType;
         this.type.setParent(this);

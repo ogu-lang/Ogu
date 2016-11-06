@@ -1,20 +1,28 @@
 package org.ogu.lang.compiler;
 
+import com.google.common.collect.ImmutableList;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.ogu.lang.classloading.ClassFileDefinition;
+import org.ogu.lang.codegen.bytecode_generation.returnop.ReturnVoidBS;
 import org.ogu.lang.codegen.jvm.JvmNameUtils;
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
+import org.ogu.lang.parser.ast.decls.LetDeclarationNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.modules.ModuleNode;
+import org.ogu.lang.parser.ast.typeusage.UnitTypeUsageNode;
 import org.ogu.lang.resolvers.SymbolResolver;
+import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.util.Feedback;
+import org.ogu.lang.util.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -27,6 +35,7 @@ public class Compilation {
 
     private static final int JAVA_8_CLASS_VERSION = 52;
     static final String OBJECT_INTERNAL_NAME = JvmNameUtils.canonicalToInternal(Object.class.getCanonicalName());
+    private final static String METHOD_NAME_OF_FUNCTION = "invoke";
 
     private SymbolResolver resolver;
     private ErrorCollector errorCollector;
@@ -56,6 +65,9 @@ public class Compilation {
         }
 
         for (Node node : module.getChildren()) {
+            if (node instanceof LetDeclarationNode) {
+                classFileDefinitions.addAll(compile((LetDeclarationNode) node, module));
+            }
             if (node instanceof AliasJvmInteropDeclarationNode) {
             //    classFileDefinitions.add(compile((AliasJvmInteropDeclarationNode) node));
             }
@@ -69,6 +81,19 @@ public class Compilation {
         throw new RuntimeException("ESPERA");
     }
 
+    private List<ClassFileDefinition> compile(LetDeclarationNode letDeclaration, ModuleNode nameSpace) {
+        String internalName = JvmNameUtils.renameFromOguToJvm(letDeclaration.getName());
+        String canonicalClassName = nameSpace.getNameDefinition().getName()
+                + "." + LetDeclarationNode.CLASS_PREFIX + internalName;
+        String internalClassName = JvmNameUtils.canonicalToInternal(canonicalClassName);
+
+        cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        cw.visit(JAVA_8_CLASS_VERSION, ACC_PUBLIC+ACC_SUPER, internalClassName, null, OBJECT_INTERNAL_NAME, null);
+
+        generateInvocable(letDeclaration, METHOD_NAME_OF_FUNCTION, true);
+
+        return ImmutableList.of(endClass(canonicalClassName));
+    }
 
     private ClassFileDefinition compileProgram(ModuleNode module) {
         if (localVarsSymbolTable == null) {
@@ -134,4 +159,55 @@ public class Compilation {
         this.localVarsSymbolTable = localVarsSymbolTable;
     }
 
+
+    private void generateInvocable(LetDeclarationNode invocableDefinition, String invocableName, boolean isStatic) {
+        if (isStatic) {
+            localVarsSymbolTable = LocalVarsSymbolTable.forStaticMethod();
+        } else {
+            localVarsSymbolTable = LocalVarsSymbolTable.forInstanceMethod();
+        }
+
+        String paramsDescriptor = String.join("", invocableDefinition.getParameters().stream().map((dp) -> dp.getType().jvmType().getDescriptor()).collect(Collectors.toList()));
+        String paramsSignature = String.join("", invocableDefinition.getParameters().stream().map((dp) -> dp.getType().jvmType().getSignature()).collect(Collectors.toList()));
+        String methodDescriptor = "(" + paramsDescriptor + ")" + invocableDefinition.getReturnType().jvmType().getDescriptor();
+        String methodSignature = "(" + paramsSignature + ")" + invocableDefinition.getReturnType().jvmType().getSignature();
+        // TODO consider exceptions
+        int modifiers = ACC_PUBLIC;
+        if (isStatic) {
+            modifiers = modifiers | ACC_STATIC;
+        }
+        MethodVisitor mv = cw.visitMethod(modifiers, invocableName, methodDescriptor, methodSignature, null);
+
+        //addDefaultParamAnnotations(mv, invocableDefinition.getParameters());
+
+        mv.visitCode();
+
+        // Add local variables: they are necessary for supporting named parameters and useful for debugging
+        Label start = new Label();
+        Label end = new Label();
+        mv.visitLabel(start);
+        for (FormalParameter formalParameter : invocableDefinition.getParameters()) {
+            int index = localVarsSymbolTable.add(formalParameter.getName(), formalParameter);
+            mv.visitLocalVariable(formalParameter.getName(),
+                    formalParameter.getType().jvmType().getDescriptor(),
+                    formalParameter.getType().jvmType().getSignature(),
+                    start,
+                    end,
+                    index);
+        }
+
+        compilationOfExpressions.compile(invocableDefinition.getBody()).operate(mv);
+
+        // add implicit return when needed
+        if (invocableDefinition.getReturnType() instanceof UnitTypeUsageNode) {
+            // TODO do not add if there is already a return at the end
+            new ReturnVoidBS().operate(mv);
+        }
+
+        mv.visitLabel(end);
+        // calculated for us
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+        localVarsSymbolTable = null;
+    }
 }

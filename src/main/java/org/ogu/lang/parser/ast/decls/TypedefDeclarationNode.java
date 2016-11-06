@@ -3,7 +3,7 @@ package org.ogu.lang.parser.ast.decls;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
-import org.ogu.lang.parser.ast.typeusage.TypeNode;
+import org.ogu.lang.parser.ast.typeusage.TypeUsageWrapperNode;
 
 import java.util.List;
 
@@ -13,9 +13,9 @@ import java.util.List;
  */
 public abstract  class TypedefDeclarationNode extends TypeDeclarationNode {
 
-    protected TypeNode type;
+    protected TypeUsageWrapperNode type;
 
-    protected TypedefDeclarationNode(TypeIdentifierNode name, TypeNode type, List<DecoratorNode> decoratorNodes)  {
+    protected TypedefDeclarationNode(TypeIdentifierNode name, TypeUsageWrapperNode type, List<DecoratorNode> decoratorNodes)  {
         super(name, decoratorNodes);
         this.type = type;
         this.type.setParent(this);

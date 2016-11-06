@@ -1,7 +1,7 @@
 package org.ogu.lang.parser.ast.decls;
 
 import org.ogu.lang.parser.ast.IdentifierNode;
-import org.ogu.lang.parser.ast.typeusage.TypeArgNode;
+import org.ogu.lang.parser.ast.typeusage.TypeArgUsageWrapperNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +13,11 @@ import java.util.List;
  */
 public class FunctionDeclarationNode extends FunctionalDeclarationNode {
 
-    private List<TypeArgNode> paramTypes;
-    private TypeArgNode returnType;
+    private List<TypeArgUsageWrapperNode> paramTypes;
+    private TypeArgUsageWrapperNode returnType;
 
 
-    public FunctionDeclarationNode(IdentifierNode id, List<TypeArgNode> paramTypes, List<DecoratorNode> decoratorNodes) {
+    public FunctionDeclarationNode(IdentifierNode id, List<TypeArgUsageWrapperNode> paramTypes, List<DecoratorNode> decoratorNodes) {
         super(id, decoratorNodes);
         this.paramTypes = new ArrayList<>();
         this.paramTypes.addAll(paramTypes.subList(0, paramTypes.size()-1));

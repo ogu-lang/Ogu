@@ -88,6 +88,8 @@ public class AliasJvmInteropDeclarationNode extends AliasDeclarationNode {
         return ReflectionTypeDefinitionFactory.toFunctionDefinition(m.get());
     }
 
+
+
     @Override
     public String toString() {
         return "AliasJvmInteropDeclaration{" +

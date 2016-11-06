@@ -3,6 +3,7 @@ package org.ogu.lang.typesystem;
 import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.definitions.InternalConstructorDefinition;
 import org.ogu.lang.definitions.TypeDefinition;
+import org.ogu.lang.parser.ast.decls.SimpleTypeDeclarationNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.resolvers.jdk.ReflectionTypeDefinitionFactory;
@@ -42,6 +43,15 @@ public class ReferenceTypeUsage implements TypeUsage {
 
     @Override
     public boolean isReference() { return true; }
+
+    @Override
+    public boolean isPrimitive() {
+        TypeDefinition td = getTypeDefinition();
+        if (td instanceof SimpleTypeDeclarationNode) {
+            return ((SimpleTypeDeclarationNode) td).calcType().isPrimitive();
+        }
+        return false;
+    }
 
     public boolean isInterface(SymbolResolver resolver) {
         return getTypeDefinition().isInterface();
@@ -84,13 +94,16 @@ public class ReferenceTypeUsage implements TypeUsage {
 
     @Override
     public boolean canBeAssignedTo(TypeUsage type) {
+        Logger.debug("CAN BE ASSIGNED TO ? this =["+this+" "+this.getClass()+"] to type = ["+type+"]  jvmType="+jvmType());
         if (!type.isReferenceTypeUsage()) {
             return false;
         }
         ReferenceTypeUsage other = type.asReferenceTypeUsage();
+        Logger.debug("other = "+other);
         if (this.getQualifiedName().equals(other.getQualifiedName())) {
             return true;
         }
+        Logger.debug("POR ACA");
         for (TypeUsage ancestor : this.getAllAncestors()) {
             if (ancestor.canBeAssignedTo(type)) {
                 return true;
@@ -222,5 +235,5 @@ public class ReferenceTypeUsage implements TypeUsage {
     }
 
     @Override
-    public String toString() { return describe(); }
+    public String toString() { return "REF "+describe(); }
 }

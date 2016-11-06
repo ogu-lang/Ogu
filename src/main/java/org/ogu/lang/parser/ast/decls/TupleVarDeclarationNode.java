@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
-import org.ogu.lang.parser.ast.typeusage.TypeNode;
+import org.ogu.lang.parser.ast.typeusage.TypeUsageWrapperNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,9 +18,9 @@ import java.util.Map;
 public class TupleVarDeclarationNode extends VarDeclarationNode {
 
     private List<IdentifierNode> ids;
-    private Map<IdentifierNode, TypeNode> types;
+    private Map<IdentifierNode, TypeUsageWrapperNode> types;
 
-    public TupleVarDeclarationNode(List<IdentifierNode> ids, Map<IdentifierNode, TypeNode> types, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+    public TupleVarDeclarationNode(List<IdentifierNode> ids, Map<IdentifierNode, TypeUsageWrapperNode> types, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
         super(value, decoratorNodes);
         this.ids = new ArrayList<>();
         this.ids.addAll(ids);

@@ -32,6 +32,15 @@ public final class JvmNameUtils {
         // prevent instantiation
     }
 
+    // rename from ogu to java
+    // ogu supports ' ! and ? for names (at end)
+    public static String renameFromOguToJvm(String oguName) {
+        String name = oguName.replaceAll("\\?", "\\$q\\$");
+        name = name.replaceAll("!", "\\$b\\$");
+        name = name.replaceAll("\'", "\\$a\\$");
+        return name;
+    }
+
     public static boolean isValidJavaIdentifier(String name){
         if (name == null) {
             throw new IllegalArgumentException();
@@ -106,13 +115,18 @@ public final class JvmNameUtils {
     }
 
     public static boolean isPrimitiveTypeName(String name) {
-        Set<String> names = ImmutableSet.of("boolean", "char", "byte", "short", "int", "long", "float", "double");
+        Set<String> names = ImmutableSet.of("b8", "c16", "i8", "i16", "i32", "i64", "f32", "f64");
         return names.contains(name);
     }
 
 
     public static boolean isMethodSignature(String signature) {
         return signature.indexOf('(') < signature.indexOf(')');
+    }
+
+
+    public static boolean isClassSignature(String signature) {
+        return isValidQualifiedName(signature);
     }
 
     public static String canonicalToSimple(String qualifiedName) {

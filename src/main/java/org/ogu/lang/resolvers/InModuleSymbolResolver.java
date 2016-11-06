@@ -2,9 +2,13 @@ package org.ogu.lang.resolvers;
 
 import org.ogu.lang.codegen.jvm.JvmMethodDefinition;
 import org.ogu.lang.codegen.jvm.JvmNameUtils;
+import org.ogu.lang.compiler.errorhandling.SemanticErrorException;
 import org.ogu.lang.definitions.TypeDefinition;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
+import org.ogu.lang.parser.ast.decls.AliasTypeJvmInteropDeclarationNode;
+import org.ogu.lang.parser.ast.decls.SimpleTypeDeclarationNode;
+import org.ogu.lang.parser.ast.decls.TypeDeclarationNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.expressions.FunctionCallNode;
@@ -75,6 +79,10 @@ public class InModuleSymbolResolver implements SymbolResolver {
 
     @Override
     public Optional<TypeDefinition> findTypeDefinitionFromJvmSignature(String jvmSignature, Node context, SymbolResolver resolver) {
+        if (!jvmSignature.contains(":")) {
+            return findTypeDefinitionIn(jvmSignature, context, resolver);
+        }
+
         String[] parts = jvmSignature.split(":");
         if (parts.length != 2) {
             throw new IllegalStateException("invalid jvmSignature "+jvmSignature);
@@ -117,16 +125,10 @@ public class InModuleSymbolResolver implements SymbolResolver {
             if (result.isPresent()) {
                 return result;
             }
+            return typeResolver.resolveAbsoluteTypeName(typeName);
+        }
 
-            return typeResolver.resolveAbsoluteTypeName(typeName);
-        }
-        if (context instanceof AliasJvmInteropDeclarationNode) {
-            Optional<TypeDefinition> result = typeResolver.resolveAbsoluteTypeName(typeName);
-            if (result.isPresent()) {
-                return result;
-            }
-            return typeResolver.resolveAbsoluteTypeName(typeName);
-        }
+
         for (Node child : context.getChildren()) {
             if (child instanceof TypeDefinition) {
                 TypeDefinition typeDefinition = (TypeDefinition)child;
@@ -134,8 +136,21 @@ public class InModuleSymbolResolver implements SymbolResolver {
                         || typeDefinition.getQualifiedName().equals(typeName)) {
                     return Optional.of(typeDefinition);
                 }
+            } else if (child instanceof AliasTypeJvmInteropDeclarationNode) {
+                if (child != previousContext) {
+                    AliasTypeJvmInteropDeclarationNode importAlias = (AliasTypeJvmInteropDeclarationNode) child;
+                    Optional<Symbol> resolveNode = importAlias.findAmongImported(typeName, this.getRoot());
+                    if (resolveNode.isPresent()) {
+                        if (resolveNode.get() instanceof TypeDefinition) {
+                            return Optional.of((TypeDefinition) resolveNode.get());
+                        } else {
+                            throw new SemanticErrorException(context, " " + typeName + " no es un tipo");
+                        }
+                    }
+                }
             }
         }
+
         if (!context.contextName().isEmpty()) {
             String qName = context.contextName() + "." + typeName;
             Optional<TypeDefinition>  partial = getRoot().findTypeDefinitionIn(qName, null, getRoot());

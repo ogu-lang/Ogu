@@ -158,7 +158,7 @@ type : vector_type
      | type '->' type (<assoc=right>'->' type)*
      | gt=tid (t_a+=tid_args)*
      | type '|' type (<assoc=right>'|' type)*
-     | nat=('i8' | 'u8' | 'i16' | 'u16' | 'i32' | 'u32' | 'i64' | 'u64' | 'f32' | 'f64')
+     | nat=('b8' | 'c8' | 'c16' | 'c32' | 'i8' | 'u8' | 'i16' | 'u16' | 'i32' | 'u32' | 'i64' | 'u64' | 'f32' | 'f64')
      | i=ID
      ;
 

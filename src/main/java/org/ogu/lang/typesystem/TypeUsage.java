@@ -2,6 +2,7 @@ package org.ogu.lang.typesystem;
 
 import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.util.Logger;
 
 import java.util.Map;
 import java.util.Optional;
@@ -31,6 +32,10 @@ public interface TypeUsage {
     }
 
     default PrimitiveTypeUsage asPrimitiveTypeUsage() {
+        throw new UnsupportedOperationException();
+    }
+
+    default TypeVariableUsage asTypeVariableUsage() {
         throw new UnsupportedOperationException();
     }
 
@@ -68,4 +73,6 @@ public interface TypeUsage {
     default String describe() {
         throw new UnsupportedOperationException(this.getClass().getCanonicalName());
     }
+
+
 }

@@ -1,22 +1,19 @@
 package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
-import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.typesystem.TypeUsage;
-
-import java.util.Map;
 
 /**
  * [Type]
  * Created by ediaz on 30-01-16.
  */
-public class MapTypeNode extends TypeNode {
+public class MapTypeUsageNode extends TypeUsageWrapperNode {
 
-    private TypeNode key;
-    private TypeNode val;
+    private TypeUsageWrapperNode key;
+    private TypeUsageWrapperNode val;
 
-    public MapTypeNode(TypeNode key, TypeNode val) {
+    public MapTypeUsageNode(TypeUsageWrapperNode key, TypeUsageWrapperNode val) {
         super();
         this.key = key;
         this.key.setParent(this);
@@ -24,6 +21,10 @@ public class MapTypeNode extends TypeNode {
         this.val.setParent(this);
     }
 
+    @Override
+    public TypeUsageNode copy() {
+        return null;
+    }
 
     @Override
     public String toString() {
@@ -36,22 +37,8 @@ public class MapTypeNode extends TypeNode {
     }
 
     @Override
-    public JvmType jvmType() {
-        return null;
-    }
-
-    @Override
     public boolean sameType(TypeUsage other) {
         return false;
     }
 
-    @Override
-    public boolean canBeAssignedTo(TypeUsage type) {
-        return false;
-    }
-
-    @Override
-    public <T extends TypeUsage> TypeUsage replaceTypeVariables(Map<String, T> typeParams) {
-        return null;
-    }
 }

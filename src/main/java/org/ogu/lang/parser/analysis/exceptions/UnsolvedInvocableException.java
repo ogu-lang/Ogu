@@ -9,6 +9,6 @@ public class UnsolvedInvocableException extends UnsolvedException {
 
 
     public UnsolvedInvocableException(InvocableExpressionNode invokable) {
-        super("Unsolved invokable call " + invokable.toString());
+        super("No se puede encontrar expresión para invocar " + invokable.toString());
     }
 }

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
-import org.ogu.lang.parser.ast.typeusage.TypeNode;
+import org.ogu.lang.parser.ast.typeusage.TypeUsageWrapperNode;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,13 +16,13 @@ import java.util.List;
 public class VarDeclarationNode extends FunctionalDeclarationNode {
 
     protected ExpressionNode value;
-    protected TypeNode type;
+    protected TypeUsageWrapperNode type;
 
     protected VarDeclarationNode() {
         super(Collections.emptyList());
     }
 
-    protected VarDeclarationNode(TypeNode type, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+    protected VarDeclarationNode(TypeUsageWrapperNode type, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
         super(decoratorNodes);
         this.type = type;
         this.type.setParent(this);
@@ -43,13 +43,13 @@ public class VarDeclarationNode extends FunctionalDeclarationNode {
         this.value.setParent(this);
     }
 
-    public VarDeclarationNode(IdentifierNode id, TypeNode type, List<DecoratorNode> decoratorNodes) {
+    public VarDeclarationNode(IdentifierNode id, TypeUsageWrapperNode type, List<DecoratorNode> decoratorNodes) {
         super(id, decoratorNodes);
         this.type = type;
         this.type.setParent(this);
     }
 
-    public VarDeclarationNode(IdentifierNode id, TypeNode type, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
+    public VarDeclarationNode(IdentifierNode id, TypeUsageWrapperNode type, ExpressionNode value, List<DecoratorNode> decoratorNodes) {
         super(id, decoratorNodes);
         this.type = type;
         this.type.setParent(this);

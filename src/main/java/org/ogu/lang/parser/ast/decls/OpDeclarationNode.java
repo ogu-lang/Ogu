@@ -1,7 +1,7 @@
 package org.ogu.lang.parser.ast.decls;
 
 import org.ogu.lang.parser.ast.OperatorNode;
-import org.ogu.lang.parser.ast.typeusage.TypeArgNode;
+import org.ogu.lang.parser.ast.typeusage.TypeArgUsageWrapperNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +14,9 @@ import java.util.List;
  */
 public class OpDeclarationNode extends FunctionalDeclarationNode {
 
-    private List<TypeArgNode> params;
+    private List<TypeArgUsageWrapperNode> params;
 
-    public OpDeclarationNode(OperatorNode name, List<TypeArgNode> params, List<DecoratorNode> decoratorNodes) {
+    public OpDeclarationNode(OperatorNode name, List<TypeArgUsageWrapperNode> params, List<DecoratorNode> decoratorNodes) {
         super(name, decoratorNodes);
         this.params = new ArrayList<>();
         this.params.addAll(params);

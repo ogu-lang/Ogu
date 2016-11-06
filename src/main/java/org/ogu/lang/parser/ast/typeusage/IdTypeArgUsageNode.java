@@ -1,26 +1,29 @@
 package org.ogu.lang.parser.ast.typeusage;
 
 import com.google.common.collect.ImmutableList;
-import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.typesystem.TypeUsage;
-
-import java.util.Map;
 
 /**
  * An id used as parameter for a type
  * Created by ediaz on 23-01-16.
  */
-public  class IdTypeArgNode extends TypeNode {
+public  class IdTypeArgUsageNode extends TypeUsageWrapperNode {
 
     private IdentifierNode id;
 
 
-    public IdTypeArgNode(IdentifierNode id) {
+    public IdTypeArgUsageNode(IdentifierNode id) {
         super();
         this.id = id;
         this.id.setParent(this);
+    }
+
+
+    @Override
+    public TypeUsageNode copy() {
+        return null;
     }
 
     public String getName() {
@@ -38,22 +41,8 @@ public  class IdTypeArgNode extends TypeNode {
     }
 
     @Override
-    public JvmType jvmType() {
-        return null;
-    }
-
-    @Override
     public boolean sameType(TypeUsage other) {
         return false;
     }
 
-    @Override
-    public boolean canBeAssignedTo(TypeUsage type) {
-        return false;
-    }
-
-    @Override
-    public <T extends TypeUsage> TypeUsage replaceTypeVariables(Map<String, T> typeParams) {
-        return null;
-    }
 }

@@ -1,6 +1,8 @@
 package org.ogu.lang.parser.ast.decls;
 
+import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.parser.ast.NameNode;
+import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.symbols.InvocableDefinition;
 import org.ogu.lang.typesystem.TypeUsage;
@@ -32,7 +34,6 @@ public abstract class FunctionalDeclarationNode extends ExportableDeclarationNod
         super(name, decoratorNodes);
     }
 
-    @Override
     public TypeUsage getReturnType() {
         return null;
     }
@@ -41,6 +42,7 @@ public abstract class FunctionalDeclarationNode extends ExportableDeclarationNod
     public List<? extends FormalParameter> getParameters() {
         return null;
     }
+
 
 
 }

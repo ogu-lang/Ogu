@@ -9,11 +9,14 @@ import org.ogu.lang.parser.analysis.exceptions.UnsolvedFunctionException;
 import org.ogu.lang.parser.ast.Named;
 import org.ogu.lang.parser.ast.QualifiedName;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
+import org.ogu.lang.resolvers.SymbolResolver;
+import org.ogu.lang.resolvers.jdk.ReflectionBasedTypeDefinition;
 import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.symbols.Symbol;
 import org.ogu.lang.typesystem.Invocable;
 import org.ogu.lang.typesystem.ReferenceTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.util.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -37,7 +40,6 @@ public interface TypeDefinition extends Symbol, Named {
     default JvmType jvmType() {
         return new JvmType(JvmNameUtils.canonicalToDescriptor(getQualifiedName()));
     }
-
 
     TypeUsage getFieldType(String fieldName);
     TypeUsage getFieldTypeFromJvmSignature(String jvmSignature);
@@ -128,6 +130,16 @@ public interface TypeDefinition extends Symbol, Named {
             throw new UnsupportedOperationException("No pudo encontrar funcion con esta firma: "+jvmSignature);
         }
     }
+
+    default TypeDefinition getClassFromJvmSignature(String jvmSignature, SymbolResolver resolver) {
+        try {
+            Class<?> clazz = ClassLoader.getSystemClassLoader().loadClass(jvmSignature);
+            return new ReflectionBasedTypeDefinition(clazz, resolver);
+        } catch (ClassNotFoundException ex) {
+            return null;
+        }
+    }
+
 
     JvmMethodDefinition findFunctionFor(String name, List<JvmType> argsTypes, boolean staticContext);
 
