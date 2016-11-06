@@ -111,7 +111,6 @@ public class Ogu {
 
 
     private static void saveClassFile(ClassFileDefinition classFileDefinition, Options options) {
-        System.out.println("escribiendo archivo: "+classFileDefinition.getName());
         File output = null;
         try {
             output = new File(new File(options.getDestinationDir()).getAbsolutePath() + "/" + classFileDefinition.getName().replaceAll("\\.", "/") + ".class");
@@ -122,7 +121,6 @@ public class Ogu {
             FileOutputStream fos = new FileOutputStream(output);
             fos.write(classFileDefinition.getBytecode());
         } catch (IOException e) {
-            System.err.println(ERROR + " escribiendo archivo "+output+": "+ e.getMessage());
             System.exit(3);
         }
     }

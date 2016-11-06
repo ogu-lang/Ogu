@@ -116,6 +116,10 @@ public class InvocableReferenceTypeUsage implements TypeUsage, Invocable {
         return false;
     }
 
+    @Override
+    public boolean isOverloaded() {
+        return false;
+    }
 
     @Override
     public String describe() {

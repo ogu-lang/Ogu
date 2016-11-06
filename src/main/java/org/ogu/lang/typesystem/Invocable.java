@@ -13,4 +13,5 @@ public interface Invocable {
 
     Optional<? extends InternalInvocableDefinition> internalInvocableDefinitionFor(List<ActualParamNode> actualParamNodes);
 
+    boolean isOverloaded();
 }

@@ -107,7 +107,6 @@ public abstract class TypeUsageWrapperNode extends TypeUsageNode  {
 
     @Override
     public final boolean canBeAssignedTo(TypeUsage type) {
-        Logger.debug("CAN BE? "+type+" this = "+this);
         return typeUsage().canBeAssignedTo(type);
     }
 

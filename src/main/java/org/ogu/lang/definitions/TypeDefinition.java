@@ -141,7 +141,7 @@ public interface TypeDefinition extends Symbol, Named {
     }
 
 
-    JvmMethodDefinition findFunctionFor(String name, List<JvmType> argsTypes, boolean staticContext);
+    JvmMethodDefinition findFunctionFor(String name, List<JvmType> argsTypes);
 
     Optional<InternalFunctionDefinition> findFunctionFromJvmSignature(String jvmSignature);
 
