@@ -21,6 +21,10 @@ public class NativeTypeUsageNode extends TypeUsageWrapperNode {
     }
 
 
+    @Override
+    public TypeUsage calcType() {
+        return this;
+    }
 
     @Override
     public int hashCode() {

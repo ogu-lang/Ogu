@@ -163,7 +163,6 @@ public class CompilationOfExpressions {
             } else if (declaration instanceof LetDeclarationNode) {
                 return NoOp.getInstance();
             }
-            Logger.debug("declaration is "+declaration);
         }
         throw new UnsupportedOperationException(function.getClass().getCanonicalName());
     }

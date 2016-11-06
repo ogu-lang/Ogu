@@ -83,7 +83,7 @@ public class ReflectionTypeDefinitionFactory {
         if (type.isArray()) {
             return new ArrayTypeUsage(toTypeUsage(type.getComponentType(), resolver));
         } else if (type.isPrimitive()) {
-            return PrimitiveTypeUsage.getByName(type.getName());
+            return PrimitiveTypeUsage.getByName(PrimitiveTypeUsage.javaPrimitiveToOguPrimitiveName(type.getName()));
         } else {
             return new ReferenceTypeUsage(getInstance().getTypeDefinition(type, resolver));
         }

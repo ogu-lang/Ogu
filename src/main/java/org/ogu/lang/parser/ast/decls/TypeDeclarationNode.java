@@ -28,7 +28,7 @@ public abstract class TypeDeclarationNode extends ExportableDeclarationNode impl
 
     @Override
     public String getQualifiedName() {
-        return null;
+        return name.qualifiedName();
     }
 
     @Override

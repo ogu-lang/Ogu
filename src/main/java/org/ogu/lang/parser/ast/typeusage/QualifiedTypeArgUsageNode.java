@@ -38,7 +38,6 @@ public class QualifiedTypeArgUsageNode extends TypeArgUsageWrapperNode {
         return super.typeUsage();
     }
 
-
     public boolean isInterface(SymbolResolver resolver) {
         return getTypeDefinition(resolver).isInterface();
     }

@@ -73,4 +73,6 @@ public interface TypeUsage {
     default String describe() {
         throw new UnsupportedOperationException(this.getClass().getCanonicalName());
     }
+
+
 }

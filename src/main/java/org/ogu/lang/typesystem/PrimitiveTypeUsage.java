@@ -6,6 +6,7 @@ import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.resolvers.jdk.ReflectionTypeDefinitionFactory;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.util.Logger;
 
 import java.util.Collections;
 import java.util.List;

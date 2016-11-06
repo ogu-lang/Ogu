@@ -37,8 +37,7 @@ public class ReferenceNode extends ExpressionNode {
 
     @Override
     public String toString() {
-
-        return "Reference{" +
+        return "ReferenceNode{" +
                 "name='" + name + '\'' +
                 '}';
     }

@@ -3,6 +3,7 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
+import org.ogu.lang.parser.ast.typeusage.QualifiedTypeArgUsageNode;
 import org.ogu.lang.parser.ast.typeusage.TypeUsageNode;
 import org.ogu.lang.parser.ast.typeusage.TypeUsageWrapperNode;
 import org.ogu.lang.symbols.FormalParameter;
@@ -54,8 +55,8 @@ public class FuncIdTypeParamNode extends FunctionPatternParamNode {
     }
 
     @Override
-    public TypeUsageNode calcType() {
-        return type;
+    public TypeUsage calcType() {
+        return type.calcType();
     }
 
     @Override

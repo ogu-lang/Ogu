@@ -16,6 +16,7 @@ import org.ogu.lang.symbols.Symbol;
 import org.ogu.lang.typesystem.Invocable;
 import org.ogu.lang.typesystem.ReferenceTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.util.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,6 @@ public interface TypeDefinition extends Symbol, Named {
     default JvmType jvmType() {
         return new JvmType(JvmNameUtils.canonicalToDescriptor(getQualifiedName()));
     }
-
 
     TypeUsage getFieldType(String fieldName);
     TypeUsage getFieldTypeFromJvmSignature(String jvmSignature);

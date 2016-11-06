@@ -7,6 +7,7 @@ import org.ogu.lang.definitions.TypeDefinition;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
 import org.ogu.lang.parser.ast.decls.AliasTypeJvmInteropDeclarationNode;
+import org.ogu.lang.parser.ast.decls.SimpleTypeDeclarationNode;
 import org.ogu.lang.parser.ast.decls.TypeDeclarationNode;
 import org.ogu.lang.parser.ast.expressions.ActualParamNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
@@ -130,7 +131,6 @@ public class InModuleSymbolResolver implements SymbolResolver {
 
         for (Node child : context.getChildren()) {
             if (child instanceof TypeDefinition) {
-                Logger.debug("CHILD = "+child);
                 TypeDefinition typeDefinition = (TypeDefinition)child;
                 if (typeDefinition.getName().equals(typeName)
                         || typeDefinition.getQualifiedName().equals(typeName)) {
