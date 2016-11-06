@@ -6,6 +6,8 @@ import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.TypeIdentifierNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.typesystem.ReferenceTypeUsage;
+import org.ogu.lang.typesystem.TypeUsage;
 import org.ogu.lang.util.Logger;
 import org.omg.PortableServer.CurrentPackage.NoContext;
 
@@ -47,6 +49,20 @@ public class AliasTypeJvmInteropDeclarationNode extends AliasDeclarationNode {
         } else {
             return Optional.empty();
         }
+    }
+
+
+    ReferenceTypeUsage typeUsage = null;
+
+    @Override
+    public TypeUsage calcType() {
+        if (typeUsage == null) {
+            findTypeDefinition(symbolResolver());
+            if (typeDefinitionCache.isPresent()) {
+                typeUsage = new ReferenceTypeUsage(typeDefinitionCache.get());
+            }
+        }
+        return typeUsage;
     }
 
     @Override
