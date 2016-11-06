@@ -1,6 +1,7 @@
 package org.ogu.lang.typesystem;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.ogu.lang.codegen.jvm.JvmType;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.resolvers.jdk.ReflectionTypeDefinitionFactory;
@@ -30,24 +31,24 @@ public class PrimitiveTypeUsage  implements TypeUsage {
         return this;
     }
 
-    public static PrimitiveTypeUsage BOOLEAN = new PrimitiveTypeUsage("boolean", new JvmType("Z"),
+    public static PrimitiveTypeUsage BOOLEAN = new PrimitiveTypeUsage("b8", new JvmType("Z"),
             Boolean.class);
-    public static PrimitiveTypeUsage CHAR = new PrimitiveTypeUsage("char",  new JvmType("C"),
+    public static PrimitiveTypeUsage CHAR = new PrimitiveTypeUsage("c16",  new JvmType("C"),
             Character.class);
-    public static PrimitiveTypeUsage LONG = new PrimitiveTypeUsage("long",  new JvmType("J"),
+    public static PrimitiveTypeUsage LONG = new PrimitiveTypeUsage("i64",  new JvmType("J"),
             Long.class);
-    public static PrimitiveTypeUsage INT = new PrimitiveTypeUsage("int",  new JvmType("I"),
+    public static PrimitiveTypeUsage INT = new PrimitiveTypeUsage("i32",  new JvmType("I"),
             Integer.class,
             ImmutableList.of(LONG));
-    public static PrimitiveTypeUsage SHORT = new PrimitiveTypeUsage("short",  new JvmType("S"),
+    public static PrimitiveTypeUsage SHORT = new PrimitiveTypeUsage("i16",  new JvmType("S"),
             Short.class,
             ImmutableList.of(INT, LONG));
-    public static PrimitiveTypeUsage BYTE = new PrimitiveTypeUsage("byte",  new JvmType("B"),
+    public static PrimitiveTypeUsage BYTE = new PrimitiveTypeUsage("i8",  new JvmType("B"),
             Byte.class,
             ImmutableList.of(SHORT, INT, LONG));
-    public static PrimitiveTypeUsage DOUBLE = new PrimitiveTypeUsage("double",  new JvmType("D"),
+    public static PrimitiveTypeUsage DOUBLE = new PrimitiveTypeUsage("f64",  new JvmType("D"),
             Double.class);
-    public static PrimitiveTypeUsage FLOAT = new PrimitiveTypeUsage("float",  new JvmType("F"),
+    public static PrimitiveTypeUsage FLOAT = new PrimitiveTypeUsage("f32",  new JvmType("F"),
             Float.class,
             ImmutableList.of(DOUBLE));
     public static List<PrimitiveTypeUsage> ALL = ImmutableList.of(BOOLEAN, CHAR, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE);
@@ -68,6 +69,15 @@ public class PrimitiveTypeUsage  implements TypeUsage {
 
     private boolean isObject(TypeUsage other) {
         return other.isReferenceTypeUsage() && other.asReferenceTypeUsage().getQualifiedName().equals(Object.class.getCanonicalName());
+    }
+
+
+    private static Map<String,String> JAVA_PRIMITIVES = ImmutableMap.<String, String>builder()
+            .put("boolean", "b8").put("char", "c16").put("long", "i64").put("int", "i32")
+            .put("short", "i16").put("byte", "i8").put("double", "f64").put("float", "f32").build();
+
+    public static String javaPrimitiveToOguPrimitiveName(String s) {
+        return JAVA_PRIMITIVES.get(s);
     }
 
     @Override

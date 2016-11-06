@@ -78,6 +78,7 @@ public abstract class InvocableExpressionNode extends ExpressionNode {
             TypeUsage formalParamType = formalParams.get(i).getType();
 
             if (!actualParamType.canBeAssignedTo(formalParamType)) {
+                Logger.debug("NO PUEDO ASIGNAR "+actualParamType+" a "+formalParamType);
                 throw new UnsolvedInvocableException(this);
             }
             paramAssigned.put(formalParams.get(i).getName(), param);

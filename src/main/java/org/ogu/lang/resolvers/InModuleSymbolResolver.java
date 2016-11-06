@@ -130,13 +130,13 @@ public class InModuleSymbolResolver implements SymbolResolver {
 
         for (Node child : context.getChildren()) {
             if (child instanceof TypeDefinition) {
+                Logger.debug("CHILD = "+child);
                 TypeDefinition typeDefinition = (TypeDefinition)child;
                 if (typeDefinition.getName().equals(typeName)
                         || typeDefinition.getQualifiedName().equals(typeName)) {
                     return Optional.of(typeDefinition);
                 }
             } else if (child instanceof AliasTypeJvmInteropDeclarationNode) {
-                Logger.debug("AJA!");
                 if (child != previousContext) {
                     AliasTypeJvmInteropDeclarationNode importAlias = (AliasTypeJvmInteropDeclarationNode) child;
                     Optional<Symbol> resolveNode = importAlias.findAmongImported(typeName, this.getRoot());

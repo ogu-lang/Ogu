@@ -1,7 +1,9 @@
 package org.ogu.lang.parser.ast.typeusage;
 
 import org.ogu.lang.parser.ast.Node;
+import org.ogu.lang.typesystem.PrimitiveTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.util.Logger;
 
 import java.util.Collections;
 
@@ -14,12 +16,37 @@ public class NativeTypeUsageNode extends TypeUsageWrapperNode {
     private String nativeType;
 
     public NativeTypeUsageNode(String nativeType) {
+        super(PrimitiveTypeUsage.getByName(nativeType));
         this.nativeType =  nativeType;
-
     }
+
+
+
+    @Override
+    public int hashCode() {
+        int result = nativeType.hashCode();
+        return result;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        NativeTypeUsageNode that = (NativeTypeUsageNode) o;
+
+        if (!nativeType.equals(that.nativeType)) return false;
+
+        return true;
+    }
+
     @Override
     public TypeUsageNode copy() {
-        return null;
+        NativeTypeUsageNode copy = new NativeTypeUsageNode(this.nativeType);
+        copy.parent = this.parent;
+        return copy;
+
     }
 
     @Override

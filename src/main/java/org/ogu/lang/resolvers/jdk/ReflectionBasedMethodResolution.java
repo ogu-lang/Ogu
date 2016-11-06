@@ -79,7 +79,7 @@ public class ReflectionBasedMethodResolution {
                 return new UnitTypeUsageNode();
             }
             if (clazz.isPrimitive()) {
-                return PrimitiveTypeUsage.getByName(clazz.getName());
+                return PrimitiveTypeUsage.getByName(PrimitiveTypeUsage.javaPrimitiveToOguPrimitiveName(clazz.getName()));
             }
             if (clazz.isArray()) {
                 return new ArrayTypeUsage(toTypeUsage(clazz.getComponentType(), typeVariables, resolver));

@@ -84,13 +84,16 @@ public class ReferenceTypeUsage implements TypeUsage {
 
     @Override
     public boolean canBeAssignedTo(TypeUsage type) {
+        Logger.debug("CAN BE ASSIGNED TO ? "+this+" to type = "+type+"  jvmType="+jvmType());
         if (!type.isReferenceTypeUsage()) {
             return false;
         }
         ReferenceTypeUsage other = type.asReferenceTypeUsage();
+        Logger.debug("other = "+other);
         if (this.getQualifiedName().equals(other.getQualifiedName())) {
             return true;
         }
+        Logger.debug("POR ACA");
         for (TypeUsage ancestor : this.getAllAncestors()) {
             if (ancestor.canBeAssignedTo(type)) {
                 return true;

@@ -1,6 +1,8 @@
 package org.ogu.lang.util;
 
-import org.ogu.lang.symbols.Symbol;
+import com.github.lalyos.jfiglet.FigletFont;
+
+import java.io.IOException;
 
 /**
  * Shows messages in stdout to user
@@ -23,11 +25,11 @@ public class Feedback {
     }
 
     public static void akarru() {
-        System.out.println("       _");
-        System.out.println( "  __ _| | ____ _ _ __ _ __ _   _");
-        System.out.println(" / _` | |/ / _` | '__| '__| | | |");
-        System.out.println( "| (_| |   < (_| | |  | |  | |_| |");
-        System.out.println( " \\__,_|_|\\_\\__,_|_|  |_|   \\__,_|");
-        System.out.println();
+        try {
+            String asciiArt2 = FigletFont.convertOneLine("akarrú");
+            message(asciiArt2);
+        } catch (IOException e) {
+            error("Akarrú!");
+        }
     }
 }
