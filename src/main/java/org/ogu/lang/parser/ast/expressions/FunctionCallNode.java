@@ -74,6 +74,12 @@ public class FunctionCallNode extends InvocableExpressionNode {
     }
 
     @Override
+    public boolean isOnOverloaded(SymbolResolver resolver) {
+        return function.calcType().asInvocable().isOverloaded();
+    }
+
+
+    @Override
     protected List<? extends FormalParameter> formalParameters(SymbolResolver resolver) {
         return function.findFormalParametersFor(this).get();
     }

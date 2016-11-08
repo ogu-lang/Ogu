@@ -19,9 +19,7 @@ import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.util.Feedback;
 import org.ogu.lang.util.Logger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -64,13 +62,21 @@ public class Compilation {
             }
         }
 
+        Map<String, List<LetDeclarationNode>> letDecls = new HashMap<>();
         for (Node node : module.getChildren()) {
             if (node instanceof LetDeclarationNode) {
-                classFileDefinitions.addAll(compile((LetDeclarationNode) node, module));
+                LetDeclarationNode let = (LetDeclarationNode) node;
+                if (!letDecls.containsKey(let.getName())) {
+                    letDecls.put(let.getName(), new ArrayList<>());
+                }
+                letDecls.get(let.getName()).add(let);
+
             }
-            if (node instanceof AliasJvmInteropDeclarationNode) {
-            //    classFileDefinitions.add(compile((AliasJvmInteropDeclarationNode) node));
-            }
+        }
+
+        // overloaded let decls
+        for (String letName : letDecls.keySet()) {
+            classFileDefinitions.addAll(compile(letName, letDecls.get(letName), module));
         }
 
         classFileDefinitions.add(compileProgram(module));
@@ -81,8 +87,8 @@ public class Compilation {
         throw new RuntimeException("ESPERA");
     }
 
-    private List<ClassFileDefinition> compile(LetDeclarationNode letDeclaration, ModuleNode nameSpace) {
-        String internalName = JvmNameUtils.renameFromOguToJvm(letDeclaration.getName());
+    private List<ClassFileDefinition> compile(String letName, List<LetDeclarationNode> letDeclarations, ModuleNode nameSpace) {
+        String internalName = JvmNameUtils.renameFromOguToJvm(letName);
         String canonicalClassName = nameSpace.getNameDefinition().getName()
                 + "." + LetDeclarationNode.CLASS_PREFIX + internalName;
         String internalClassName = JvmNameUtils.canonicalToInternal(canonicalClassName);
@@ -90,8 +96,9 @@ public class Compilation {
         cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         cw.visit(JAVA_8_CLASS_VERSION, ACC_PUBLIC+ACC_SUPER, internalClassName, null, OBJECT_INTERNAL_NAME, null);
 
-        generateInvocable(letDeclaration, METHOD_NAME_OF_FUNCTION, true);
-
+        for (LetDeclarationNode letDeclaration: letDeclarations) {
+            generateInvocable(letDeclaration, METHOD_NAME_OF_FUNCTION, true);
+        }
         return ImmutableList.of(endClass(canonicalClassName));
     }
 

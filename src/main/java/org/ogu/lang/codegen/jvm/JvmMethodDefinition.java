@@ -49,7 +49,11 @@ public class JvmMethodDefinition extends JvmInvocableDefinition{
 
     @Override
     public String toString() {
-        return "JvmMethodDefinition{" + "_static=" + _static +
+        return "JvmMethodDefinition{" +
+                "ownnternalName="+ownerInternalName+
+                ", name="+name+
+                ", descriptor="+descriptor+
+                "_static=" + _static +
                 ", _declaredOnInterface=" + _declaredOnInterface +
                 '}';
     }

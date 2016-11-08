@@ -1,5 +1,6 @@
 package org.ogu.lang.parser.ast.expressions;
 
+import org.ogu.lang.compiler.errorhandling.ErrorCollector;
 import org.ogu.lang.parser.analysis.exceptions.UnsolvedInvocableException;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
@@ -42,8 +43,16 @@ public abstract class InvocableExpressionNode extends ExpressionNode {
     private boolean desugarized = false;
     private ActualParamNode self = null;
 
+    public abstract boolean isOnOverloaded(SymbolResolver resolver);
+
     public boolean isMethodFunction() {
         return self != null;
+    }
+
+
+    @Override
+    protected boolean specificValidate(SymbolResolver resolver, ErrorCollector errorCollector) {
+        return super.specificValidate(resolver, errorCollector);
     }
 
     // if isMethodFunction must push this object

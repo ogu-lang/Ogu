@@ -93,7 +93,9 @@ public class ReferenceNode extends ExpressionNode {
         Optional<Symbol> declaration = resolver.findSymbol(name.getName(), this);
         if (declaration.isPresent()) {
             Symbol decl = declaration.get();
+
             if (decl instanceof ExpressionNode) {
+                Logger.debug("DEBERIA PASAR POR ACA EXPR="+decl);
                 return ((ExpressionNode) decl).findFunctionFor(actualParamNodes, resolver);
             } else if (decl instanceof AliasJvmInteropDeclarationNode) {
                 return ((AliasJvmInteropDeclarationNode) decl).findFunctionFor(actualParamNodes, resolver);

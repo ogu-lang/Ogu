@@ -6,7 +6,7 @@ alias printlns = jvm "java.io.PrintStream/println:(Ljava/lang/String;)V"
 alias printlni = jvm "java.io.PrintStream/println:(I)V"
 alias printlnd = jvm "java.io.PrintStream/println:(D)V"
 
-;alias Str      = jvm "java.lang.String"
+alias Str      = jvm "java.lang.String"
 
 type Int = i32
 type Dbl = f64
@@ -14,7 +14,6 @@ type Dbl = f64
 ;def println! : (a:String|Int|Double) => a -> ()
 ;let println! s:Str = printlns out s
 let println! i:Int = printlni out i
-;let println! i:i32 = printlni out i
 let println! d:Dbl = printlnd out d
 
 ;println! "Ola amiko mio de mi"

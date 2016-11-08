@@ -5,6 +5,8 @@ import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
 import org.ogu.lang.typesystem.TypeUsage;
+import org.ogu.lang.util.Logger;
+
 import java.util.List;
 
 /**
@@ -37,6 +39,11 @@ public class ConstructorNode extends InvocableExpressionNode {
     @Override
     protected List<? extends FormalParameter> formalParameters(SymbolResolver resolver) {
         return null;
+    }
+
+    @Override
+    public boolean isOnOverloaded(SymbolResolver resolver) {
+        throw new RuntimeException("NO IMPLEMENTADO");
     }
 
     @Override

@@ -7,11 +7,14 @@ import org.ogu.lang.parser.analysis.exceptions.UnsolvedSymbolException;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.AliasDeclarationNode;
 import org.ogu.lang.parser.ast.decls.ExportableDeclarationNode;
+import org.ogu.lang.parser.ast.decls.FunctionalDeclarationNode;
 import org.ogu.lang.parser.ast.decls.TypeDeclarationNode;
 import org.ogu.lang.parser.ast.expressions.FunctionCallNode;
 import org.ogu.lang.parser.ast.modules.ModuleNameNode;
 import org.ogu.lang.parser.ast.modules.ModuleNode;
 import org.ogu.lang.symbols.Symbol;
+import org.ogu.lang.typesystem.ReferenceTypeUsage;
+import org.ogu.lang.typesystem.TypeUsage;
 import org.ogu.lang.util.Logger;
 
 import java.util.*;
@@ -24,7 +27,7 @@ public class SrcSymbolResolver implements SymbolResolver {
 
     private Set<String> packages = new HashSet<>();
     private Map<String, AliasDeclarationNode> aliasDefinitions;
-    private Map<String, ExportableDeclarationNode> declarations;
+    private Map<String, FunctionalDeclarationNode> functions;
     private Map<String, TypeDefinition> typeDefinitions;
     private Map<String, ModuleNameNode> contextDefinitions;
 
@@ -32,15 +35,15 @@ public class SrcSymbolResolver implements SymbolResolver {
 
     public SrcSymbolResolver(List<ModuleNode> modules) {
         this.aliasDefinitions = new HashMap<>();
-        this.declarations = new HashMap<>();
+        this.functions = new HashMap<>();
         this.typeDefinitions = new HashMap<>();
 
         for (ModuleNode module : modules) {
             for (AliasDeclarationNode aliasDeclaration : module.getAliases())  {
                 aliasDefinitions.put(aliasDeclaration.getName(), aliasDeclaration);
             }
-            for (ExportableDeclarationNode decl : module.getDeclarations()) {
-                declarations.put(decl.getName(), decl);
+            for (FunctionalDeclarationNode decl : module.getFunctions()) {
+                functions.put(decl.getName(), decl);
             }
             for (TypeDeclarationNode typeDefinition : module.getTopLevelTypeDefinitions()) {
                 packages.add(typeDefinition.contextName());
@@ -66,8 +69,11 @@ public class SrcSymbolResolver implements SymbolResolver {
         if (aliasDefinitions.containsKey(name)) {
             return Optional.of(aliasDefinitions.get(name));
         }
-        if (declarations.containsKey(name)) {
-            return Optional.of(declarations.get(name));
+        if (functions.containsKey(name)) {
+            return Optional.of(functions.get(name));
+        }
+        if (typeDefinitions.containsKey(name)) {
+            return Optional.of(typeDefinitions.get(name));
         }
         return Optional.empty();
     }
@@ -80,6 +86,7 @@ public class SrcSymbolResolver implements SymbolResolver {
             return Optional.empty();
         }
     }
+
 
     @Override
     public Optional<TypeDefinition> findTypeDefinitionFromJvmSignature(String jvmSignature, Node context, SymbolResolver resolver) {

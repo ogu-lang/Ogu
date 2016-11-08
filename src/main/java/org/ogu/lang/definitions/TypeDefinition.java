@@ -114,6 +114,7 @@ public interface TypeDefinition extends Symbol, Named {
     }
 
     default InternalFunctionDefinition getFunction(String functionName, List<ActualParamNode> actualParams) {
+        Logger.debug("GET FUNCTION "+functionName+" ap="+actualParams);
         Optional<InternalFunctionDefinition> function = findFunction(functionName, actualParams);
         if (function.isPresent()) {
             return function.get();
