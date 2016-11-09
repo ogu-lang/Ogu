@@ -87,7 +87,7 @@ public abstract class TypeDeclarationNode extends ExportableDeclarationNode impl
     }
 
     @Override
-    public JvmMethodDefinition findFunctionFor(String name, List<JvmType> argsTypes, boolean staticContext) {
+    public JvmMethodDefinition findFunctionFor(String name, List<JvmType> argsTypes) {
         return null;
     }
 

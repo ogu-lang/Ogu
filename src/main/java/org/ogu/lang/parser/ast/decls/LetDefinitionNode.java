@@ -13,12 +13,9 @@ import java.util.List;
 public class LetDefinitionNode extends LetDeclarationNode {
 
 
-
     public LetDefinitionNode(IdentifierNode name, List<FunctionPatternParamNode> params, List<DecoratorNode> decoratorNodes) {
         super(name, params, decoratorNodes);
     }
-
-
 
     @Override
     public String toString() {
@@ -27,6 +24,7 @@ public class LetDefinitionNode extends LetDeclarationNode {
                 ", params=" + params +
                 ", body=" + body +
                 ", decorators=" + decoratorNodes +
+                ", root="+ getRootDecl() +
                 '}';
     }
 

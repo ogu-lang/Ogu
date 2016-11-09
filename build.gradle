@@ -35,6 +35,7 @@ dependencies {
   compile 'org.ow2.asm:asm-util:5.0.4'
   compile 'org.ow2.asm:asm-tree:5.0.4'
   compile 'com.beust:jcommander:1.48'
+  compile 'org.javassist:javassist:3.20.0-GA'
   compile 'com.github.lalyos:jfiglet:0.0.7'
 }
 

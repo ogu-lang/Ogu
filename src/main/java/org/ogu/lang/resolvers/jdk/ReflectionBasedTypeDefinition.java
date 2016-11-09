@@ -139,8 +139,8 @@ public class ReflectionBasedTypeDefinition implements TypeDefinition {
     }
 
     @Override
-    public JvmMethodDefinition findFunctionFor(String name, List<JvmType> argsTypes, boolean staticContext) {
-        return ReflectionTypeDefinitionFactory.toFunctionDefinition(ReflectionBasedMethodResolution.findMethodAmong(name, argsTypes, resolver, staticContext, Arrays.asList(clazz.getMethods())));
+    public JvmMethodDefinition findFunctionFor(String name, List<JvmType> argsTypes) {
+        return ReflectionTypeDefinitionFactory.toFunctionDefinition(ReflectionBasedMethodResolution.findMethodAmong(name, argsTypes, resolver, Arrays.asList(clazz.getMethods())));
     }
 
 

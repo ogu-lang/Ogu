@@ -60,10 +60,12 @@ public class ParseTreeToAst {
                 module.add((ExpressionNode) memberNode);
             else if (memberNode instanceof AliasDeclarationNode)
                 module.add((AliasDeclarationNode) memberNode);
-            else if (memberNode instanceof ExportableDeclarationNode)
-                module.add((ExportableDeclarationNode) memberNode);
+            else if (memberNode instanceof FunctionalDeclarationNode)
+                module.add((FunctionalDeclarationNode) memberNode);
+            else if (memberNode instanceof TypeDeclarationNode)
+                module.add((TypeDeclarationNode) memberNode);
             else {
-                Logger.debug("WTF!");
+                Logger.debug("WTF! adding: "+memberNode);
             }
         }
 

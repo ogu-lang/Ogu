@@ -94,12 +94,10 @@ public class ReferenceTypeUsage implements TypeUsage {
 
     @Override
     public boolean canBeAssignedTo(TypeUsage type) {
-        Logger.debug("CAN BE ASSIGNED TO ? this =["+this+" "+this.getClass()+"] to type = ["+type+"]  jvmType="+jvmType());
         if (!type.isReferenceTypeUsage()) {
             return false;
         }
         ReferenceTypeUsage other = type.asReferenceTypeUsage();
-        Logger.debug("other = "+other);
         if (this.getQualifiedName().equals(other.getQualifiedName())) {
             return true;
         }
@@ -137,6 +135,11 @@ public class ReferenceTypeUsage implements TypeUsage {
         @Override
         public Optional<InternalConstructorDefinition> internalInvocableDefinitionFor(List<ActualParamNode> actualParams) {
             return getTypeDefinition().findConstructor(actualParams);
+        }
+
+        @Override
+        public boolean isOverloaded() {
+            return getTypeDefinition().hasManyConstructors();
         }
 
     }

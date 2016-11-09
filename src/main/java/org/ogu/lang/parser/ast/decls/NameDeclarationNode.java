@@ -29,6 +29,10 @@ public abstract class NameDeclarationNode extends DeclarationNode {
         return name.getName();
     }
 
+    public NameNode getNameNode() {
+        return name;
+    }
+
     @Override
     public Iterable<Node> getChildren() {
         return ImmutableList.<Node>builder()

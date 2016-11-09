@@ -10,7 +10,6 @@ import org.ogu.lang.typesystem.TypeUsage;
 import java.util.List;
 
 /**
- * When a declaration is internal to a class o trait
  * Created by ediaz on 25-01-16.
  */
 public abstract class FunctionalDeclarationNode extends ExportableDeclarationNode implements InvocableDefinition {
@@ -44,5 +43,15 @@ public abstract class FunctionalDeclarationNode extends ExportableDeclarationNod
     }
 
 
+    protected AbstractFunctionDeclarationNode rootDecl;
+
+    public void setRootDecl(AbstractFunctionDeclarationNode root) {
+        this.rootDecl = root;
+        root.add(this);
+    }
+
+    public AbstractFunctionDeclarationNode getRootDecl() {
+        return this.rootDecl;
+    }
 
 }

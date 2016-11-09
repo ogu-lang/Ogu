@@ -11,7 +11,7 @@ import java.util.List;
  * def funcion : T -> T -> T
  * Created by ediaz on 23-01-16.
  */
-public class FunctionDeclarationNode extends FunctionalDeclarationNode {
+public class FunctionDeclarationNode extends AbstractFunctionDeclarationNode {
 
     private List<TypeArgUsageWrapperNode> paramTypes;
     private TypeArgUsageWrapperNode returnType;

@@ -1,6 +1,7 @@
 package org.ogu.lang.parser.ast.expressions;
 
 import com.google.common.collect.ImmutableList;
+import org.ogu.lang.definitions.InternalInvocableDefinition;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.resolvers.jdk.ReflectionBasedSetOfOverloadedMethods;
@@ -11,6 +12,7 @@ import org.ogu.lang.util.Logger;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A concrete functionc all
@@ -23,6 +25,7 @@ public class FunctionCallNode extends InvocableExpressionNode {
     public ExpressionNode getFunction() {
         return function;
     }
+
 
     @Override
     public String toString() {
@@ -53,10 +56,15 @@ public class FunctionCallNode extends InvocableExpressionNode {
         return result;
     }
 
+    private ExpressionNode subject = null;
     public FunctionCallNode(ExpressionNode name, List<ActualParamNode> actualParamNodes) {
         super(actualParamNodes);
         this.function = name;
         this.function.setParent(this);
+        if (actualParamNodes.size() > 0) {
+            ActualParamNode param = actualParamNodes.get(0);
+            subject = param.getValue();
+        }
     }
 
     @Override
@@ -74,7 +82,14 @@ public class FunctionCallNode extends InvocableExpressionNode {
     }
 
     @Override
+    public boolean isOnOverloaded(SymbolResolver resolver) {
+        return function.calcType().asInvocable().isOverloaded();
+    }
+
+
+    @Override
     protected List<? extends FormalParameter> formalParameters(SymbolResolver resolver) {
+        Logger.debug("function is "+function);
         return function.findFormalParametersFor(this).get();
     }
 

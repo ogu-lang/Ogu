@@ -104,6 +104,7 @@ public class InModuleSymbolResolver implements SymbolResolver {
                 })
                 .collect(Collectors.toList());
         ExpressionNode function = functionCall.getFunction();
+        JvmMethodDefinition def = function.findFunctionFor(argsTypes, this);
         return Optional.of(function.findFunctionFor(argsTypes, this));
     }
 
