@@ -7,6 +7,7 @@ import org.ogu.lang.parser.analysis.exceptions.UnsolvedSymbolException;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
+import org.ogu.lang.parser.ast.decls.FreeFunctionDeclarationNode;
 import org.ogu.lang.parser.ast.decls.LetDeclarationNode;
 import org.ogu.lang.parser.ast.typeusage.TypeUsageNode;
 import org.ogu.lang.resolvers.SymbolResolver;
@@ -95,7 +96,7 @@ public class ReferenceNode extends ExpressionNode {
             Symbol decl = declaration.get();
 
             if (decl instanceof ExpressionNode) {
-                Logger.debug("DEBERIA PASAR POR ACA EXPR="+decl);
+                Logger.debug("DEBERIA PASAR POR ACA EXPR=" + decl);
                 return ((ExpressionNode) decl).findFunctionFor(actualParamNodes, resolver);
             } else if (decl instanceof AliasJvmInteropDeclarationNode) {
                 return ((AliasJvmInteropDeclarationNode) decl).findFunctionFor(actualParamNodes, resolver);
@@ -107,7 +108,10 @@ public class ReferenceNode extends ExpressionNode {
                     Logger.debug("PARECE QUE FALLA EL MATCH");
                     throw new IllegalArgumentException();
                 }
-            } else {
+            } else if (decl instanceof FreeFunctionDeclarationNode) {
+                FreeFunctionDeclarationNode freeDecl = (FreeFunctionDeclarationNode) decl;
+                return freeDecl.jvmMethodDefinition(argsTypes, resolver);
+            }else {
                 throw new UnsupportedOperationException(declaration.get().getClass().getCanonicalName());
             }
         }

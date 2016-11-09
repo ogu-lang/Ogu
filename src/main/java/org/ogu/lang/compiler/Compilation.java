@@ -70,7 +70,6 @@ public class Compilation {
                     letDecls.put(let.getName(), new ArrayList<>());
                 }
                 letDecls.get(let.getName()).add(let);
-
             }
         }
 

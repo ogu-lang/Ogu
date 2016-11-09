@@ -56,7 +56,7 @@ public abstract class InvocableExpressionNode extends ExpressionNode {
     }
 
     // if isMethodFunction must push this object
-    public ActualParamNode getObjectParam() {
+    public ActualParamNode getSubject() {
         return self;
     }
 
@@ -70,6 +70,7 @@ public abstract class InvocableExpressionNode extends ExpressionNode {
             }
         });
 
+        // ESTO HAY QUE REVISARLO...
         if (formalParams.size() < actualParamNodes.size()) {
             self = actualParamNodes.get(0);
             actualParamNodes.remove(0);

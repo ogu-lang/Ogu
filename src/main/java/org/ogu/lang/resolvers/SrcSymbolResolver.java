@@ -70,6 +70,7 @@ public class SrcSymbolResolver implements SymbolResolver {
             return Optional.of(aliasDefinitions.get(name));
         }
         if (functions.containsKey(name)) {
+            Logger.debug("ACA ESTA "+name+" = "+functions.get(name));
             return Optional.of(functions.get(name));
         }
         if (typeDefinitions.containsKey(name)) {

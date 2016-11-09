@@ -1,8 +1,6 @@
 package org.ogu.lang.compiler;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import org.objectweb.asm.MethodVisitor;
 import org.ogu.lang.codegen.bytecode_generation.*;
 import org.ogu.lang.codegen.bytecode_generation.pushpop.*;
 import org.ogu.lang.codegen.jvm.JvmInvocableDefinition;
@@ -12,7 +10,7 @@ import org.ogu.lang.codegen.jvm.JvmTypeCategory;
 import org.ogu.lang.parser.analysis.exceptions.UnsolvedFunctionException;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
-import org.ogu.lang.parser.ast.decls.FunctionDeclarationNode;
+import org.ogu.lang.parser.ast.decls.FreeFunctionDeclarationNode;
 import org.ogu.lang.parser.ast.decls.LetDeclarationNode;
 import org.ogu.lang.parser.ast.decls.funcdef.FunctionNode;
 import org.ogu.lang.parser.ast.decls.funcdef.FunctionNodeExpr;
@@ -27,7 +25,6 @@ import org.ogu.lang.resolvers.jdk.ReflectionBasedField;
 import org.ogu.lang.resolvers.jdk.ReflectionBasedSetOfOverloadedMethods;
 import org.ogu.lang.resolvers.jdk.ReflectionBasedTypeDefinition;
 import org.ogu.lang.symbols.Symbol;
-import org.ogu.lang.typesystem.PrimitiveTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
 import org.ogu.lang.util.Logger;
 
@@ -156,14 +153,18 @@ public class CompilationOfExpressions {
                 }
             } else if (declaration instanceof AliasJvmInteropDeclarationNode) {
                 if (functionCall.isMethodFunction()) {
-                    return push(functionCall.getObjectParam().getValue());
+                    return push(functionCall.getSubject().getValue());
                 } else {
                     return NoOp.getInstance();
                 }
             } else if (declaration instanceof LetDeclarationNode) {
                 return NoOp.getInstance();
+            } else if (declaration instanceof FreeFunctionDeclarationNode) {
+                return NoOp.getInstance();
             }
+            Logger.debug("DECLARATION IS = "+declaration);
         }
+        Logger.debug("!!! "+functionCall+" !!!!");
         throw new UnsupportedOperationException(function.getClass().getCanonicalName());
     }
 

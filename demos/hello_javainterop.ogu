@@ -13,12 +13,12 @@ type Dbl = f64
 
 ;def println! : (a:String|Int|Double) => a -> ()
 ;let println! s:Str = printlns out s
-let println! i:Int = printlni out i
 let println! d:Dbl = printlnd out d
+let println! i:Int = printlni out i
 
 ;println! "Ola amiko mio de mi"
 println! 42
-;println! 42.0
+println! 42.0
 ; println! 2 + 2
 ; println! 2.0 * 3.0
 

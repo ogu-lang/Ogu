@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.ogu.lang.codegen.jvm.JvmConstructorDefinition;
 import org.ogu.lang.codegen.jvm.JvmMethodDefinition;
 import org.ogu.lang.codegen.jvm.JvmType;
+import org.ogu.lang.compiler.errorhandling.SemanticErrorException;
 import org.ogu.lang.definitions.InternalConstructorDefinition;
 import org.ogu.lang.definitions.InternalFunctionDefinition;
 import org.ogu.lang.definitions.TypeDefinition;
@@ -19,10 +20,7 @@ import org.ogu.lang.typesystem.ReferenceTypeUsage;
 import org.ogu.lang.typesystem.TypeUsage;
 import org.ogu.lang.util.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +35,7 @@ public class ModuleNode extends Node implements TypeDefinition {
     private List<AliasDeclarationNode> aliases = new ArrayList<>();
     private List<ExportsDeclarationNode> exports = new ArrayList<>();
     private List<FunctionalDeclarationNode> functions = new ArrayList<>();
+    private Map<String, AbstractFunctionDeclarationNode> functionsRoot = new HashMap<>();
     private List<TypeDeclarationNode> typeDecls = new ArrayList<>();
     private List<ExpressionNode> program = new ArrayList<>();
 
@@ -67,6 +66,19 @@ public class ModuleNode extends Node implements TypeDefinition {
     private Map<String, List<InternalFunctionDefinition>> functionsByName;
 
     public void add(FunctionalDeclarationNode decl) {
+        if (decl instanceof FunctionDeclarationNode) {
+            if (functionsRoot.containsKey(decl.getName())) {
+                throw new SemanticErrorException(decl, "Error intenta duplicar definicion de función: "+decl.getName());
+            }
+            functionsRoot.put(decl.getName(), (FunctionDeclarationNode) decl);
+        } else if (decl instanceof LetDefinitionNode) {
+            if (!functionsRoot.containsKey(decl.getName())) {
+                FreeFunctionDeclarationNode root =  new FreeFunctionDeclarationNode(decl.getNameNode());
+                functions.add(root);
+                functionsRoot.put(decl.getName(), root);
+            }
+            decl.setRootDecl(functionsRoot.get(decl.getName()));
+        }
         functions.add(decl);
         decl.setParent(this);
     }
