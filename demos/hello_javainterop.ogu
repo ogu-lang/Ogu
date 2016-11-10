@@ -11,7 +11,8 @@ alias Str      = jvm "java.lang.String"
 type Int = i32
 type Dbl = f64
 
-;def println! : (a:String|Int|Double) => a -> ()
+;def println! : Str|Int|Dbl -> ()
+
 let println! s:Str = printlns out s
 let println! d:Dbl = printlnd out d
 let println! i:Int = printlni out i
@@ -29,7 +30,7 @@ println! "Ola amiko mio de mi"
 ;println! 42.0
 
 demo 2 3
-; println! 2 + 2
+;println! 2 + 2
 ; println! 2.0 * 3.0
 
 ;printlns out "Ola amiko mio de mi"
