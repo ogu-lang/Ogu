@@ -254,8 +254,8 @@ expr
 	| lambda_expr
 	| yield_expr
 	| recur_expr
-    | function=func_name (params=params_expr)?
-	| qual_function=qual_func_name (params=params_expr)?
+    | function=func_name params=params_expr
+	| qual_function=qual_func_name params=params_expr
 	| assign_expr
 	|<assoc=right> l=expr o=('>>'|'<<'|'|>'|'<|') r=expr  // composition
     | l=expr o='@' r=expr

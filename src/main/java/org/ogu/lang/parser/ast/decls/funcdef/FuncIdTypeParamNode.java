@@ -3,6 +3,7 @@ package org.ogu.lang.parser.ast.decls.funcdef;
 import com.google.common.collect.ImmutableList;
 import org.ogu.lang.parser.ast.Node;
 import org.ogu.lang.parser.ast.IdentifierNode;
+import org.ogu.lang.parser.ast.expressions.InvocableExpressionNode;
 import org.ogu.lang.parser.ast.typeusage.QualifiedTypeArgUsageNode;
 import org.ogu.lang.parser.ast.typeusage.TypeUsageNode;
 import org.ogu.lang.parser.ast.typeusage.TypeUsageWrapperNode;
@@ -11,7 +12,9 @@ import org.ogu.lang.symbols.FormalParameterSymbol;
 import org.ogu.lang.typesystem.TypeUsage;
 import org.ogu.lang.util.Logger;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * id : T
@@ -78,4 +81,11 @@ public class FuncIdTypeParamNode extends FunctionPatternParamNode {
     public FormalParameter apply(Map<String, TypeUsage> typeParams) {
         return new FormalParameterSymbol(type.replaceTypeVariables(typeParams), id.getName());
     }
+
+    public Optional<List<? extends FormalParameter>> findFormalParametersFor(InvocableExpressionNode invocable) {
+        Logger.debug("FIND FORMAL PARAMETERS FOR "+invocable);
+        throw new UnsupportedOperationException(this.getClass().getCanonicalName());
+    }
+
 }
+

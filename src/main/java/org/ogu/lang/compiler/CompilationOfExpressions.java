@@ -162,9 +162,7 @@ public class CompilationOfExpressions {
             } else if (declaration instanceof FreeFunctionDeclarationNode) {
                 return NoOp.getInstance();
             }
-            Logger.debug("DECLARATION IS = "+declaration);
         }
-        Logger.debug("!!! "+functionCall+" !!!!");
         throw new UnsupportedOperationException(function.getClass().getCanonicalName());
     }
 

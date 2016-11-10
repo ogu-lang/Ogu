@@ -21,11 +21,12 @@ let demo a:Int b:Int =
     println! "suma dos numeros"
     println! a
     println! b
+    println! "resultado es:"
     println! (a+b)
 
 println! "Ola amiko mio de mi"
-println! 42
-println! 42.0
+;println! 42
+;println! 42.0
 
 demo 2 3
 ; println! 2 + 2

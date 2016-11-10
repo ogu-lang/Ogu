@@ -101,7 +101,6 @@ public class ReferenceTypeUsage implements TypeUsage {
         if (this.getQualifiedName().equals(other.getQualifiedName())) {
             return true;
         }
-        Logger.debug("POR ACA");
         for (TypeUsage ancestor : this.getAllAncestors()) {
             if (ancestor.canBeAssignedTo(type)) {
                 return true;

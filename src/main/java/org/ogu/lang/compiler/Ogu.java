@@ -78,7 +78,6 @@ public class Ogu {
 
         Compiler instance = new Compiler(resolver, options);
         for (OguModuleWithSource oguModule : oguModules) {
-            Feedback.message("add module:" + oguModule.getModule().describe());
             for (ClassFileDefinition classFileDefinition : instance.compile(oguModule.getModule(), new ErrorPrinter(oguModule.getSource().getPath()))) {
                 saveClassFile(classFileDefinition, options);
             }
