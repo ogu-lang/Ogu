@@ -80,8 +80,10 @@ public abstract class LetDeclarationNode extends FunctionalDeclarationNode {
         } else if (body.size() == 1) {
             FunctionNode expr = body.get(0);
             return expr.calcType();
+        } else {
+            FunctionNode expr = body.get(body.size()-1);
+            return expr.calcType();
         }
-        throw new UnsupportedOperationException("falta determinar valor para cuerpo de funcion compuesto");
     }
 
     @Override

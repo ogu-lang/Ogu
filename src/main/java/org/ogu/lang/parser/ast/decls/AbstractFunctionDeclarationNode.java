@@ -3,6 +3,9 @@ package org.ogu.lang.parser.ast.decls;
 import org.ogu.lang.codegen.jvm.JvmMethodDefinition;
 import org.ogu.lang.codegen.jvm.JvmNameUtils;
 import org.ogu.lang.codegen.jvm.JvmType;
+import org.ogu.lang.compiler.errorhandling.SemanticErrorException;
+import org.ogu.lang.definitions.InternalFunctionDefinition;
+import org.ogu.lang.definitions.InternalInvocableDefinition;
 import org.ogu.lang.parser.ast.IdentifierNode;
 import org.ogu.lang.parser.ast.NameNode;
 import org.ogu.lang.parser.ast.decls.funcdef.FunctionPatternParamNode;
@@ -11,6 +14,8 @@ import org.ogu.lang.parser.ast.expressions.InvocableExpressionNode;
 import org.ogu.lang.parser.ast.typeusage.TypeArgUsageWrapperNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
+import org.ogu.lang.typesystem.InvocableReferenceTypeUsage;
+import org.ogu.lang.typesystem.TypeUsage;
 import org.ogu.lang.util.Logger;
 
 import java.util.ArrayList;
@@ -68,15 +73,6 @@ public abstract class AbstractFunctionDeclarationNode extends FunctionalDeclarat
     public static final String CLASS_PREFIX = "Function_";
     public static final String INVOKE_METHOD_NAME = "invoke";
 
-    protected String getGeneratedClassQualifiedName() {
-        String internalName = JvmNameUtils.renameFromOguToJvm(name.qualifiedName());
-        String qName = this.contextName() + "." + CLASS_PREFIX + internalName;
-        if (!JvmNameUtils.isValidQualifiedName(qName)) {
-            throw new IllegalStateException(qName);
-        }
-        return qName;
-    }
-
     public JvmMethodDefinition jvmMethodDefinition(List<JvmType> argsTypes, SymbolResolver resolver) {
         for (FunctionalDeclarationNode decl : decls )  {
             if (decl instanceof LetDefinitionNode) {
@@ -86,6 +82,26 @@ public abstract class AbstractFunctionDeclarationNode extends FunctionalDeclarat
             }
         }
         return null;
+    }
+
+
+    @Override
+    public TypeUsage calcType() {
+        validateReturnType();
+        return returnTypeUsage;
+    }
+
+
+    TypeUsage returnTypeUsage;
+    private void validateReturnType() {
+        for (FunctionalDeclarationNode decl : decls)  {
+            if (returnTypeUsage == null) {
+                returnTypeUsage = decl.getReturnType();
+            }
+            if (!decl.getReturnType().equals(returnTypeUsage)) {
+                throw new SemanticErrorException(decl, "Declaración debe mantener el tipo de retorno");
+            }
+        }
     }
 
 

@@ -7,6 +7,8 @@ import org.ogu.lang.parser.ast.expressions.InvocableExpressionNode;
 import org.ogu.lang.parser.ast.typeusage.TypeArgUsageWrapperNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
+import org.ogu.lang.typesystem.InvocableReferenceTypeUsage;
+import org.ogu.lang.typesystem.TypeUsage;
 
 import java.util.ArrayList;
 import java.util.List;

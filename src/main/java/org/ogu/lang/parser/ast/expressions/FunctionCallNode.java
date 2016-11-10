@@ -89,7 +89,6 @@ public class FunctionCallNode extends InvocableExpressionNode {
 
     @Override
     protected List<? extends FormalParameter> formalParameters(SymbolResolver resolver) {
-        Logger.debug("function is "+function);
         return function.findFormalParametersFor(this).get();
     }
 
