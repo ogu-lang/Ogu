@@ -5,6 +5,9 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.ogu.lang.classloading.ClassFileDefinition;
+import org.ogu.lang.codegen.bytecode_generation.BytecodeSequence;
+import org.ogu.lang.codegen.bytecode_generation.MethodInvocationBS;
+import org.ogu.lang.codegen.bytecode_generation.returnop.ReturnValueBS;
 import org.ogu.lang.codegen.bytecode_generation.returnop.ReturnVoidBS;
 import org.ogu.lang.codegen.jvm.JvmNameUtils;
 import org.ogu.lang.compiler.errorhandling.ErrorCollector;
@@ -13,9 +16,11 @@ import org.ogu.lang.parser.ast.decls.AliasJvmInteropDeclarationNode;
 import org.ogu.lang.parser.ast.decls.LetDeclarationNode;
 import org.ogu.lang.parser.ast.expressions.ExpressionNode;
 import org.ogu.lang.parser.ast.modules.ModuleNode;
+import org.ogu.lang.parser.ast.typeusage.NativeTypeUsageNode;
 import org.ogu.lang.parser.ast.typeusage.UnitTypeUsageNode;
 import org.ogu.lang.resolvers.SymbolResolver;
 import org.ogu.lang.symbols.FormalParameter;
+import org.ogu.lang.typesystem.PrimitiveTypeUsage;
 import org.ogu.lang.util.Feedback;
 import org.ogu.lang.util.Logger;
 
@@ -173,6 +178,7 @@ public class Compilation {
             localVarsSymbolTable = LocalVarsSymbolTable.forInstanceMethod();
         }
 
+        Logger.debug("!!!!!!!!!!!INVOCABLE GENERATE!!");
         String paramsDescriptor = String.join("", invocableDefinition.getParameters().stream().map((dp) -> dp.getType().jvmType().getDescriptor()).collect(Collectors.toList()));
         String paramsSignature = String.join("", invocableDefinition.getParameters().stream().map((dp) -> dp.getType().jvmType().getSignature()).collect(Collectors.toList()));
         String methodDescriptor = "(" + paramsDescriptor + ")" + invocableDefinition.getReturnType().jvmType().getDescriptor();
@@ -202,12 +208,22 @@ public class Compilation {
                     index);
         }
 
-        compilationOfExpressions.compile(invocableDefinition.getBody()).operate(mv);
+        BytecodeSequence bs = compilationOfExpressions.compile(invocableDefinition.getBody());
+
 
         // add implicit return when needed
+        Logger.debug("!!! A PRIMITIVE TYPE USAGE" + invocableDefinition.getReturnType().getClass());
+
         if (invocableDefinition.getReturnType() instanceof UnitTypeUsageNode) {
             // TODO do not add if there is already a return at the end
+            bs.operate(mv);
             new ReturnVoidBS().operate(mv);
+        }
+        else if (invocableDefinition.getReturnType() instanceof NativeTypeUsageNode) {
+            NativeTypeUsageNode nt = (NativeTypeUsageNode) invocableDefinition.getReturnType();
+            Logger.debug("!!! A PRIMITIVE TYPE USAGE JVM TYPE is = " + nt.jvmType());
+            bs = new ReturnValueBS(nt.jvmType().returnOpcode(), bs);
+            bs.operate(mv);
         }
 
         mv.visitLabel(end);

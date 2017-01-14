@@ -33,9 +33,9 @@ public class JdkTypeResolver implements TypeResolver {
 
     @Override
     public Optional<TypeDefinition> resolveAbsoluteTypeName(String typeName) {
-        if (!JvmNameUtils.isValidQualifiedName(typeName)) {
-            throw new IllegalArgumentException(typeName);
-        }
+        //if (!JvmNameUtils.isValidQualifiedName(typeName)) {
+        //    throw new IllegalArgumentException(typeName);
+        //}
         return ReflectionTypeDefinitionFactory.getInstance().findTypeDefinition(typeName, symbolResolver());
     }
 

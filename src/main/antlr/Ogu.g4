@@ -38,6 +38,20 @@ import com.yuvalshavit.antlr4.DenterHelper;
 		System.out.print(str);
 	}
 
+    Set<String> functions = new HashSet<String>();
+    Set<String> variables = new HashSet<String>();
+    Set<String> values   = new HashSet<String>();
+
+    void addFunction(String fName) {
+        System.out.println("adding function: "+fName);
+        functions.add(fName);
+    }
+
+	boolean isFunction() {
+	    String name = getCurrentToken().getText();
+	    return !name.equals("out");
+	}
+
 }
 
 module : moduleHeader=module_header? module_exports* module_uses* module_body NL*;
@@ -118,8 +132,8 @@ enum_values : ID ((NL)* '|' ID)* ;
 func_decl :
     'def' name=func_name_decl ':' constraints=typedef_args_constraints?
       (arg+=func_decl_arg (<assoc=right> '->' arg+=func_decl_arg)*
-      | '->'? func_decl_arg
-      );
+      | '->'? func_decl_arg)
+      ;
 
 var :  'var' vid=ID (':' type)? ('=' expr)?
     |  'var'  '(' vidt (',' vidt)* ')' ('=' expr)? ;
@@ -172,6 +186,7 @@ func_def
 	| let_arg '`' infix_id=ID '`'  let_arg let_expr
     | '(' tup+=lid (',' tup+=lid)* ')' '=' expr
 	)
+	      {addFunction($let_func_name.text);}
 	;
 
 val_def
@@ -254,7 +269,7 @@ expr
 	| lambda_expr
 	| yield_expr
 	| recur_expr
-    | function=func_name params=params_expr
+    | {isFunction()}? function=func_name  params=params_expr
 	| qual_function=qual_func_name params=params_expr
 	| assign_expr
 	|<assoc=right> l=expr o=('>>'|'<<'|'|>'|'<|') r=expr  // composition
@@ -281,11 +296,15 @@ params_expr
     ;
 
 param_expr
-    : self_id
-    | ref=ID
-    | primary
-    | paren_expr
-    | expr
+    : expr;
+
+paren_param_expr
+    : '(' op param_expr* ')'
+    | '(' tuple_param_expr ')'
+    ;
+
+tuple_param_expr
+    : e+=param_expr (',' e+=param_expr)*
     ;
 
 self_id
@@ -420,7 +439,7 @@ do_expression
 
 ID : '_' | '_'?[a-záéíóúñ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ('!'|'?')?;
 
-TID :'_'? [A-ZÁÉÍÓÚÑ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ;
+TID :'_'? [A-ZÁÉÍÓÚÑ][_a-záéíóúñA-ZÁÉÍÓÚÑ0-9]* ('\'')* ('?')? ;
 
 STRING : '"' (ESC|.)*? '"' ;
 

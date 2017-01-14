@@ -71,9 +71,9 @@ public class InModuleSymbolResolver implements SymbolResolver {
     @Override
     public Optional<TypeDefinition> findTypeDefinitionIn(String typeName, Node context, SymbolResolver resolver) {
         // primitive names are not valid here
-        if (!JvmNameUtils.isValidQualifiedName(typeName)) {
-            throw new IllegalArgumentException(typeName);
-        }
+      //  if (!JvmNameUtils.isValidQualifiedName(typeName)) {
+        //    throw new IllegalArgumentException(typeName);
+        //}
         return findTypeDefinitionInHelper(typeName, context, null, resolver);
     }
 
@@ -117,9 +117,9 @@ public class InModuleSymbolResolver implements SymbolResolver {
     private Optional<TypeDefinition> findTypeDefinitionInHelper(String typeName, Node context,
                                                                 Node previousContext, SymbolResolver resolver) {
 
-        if (!JvmNameUtils.isValidQualifiedName(typeName)) {
-            throw new IllegalArgumentException(typeName);
-        }
+       // if (!JvmNameUtils.isValidQualifiedName(typeName)) {
+         //   throw new IllegalArgumentException(typeName);
+        //}
         if (context == null) {
             // implicitly look into java.lang package
             Optional<TypeDefinition> result = typeResolver.resolveAbsoluteTypeName("java.lang." + typeName);

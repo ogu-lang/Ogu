@@ -7,6 +7,11 @@ Using conventions of  [keepachangelog.com](http://keepachangelog.com/).
 Using Semantic Versioning [http://semver.org/](http://semver.org/)
 
 ## [Unreleased]
+## [0.1.5]
+
+## Changed 
+
+- Fix function call expression
 
 ## [0.1.4] - 2016-11-03
 

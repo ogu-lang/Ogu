@@ -6,14 +6,14 @@ alias printlns = jvm "java.io.PrintStream/println:(Ljava/lang/String;)V"
 alias printlni = jvm "java.io.PrintStream/println:(I)V"
 alias printlnd = jvm "java.io.PrintStream/println:(D)V"
 
-alias Str      = jvm "java.lang.String"
+alias Str?      = jvm "java.lang.String"
 
 type Int = i32
 type Dbl = f64
 
 ;def println! : Str|Int|Dbl -> ()
 
-let println! s:Str = printlns out s
+let println! s:Str? = printlns out s
 let println! d:Dbl = printlnd out d
 let println! i:Int = printlni out i
 
@@ -24,24 +24,28 @@ let demo a:Int b:Int =
     println! b
     println! "resultado es:"
     println! (a+b)
+    a + b
 
-println! "Ola amiko mio de mi"
-;println! 42
-;println! 42.0
 
-demo 2 3
-;println! 2 + 2
-; println! 2.0 * 3.0
+println! 4 * demo 2 * 4 10 + 8
 
-;printlns out "Ola amiko mio de mi"
+println! 4 * demo (demo 2 4) (demo 10 + 8 8 * 10 / 2 - 3)
 
-;printlni out 2
+println! "ahora 2 + 2 ="
+println! 2 + 2
+println! "ahora 2.0 * 3.0 = "
+println! 2.0 * 3.0
 
-;printlnd out 2.0
+printlns out "Ola amiko mio de mi"
 
-;printlni out (2+2)
+printlni out 2
 
-;printlnd out (2.0*3.0)
+printlnd out 2.0
+
+printlni out (2+2)
+
+printlnd out (2.0*3.0)
+
 
 
 
