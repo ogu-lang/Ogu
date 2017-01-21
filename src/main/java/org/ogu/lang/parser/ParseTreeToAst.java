@@ -1085,27 +1085,7 @@ public class ParseTreeToAst {
     }
 
 
-    private ExpressionNode toAst(OguParser.Param_exprContext ctx) {
 
-        if (ctx.self_id() != null) {
-            return toAst(ctx.self_id());
-        }
-
-        if (ctx.ref != null) {
-            ReferenceNode ref = new ReferenceNode(IdentifierNode.create(idText(ctx.ref)));
-            getPositionFrom(ref, ctx);
-            return ref;
-        }
-        if (ctx.primary() != null) {
-            return toAst(ctx.primary());
-        }
-
-        if (ctx.paren_expr() != null) {
-            return toAst(ctx.paren_expr());
-        }
-        Logger.debug(ctx.getText());
-        throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
-    }
     private SelfRefExpressionNode toAst(OguParser.Self_idContext ctx) {
         SelfRefExpressionNode expr = new SelfRefExpressionNode(IdentifierNode.create(idText(ctx.i)));
         getPositionFrom(expr, ctx);
@@ -1416,11 +1396,7 @@ public class ParseTreeToAst {
         return ctor;
     } */
 
-    private ActualParamNode toAstParam(OguParser.Param_exprContext ctx) {
-        ActualParamNode param = new ActualParamNode(toAst(ctx));
-        getPositionFrom(param, ctx);
-        return param;
-    }
+
 
     private ExpressionNode toAst(OguParser.Paren_exprContext ctx) {
         if (ctx.tuple_expr() != null) {
@@ -1522,7 +1498,7 @@ public class ParseTreeToAst {
             ExpressionNode function = toAst(ctx.function);
             List<ActualParamNode> actualParams = new ArrayList<>();
             if (ctx.params_expr() != null)
-                actualParams.addAll(ctx.params_expr().param_expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+                actualParams.addAll(ctx.params_expr().expr().stream().map(this::toAstParam).collect(Collectors.toList()));
             FunctionCallNode functionCallNode = new FunctionCallNode(function, actualParams);
             getPositionFrom(functionCallNode, ctx);
             return functionCallNode;
@@ -1530,7 +1506,7 @@ public class ParseTreeToAst {
         }
         if (ctx.qual_function != null) {
             ExpressionNode function = toAst(ctx.qual_function);
-            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.params_expr().param_expr().stream().map(this::toAstParam).collect(Collectors.toList()));
+            FunctionCallNode functionCallNode = new FunctionCallNode(function, ctx.params_expr().expr().stream().map(this::toAstParam).collect(Collectors.toList()));
             getPositionFrom(functionCallNode, ctx);
             return functionCallNode;
         }
@@ -1538,6 +1514,10 @@ public class ParseTreeToAst {
         throw new UnsupportedOperationException(ctx.getClass().getCanonicalName());
     }
 
+
+    private ActualParamNode toAstParam(OguParser.ExprContext ctx) {
+        return new ActualParamNode(toAst(ctx));
+    }
 
     private String idText(Token token) {
         return token.getText();

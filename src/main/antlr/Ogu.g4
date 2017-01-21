@@ -292,19 +292,17 @@ expr
 	;
 
 params_expr
-    : param_expr+
+    : expr+
     ;
 
-param_expr
-    : expr;
 
 paren_param_expr
-    : '(' op param_expr* ')'
+    : '(' op expr* ')'
     | '(' tuple_param_expr ')'
     ;
 
 tuple_param_expr
-    : e+=param_expr (',' e+=param_expr)*
+    : e+=expr (',' e+=expr)*
     ;
 
 self_id
