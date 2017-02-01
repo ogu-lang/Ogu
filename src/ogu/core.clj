@@ -7,3 +7,8 @@
 (defn  sum [args] (reduce + (seq args)))
 
 (defn union [a b] (s/union (set a) (set b)))
+
+(defn -range-to-inf
+      ([start] (iterate inc' start))
+      ([start, step] (iterate #(+' % step) start)))
+

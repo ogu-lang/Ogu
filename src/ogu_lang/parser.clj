@@ -7,7 +7,7 @@
 
 (def grammar
   (insta/parser
-    "module = [module-header] {uses} {NL} {definition / type-def NL / trait-def / val-def NL / var-def NL / set-var NL} NL* module-exprs
+    "module = [module-header] {uses} {NL} {definition / type-def NL / trait-def / val-def NL / var-def NL / set-var NL / module-expr}
 
      module-header = <'module'> BS+ module-name BS* NL
 
@@ -38,7 +38,7 @@
 
      tuple-of-ids = <\"(\"> BS* ID {BS* <\",\"> BS+ ID} BS* <\")\">
 
-     module-exprs = {module-expr}
+     <module-exprs> = {module-expr}
 
      <module-expr> = BS* pipe-expr BS* NL
 
@@ -65,10 +65,13 @@
 
      <pipe-expr> =  piped-expr / func-call-expr
 
-     <piped-expr> = forward-piped-expr / backward-piped-expr
+     <piped-expr> = forward-piped-expr  / forward-bang-piped-expr / backward-piped-expr / backward-bang-piped-expr / dollar-expr
 
      forward-piped-expr = func-call-expr ([NL] BS+ <\"|>\"> BS+ func-call-expr)+
-     backward-piped-expr = func-call-expr ([NL] BS+ \"<|\" BS+ func-call-expr)+\n
+     forward-bang-piped-expr = func-call-expr ([NL] BS+ <\"!>\"> BS+ func-call-expr)+
+     backward-piped-expr = func-call-expr ([NL] BS+ \"<|\" BS+ func-call-expr)+
+     backward-bang-piped-expr = func-call-expr ([NL] BS+ \"<!\" BS+ func-call-expr)+
+     dollar-expr = func-call-expr (BS+ <\"$\"> BS+ func-call-expr)+
 
      <func-call-expr> = &control-expr control-expr / !control-expr lcons-expr
 
@@ -111,8 +114,10 @@
      quoted-var = ID <#'\\''>
 
      <range-expr> = <\"[\"> BS* [ range-def | list-comprehension ] BS* <\"]\">
-     <range-def> = range-step
+     <range-def> = range-step / range-simple / range-infinite
      range-step = NUMBER BS* <\",\"> BS* NUMBER BS* <\"..\"> BS* [\"<\"] NUMBER
+     range-simple = NUMBER BS* <\"..\"> BS* [\"<\"] NUMBER
+     range-infinite = NUMBER BS* [<\",\"> BS* NUMBER BS*] <\"...\">
 
      list-comprehension = list-compr-expr BS* <\"|\"> BS* list-source {BS* <','> BS* list-source}
      list-compr-expr = pipe-expr
@@ -122,10 +127,10 @@
 
      cons-expr = func-call-expr (BS* <'::'> BS* func-call-expr)+
 
-     lambda-expr =  <#'\\\\'> BS* lambda-args BS+ <\"->\"> BS+ lambda-value BS* <#'\\\\'> / <#'\\\\'> bin-op
+     lambda-expr =  <#'\\\\'> BS* lambda-args BS+ <\"->\"> BS+ lambda-value BS* <#'\\\\'>
 
-     lambda-args = {arg}
-     lambda-value = pipe-expr
+     lambda-args = [ID {BS+ ID}]
+     <lambda-value> = pipe-expr
 
      <bin-expr> = comp-expr / or-expr
      or-expr = and-expr BS* \"||\" BS* bin-expr / and-expr
@@ -152,12 +157,13 @@
 
      <prim-expr> = paren-expr / func-invokation / constructor / !partial-sub neg-expr / not-expr / ID / NUMBER / STRING / CHAR / range-expr / map-expr / lambda-expr
 
+
      neg-expr = \"-\"  prim-expr
      not-expr = \"not\" BS+ prim-expr
 
      do-expr = &<\"do\"> <\"do\"> BS* NL BS* pipe-expr BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
 
-     func-invokation = recur / return / \"nil\"  / partial-bin / func {BS+ arg / BS+ <\"$\"> BS+ &func-call-expr arg}
+     func-invokation = recur / return / \"nil\"  / partial-bin / func {BS+ arg}
      func = ID / TID {\".\" TID} \".\" ID / KEYWORD
 
 
@@ -202,11 +208,11 @@
 
      <CHAR> = #\"'[^']*'\"
      STRING = #'\"[^\"]*\"'
-     NUMBER = #'[0-9]+'
+     NUMBER = #'[0-9]+([.][0-9]+)?'
 
      <BS> = <#'[ \\t]'>\n
 
-     <NL> = COMMENT / HARD-NL
+     <NL> = (COMMENT / HARD-NL)+
      COMMENT = #';[^\\r\\n]*[\\n\\r]+'
      <HARD-NL> = <#'[\\n\\r]+'>
      "))
@@ -220,24 +226,42 @@
 
    ([a b c d] (let [step (- b a)] (cons 'range [a d step]))))
 
+
+(defn def-ogu-simple-range
+      ([a b] (cons 'range [a (inc b)]))
+      ([a b c] (cons 'range [a c])))
+
+(defn def-ogu-infinity-range
+      ([start] (cons '-range-to-inf [start]))
+
+      ([start, next] (let [step (- next start)] (cons '-range-to-inf [start step]))))
+
 (def ast-transformations
   {:COMMENT (fn [& rest] (apply str rest))
    :NUMBER clojure.edn/read-string
    :STRING clojure.edn/read-string
    :ID clojure.edn/read-string
-   :partial-add (fn [& rest]  (cons '+ rest))
+   :partial-add (fn [& rest] (if (empty? rest) '+ (cons '+ rest)))
    :partial-sub (fn [& rest]  (cons '- rest))
    :partial-mul (fn [& rest]  (cons '* rest))
    :partial-div (fn [& rest]  (cons '/ rest))
    :add-expr (fn [& rest] (cons '+ rest))
    :mul-expr (fn [& rest] (cons '* rest))
+   :lt-expr (fn [& rest] (cons '< rest))
+   :gt-expr (fn [& rest] (cons '> rest))
    :range-step def-ogu-step-range
+   :range-simple def-ogu-simple-range
+   :range-infinite def-ogu-infinity-range
+
+   :dollar-expr (fn [a b] (cons a (list b)))
+   :lambda-expr (fn [args body] (cons 'fn (cons args (list body))))
+   :lambda-args vector
    :func identity
    :func-invokation (fn [& rest] (if (= 1 (count rest)) (first rest) rest))
    :val-def (fn [& rest] (cons 'def rest))
    :forward-piped-expr (fn [& rest] (cons '->> rest))
+   :forward-bang-piped-expr (fn [& rest] (cons '-> rest))
    :module-expr (fn [& rest] rest)
-   :module-exprs (fn [& rest] (cons 'do rest))
    :module (fn [& rest] (str  (apply str (string/join \newline rest)) ) )})
 
 (defn transform-ast [ast]
@@ -245,7 +269,7 @@
 
 
 (def preamble "
-  (require '[ogu.core :refer [println! sum union]])
+  (require '[ogu.core :refer [println! sum union -range-to-inf]])
 
   ")
 

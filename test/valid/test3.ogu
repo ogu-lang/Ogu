@@ -1,29 +1,19 @@
-;; test 3
+;test 3
 
-let maxIntentos = 10
-var intentosHastaAhora = 0
-let pi = 3.141516
+2 + 2 |> range |> println
 
-var vector : (Float, Float, Float) = (2.0, 3.0, 10.0)
-
-var perfil : (String,Char,Int,Date) = ("Juan", "M", 30, #19850101)
-
-var nombres : [String] = ["Pedro", "Juan", "Diego"]
-
-var edades : {String->Int} = {"Pedro"->25, "Juan"->30, "Diego"->40}
-
-let (p:Int, q:Int) = frac(0.4)
-
-let (r, s) = frac(0,4)
-
-var perfil :{nombre:String,sexo:Char,edad:Int,fechaIngreso:Date} = {nombre="Juan", sexo="M", edad=30, fechaIngreso=#19850101}
+"a b c d" |> .toUpperCase |> .replace "A" "X" |> .split " " |> first |> println
 
 
+"foo" |> str "bar" |> str "zoo" |> println ; zoobarfoo (clojure ->>)
 
-let timestamp = #2016-01-19T20:30:01.245
-let horazulu = #2016-01-19T16:40:01.s45Z
-let horasantiago = #2016-01-19T16:40:01.45-03:00
+"foo" !> str "bar" !> str "zoo" !> println ; foobarzoo (clojure ->)
 
-let pi = 3.1415
-let avogadro = 6.022e23
-let un_millon = 1_000_000.00
+
+val c = 5
+
+
+c !> (+ 3) !> (/ 2)  !> (- 1) !> println
+
+
+("foo" !> str "bar") |> println!

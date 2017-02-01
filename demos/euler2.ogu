@@ -3,4 +3,4 @@
 def fib-seq = fib 0 1
     where fib = lazy a :: fib b (a + b)
 
-fib-seq |> take-while \x -> x < 4000000\ |> filter even? |> reduce \+ |> println!
+fib-seq |> take-while \x -> x < 4000000\ |> filter even? |> sum |> println!

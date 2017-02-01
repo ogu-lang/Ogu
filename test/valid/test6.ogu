@@ -1,8 +1,9 @@
 ;; test 6
 
-def multiplicar : Num -> Num -> Num
-let multiplicar x y = x * y
+def multiplicar x y = x * y
 
-let doblar = multiplicar 2
-let diez  = doblar 5
-var doce = doblar 6
+def doblar = curry multiplicar 2
+
+
+println! doblar 4
+

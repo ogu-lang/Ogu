@@ -1,8 +1,0 @@
-val a = 10
-
-println "a es = " a
-
-a + 1
-
-println "a + 1 es = " (a + 1)
-

@@ -1,10 +1,6 @@
+; test 2
+println "hello world"
 
-def first : (a, b, c) -> a
-let first (a,_,_) = a
+println (2 + 2)
 
-def second : (a,b,c) -> b
-let second (_,b,c) = b
-
-def third : (a, b, c) -> c
-let  third (_,_,c) = c
-
+println (2 * 3)
