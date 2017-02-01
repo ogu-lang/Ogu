@@ -15,7 +15,9 @@
 
      module-name = TID {\".\" TID} | 'jvm' BS+ (ID|TID) {\".\" (ID|TID)}
 
-     definition = &\"def\" <\"def\"> BS* ID  {BS+ arg} BS* [\"&\" BS+ arg] (def-body) [where]
+     definition = &\"def\" <\"def\"> BS+ ID  def-args (def-body) [where]
+
+     def-args = {BS+ arg} [\"&\" BS+ arg]
 
      <arg> = &isa-type isa-type / &type-pattern type-pattern / &ID ID /  func-call-expr
 
@@ -44,7 +46,7 @@
 
 
      <def-body> = body-simple / NL guard+ [otherwise]
-     body-simple = BS* <\"=\"> BS* [NL] BS* value BS* NL
+     <body-simple> = BS* <\"=\"> BS* [NL] BS* value BS* NL
      guard = BS* <\"|\"> !'otherwise' {BS+ arg} BS+ <\"=\"> BS+ value BS* NL
      otherwise = BS* <\"|\"> BS+ <'otherwise'> BS+ <\"=\"> BS+ value BS* NL
 
@@ -61,7 +63,7 @@
 
      <value> = lazy-value / eager-value
      lazy-value = &<'lazy'> <'lazy'> BS+ pipe-expr
-     eager-value = [<'eager'> BS+] pipe-expr
+     <eager-value> = [<'eager'> BS+] pipe-expr
 
      <pipe-expr> =  piped-expr / func-call-expr
 
@@ -213,7 +215,7 @@
      <BS> = <#'[ \\t]'>\n
 
      <NL> = (COMMENT / HARD-NL)+
-     COMMENT = #';[^\\r\\n]*[\\n\\r]+'
+     <COMMENT> = <#';[^\\r\\n]*[\\n\\r]+'>
      <HARD-NL> = <#'[\\n\\r]+'>
      "))
 
@@ -237,32 +239,35 @@
       ([start, next] (let [step (- next start)] (cons '-range-to-inf [start step]))))
 
 (def ast-transformations
-  {:COMMENT (fn [& rest] (apply str rest))
-   :NUMBER clojure.edn/read-string
-   :STRING clojure.edn/read-string
-   :ID clojure.edn/read-string
-   :partial-add (fn [& rest] (if (empty? rest) '+ (cons '+ rest)))
-   :partial-sub (fn [& rest]  (cons '- rest))
-   :partial-mul (fn [& rest]  (cons '* rest))
-   :partial-div (fn [& rest]  (cons '/ rest))
-   :add-expr (fn [& rest] (cons '+ rest))
-   :mul-expr (fn [& rest] (cons '* rest))
-   :lt-expr (fn [& rest] (cons '< rest))
-   :gt-expr (fn [& rest] (cons '> rest))
-   :range-step def-ogu-step-range
-   :range-simple def-ogu-simple-range
-   :range-infinite def-ogu-infinity-range
+  { :NUMBER clojure.edn/read-string
+    :STRING clojure.edn/read-string
+    :ID clojure.edn/read-string
+    :partial-add (fn [& rest] (if (empty? rest) '+ (cons '+ rest)))
+    :partial-sub (fn [& rest] (cons '- rest))
+    :partial-mul (fn [& rest] (cons '* rest))
+    :partial-div (fn [& rest] (cons '/ rest))
+    :add-expr (fn [& rest] (cons '+ rest))
+    :mul-expr (fn [& rest] (cons '* rest))
+    :lt-expr (fn [& rest] (cons '< rest))
+    :gt-expr (fn [& rest] (cons '> rest))
+    :range-step def-ogu-step-range
+    :range-simple def-ogu-simple-range
+    :range-infinite def-ogu-infinity-range
 
-   :dollar-expr (fn [a b] (cons a (list b)))
-   :lambda-expr (fn [args body] (cons 'fn (cons args (list body))))
-   :lambda-args vector
-   :func identity
-   :func-invokation (fn [& rest] (if (= 1 (count rest)) (first rest) rest))
-   :val-def (fn [& rest] (cons 'def rest))
-   :forward-piped-expr (fn [& rest] (cons '->> rest))
-   :forward-bang-piped-expr (fn [& rest] (cons '-> rest))
-   :module-expr (fn [& rest] rest)
-   :module (fn [& rest] (str  (apply str (string/join \newline rest)) ) )})
+    :dollar-expr (fn [a b] (cons a (list b)))
+    :lambda-expr (fn [args body] (cons 'fn (cons args (list body))))
+    :lambda-args vector
+    :func identity
+    :func-invokation (fn [& rest] (if (= 1 (count rest)) (first rest) rest))
+    :val-def (fn [& rest] (cons 'def rest))
+    :forward-piped-expr (fn [& rest] (cons '->> rest))
+    :forward-bang-piped-expr (fn [& rest] (cons '-> rest))
+
+    :def-args (fn [& rest] (apply vector rest))
+    :definition (fn [& rest] (cons 'defn rest))
+
+    :module-expr (fn [& rest] rest)
+    :module (fn [& rest] (str (apply str (string/join \newline rest))))})
 
 (defn transform-ast [ast]
   (insta/transform ast-transformations ast))
