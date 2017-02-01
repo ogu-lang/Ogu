@@ -1,0 +1,29 @@
+
+
+trait Shape is
+    area Shape
+
+    draw Shape
+
+    move Shape x y
+end
+
+type Point(x, y)
+type Circle (x, y, radius) : Point(x, y) : Shape
+type Rectangle(x, y, width, height) : Point(x, y) : Shape
+
+
+def area Circle(_, _, r) = pi * r^2
+
+def area Rectangle(_, _, w, h) = w * h
+
+
+def show-area! shape:Shape = println! (area shape)
+
+
+val cir = Circle(10, 10, 10)
+var rec = Rectangle(0,0, 100, 50)
+
+show-area! cir
+
+show-area! rec

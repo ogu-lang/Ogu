@@ -1,4 +1,6 @@
 
 ; Resuelve problema 1 del proyecto Euler
 
-union [3,6..999] [5,10..999] |> sum |> println
+union [3, 6..999] [5, 10..<1000] |> sum |> println!
+
+

@@ -1,10 +1,8 @@
 
-#{entrypoint}
-def main : [String] -> ()
+def main (x::xs) = do
+        report x
+        recur xs
+    end
+    where report x = println! "file" x "words: " (file-open x |> split-lines |> split-word |> count)
 
-let main [] = println! "use: wordcount file..."
-
-let main (x::xs) =
-    report x
-    recur xs ;; tail recursion
-    where report x = println "file: " ++ x ++ " words: "++ show (file_open x |> split_lines |> split_word |> length)
+main OS.args

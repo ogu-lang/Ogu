@@ -1,0 +1,10 @@
+
+def greet
+    | = greet you
+    | name = println! "hello " name
+
+
+def greet2 name & rest = apply \n -> println! "hello " n\ (name :: rest) ; done
+
+
+greet2 "Yan" "Darryl" "Tom" "John"

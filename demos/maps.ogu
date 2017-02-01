@@ -1,0 +1,10 @@
+
+
+val person = {:first-name "Eduardo",
+               :last-name "Diaz",
+               :email nil,
+               :pass nil}
+
+
+println! (:email person)
+

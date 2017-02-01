@@ -1,0 +1,26 @@
+
+
+type Car  (company, model, year)
+
+type Plane (company, series, year)
+
+val mustang56 = Car(company = "Ford", model = "Mustang", year = 1956)
+
+val boeing747 = Plane(company = "Boeing", series = "747", year = 2000)
+
+
+def show-model
+    | p : Plane = println! (series  p) (company  p)
+    | c : Car   = println! (model   c) (company  c)
+
+
+def show-company
+    | Plane(c,_,_) = println! c
+    | Car(c,_,_)   = println! c
+
+show-model mustang56
+show-model boeing747
+
+show-company mustang56
+show-company boeing747
+
