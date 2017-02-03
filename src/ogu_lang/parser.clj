@@ -50,11 +50,13 @@
      guard = BS* <\"|\"> !'otherwise' {BS+ arg} BS+ <\"=\"> BS+ value BS* NL
      otherwise = BS* <\"|\"> BS+ <'otherwise'> BS+ <\"=\"> BS+ value BS* NL
 
-     where = BS+ <'where'> BS* [NL] where-equation {BS* <\",\"> BS* [NL BS*] where-equation} NL
+     where = BS+ <'where'> BS* [NL] where-equations NL
 
+     <where-equations> = where-equation {BS* <\",\"> BS* [NL BS*] where-equation}
      <where-equation> =  (equation | where-guards)
 
-     equation = ID BS+ {arg BS+} <\"=\"> BS+ value
+     equation = ID BS+ eq-args <\"=\"> BS+ value
+     eq-args = {arg BS+}
 
      where-guards = ID BS+ {arg} BS* [NL BS*] where-guard {NL where-guard} [NL where-otherwise]
 
@@ -238,6 +240,18 @@
 
       ([start, next] (let [step (- next start)] (cons '-range-to-inf [start step]))))
 
+(defn ogu-definition
+      ([id args body]
+        (if (empty? args)
+          (cons 'def [id  body])
+          (cons 'defn [id args body])))
+
+      ([id args body where]
+        (let [equations [(second where)]]
+             (if (empty? args)
+               (cons 'def [id  (cons 'letfn [equations body])])
+               (cons 'defn [id args (cons 'letfn [equations body])])))))
+
 (def ast-transformations
   { :NUMBER clojure.edn/read-string
     :STRING clojure.edn/read-string
@@ -253,6 +267,8 @@
     :range-step def-ogu-step-range
     :range-simple def-ogu-simple-range
     :range-infinite def-ogu-infinity-range
+    :cons-expr (fn [& rest] (cons 'cons rest))
+    :lazy-value (fn [& rest] (cons 'lazy-seq rest))
 
     :dollar-expr (fn [a b] (cons a (list b)))
     :lambda-expr (fn [args body] (cons 'fn (cons args (list body))))
@@ -262,9 +278,10 @@
     :val-def (fn [& rest] (cons 'def rest))
     :forward-piped-expr (fn [& rest] (cons '->> rest))
     :forward-bang-piped-expr (fn [& rest] (cons '-> rest))
-
+    :equation (fn [& rest] rest)
+    :eq-args (fn [& rest] (apply vector rest))
     :def-args (fn [& rest] (apply vector rest))
-    :definition (fn [& rest] (cons 'defn rest))
+    :definition ogu-definition
 
     :module-expr (fn [& rest] rest)
     :module (fn [& rest] (str (apply str (string/join \newline rest))))})
