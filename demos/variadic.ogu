@@ -1,7 +1,9 @@
 
 def greet
-    | = greet you
-    | name = println! "hello " name
+    & = greet you
+    & name
+    | name == "world " = println! "hello world"
+    | otherwise = println! "hello " name
 
 
 def greet2 name & rest = apply \n -> println! "hello " n\ (name :: rest) ; done

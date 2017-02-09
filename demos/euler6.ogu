@@ -5,7 +5,7 @@ def square-sum n = let s = sum-n n in s * s
 
 def sum-n-square n = reduce (+) (map \x -> x * x\ [1..n])
 
-def dif-squares = (square-sum n) - (sum-n-square n)
+def dif-squares n = (square-sum n) - (sum-n-square n)
 
 dif-squares 100 |> println!
 

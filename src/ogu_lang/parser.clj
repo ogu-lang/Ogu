@@ -98,12 +98,14 @@
      for-header = &<'for'> <'for'> BS+ ID BS+ <\"<-\"> BS+ pipe-expr BS* [NL BS*]
      for-body = BS* [NL BS*]  pipe-expr
 
-     let-expr = &'let' <'let'> (BS+|NL BS*) let-vars
-     <let-vars> = let-vars-in  BS* [NL BS*]  let-body
+     let-expr = &'let' <'let'> (BS+|NL BS*) let-vars  BS* [NL BS*]  let-body
+     let-vars = let-vars-in
      <let-vars-in> = let-var {BS* <\",\"> BS* [NL BS*] let-var} BS* [NL BS*] <'in'>
-     let-var = ID BS+ <\"=\"> BS+ let-var-value | <\"(\"> BS* ID {BS* <\",\"> BS* ID} BS* <\")\"> BS+ <\"=\"> BS+ let-var-value
-     let-var-value = pipe-expr
-     let-body = pipe-expr &NL
+     <let-var> = let-var-simple | let-var-tupled
+     let-var-simple = ID BS+ <\"=\"> BS+ let-var-value
+     let-var-tupled =  <\"(\"> BS* ID {BS* <\",\"> BS* ID} BS* <\")\"> BS+ <\"=\"> BS+ let-var-value
+     <let-var-value> = pipe-expr
+     <let-body> = pipe-expr &NL
 
 
      if-expr = &'if' <'if'> BS+ if-cond-expr BS* [NL BS*]  <'then'>  ([NL BS*]|BS+) then-expr [NL BS*] <'else'> ([NL BS*]|BS+) else-expr
@@ -119,9 +121,9 @@
 
      <range-expr> = <\"[\"> BS* [ range-def | list-comprehension ] BS* <\"]\">
      <range-def> = range-step / range-simple / range-infinite
-     range-step = NUMBER BS* <\",\"> BS* NUMBER BS* <\"..\"> BS* [\"<\"] NUMBER
-     range-simple = NUMBER BS* <\"..\"> BS* [\"<\"] NUMBER
-     range-infinite = NUMBER BS* [<\",\"> BS* NUMBER BS*] <\"...\">
+     range-step = prim-expr BS* <\",\"> BS* prim-expr BS* <\"..\"> BS* [\"<\"] prim-expr
+     range-simple = prim-expr BS* <\"..\"> BS* [\"<\"] prim-expr
+     range-infinite = prim-expr BS* [<\",\"> BS* prim-expr BS*] <\"...\">
 
      list-comprehension = list-compr-expr BS* <\"|\"> BS* list-source {BS* <','> BS* list-source}
      list-compr-expr = pipe-expr
@@ -131,10 +133,10 @@
 
      cons-expr = func-call-expr (BS* <'::'> BS* func-call-expr)+
 
-     lambda-expr =  <#'\\\\'> BS* lambda-args BS+ <\"->\"> BS+ lambda-value BS* <#'\\\\'>
+     lambda-expr = <#'\\\\'> BS* lambda-args BS+ <\"->\"> BS+ lambda-value BS* <#'\\\\'>
 
      lambda-args = [ID {BS+ ID}]
-     <lambda-value> = pipe-expr
+     <lambda-value> = func-call-expr
 
      <bin-expr> = comp-expr / or-expr
      or-expr = and-expr BS* \"||\" BS* bin-expr / and-expr
@@ -210,7 +212,7 @@
      TID = #'[A-Z][_0-9a-zA-Z-]*'
      KEYWORD = #':[-]?[_a-z][_0-9a-zA-Z-]*[?!]?'
 
-     <CHAR> = #\"'[^']*'\"
+     CHAR = #\"'[^']*'\"
      STRING = #'\"[^\"]*\"'
      NUMBER = #'[0-9]+([.][0-9]+)?'
 
@@ -226,19 +228,19 @@
 
 
 (defn def-ogu-step-range
-   ([a b c] (let [step (- b a)] (cons 'range [a (inc c) step])))
+   ([a b c] (let [step (cons '- [b a]) end (cons 'inc [c])] (cons 'range [a end step])))
 
-   ([a b c d] (let [step (- b a)] (cons 'range [a d step]))))
+   ([a b c d] (let [step (cons '- [b a])] (cons 'range [a d step]))))
 
 
 (defn def-ogu-simple-range
-      ([a b] (cons 'range [a (inc b)]))
+      ([a b] (let [end (cons 'inc [b])] (cons 'range [a end])) )
       ([a b c] (cons 'range [a c])))
 
 (defn def-ogu-infinity-range
       ([start] (cons '-range-to-inf [start]))
 
-      ([start, next] (let [step (- next start)] (cons '-range-to-inf [start step]))))
+      ([start, next] (let [step (cons '- [next start])] (cons '-range-to-inf [start step]))))
 
 (defn ogu-definition
       ([id args body]
@@ -252,23 +254,36 @@
                (cons 'def [id  (cons 'letfn [equations body])])
                (cons 'defn [id args (cons 'letfn [equations body])])))))
 
+(defn to-char [n]
+      (let [l (count n) s (subs n 1 (dec l))]
+           (clojure.edn/read-string (str \\ s))))
+
 (def ast-transformations
   { :NUMBER clojure.edn/read-string
     :STRING clojure.edn/read-string
+    :CHAR to-char
     :ID clojure.edn/read-string
     :partial-add (fn [& rest] (if (empty? rest) '+ (cons '+ rest)))
-    :partial-sub (fn [& rest] (cons '- rest))
-    :partial-mul (fn [& rest] (cons '* rest))
-    :partial-div (fn [& rest] (cons '/ rest))
+    :partial-sub (fn [& rest] (if (empty? rest) '- (cons '- rest)))
+    :partial-mul (fn [& rest] (if (empty? rest) '* (cons '* rest)))
+    :partial-div (fn [& rest] (if (empty? rest) '/ (cons '/ rest)))
     :add-expr (fn [& rest] (cons '+ rest))
+    :sub-expr (fn [& rest] (cons '- rest))
     :mul-expr (fn [& rest] (cons '* rest))
+    :div-expr (fn [& rest] (cons '/ rest))
     :lt-expr (fn [& rest] (cons '< rest))
+    :le-expr (fn [& rest] (cons '<= rest))
     :gt-expr (fn [& rest] (cons '> rest))
+    :ge-expr (fn [& rest] (cons '>= rest))
     :range-step def-ogu-step-range
     :range-simple def-ogu-simple-range
     :range-infinite def-ogu-infinity-range
     :cons-expr (fn [& rest] (cons 'cons rest))
     :lazy-value (fn [& rest] (cons 'lazy-seq rest))
+
+    :let-vars (fn [& rest]  (first rest) )
+    :let-var-simple  (fn [id val] [id val] )
+    :let-expr (fn [& rest] (cons 'let rest))
 
     :dollar-expr (fn [a b] (cons a (list b)))
     :lambda-expr (fn [args body] (cons 'fn (cons args (list body))))
@@ -291,7 +306,7 @@
 
 
 (def preamble "
-  (require '[ogu.core :refer [println! sum union -range-to-inf]])
+  (require '[ogu.core :refer [println! sum union -range-to-inf head tail]])
 
   ")
 

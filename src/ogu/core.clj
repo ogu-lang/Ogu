@@ -12,3 +12,6 @@
       ([start] (iterate inc' start))
       ([start, step] (iterate #(+' % step) start)))
 
+(def tail rest)
+
+(def head first)
