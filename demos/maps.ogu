@@ -6,5 +6,5 @@ val person = {:first-name "Eduardo",
                :pass nil}
 
 
-println! (:email person)
+println! $ :email person
 

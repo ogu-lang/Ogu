@@ -8,5 +8,7 @@ def sum-fact n = sum $ take n lazy-fact
 
 def sum-fact-2 n = go 1 1 1
     where go acc fact i
-        | i <= n = go (acc + fact) (fact * i) (i+1)
+        | i <= n = go (acc + fact) (fact * i) (i + 1)
         | otherwise = acc
+
+println $ sum-fact 10
