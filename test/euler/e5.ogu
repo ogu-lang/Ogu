@@ -11,4 +11,4 @@ def lcm a b
 
 def divisors n = reduce (lcm) 1 [2..n]
 
-divisors 20 |> println!
+divisors 20

@@ -6,6 +6,7 @@
 (def euler2 "test/euler/e2.ogu")
 (def euler3 "test/euler/e3.ogu")
 (def euler6 "test/euler/e6.ogu")
+(def euler5 "test/euler/e5.ogu")
 (def euler8 "test/euler/e8.ogu")
 
 
@@ -18,6 +19,7 @@
     (is (= 4613732 (eval-mod euler2)))
     (is (= 6857 (eval-mod euler3)))
     (is (= 25164150 (eval-mod euler6)))
+    (is (= 232792560 (eval-mod euler5)))
     (is (= 23514624000 (eval-mod euler8)))))
 
 (deftest test-2
@@ -29,4 +31,5 @@
      (is (= 9 (eval-mod "test/misc/test4.ogu")))
      (is (= 3999998000000 (eval-mod "test/misc/test5.ogu")))
      (is (= 8 (eval-mod "test/misc/test6.ogu")))
-     (is (= 2 (eval-mod "test/misc/test7.ogu")))    )
+     (is (= 2 (eval-mod "test/misc/test7.ogu")))
+     (is (= 620448401733239439360000N (eval-mod "test/misc/test8.ogu"))))

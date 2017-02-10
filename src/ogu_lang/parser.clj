@@ -90,10 +90,10 @@
      <lcons-expr> =  cons-expr  /  bin-expr
 
      loop-expr = &'loop' <'loop'> [BS+ loop-vars-in] loop-body
-     <loop-vars-in> = loop-var { BS* <\",\"> BS* [NL BS*] loop-var} BS* [NL BS*]  <'in'>
-     loop-body = [NL BS*] pipe-expr &NL
+     loop-vars-in = loop-var { BS* <\",\"> BS* [NL BS*] loop-var} BS* [NL BS*]  <'in'>
+     <loop-body> = [NL BS*] pipe-expr &NL
      loop-var =  ID BS+ <\"=\"> BS+ loop-var-value
-     loop-var-value = pipe-expr
+     <loop-var-value> = pipe-expr
 
      for-expr = for-header  <'in'> for-body
      for-header = &<'for'> <'for'> BS+ ID BS+ <\"<-\"> BS+ pipe-expr BS* [NL BS*]
@@ -110,9 +110,9 @@
 
 
      if-expr = &'if' <'if'> BS+ if-cond-expr BS* [NL BS*]  <'then'>  ([NL BS*]|BS+) then-expr [NL BS*] <'else'> ([NL BS*]|BS+) else-expr
-     then-expr = pipe-expr BS*
-     else-expr = pipe-expr BS*
-     if-cond-expr = func-call-expr
+     <then-expr> = pipe-expr BS*
+     <else-expr> = pipe-expr BS*
+     <if-cond-expr> = func-call-expr
 
      when-expr = &'when' <'when'> BS+ if-cond-expr BS* [NL BS*] <'then'> ([NL BS*]|BS+) then-expr &NL
 
@@ -144,17 +144,20 @@
      or-expr = and-expr BS* \"||\" BS* bin-expr / and-expr
      and-expr = comp-expr BS* \"&&\" BS* bin-expr / comp-expr
      <comp-expr> = lt-expr / le-expr / gt-expr / ge-expr / eq-expr / ne-expr / sum-expr
-     <sum-expr> = add-expr / sub-expr / cat-expr  / mult-expr
-     <mult-expr> = mul-expr / div-expr / mod-expr / pow-expr / prim-expr
+     <sum-expr> = add-expr / addq-expr / sub-expr / subq-expr / cat-expr  / mult-expr
+     <mult-expr> = mul-expr / mulq-expr / div-expr / mod-expr / pow-expr / prim-expr
 
-     add-expr = comp-expr BS* <\"+\"> BS* bin-expr
-     sub-expr = comp-expr BS* <\"-\"> BS* bin-expr
-     cat-expr = comp-expr BS* <\"++\"> BS* bin-expr
+     add-expr = comp-expr BS+ <\"+\"> BS+ bin-expr
+     addq-expr = comp-expr BS+ <\"+'\"> BS+ bin-expr
+     sub-expr = comp-expr BS+ <\"-\"> BS+ bin-expr
+     subq-expr = comp-expr BS+ <\"-'\"> BS+ bin-expr
+     cat-expr = comp-expr BS+ <\"++\"> BS+ bin-expr
 
-     mul-expr = prim-expr BS* <\"*\"> BS* mult-expr
-     div-expr = prim-expr BS* <\"/\"> BS* mult-expr
-     mod-expr = prim-expr BS* <\"%\"> BS* mult-expr
-     pow-expr = prim-expr BS* <\"^\"> BS* mult-expr
+     mul-expr = prim-expr BS+ <\"*\"> BS+ mult-expr
+     mulq-expr = prim-expr BS+ <\"*'\"> BS+ mult-expr
+     div-expr = prim-expr BS+ <\"/\"> BS+ mult-expr
+     mod-expr = prim-expr BS+ <\"%\"> BS+ mult-expr
+     pow-expr = prim-expr BS+ <\"^\"> BS+ mult-expr
 
      lt-expr = sum-expr BS* <\"<\"> BS* bin-expr
      le-expr = sum-expr BS* <\"<=\"> BS* bin-expr
@@ -216,7 +219,7 @@
 
      CHAR = #\"'[^']*'\"
      STRING = #'\"[^\"]*\"'
-     NUMBER = #'[0-9]+([.][0-9]+)?'
+     NUMBER = #'[0-9]+([.][0-9]+)?([eE](-)?[0-9]+)?[NM]?'
 
      <BS> = <#'[ \\t]'>\n
 
@@ -265,6 +268,10 @@
       (let [l (count n) s (subs n 1 (dec l))]
            (clojure.edn/read-string (str \\ s))))
 
+(defn ogu-repeat-var
+      ([v] v)
+      ([nn v] v))
+
 (def ast-transformations
   {:NUMBER                  clojure.edn/read-string
    :STRING                  clojure.edn/read-string
@@ -275,8 +282,11 @@
    :partial-mul             (fn [& rest] (if (empty? rest) '* (cons '* rest)))
    :partial-div             (fn [& rest] (if (empty? rest) '/ (cons '/ rest)))
    :add-expr                (fn [& rest] (cons '+ rest))
+   :addq-expr               (fn [& rest] (cons '+' rest))
    :sub-expr                (fn [& rest] (cons '- rest))
+   :subq-expr               (fn [& rest] (cons '-' rest))
    :mul-expr                (fn [& rest] (cons '* rest))
+   :mulq-expr                (fn [& rest] (cons '*' rest))
    :div-expr                (fn [& rest] (cons '/ rest))
    :mod-expr                (fn [& rest] (cons 'mod rest))
    :lt-expr                 (fn [& rest] (cons '< rest))
@@ -299,8 +309,17 @@
    :guard                   ogu-guard
    :body-guard              ogu-guards
 
+   :if-expr                 (fn [& rest] (cons 'if rest))
 
-   :empty-range            vector
+   :loop-vars-in            (fn [& args] (vec (apply concat args)))
+   :loop-var                (fn [var val] [var val])
+   :loop-expr               (fn [& rest] (cons 'loop rest))
+
+   :repeat-expr             (fn [& rest] (cons 'recur rest))
+   :repeat-var              ogu-repeat-var
+
+
+   :empty-range             vector
 
    :dollar-expr             (fn [a b] (cons a (list b)))
    :lambda-expr             (fn [args body] (cons 'fn (cons args (list body))))
