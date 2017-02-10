@@ -13,3 +13,4 @@ println $ 2 + max 4 5
 
 println $ max 4 + 5 2
 
+max 4 + 5 2

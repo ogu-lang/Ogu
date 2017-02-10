@@ -15,7 +15,7 @@
 
      module-name = TID {\".\" TID} | 'jvm' BS+ (ID|TID) {\".\" (ID|TID)}
 
-     definition = &\"def\" <\"def\"> BS+ ID  def-args (def-body) [where]
+     definition = &\"def\" <\"def\"> BS+ ID  def-args def-body [where]
 
      def-args = {BS+ arg} [\"&\" BS+ arg]
 
@@ -45,7 +45,8 @@
      <module-expr> = BS* pipe-expr BS* NL
 
 
-     <def-body> = body-simple / NL guard+ [otherwise]
+     <def-body> = body-simple / body-guard
+     body-guard = NL guard+ [otherwise]
      <body-simple> = BS* <\"=\"> BS* [NL] BS* value BS* NL
      guard = BS* <\"|\"> !'otherwise' {BS+ arg} BS+ <\"=\"> BS+ value BS* NL
      otherwise = BS* <\"|\"> BS+ <'otherwise'> BS+ <\"=\"> BS+ value BS* NL
@@ -119,7 +120,8 @@
      repeat-var  = [quoted-var BS+ <\"=\"> BS+] loop-var-value
      quoted-var = ID <#'\\''>
 
-     <range-expr> = <\"[\"> BS* [ range-def | list-comprehension ] BS* <\"]\">
+     <range-expr> = <\"[\"> BS* ( range-def | list-comprehension | empty-range ) BS* <\"]\">
+     empty-range = epsilon
      <range-def> = range-step / range-simple / range-infinite
      range-step = prim-expr BS* <\",\"> BS* prim-expr BS* <\"..\"> BS* [\"<\"] prim-expr
      range-simple = prim-expr BS* <\"..\"> BS* [\"<\"] prim-expr
@@ -252,54 +254,69 @@
         (let [equations [(second where)]]
              (if (empty? args)
                (cons 'def [id  (cons 'letfn [equations body])])
-               (cons 'defn [id args (cons 'letfn [equations body])])))))
+               (cons 'defn [id args (cons 'letfn [equations body])]))))
+      )
+
+(defn ogu-guards [& guards] (cons 'cond (apply concat guards)))
+
+(defn ogu-guard [a b] [a b])
 
 (defn to-char [n]
       (let [l (count n) s (subs n 1 (dec l))]
            (clojure.edn/read-string (str \\ s))))
 
 (def ast-transformations
-  { :NUMBER clojure.edn/read-string
-    :STRING clojure.edn/read-string
-    :CHAR to-char
-    :ID clojure.edn/read-string
-    :partial-add (fn [& rest] (if (empty? rest) '+ (cons '+ rest)))
-    :partial-sub (fn [& rest] (if (empty? rest) '- (cons '- rest)))
-    :partial-mul (fn [& rest] (if (empty? rest) '* (cons '* rest)))
-    :partial-div (fn [& rest] (if (empty? rest) '/ (cons '/ rest)))
-    :add-expr (fn [& rest] (cons '+ rest))
-    :sub-expr (fn [& rest] (cons '- rest))
-    :mul-expr (fn [& rest] (cons '* rest))
-    :div-expr (fn [& rest] (cons '/ rest))
-    :lt-expr (fn [& rest] (cons '< rest))
-    :le-expr (fn [& rest] (cons '<= rest))
-    :gt-expr (fn [& rest] (cons '> rest))
-    :ge-expr (fn [& rest] (cons '>= rest))
-    :range-step def-ogu-step-range
-    :range-simple def-ogu-simple-range
-    :range-infinite def-ogu-infinity-range
-    :cons-expr (fn [& rest] (cons 'cons rest))
-    :lazy-value (fn [& rest] (cons 'lazy-seq rest))
+  {:NUMBER                  clojure.edn/read-string
+   :STRING                  clojure.edn/read-string
+   :CHAR                    to-char
+   :ID                      clojure.edn/read-string
+   :partial-add             (fn [& rest] (if (empty? rest) '+ (cons '+ rest)))
+   :partial-sub             (fn [& rest] (if (empty? rest) '- (cons '- rest)))
+   :partial-mul             (fn [& rest] (if (empty? rest) '* (cons '* rest)))
+   :partial-div             (fn [& rest] (if (empty? rest) '/ (cons '/ rest)))
+   :add-expr                (fn [& rest] (cons '+ rest))
+   :sub-expr                (fn [& rest] (cons '- rest))
+   :mul-expr                (fn [& rest] (cons '* rest))
+   :div-expr                (fn [& rest] (cons '/ rest))
+   :mod-expr                (fn [& rest] (cons 'mod rest))
+   :lt-expr                 (fn [& rest] (cons '< rest))
+   :le-expr                 (fn [& rest] (cons '<= rest))
+   :gt-expr                 (fn [& rest] (cons '> rest))
+   :ge-expr                 (fn [& rest] (cons '>= rest))
+   :eq-expr                 (fn [& rest] (cons '= rest))
+   :ne-expr                 (fn [& rest] (cons 'not= rest))
+   :range-step              def-ogu-step-range
+   :range-simple            def-ogu-simple-range
+   :range-infinite          def-ogu-infinity-range
+   :cons-expr               (fn [& rest] (cons 'cons rest))
+   :lazy-value              (fn [& rest] (cons 'lazy-seq rest))
 
-    :let-vars (fn [& rest]  (first rest) )
-    :let-var-simple  (fn [id val] [id val] )
-    :let-expr (fn [& rest] (cons 'let rest))
+   :let-vars                (fn [& rest] (vec (apply concat rest)))
+   :let-var-simple          (fn [id val] [id val])
+   :let-expr                (fn [& rest] (cons 'let rest))
 
-    :dollar-expr (fn [a b] (cons a (list b)))
-    :lambda-expr (fn [args body] (cons 'fn (cons args (list body))))
-    :lambda-args vector
-    :func identity
-    :func-invokation (fn [& rest] (if (= 1 (count rest)) (first rest) rest))
-    :val-def (fn [& rest] (cons 'def rest))
-    :forward-piped-expr (fn [& rest] (cons '->> rest))
-    :forward-bang-piped-expr (fn [& rest] (cons '-> rest))
-    :equation (fn [& rest] rest)
-    :eq-args (fn [& rest] (apply vector rest))
-    :def-args (fn [& rest] (apply vector rest))
-    :definition ogu-definition
+   :otherwise               (fn [& rest] [:else (first rest) ])
+   :guard                   ogu-guard
+   :body-guard              ogu-guards
 
-    :module-expr (fn [& rest] rest)
-    :module (fn [& rest] (str (apply str (string/join \newline rest))))})
+
+   :empty-range            vector
+
+   :dollar-expr             (fn [a b] (cons a (list b)))
+   :lambda-expr             (fn [args body] (cons 'fn (cons args (list body))))
+   :lambda-args             vector
+   :func                    identity
+   :func-invokation         (fn [& rest] (if (= 1 (count rest)) (first rest) rest))
+   :val-def                 (fn [& rest] (cons 'def rest))
+   :forward-piped-expr      (fn [& rest] (cons '->> rest))
+   :forward-bang-piped-expr (fn [& rest] (cons '-> rest))
+   :equation                (fn [& rest] rest)
+   :eq-args                 (fn [& rest] (apply vector rest))
+   :def-args                (fn [& rest] (apply vector rest))
+   :definition              ogu-definition
+
+   :module-expr             (fn [& rest] rest)
+   :module                  (fn [& rest] (str (apply str (string/join \newline rest))))})
 
 (defn transform-ast [ast]
   (insta/transform ast-transformations ast))

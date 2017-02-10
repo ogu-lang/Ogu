@@ -8,3 +8,5 @@
 [0...] |> take-while \x -> x < 1000\ |> sum |> println!
 
 [0...] |> take-while \x -> x < 4000000\ |> filter even? |> reduce (+) |> println!
+
+[0...] |> take-while \x -> x < 4000000\ |> filter even? |> reduce (+)

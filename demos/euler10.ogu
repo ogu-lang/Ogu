@@ -16,4 +16,4 @@ def primes n =
         filter \i -> aget sieve i\ [2..<n]
     end
 
-println! $ reduce + (primes (dec 2000000))
+println! $ reduce (+) (primes (dec 2000000))

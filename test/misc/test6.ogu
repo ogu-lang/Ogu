@@ -11,3 +11,5 @@ println! $ multiplicar 2 4
 
 println! $ doblar 4
 
+doblar 4
+

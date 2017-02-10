@@ -16,4 +16,4 @@ val c = 5
 c !> (+ 3) !> (/ 2)  !> (- 1) !> println
 
 
-("foo" !> str "bar") |> println!
+"foo" !> str "bar"
