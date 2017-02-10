@@ -74,8 +74,8 @@
 
      forward-piped-expr = func-call-expr ([NL] BS+ <\"|>\"> BS+ func-call-expr)+
      forward-bang-piped-expr = func-call-expr ([NL] BS+ <\"!>\"> BS+ func-call-expr)+
-     backward-piped-expr = func-call-expr ([NL] BS+ \"<|\" BS+ func-call-expr)+
-     backward-bang-piped-expr = func-call-expr ([NL] BS+ \"<!\" BS+ func-call-expr)+
+     backward-piped-expr = func-call-expr ([NL] BS+ <\"<|\"> BS+ func-call-expr)+
+     backward-bang-piped-expr = func-call-expr ([NL] BS+ <\"<!\"> BS+ func-call-expr)+
      dollar-expr = func-call-expr (BS+ <\"$\"> BS+ func-call-expr)+
 
      <func-call-expr> = &control-expr control-expr / !control-expr lcons-expr
@@ -89,9 +89,10 @@
 
      <lcons-expr> =  cons-expr  /  bin-expr
 
-     loop-expr = &'loop' <'loop'> [BS+ loop-vars-in] loop-body
+     loop-expr = &'loop' <'loop'> (BS+ loop-vars-in|empty-vars-in) BS* [NL BS*] loop-body
      loop-vars-in = loop-var { BS* <\",\"> BS* [NL BS*] loop-var} BS* [NL BS*]  <'in'>
-     <loop-body> = [NL BS*] pipe-expr &NL
+     empty-vars-in = epsilon
+     <loop-body> = pipe-expr &NL
      loop-var =  ID BS+ <\"=\"> BS+ loop-var-value
      <loop-var-value> = pipe-expr
 
@@ -128,10 +129,10 @@
      range-infinite = prim-expr BS* [<\",\"> BS* prim-expr BS*] <\"...\">
 
      list-comprehension = list-compr-expr BS* <\"|\"> BS* list-source {BS* <','> BS* list-source}
-     list-compr-expr = pipe-expr
-     list-source = list-source-id BS+ <\"<-\"> BS+ list-source-value / pipe-expr
-     list-source-id = ID
-     list-source-value = range-def
+     <list-compr-expr> = pipe-expr
+     <list-source> = list-source-id BS+ <\"<-\"> BS+ list-source-value / pipe-expr
+     <list-source-id> = ID
+     <list-source-value> = range-def
 
      cons-expr = func-call-expr (BS* <'::'> BS* func-call-expr)+
 
@@ -175,7 +176,7 @@
      do-expr = &<\"do\"> <\"do\"> BS* NL BS* pipe-expr BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
 
      func-invokation = recur / return / \"nil\"  / partial-bin / func {BS+ arg}
-     func = ID / TID {\".\" TID} \".\" ID / KEYWORD
+     func = ID / TID  <\".\"> ID / KEYWORD
 
 
      <partial-bin> = partial-add / partial-mul / partial-sub / partial-div / partial-mod
@@ -247,6 +248,17 @@
 
       ([start, next] (let [step (cons '- [next start])] (cons '-range-to-inf [start step]))))
 
+
+(defn insert-let [eq body]
+      (for [x (apply concat [eq [body]])] x))
+
+(defn ogu-body [body eq]
+      (loop [end (last eq) beg (butlast eq) result body ]
+        (if (empty? end)
+             result
+             (recur (last beg) (butlast beg) (insert-let end result)))    )
+      )
+
 (defn ogu-definition
       ([id args body]
         (if (empty? args)
@@ -254,15 +266,18 @@
           (cons 'defn [id args body])))
 
       ([id args body where]
-        (let [equations [(second where)]]
+        (let [equations (rest where) ]
              (if (empty? args)
-               (cons 'def [id  (cons 'letfn [equations body])])
-               (cons 'defn [id args (cons 'letfn [equations body])]))))
-      )
+               (cons 'def [id  (ogu-body body equations) ])
+               (cons 'defn [id args (ogu-body body equations) ])))))
 
 (defn ogu-guards [& guards] (cons 'cond (apply concat guards)))
 
 (defn ogu-guard [a b] [a b])
+
+(defn ogu-id
+      ([id] id)
+      ([tid id] (clojure.edn/read-string (str tid \/ id))))
 
 (defn to-char [n]
       (let [l (count n) s (subs n 1 (dec l))]
@@ -272,11 +287,18 @@
       ([v] v)
       ([nn v] v))
 
+(defn ogu-equation
+      ([idf args val]
+        (if (empty? args)
+          (cons 'let [(vec [idf val])] )
+          (list 'letfn [(list idf args val)])  )))
+
 (def ast-transformations
   {:NUMBER                  clojure.edn/read-string
    :STRING                  clojure.edn/read-string
    :CHAR                    to-char
    :ID                      clojure.edn/read-string
+   :TID                     clojure.edn/read-string
    :partial-add             (fn [& rest] (if (empty? rest) '+ (cons '+ rest)))
    :partial-sub             (fn [& rest] (if (empty? rest) '- (cons '- rest)))
    :partial-mul             (fn [& rest] (if (empty? rest) '* (cons '* rest)))
@@ -318,18 +340,25 @@
    :repeat-expr             (fn [& rest] (cons 'recur rest))
    :repeat-var              ogu-repeat-var
 
+   :list-comprehension      (fn [expr & rest] (cons 'for [(vec rest) expr] ))
 
    :empty-range             vector
+
+   :do-expr                 (fn [& rest] (cons 'do rest))
+
+   :when-expr               (fn [& rest] (cons 'when rest))
 
    :dollar-expr             (fn [a b] (cons a (list b)))
    :lambda-expr             (fn [args body] (cons 'fn (cons args (list body))))
    :lambda-args             vector
-   :func                    identity
+   :func                    ogu-id
    :func-invokation         (fn [& rest] (if (= 1 (count rest)) (first rest) rest))
    :val-def                 (fn [& rest] (cons 'def rest))
+   :backward-piped-expr      (fn [& rest] (cons '->> (reverse rest)))
+   :backward-bang-piped-expr (fn [& rest] (cons '-> (reverse rest)))
    :forward-piped-expr      (fn [& rest] (cons '->> rest))
    :forward-bang-piped-expr (fn [& rest] (cons '-> rest))
-   :equation                (fn [& rest] rest)
+   :equation                ogu-equation
    :eq-args                 (fn [& rest] (apply vector rest))
    :def-args                (fn [& rest] (apply vector rest))
    :definition              ogu-definition
@@ -342,7 +371,7 @@
 
 
 (def preamble "
-  (require '[ogu.core :refer [println! sum union -range-to-inf head tail]])
+  (require '[ogu.core :refer :all])
 
   ")
 

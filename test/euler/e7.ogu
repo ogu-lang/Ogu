@@ -28,4 +28,4 @@ def nth-prime n
     | otherwise = calc-limit n |> primes |> take n |> last
 
 
-println! <| nth-prime 10001
+nth-prime 10001

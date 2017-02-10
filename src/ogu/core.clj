@@ -15,3 +15,7 @@
 (def tail rest)
 
 (def head first)
+
+(def boolean-array! boolean-array)
+
+(def aset! aset)
