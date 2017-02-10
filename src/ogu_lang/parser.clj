@@ -105,7 +105,8 @@
      <let-vars-in> = let-var {BS* <\",\"> BS* [NL BS*] let-var} BS* [NL BS*] <'in'>
      <let-var> = let-var-simple | let-var-tupled
      let-var-simple = ID BS+ <\"=\"> BS+ let-var-value
-     let-var-tupled =  <\"(\"> BS* ID {BS* <\",\"> BS* ID} BS* <\")\"> BS+ <\"=\"> BS+ let-var-value
+     let-var-tupled = let-var-tuple BS+ <\"=\"> BS+ let-var-value
+     let-var-tuple =  <\"(\"> BS* (ID|let-var-tuple) {BS* <\",\"> BS* (ID|let-var-tuple)} BS* <\")\">
      <let-var-value> = pipe-expr
      <let-body> = pipe-expr &NL
 
@@ -128,34 +129,38 @@
      range-simple = prim-expr BS* <\"..\"> BS* [\"<\"] prim-expr
      range-infinite = prim-expr BS* [<\",\"> BS* prim-expr BS*] <\"...\">
 
-     list-comprehension = list-compr-expr BS* <\"|\"> BS* list-source {BS* <','> BS* list-source}
+     list-comprehension = list-compr-expr BS* <\"|\"> BS* list-source {BS* <','> BS* list-source} [list-let] [list-where]
      <list-compr-expr> = pipe-expr
      <list-source> = list-source-id BS+ <\"<-\"> BS+ list-source-value / pipe-expr
      <list-source-id> = ID
      <list-source-value> = range-def
+     list-let = BS+ <\"let\"> BS+ let-var {BS* <\",\"> BS+ let-var}
+     list-where = BS+ <\"where\"> BS+ if-cond-expr
 
      cons-expr = func-call-expr (BS* <'::'> BS* func-call-expr)+
 
      lambda-expr = <#'\\\\'> BS* lambda-args BS+ <\"->\"> BS+ lambda-value BS* <#'\\\\'>
 
-     lambda-args = [ID {BS+ ID}]
+     lambda-args = lambda-arg {BS+ lambda-arg}
+     <lambda-arg> = ID | tupled-lambda-arg
+     tupled-lambda-arg = <\"(\"> BS* lambda-arg BS* {<\",\"> BS+ lambda-arg} BS* <\")\">
      <lambda-value> = func-call-expr
 
-     <bin-expr> = comp-expr / or-expr
-     or-expr = and-expr BS* \"||\" BS* bin-expr / and-expr
-     and-expr = comp-expr BS* \"&&\" BS* bin-expr / comp-expr
+     <bin-expr> =  comp-expr / or-expr / and-expr
+     or-expr = and-expr BS* <\"||\"> BS* bin-expr
+     and-expr = comp-expr BS* <\"&&\"> BS* bin-expr
      <comp-expr> = lt-expr / le-expr / gt-expr / ge-expr / eq-expr / ne-expr / sum-expr
      <sum-expr> = add-expr / addq-expr / sub-expr / subq-expr / cat-expr  / mult-expr
      <mult-expr> = mul-expr / mulq-expr / div-expr / mod-expr / pow-expr / prim-expr
 
-     add-expr = comp-expr BS+ <\"+\"> BS+ bin-expr
-     addq-expr = comp-expr BS+ <\"+'\"> BS+ bin-expr
+     add-expr = comp-expr (BS+ <\"+\"> BS+ bin-expr)+
+     addq-expr = comp-expr (BS+ <\"+'\"> BS+ bin-expr)+
      sub-expr = comp-expr BS+ <\"-\"> BS+ bin-expr
      subq-expr = comp-expr BS+ <\"-'\"> BS+ bin-expr
      cat-expr = comp-expr BS+ <\"++\"> BS+ bin-expr
 
-     mul-expr = prim-expr BS+ <\"*\"> BS+ mult-expr
-     mulq-expr = prim-expr BS+ <\"*'\"> BS+ mult-expr
+     mul-expr = prim-expr (BS+ &<\"*\"> <\"*\"> BS+ mult-expr)+
+     mulq-expr = prim-expr (BS+ <\"*'\"> BS+ mult-expr)+
      div-expr = prim-expr BS+ <\"/\"> BS+ mult-expr
      mod-expr = prim-expr BS+ <\"%\"> BS+ mult-expr
      pow-expr = prim-expr BS+ <\"^\"> BS+ mult-expr
@@ -293,6 +298,12 @@
           (cons 'let [(vec [idf val])] )
           (list 'letfn [(list idf args val)])  )))
 
+(defn ogu-flatten-last-while [v]
+      (let [end (last v) rest (butlast v) while (:when end)]
+           (if (empty? while)
+             v
+             (conj (conj (vec rest) :when)  while))))
+
 (def ast-transformations
   {:NUMBER                  clojure.edn/read-string
    :STRING                  clojure.edn/read-string
@@ -317,12 +328,16 @@
    :ge-expr                 (fn [& rest] (cons '>= rest))
    :eq-expr                 (fn [& rest] (cons '= rest))
    :ne-expr                 (fn [& rest] (cons 'not= rest))
+   :and-expr                (fn [& rest] (cons 'and rest))
+   :or-expr                 (fn [& rest] (cons 'or rest))
    :range-step              def-ogu-step-range
    :range-simple            def-ogu-simple-range
    :range-infinite          def-ogu-infinity-range
    :cons-expr               (fn [& rest] (cons 'cons rest))
    :lazy-value              (fn [& rest] (cons 'lazy-seq rest))
 
+   :let-var-tuple          (fn [& rest] (vec rest))
+   :let-var-tupled          (fn [ids val] [ids val])
    :let-vars                (fn [& rest] (vec (apply concat rest)))
    :let-var-simple          (fn [id val] [id val])
    :let-expr                (fn [& rest] (cons 'let rest))
@@ -340,13 +355,18 @@
    :repeat-expr             (fn [& rest] (cons 'recur rest))
    :repeat-var              ogu-repeat-var
 
-   :list-comprehension      (fn [expr & rest] (cons 'for [(vec rest) expr] ))
+   :list-where              (fn [& rest]  {:when (first rest)}     )
+
+   :list-comprehension      (fn [expr & rest] (cons 'for [(ogu-flatten-last-while (vec rest))   expr] ))
 
    :empty-range             vector
 
    :do-expr                 (fn [& rest] (cons 'do rest))
 
    :when-expr               (fn [& rest] (cons 'when rest))
+
+   :tuple                   (fn [& rest] (vec rest))
+   :tupled-lambda-arg       (fn [& rest] (vec rest))
 
    :dollar-expr             (fn [a b] (cons a (list b)))
    :lambda-expr             (fn [args body] (cons 'fn (cons args (list body))))

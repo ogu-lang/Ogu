@@ -16,15 +16,5 @@ def primes n =
         filter \i -> aget sieve i\ [2..<n]
     end
 
-def calc-limit n = (int (n * logsum)) + 3
-    where log = Math.log n,
-          loglog = Math.log log,
-          logsum = log + loglog
 
-def nth-prime n
-    | n == 1 = 2
-    | n == 2 = 3
-    | otherwise = calc-limit n |> primes |> take n |> last
-
-
-nth-prime 10001
+reduce (+) (primes (dec 2000000))
