@@ -82,7 +82,7 @@
      backward-piped-expr = func-call-expr ([NL] BS+ <\"<|\"> BS+ func-call-expr)+
      backward-bang-piped-expr = func-call-expr ([NL] BS+ <\"<!\"> BS+ func-call-expr)+
      dollar-expr = func-call-expr (BS+ <\"$\"> BS+ func-call-expr)+
-     argless-func-call = func-call-expr BS* \"$\"
+     argless-func-call = func-call-expr BS* <\"$\">
 
      <func-call-expr> = &control-expr control-expr / !control-expr lcons-expr
 
@@ -420,6 +420,7 @@
    :def-args                 (fn [& rest] (vec  (flatten rest) ))
    :definition               ogu-definition
 
+   :argless-func-call        (fn [& rest] rest)
 
 
    :module-expr              (fn [& rest] rest)

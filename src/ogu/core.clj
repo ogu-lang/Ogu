@@ -17,6 +17,8 @@
 
 (def tail rest)
 
+(def to-set set)
+
 (def head first)
 
 (defn zip [a b] (map vector a b))
