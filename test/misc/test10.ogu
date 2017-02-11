@@ -33,12 +33,23 @@ def strIMC''' peso altura
   | imc <= gordo = "estas con sobrepeso"
   | otherwise = "estas obeso, cuidado!"
   where imc = peso / altura ^ 2,
-        (delgado,normal,gordo) = (18.5,25.0,30.0)
+        (delgado, normal, gordo) = (18.5, 25.0, 30.0)
 
 
 def calcIMCs lista = [imc p a | (p, a) <- lista]
    where imc peso altura = peso / altura ^ 2
 
 
-[(70.0, 168.0), (80.0, 1.55), (45.0, 1.50)] |> calcIMCs |> println!
+println! $ strIMC 12.0
+println! $ strIMC 22.0
+println! $ strIMC 27.0
+println! $ strIMC 32.0
 
+println! $ strIMC'' 70.0 1.50
+
+
+
+[(90.0, 1.50), (45.0, 1.50)] |> calcIMCs |> println!
+
+
+[(90.0, 1.50), (45.0, 1.50)] |> calcIMCs

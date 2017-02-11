@@ -1,6 +1,5 @@
-uses Math.Random
 
-def mostrar-reglas tam = println! "Bienvenido a Toque y Fama.
+def mostrar-reglas tam = print "Bienvenido a Toque y Fama.
 ==========================\n\n
 En este juego debes tratar de adivinar una secuencia de " tam "dígitos generadas por el programa.\n
 Para esto ingresas " tam " dígitos distintos con el fin de adivinar la secuencia.\n
@@ -10,39 +9,37 @@ Ejemplo: Si la secuencia es secuencia: [8, 0, 6, 1, 3] e ingresas 40863, entonce
 tu ingresaste [4, 0, 8, 6, 3]\n
 resultado: 2 Toques 2 Famas\n\n\n"
 
-def toques num xs = filter \x -> contains? xs x\ num |> count
+def ingresar tam = do
+    println! "Ingresa una secuencia de " tam " dígitos distintos (o escribe salir):"
+    readln! $
+end
 
-def famas num xs = zip num xs |> filter \x -> first xs == second xs\ |> count
+def famas num xs = zip num xs |> filter \x -> first x == second x\ |> count
+
+def toques num xs = num |> filter \x -> (contains? xs x)\  |> count
+
 
 def validar n xs = if (length num) == n then num else []
-    where num = filter \x -> isDigit 10 x\ xs |> map (toDigit 10) |> uniq
+    where num = xs |> filter is-digit?  |> map to-digit  |> uniq
 
-def ingresar-accion = do
-    println "Ingresa una secuencia de "  (show tam) " dígitos distintos (o escribe salir):"
-    readln!
-end
+
+
 
 val tam = 5
 val sec = shuffle [0..9] |> take tam
 
-mostrar-reglas tam
 
-loop accion = ingresar-accion in
-    if accion == "salir" then
+def -main args = do
+    mostrar-reglas tam
+    loop intentos = 1, accion = ingresar tam in
+    if accion == "salir" || nil? accion then
         println! "\ngracias por jugar, adios."
-    else
-        let num = validar tam accion
-        in
-            if null num then do
-                println! "error!\n"
-                repeat ingresar-accion
-            end
-            else do
-                println! "tu ingresaste " ++ (show num)
-                val (toques, famas) = (toques num sec, famas num sec)
-                println! "resultado: " ++ (show (toques - famas)) ++ " Toques " ++ (show famas) ++ "Famas"
-                if famas == tam then
-                    println! "Ganaste! Acertaste al intento " ++ (show intentos) ++ "! La secuencia era " ++ (show sec)
-                else
-                    repeat ingresar-accion
-            end
+    else do
+    println "ACCION:" accion
+        println intentos
+        repeat (inc intentos), ingresar tam
+    end
+end
+
+(-main [])
+

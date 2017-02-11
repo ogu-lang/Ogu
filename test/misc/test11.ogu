@@ -1,22 +1,18 @@
 ;; test 11 min max
 
-def minmax : (x:Ord) => [x] -> (x,x)
+def aob a b = a or b
 
-let minmax [] = error "debe contener al menos un elemento"
-let minmax xs = 
-    var cmin = head xs
-    var cmax = cmin
-    for x <- tail xs do
-        when x < cmin do cmin <- x
-        when x > cmax do cmax <- x
-    (cmin, cmax)
+def compara' a b c = if a > b and a > c then a else b
 
-def minmax : (x:Ord) => [x] -> (x,x)
+def compara a b c = if a > b or a > c then a else b
 
-let minmax [] = error "debe contener al menos un elemento"
-let minmax xs = (minimun xs, maximun xs)
-    where maximun [x] = x
-          maximun (x::xs) = max x (maximun xs)
-          minimun [x] = x
-          minimum (x::xs) = min x (minimum xs)
+
+println! $ compara 10 20 30
+
+println! $ compara 30 20 10
+
+println! $ compara' 10 20 30
+
+println! $ compara' 30 20 10
+
 

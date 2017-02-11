@@ -21,7 +21,7 @@
 
      type = TID | ID
 
-     def-args = {BS+ arg} [\"&\" BS+ arg]
+     def-args = {BS+ arg} [BS* \"&\" BS+ arg]
 
      <arg> = &isa-type isa-type / &type-pattern type-pattern / &ID ID /  func-call-expr
 
@@ -60,7 +60,7 @@
      <where-equations> = BS* where-equation {BS* <\",\"> BS* [NL BS*] where-equation}
      <where-equation> =  (equation | guard-equation)
 
-     equation = ID [BS+ eq-args] BS+ <\"=\"> BS+ value
+     equation = ID [BS+ eq-args] BS+ <\"=\"> BS+ value | tuple-of-ids BS+ <\"=\"> BS+ value
      eq-args = arg {BS+ arg}
 
      guard-equation = ID [BS+ eq-args] BS* [NL BS*] where-body-guard
@@ -75,17 +75,18 @@
 
      <pipe-expr> =  piped-expr / func-call-expr
 
-     <piped-expr> = forward-piped-expr  / forward-bang-piped-expr / backward-piped-expr / backward-bang-piped-expr / dollar-expr
+     <piped-expr> = forward-piped-expr  / forward-bang-piped-expr / backward-piped-expr / backward-bang-piped-expr / dollar-expr / argless-func-call
 
      forward-piped-expr = func-call-expr ([NL] BS+ <\"|>\"> BS+ func-call-expr)+
      forward-bang-piped-expr = func-call-expr ([NL] BS+ <\"!>\"> BS+ func-call-expr)+
      backward-piped-expr = func-call-expr ([NL] BS+ <\"<|\"> BS+ func-call-expr)+
      backward-bang-piped-expr = func-call-expr ([NL] BS+ <\"<!\"> BS+ func-call-expr)+
      dollar-expr = func-call-expr (BS+ <\"$\"> BS+ func-call-expr)+
+     argless-func-call = func-call-expr BS* \"$\"
 
      <func-call-expr> = &control-expr control-expr / !control-expr lcons-expr
 
-     recur = &'recur' <'recur'> BS+ {arg}
+     recur = &'recur' <'recur'> {BS+ arg}
      return = &'return' <'return'> BS+ {arg}
 
      <control-expr> =  when-expr / if-expr / loop-expr  / block-expr / for-expr
@@ -133,13 +134,14 @@
      range-simple = prim-expr BS* <\"..\"> BS* [\"<\"] prim-expr
      range-infinite = prim-expr BS* [<\",\"> BS* prim-expr BS*] <\"...\">
 
-     simple-list = pipe-expr {<\",\"> pipe-expr}
+     simple-list = pipe-expr {BS* <\",\"> BS+ pipe-expr}
 
      list-comprehension = list-compr-expr BS* <\"|\"> BS* list-source {BS* <','> BS* list-source} [list-let] [list-where]
      <list-compr-expr> = pipe-expr
      <list-source> = list-source-id BS+ <\"<-\"> BS+ list-source-value / pipe-expr
-     <list-source-id> = ID
-     <list-source-value> = range-def
+     <list-source-id> = ID / tuple-of-ids
+     <list-source-value> = range-def / ID
+
      list-let = BS+ <\"let\"> BS+ let-var {BS* <\",\"> BS+ let-var}
      list-where = BS+ <\"where\"> BS+ if-cond-expr
 
@@ -152,9 +154,9 @@
      tupled-lambda-arg = <\"(\"> BS* lambda-arg BS* {<\",\"> BS+ lambda-arg} BS* <\")\">
      <lambda-value> = func-call-expr
 
-     <bin-expr> =  comp-expr / or-expr / and-expr
-     or-expr = and-expr BS* <\"||\"> BS* bin-expr
-     and-expr = comp-expr BS* <\"&&\"> BS* bin-expr
+     <bin-expr> =   or-expr / and-expr / comp-expr
+     or-expr = bin-expr BS*  <\"||\"> BS* bin-expr
+     and-expr = bin-expr BS* <\"&&\"> BS* bin-expr
      <comp-expr> = lt-expr / le-expr / gt-expr / ge-expr / eq-expr / ne-expr / sum-expr
      <sum-expr> = add-expr / addq-expr / sub-expr / subq-expr / cat-expr  / mult-expr
      <mult-expr> = mul-expr / mulq-expr / div-expr / mod-expr / pow-expr / prim-expr
@@ -224,7 +226,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
 
-     ID = !('def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'otherwise '|'set '|#'then[ \r\n]'|'uses '|'val '|'var '|'when '|'where ') ID-TOKEN
+     ID = !('def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'otherwise '|'recur '|'repeat '|'set '|#'then[ \r\n]'|'uses '|'val '|'var '|'when '|'where ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
      KEYWORD = #':[-]?[_a-z][_0-9a-zA-Z-]*[?!]?'
@@ -278,7 +280,11 @@
         (let [equations (rest where) ]
              (if (empty? args)
                (cons 'def [id  (ogu-body body equations) ])
-               (cons 'defn [id args (ogu-body body equations) ])))))
+               (cons 'defn [id args (ogu-body body equations) ]))))
+
+      ([id args ret body where]
+        (ogu-definition id args body where)))
+
 
 (defn ogu-guards [& guards] (cons 'cond (apply concat guards)))
 
@@ -333,6 +339,11 @@
    :mulq-expr                (fn [& rest] (cons '*' rest))
    :div-expr                 (fn [& rest] (cons '/ rest))
    :mod-expr                 (fn [& rest] (cons 'mod rest))
+
+   :pow-expr                 (fn [& rest] (cons 'pow rest))
+
+   :cat-expr                 (fn [& rest] (cons 'concat rest))
+
    :lt-expr                  (fn [& rest] (cons '< rest))
    :le-expr                  (fn [& rest] (cons '<= rest))
    :gt-expr                  (fn [& rest] (cons '> rest))
@@ -388,6 +399,7 @@
    :module-header            (fn [ns] (cons 'ns [ns '(:require [ogu.core :refer :all])]))
 
    :simple-list              (fn [& rest] (vec rest))
+   :tuple-of-ids             (fn [& rest] (vec rest))
 
    :dollar-expr              (fn [a b] (cons a (list b)))
    :lambda-expr              (fn [args body] (cons 'fn (cons args (list body))))
@@ -400,9 +412,15 @@
    :forward-piped-expr       (fn [& rest] (cons '->> rest))
    :forward-bang-piped-expr  (fn [& rest] (cons '-> rest))
 
-   :eq-args                  (fn [& rest] (vec  rest))
-   :def-args                 (fn [& rest] (vec  rest))
+   :recur                    (fn [& rest] (cons 'recur rest))
+
+   :isa-type                 (fn [var type] [(symbol (str \^ type)) var])
+
+   :eq-args                  (fn [& rest] (vec  (flatten rest) ))
+   :def-args                 (fn [& rest] (vec  (flatten rest) ))
    :definition               ogu-definition
+
+
 
    :module-expr              (fn [& rest] rest)
    :module                   (fn [& rest] (str (apply str (string/join \newline rest))))})
