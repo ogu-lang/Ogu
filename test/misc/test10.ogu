@@ -1,47 +1,44 @@
 ;; test 10 guardias
 
-def strIMC : (a:Float) => a -> String
 
-let strIMC imc
+def strIMC imc : Float
   | imc <= 18.5 = "estas bajo el peso normal"
   | imc <= 25.0 = "tu peso es normal"
   | imc <= 30.0 = "estas con sobrepeso"
-  | otherwise = "estas obeso, cuidado!"
+  | otherwise   = "estas obeso, cuidado!"
 
-def strIMC' : (a:Float) => a -> a -> String
-
-let strIMC' peso altura 
+def strIMC' peso altura
   | imc <= 18.5 = "estas bajo el peso normal"
   | imc <= 25.0 = "tu peso es normal"
   | imc <= 30.0 = "estas con sobrepeso"
   | otherwise = "estas obeso, cuidado!"
   where imc = peso / altura ^ 2
 
-def strIMC'' : (a:Float) => a -> a -> String
 
-let strIMC'' peso altura
+def strIMC'' peso:Float altura:Float -> String
   | imc <= delgado = "estas bajo el peso normal"
   | imc <= normal = "tu peso es normal"
   | imc <= gordo = "estas con sobrepeso"
   | otherwise = "estas obeso, cuidado!"
-  where  
-    imc = peso / altura ^ 2
-    delgado = 18.5
-    normal = 25.0
-    gordo = 30.0        
+  where
+    imc = peso / altura ^ 2,
+    delgado = 18.5,
+    normal = 25.0,
+    gordo = 30.0
 
-def strIMC''' : (a:Float) => a -> a -> String
 
-let strIMC''' peso altura 
+def strIMC''' peso altura
   | imc <= delgado = "estas bajo el peso normal"
   | imc <= normal = "tu peso es normal"
   | imc <= gordo = "estas con sobrepeso"
   | otherwise = "estas obeso, cuidado!"
-  where imc = peso / altura ^ 2
+  where imc = peso / altura ^ 2,
         (delgado,normal,gordo) = (18.5,25.0,30.0)
 
-def calcIMCs : (a:Float)=> [(a, a)] -> [a]
 
-let calcIMCs lista = [imc p a | (p, a) <- lista]  
+def calcIMCs lista = [imc p a | (p, a) <- lista]
    where imc peso altura = peso / altura ^ 2
-       
+
+
+[(70.0, 168.0), (80.0, 1.55), (45.0, 1.50)] |> calcIMCs |> println!
+

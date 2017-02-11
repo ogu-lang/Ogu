@@ -15,7 +15,11 @@
 
      <module-name> = TID {\".\" TID} |  (ID|TID) {\".\" (ID|TID)}
 
-     definition = &\"def\" <\"def\"> BS+ ID  def-args def-body [where]
+     definition = &\"def\" <\"def\"> BS+ ID  def-args [def-return-type] def-body [where]
+
+     def-return-type = BS* <\"->\"> BS+ type
+
+     type = TID | ID
 
      def-args = {BS+ arg} [\"&\" BS+ arg]
 
@@ -49,22 +53,21 @@
      body-guard = NL guard+ [otherwise]
      <body-simple> = BS* <\"=\"> BS* [NL] BS* value BS* NL
      guard = BS* <\"|\"> !'otherwise' {BS+ arg} BS+ <\"=\"> BS+ value BS* NL
-     otherwise = BS* <\"|\"> BS+ <'otherwise'> BS+ <\"=\"> BS+ value BS* NL
+     otherwise = BS* <\"|\"> BS+ <\"otherwise\"> BS+ <\"=\"> BS+ value BS* NL
 
      where = BS+ <'where'> BS* [NL] where-equations NL
 
-     <where-equations> = where-equation {BS* <\",\"> BS* [NL BS*] where-equation}
-     <where-equation> =  (equation | where-guards)
+     <where-equations> = BS* where-equation {BS* <\",\"> BS* [NL BS*] where-equation}
+     <where-equation> =  (equation | guard-equation)
 
      equation = ID [BS+ eq-args] BS+ <\"=\"> BS+ value
      eq-args = arg {BS+ arg}
 
-     <where-guards> = ID BS+ {eq-args} BS* [NL BS*] where-guard-group
+     guard-equation = ID [BS+ eq-args] BS* [NL BS*] where-body-guard
+     where-body-guard = (NL where-guard)+ [NL where-otherwise]
+     where-guard = BS* <\"|\"> !\"otherwise \" {BS+ arg} BS+ <\"=\"> BS+ value
+     where-otherwise = BS* <\"|\"> BS+ <\"otherwise\"> BS+ <\"=\"> BS+ value
 
-     where-guard-group = where-guard {NL where-guard} [NL where-otherwise]
-
-     where-guard = BS* <\"|\"> !'otherwise' {BS+ arg} BS* <\"=\"> BS+ value
-     where-otherwise = BS* <\"|\"> BS+ <'otherwise'> BS+ <\"=\">  BS+ value
 
      <value> = lazy-value / eager-value
      lazy-value = &<'lazy'> <'lazy'> BS+ pipe-expr
@@ -121,8 +124,7 @@
      when-expr = &'when' <'when'> BS+ if-cond-expr BS* [NL BS*] <'then'> ([NL BS*]|BS+) then-expr &NL
 
      repeat-expr = &'repeat' <'repeat'> BS+ [repeat-var BS* {[NL] BS* <\",\"> BS* [NL BS*] repeat-var} ] &(NL|<'end'>)
-     repeat-var  = [quoted-var BS+ <\"=\"> BS+] loop-var-value
-     quoted-var = ID <#'\\''>
+     repeat-var  = [ID BS+ <\"=\"> BS+] loop-var-value
 
      <range-expr> = <\"[\"> BS* ( range-def | list-comprehension | simple-list | empty-range ) BS* <\"]\">
      empty-range = epsilon
@@ -220,7 +222,7 @@
      <pipe-op> = \"|>\" / \"<|\"
 
 
-     <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!]?'
+     <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
 
      ID = !('def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'otherwise '|'set '|#'then[ \r\n]'|'uses '|'val '|'var '|'when '|'where ') ID-TOKEN
 
@@ -352,8 +354,14 @@
    :let-expr                 (fn [& rest] (cons 'let rest))
 
    :otherwise                (fn [& rest] [:else (first rest)])
+   :where-otherwise          (fn [& rest] [:else (first rest)])
    :guard                    ogu-guard
+   :where-guard              ogu-guard
    :body-guard               ogu-guards
+   :where-body-guard         ogu-guards
+
+   :equation                 ogu-equation
+   :guard-equation           ogu-equation
 
    :if-expr                  (fn [& rest] (cons 'if rest))
 
@@ -391,7 +399,7 @@
    :backward-bang-piped-expr (fn [& rest] (cons '-> (reverse rest)))
    :forward-piped-expr       (fn [& rest] (cons '->> rest))
    :forward-bang-piped-expr  (fn [& rest] (cons '-> rest))
-   :equation                 ogu-equation
+
    :eq-args                  (fn [& rest] (vec  rest))
    :def-args                 (fn [& rest] (vec  rest))
    :definition               ogu-definition

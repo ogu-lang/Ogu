@@ -1,14 +1,8 @@
-; test 8 , pattern matching
+; test 8 , guards
 
 def factorial n
     | n == 0 = 1
     | n == 1 = 1
     | otherwise = n *' (factorial (dec n))
-
-println! $ factorial 4
-
-factorial 4
-
-println! $ factorial 24
 
 factorial 24

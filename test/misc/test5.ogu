@@ -1,12 +1,3 @@
 ; test 5
 
-[0..100] |> filter even? |> sum |> println!
-
-[0...] |> take-while \x -> x < 1000\ |>  println!
-
-
-[0...] |> take-while \x -> x < 1000\ |> sum |> println!
-
-[0...] |> take-while \x -> x < 4000000\ |> filter even? |> reduce (+) |> println!
-
 [0...] |> take-while \x -> x < 4000000\ |> filter even? |> reduce (+)

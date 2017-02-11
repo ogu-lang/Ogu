@@ -2,42 +2,48 @@
     [:require [clojure.test :refer :all]
      [ogu-lang.parser :refer :all]])
 
-(def euler1 "test/euler/e1.ogu")
-(def euler2 "test/euler/e2.ogu")
-(def euler3 "test/euler/e3.ogu")
-(def euler4 "test/euler/e4.ogu")
-(def euler5 "test/euler/e5.ogu")
-(def euler6 "test/euler/e6.ogu")
-(def euler7 "test/euler/e7.ogu")
-(def euler8 "test/euler/e8.ogu")
-(def euler9 "test/euler/e9.ogu")
-(def euler10 "test/euler/e10.ogu")
-
-
 (defn eval-mod [name]
-  (parse-module {:eval true} name))
+      (parse-module {:eval true} name))
+
+(defn eval-test [tests]
+  (doseq [test tests]
+    (println test)
+    (let [f (:file test) v (:val test)]
+      (is (= (eval-mod f) v)))))
+
+(def test-alg
+  [{:file "test/alg/e1.ogu" :val 233168}
+   {:file "test/alg/e2.ogu" :val 4613732}
+   {:file "test/alg/e3.ogu" :val 6857}
+   {:file "test/alg/e4.ogu" :val 906609}
+   {:file "test/alg/e5.ogu" :val 232792560}
+   {:file "test/alg/e6.ogu" :val 25164150}
+   {:file "test/alg/e7.ogu" :val 104743}
+   {:file "test/alg/e8.ogu" :val 23514624000}
+   {:file "test/alg/e9.ogu" :val 31875000}
+   {:file "test/alg/e10.ogu" :val 142913828922}
+   {:file "test/alg/ack.ogu" :val 10}
+   {:file "test/alg/collatz.ogu" :val 66}
+   {:file "test/alg/facts.ogu" :val true}])
+
+
 
 (deftest test-1
   (testing "Check Euler"
-    (is (= 233168       (eval-mod euler1)))
-    (is (= 4613732      (eval-mod euler2)))
-    (is (= 6857         (eval-mod euler3)))
-    (is (= 906609       (eval-mod euler4)))
-    (is (= 232792560    (eval-mod euler5)))
-    (is (= 25164150     (eval-mod euler6)))
-    (is (= 104743       (eval-mod euler7)))
-    (is (= 23514624000  (eval-mod euler8))))
-    (is (= 31875000     (eval-mod euler9)))
-    (is (= 142913828922 (eval-mod euler10))))
+    (eval-test test-alg)))
+
+(def test-misc
+  [{:file "test/misc/test0.ogu" :val nil}
+   {:file "test/misc/test1.ogu" :val 11}
+   {:file "test/misc/test2.ogu" :val 6}
+   {:file "test/misc/test3.ogu" :val "foobar"}
+   {:file "test/misc/test4.ogu" :val 9}
+   {:file "test/misc/test5.ogu" :val 3999998000000}
+   {:file "test/misc/test6.ogu" :val 8}
+   {:file "test/misc/test7.ogu" :val 2}
+   {:file "test/misc/test8.ogu" :val 620448401733239439360000N}
+   {:file "test/misc/test9.ogu" :val 10100}])
 
 (deftest test-2
-  (testing "Check valid 1-10")
-     (is (nil? (eval-mod "test/misc/test0.ogu")))
-     (is (= 11 (eval-mod "test/misc/test1.ogu")))
-     (is (= 6  (eval-mod "test/misc/test2.ogu")))
-     (is (= "foobar" (eval-mod "test/misc/test3.ogu")))
-     (is (= 9 (eval-mod "test/misc/test4.ogu")))
-     (is (= 3999998000000 (eval-mod "test/misc/test5.ogu")))
-     (is (= 8 (eval-mod "test/misc/test6.ogu")))
-     (is (= 2 (eval-mod "test/misc/test7.ogu")))
-     (is (= 620448401733239439360000N (eval-mod "test/misc/test8.ogu"))))
+  (testing "Check Misc"
+    (eval-test test-misc)))
