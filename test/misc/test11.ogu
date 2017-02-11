@@ -1,18 +1,13 @@
 ;; test 11 min max
 
-def aob a b = a or b
+def aob a b = a || b
 
-def compara' a b c = if a > b and a > c then a else b
+def compara' a b c = if a > b && a > c then a else b
 
-def compara a b c = if a > b or a > c then a else b
+def compara a b c = if a > b || a > c then a else b
 
 
-println! $ compara 10 20 30
 
-println! $ compara 30 20 10
-
-println! $ compara' 10 20 30
-
-println! $ compara' 30 20 10
+(compara' 30 20 10) == (compara 30 20 10)
 
 

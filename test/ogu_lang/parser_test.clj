@@ -24,7 +24,8 @@
    {:file "test/alg/e10.ogu" :val 142913828922}
    {:file "test/alg/ack.ogu" :val 10}
    {:file "test/alg/collatz.ogu" :val 66}
-   {:file "test/alg/facts.ogu" :val true}])
+   {:file "test/alg/facts.ogu" :val true}
+   {:file "test/alg/pi.ogu" :val false}])
 
 
 
@@ -43,7 +44,9 @@
    {:file "test/misc/test7.ogu" :val 2}
    {:file "test/misc/test8.ogu" :val 620448401733239439360000N}
    {:file "test/misc/test9.ogu" :val 10100}
-   {:file "test/misc/test10.ogu" :val '(40.0 20.0)}])
+   {:file "test/misc/test10.ogu" :val '(40.0 20.0)}
+   {:file "test/misc/test11.ogu" :val true}
+   {:file "test/misc/test12.ogu" :val 1884.9555921538758}])
 
 (deftest test-2
   (testing "Check Misc"

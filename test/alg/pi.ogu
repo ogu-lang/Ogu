@@ -1,0 +1,8 @@
+; calculate pi
+; using the approximation 4 * (1 - 1/3 + 1/5 - 1/7 + ...
+
+def calculate-pi iterations =  odd-numbers |> take iterations |> map (/) (cycle  [1, -1])  |> sum |> (* 4.0)
+  where odd-numbers = lazy iterate inc 1 |> filter odd?
+
+
+pi == (calculate-pi 1000)

@@ -5,6 +5,10 @@
 
 (def readln! read-line)
 
+(defn prompt! [& args]
+      (binding [*print-readably* nil] (apply prn args))
+      (flush)
+      (read-line))
 
 
 (defn  sum [args] (reduce + (seq args)))
@@ -74,3 +78,5 @@
                         :else 1)
           :else (/ 1 (expt-int base (minus power))))
         (Math/pow base power)))
+
+(def pi Math/PI)

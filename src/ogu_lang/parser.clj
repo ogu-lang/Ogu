@@ -82,7 +82,7 @@
      backward-piped-expr = func-call-expr ([NL] BS+ <\"<|\"> BS+ func-call-expr)+
      backward-bang-piped-expr = func-call-expr ([NL] BS+ <\"<!\"> BS+ func-call-expr)+
      dollar-expr = func-call-expr (BS+ <\"$\"> BS+ func-call-expr)+
-     argless-func-call = func-call-expr BS* <\"$\">
+     argless-func-call = func-call-expr BS* <\"()\"> [BS* <\"$\">]
 
      <func-call-expr> = &control-expr control-expr / !control-expr lcons-expr
 
@@ -183,7 +183,7 @@
      <prim-expr> = paren-expr / func-invokation / constructor / !partial-sub neg-expr / not-expr / ID / NUMBER / STRING / CHAR / range-expr / map-expr / lambda-expr
 
 
-     neg-expr = \"-\"  prim-expr
+     neg-expr = !(NUMBER) \"-\"  prim-expr
      not-expr = \"not\" BS+ prim-expr
 
      do-expr = &<\"do\"> <\"do\"> BS* NL BS* pipe-expr BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
@@ -233,7 +233,7 @@
 
      CHAR = #\"'[^']*'\"
      STRING = #'\"[^\"]*\"'
-     NUMBER = #'[0-9]+([.][0-9]+)?([eE](-)?[0-9]+)?[NM]?'
+     NUMBER = #'[-]?[0-9]+([.][0-9]+)?([eE](-)?[0-9]+)?[NM]?'
 
      <BS> = <#'[ \\t]'>\n
 
@@ -339,6 +339,7 @@
    :mulq-expr                (fn [& rest] (cons '*' rest))
    :div-expr                 (fn [& rest] (cons '/ rest))
    :mod-expr                 (fn [& rest] (cons 'mod rest))
+   :neg-expr                 (fn [& rest] (cons '- rest))
 
    :pow-expr                 (fn [& rest] (cons 'pow rest))
 
