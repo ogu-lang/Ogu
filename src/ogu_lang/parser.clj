@@ -15,7 +15,7 @@
 
      <module-name> = TID {\".\" TID} |  (ID|TID) {\".\" (ID|TID)}
 
-     definition = [&\"def\" <\"def\"> BS+ ] ID  def-args [def-return-type] def-body [where]
+     definition = [[&\"def\" <\"def\">] [\"-\"] BS+ ] ID  def-args [def-return-type] def-body [where]
 
      def-return-type = BS* <\"->\"> BS+ type
 
@@ -264,20 +264,44 @@
              (recur (last beg) (butlast beg) (insert-let end result)))    )
       )
 
+(defn ogu-priv-definition
+  ([id args body]
+    (if (empty? args)
+      (cons 'def [id  body])
+      (cons 'defn- [id args body])))
+
+  ([id args body where]
+    (let [equations (rest where) ]
+         (if (empty? args)
+           (cons 'def [id  (ogu-body body equations) ])
+           (cons 'defn- [id args (ogu-body body equations)])))))
+
 (defn ogu-definition
+      ([id val] (cons 'def [id val]))
+
       ([id args body]
-        (if (empty? args)
-          (cons 'def [id  body])
-          (cons 'defn [id args body])))
+        (if (= "-" id)
+          (ogu-definition args body)
+          (if (empty? args)
+            (cons 'def [id  body])
+            (cons 'defn [id args body]))))
 
       ([id args body where]
-        (let [equations (rest where) ]
-             (if (empty? args)
-               (cons 'def [id  (ogu-body body equations) ])
-               (cons 'defn [id args (ogu-body body equations) ]))))
+        (if (= "-" id)
+          (ogu-priv-definition args body where)
+          (let [equations (rest where) ]
+               (if (empty? args)
+                 (cons 'def [id  (ogu-body body equations) ])
+                 (cons 'defn [id args (ogu-body body equations) ]))))
+        )
 
       ([id args ret body where]
-        (ogu-definition id args body where)))
+        (if (= "-" id)
+          (ogu-priv-definition args ret body where)
+          (ogu-definition id args body where)))
+
+      ([min id args ret body where]
+          (ogu-priv-definition id args body where)))
 
 
 (defn ogu-guards [& guards] (cons 'cond (apply concat guards)))
@@ -420,6 +444,7 @@
 
    :module-expr              (fn [& rest] rest)
    :module                   (fn [& rest] (str (apply str (string/join \newline rest))))})
+
 
 (defn transform-ast [ast]
   (insta/transform ast-transformations ast))

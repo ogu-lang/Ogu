@@ -1,7 +1,11 @@
 
-def a = 10
+def- interna a = a + 10
 
-def a = 11
+def publica b = interna 24
 
-println! a
+def- inner = 100
 
+def public = inner + 100
+
+
+(publica inner) * (interna public)
