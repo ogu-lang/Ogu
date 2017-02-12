@@ -7,7 +7,7 @@
 
 (def grammar
   (insta/parser
-    "module = [module-header] {uses} {NL} {definition / type-def NL / trait-def / val-def NL / var-def NL / set-var NL / module-expr}
+    "module = [module-header] {uses} {NL} {definition / type-def NL / trait-def  / module-expr}
 
      module-header = <'module'> BS+ module-name BS* NL
 
@@ -15,7 +15,7 @@
 
      <module-name> = TID {\".\" TID} |  (ID|TID) {\".\" (ID|TID)}
 
-     definition = &\"def\" <\"def\"> BS+ ID  def-args [def-return-type] def-body [where]
+     definition = [&\"def\" <\"def\"> BS+ ] ID  def-args [def-return-type] def-body [where]
 
      def-return-type = BS* <\"->\"> BS+ type
 
@@ -35,12 +35,6 @@
      trait-methods = trait-method {trait-method}
      trait-method = BS* ID {BS+ trait-method-arg} BS* NL
      trait-method-arg = TID | ID
-
-     val-def = BS* <'val'> BS+ (tuple-of-ids/ID) BS+ <\"=\"> BS+ pipe-expr {BS* \",\" BS* (tuple-of-ids/ID) BS+ <\"=\"> BS+ pipe-expr}
-
-     var-def = BS* <'var'> BS+ (tuple-of-ids/ID) BS+ <\"=\"> BS+ pipe-expr {BS* \",\" BS* (tuple-of-ids/ID) BS+ <\"=\"> BS+ pipe-expr}
-
-     set-var = BS* <'set'> BS+ ID BS+ <\"=\"> BS+ pipe-expr
 
      tuple-of-ids = <\"(\"> BS* ID {BS* <\",\"> BS+ ID} BS* <\")\">
 
@@ -82,7 +76,7 @@
      backward-piped-expr = func-call-expr ([NL] BS+ <\"<|\"> BS+ func-call-expr)+
      backward-bang-piped-expr = func-call-expr ([NL] BS+ <\"<!\"> BS+ func-call-expr)+
      dollar-expr = func-call-expr (BS+ <\"$\"> BS+ func-call-expr)+
-     argless-func-call = func-call-expr BS* <\"()\"> [BS* <\"$\">]
+     argless-func-call = <\"(\"> ID  <\")\">
 
      <func-call-expr> = &control-expr control-expr / !control-expr lcons-expr
 
@@ -91,7 +85,7 @@
 
      <control-expr> =  when-expr / if-expr / loop-expr  / block-expr / for-expr
 
-     <block-expr> =  let-expr /  repeat-expr / do-expr / val-def / var-def / set-var
+     <block-expr> =  let-expr /  repeat-expr / do-expr
 
      <lcons-expr> =  cons-expr  /  bin-expr
 
@@ -341,6 +335,7 @@
    :mod-expr                 (fn [& rest] (cons 'mod rest))
    :neg-expr                 (fn [& rest] (cons '- rest))
 
+
    :pow-expr                 (fn [& rest] (cons 'pow rest))
 
    :cat-expr                 (fn [& rest] (cons 'concat rest))
@@ -407,7 +402,6 @@
    :lambda-args              vector
    :func                     ogu-id
    :func-invokation          (fn [& rest] (if (= 1 (count rest)) (first rest) rest))
-   :val-def                  (fn [& rest] (cons 'def rest))
    :backward-piped-expr      (fn [& rest] (cons '->> (reverse rest)))
    :backward-bang-piped-expr (fn [& rest] (cons '-> (reverse rest)))
    :forward-piped-expr       (fn [& rest] (cons '->> rest))

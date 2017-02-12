@@ -1,7 +1,7 @@
 
-var a = 10
+def a = 10
 
-set a = 11
+def a = 11
 
 println! a
 

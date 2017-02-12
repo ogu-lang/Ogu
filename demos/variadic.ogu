@@ -1,12 +1,17 @@
 
-def greet
-    & = greet you
-    & name
+
+greet = greet "you"
+
+greet name
     | name == "world " = println! "hello world"
     | otherwise = println! "hello " name
 
+greet "world"
 
-def greet2 name & rest = apply \n -> println! "hello " n\ (name :: rest) ; done
+greet "eduardo"
+
+
+greet2 name & rest = apply \n -> println! "hello " n\ (name :: rest) ; done
 
 
 greet2 "Yan" "Darryl" "Tom" "John"

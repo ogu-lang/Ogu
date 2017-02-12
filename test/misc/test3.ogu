@@ -10,7 +10,7 @@
 "foo" !> str "bar" !> str "zoo" !> println ; foobarzoo (clojure ->)
 
 
-val c = 5
+def c = 5
 
 
 c !> (+ 3) !> (/ 2)  !> (- 1) !> println

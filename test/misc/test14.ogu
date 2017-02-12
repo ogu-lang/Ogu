@@ -1,0 +1,5 @@
+
+println! "ingresa algo"
+def algo = (read-line)
+
+println! "ingresaste " algo

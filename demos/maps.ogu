@@ -1,6 +1,6 @@
 
 
-val person = {:first-name "Eduardo",
+def person = {:first-name "Eduardo",
                :last-name "Diaz",
                :email nil,
                :pass nil}
@@ -8,3 +8,4 @@ val person = {:first-name "Eduardo",
 
 println! $ :email person
 
+val
