@@ -11,5 +11,5 @@ def data = [{:problem "euler1", :val 233168},
               {:problem "euler9", :val 31875000},
               {:problem "euler10", :val 142913828922}]
 
-data |> map :val |> sum |> println! "suma es: "
+data |> map :val |> sum
 

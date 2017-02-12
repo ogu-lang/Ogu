@@ -454,9 +454,30 @@
    :module                   (fn [& rest] (str (apply str (string/join \newline rest))))})
 
 
-(defn transform-ast [ast]
-  (insta/transform ast-transformations ast))
+(defn classify-form [[p form]]
+      (cond
+        (symbol? form) { (str "expr-" (md5 (str (uuid)))) {:form form :pos p}}
+        :else (if (or (= (first form) 'def) (= (first form) 'defn))
+                { (str "defv-" (second form)) {:form form :pos p}   }
+                { (str "expr-" (md5 (str (uuid)))) {:form form :pos p}})))
 
+(defn merge-variadic-function [fun]
+      (println (count fun))
+      (println fun)
+      fun)
+
+(defn merge-functions [[k v]]
+      (cond
+        (string/starts-with? k "defv-") (merge-variadic-function v)
+        :else v))
+
+(defn merge-variadic [source]
+      (let [tree (clojure.edn/read-string (str "[ " source "]"))
+            forms (apply merge-with concat (mapv classify-form (ogu.core/zip (ogu.core/-range-to-inf 1) tree)))  ]
+           (apply str (doall (map #(str (:form %) \newline) (sort-by :pos (map merge-functions forms)))) ) )  )
+
+(defn transform-ast [ast]
+   (merge-variadic (insta/transform ast-transformations ast)))
 
 (def preamble "
   (require '[ogu.core :refer :all])
