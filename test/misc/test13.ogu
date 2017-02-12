@@ -3,9 +3,11 @@ def- interna a = a + 10
 
 def publica b = interna 24
 
-def- inner = 100
+- inner = 100
 
-def public = inner + 100
+ public = inner + 100
+
+- test a b = (publica a) * (interna b)
 
 
-(publica inner) * (interna public)
+(test inner public)

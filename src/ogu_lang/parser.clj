@@ -128,7 +128,7 @@
      range-simple = prim-expr BS* <\"..\"> BS* [\"<\"] prim-expr
      range-infinite = prim-expr BS* [<\",\"> BS* prim-expr BS*] <\"...\">
 
-     simple-list = pipe-expr {BS* <\",\"> BS+ pipe-expr}
+     simple-list = pipe-expr {BS* <\",\"> [BS* NL] BS+ pipe-expr}
 
      list-comprehension = list-compr-expr BS* <\"|\"> BS* list-source {BS* <','> BS* list-source} [list-let] [list-where]
      <list-compr-expr> = pipe-expr
@@ -182,7 +182,8 @@
 
      do-expr = &<\"do\"> <\"do\"> BS* NL BS* pipe-expr BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
 
-     func-invokation = recur / return / \"nil\"  / partial-bin / func {BS+ arg}
+     func-invokation = recur / return / nil-value / partial-bin / func {BS+ arg}
+     nil-value = <\"nil\">
      func = ID / TID  <\".\"> ID / KEYWORD
 
 
@@ -202,9 +203,9 @@
      field-assign-list = field-assign {BS* <\",\"> BS* [NL BS*] field-assign}
      field-assign = ID BS+ <\"=\"> BS+ pipe-expr | pipe-expr
 
-     map-expr = \"{\" [  map-pair {BS* <\",\"> BS* [NL] map-pair}  ] [NL BS*] \"}\"
+     map-expr = <\"{\"> [  map-pair {BS* <\",\"> BS* [NL] map-pair}  ] [NL BS*] <\"}\">
 
-     map-pair = BS* KEYWORD BS+ pipe-expr
+     <map-pair> = BS* KEYWORD BS+ pipe-expr
 
      <and-op> = \"&&\"
      <or-op>  = \"||\"
@@ -220,7 +221,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
 
-     ID = !('def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'otherwise '|'recur '|'repeat '|'set '|#'then[ \r\n]'|'uses '|'val '|'var '|'when '|'where ') ID-TOKEN
+     ID = !('def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'repeat '|#'then[ \r\n]'|'uses '|'when '|'where ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
      KEYWORD = #':[-]?[_a-z][_0-9a-zA-Z-]*[?!]?'
@@ -333,6 +334,7 @@
              v
              (conj (conj (vec rest) :when)  while))))
 
+
 (defn ogu-uses
       ([ns & rest]
         (if (empty? rest)
@@ -342,6 +344,7 @@
 (def ast-transformations
   {:NUMBER                   clojure.edn/read-string
    :STRING                   clojure.edn/read-string
+   :KEYWORD                  clojure.edn/read-string
    :CHAR                     to-char
    :ID                       clojure.edn/read-string
    :TID                      clojure.edn/read-string
@@ -413,6 +416,10 @@
 
    :when-expr                (fn [& rest] (cons 'when rest))
 
+   :map-expr                 (fn [& rest] (apply hash-map rest))
+
+   :nil-value                (fn [] nil)
+
    :tuple                    (fn [& rest] (vec rest))
    :tupled-lambda-arg        (fn [& rest] (vec rest))
 
@@ -432,6 +439,7 @@
    :forward-bang-piped-expr  (fn [& rest] (cons '-> rest))
 
    :recur                    (fn [& rest] (cons 'recur rest))
+
 
    :isa-type                 (fn [var type] [(symbol (str \^ type)) var])
 
