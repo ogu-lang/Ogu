@@ -48,7 +48,8 @@
    {:file "test/misc/test11.ogu" :val true}
    {:file "test/misc/test12.ogu" :val 1884.9555921538758}
    {:file "test/misc/test13.ogu" :val 7140}
-   {:file "test/misc/test14.ogu" :val 166724149741}])
+   {:file "test/misc/test14.ogu" :val 166724149741}
+   {:file "test/misc/test15.ogu" :val 60}])
 
 (deftest test-2
   (testing "Check Misc"

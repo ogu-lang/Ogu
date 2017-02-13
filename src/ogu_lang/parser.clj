@@ -21,7 +21,9 @@
 
      type = TID | ID
 
-     def-args = {BS+ arg} [BS* \"&\" BS+ arg]
+     def-args = {BS+ arg} [BS* rest-args]
+
+     rest-args = <\"&\"> BS+ arg
 
      <arg> = &isa-type isa-type / &type-pattern type-pattern / &ID ID /  func-call-expr
 
@@ -440,6 +442,8 @@
 
    :recur                    (fn [& rest] (cons 'recur rest))
 
+   :rest-args                (fn [args] (cons '& [args]))
+
 
    :isa-type                 (fn [var type] [(symbol (str \^ type)) var])
 
@@ -461,10 +465,20 @@
                 { (str "defv-" (second form)) {:form form :pos p}   }
                 { (str "expr-" (md5 (str (uuid)))) {:form form :pos p}})))
 
+(defn make-variadic [forms]
+      (loop [pos 999999, head (first forms), tail (rest forms), name nil, result []]
+            (cond
+              (empty? tail) {:form (cons 'defn (cons name result))  :pos pos }
+              (= :pos (first head)) (recur (min pos (second head)) (first tail) (rest tail) name result)
+              :else (let [form (second head) pn (second form)]
+                         (if (= 'def (first form))
+                           (recur pos (first tail) (rest tail) pn (conj result (cons '[] (drop 2 form)) ))
+                           (recur pos (first tail) (rest tail) pn (conj result (drop 2 form))))))))
+
 (defn merge-variadic-function [fun]
-      (println (count fun))
-      (println fun)
-      fun)
+      (cond
+        (seq? fun)  (make-variadic fun)
+        :else fun))
 
 (defn merge-functions [[k v]]
       (cond
