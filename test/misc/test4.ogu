@@ -7,7 +7,7 @@ println (max 10 4)
 
 ; comentario
 
-println max 4 5 + 2
+println $ max 4 5 + 2
 
 println $ 2 + max 4 5
 

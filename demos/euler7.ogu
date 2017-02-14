@@ -22,10 +22,9 @@ def calc-limit n = (int (n * logsum)) + 3
           loglog = Math.log log,
           logsum = log + loglog
 
-def nth-prime n
-    | n == 1 = 2
-    | n == 2 = 3
-    | otherwise = calc-limit n |> primes |> take n |> last
+def nth-prime 1 = 2
+def nth-prime 2 = 3
+def nth-prime n = calc-limit n |> primes |> take n |> last
 
 
 println! <| nth-prime 10001

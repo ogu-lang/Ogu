@@ -150,31 +150,41 @@
      tupled-lambda-arg = <\"(\"> BS* lambda-arg BS* {<\",\"> BS+ lambda-arg} BS* <\")\">
      <lambda-value> = func-call-expr
 
-     <bin-expr> =   or-expr / and-expr / comp-expr
-     or-expr = bin-expr BS*  <\"||\"> BS* bin-expr
-     and-expr = bin-expr BS* <\"&&\"> BS* bin-expr
+     <bin-expr> =  logical-expr
+
+     <logical-expr> = or-expr / and-expr / comp-expr
+
+     or-expr = logical-expr BS*  (<\"||\"> BS* logical-expr)+
+
+     and-expr = comp-expr BS* (<\"&&\"> BS* comp-expr)
+
      <comp-expr> = lt-expr / le-expr / gt-expr / ge-expr / eq-expr / ne-expr / sum-expr
-     <sum-expr> = add-expr / addq-expr / sub-expr / subq-expr / cat-expr  / mult-expr
-     <mult-expr> = mul-expr / mulq-expr / div-expr / mod-expr / pow-expr / prim-expr
 
-     add-expr = comp-expr (BS+ <\"+\"> BS+ bin-expr)+
-     addq-expr = comp-expr (BS+ <\"+'\"> BS+ bin-expr)+
-     sub-expr = comp-expr BS+ <\"-\"> BS+ bin-expr
-     subq-expr = comp-expr BS+ <\"-'\"> BS+ bin-expr
-     cat-expr = comp-expr (BS+ <\"++\"> BS+ bin-expr)+
+     lt-expr = sum-expr (BS+ <\"<\">  BS+ sum-expr)+
+     le-expr = sum-expr (BS+ <\"<=\"> BS+ sum-expr)+
+     gt-expr = sum-expr (BS+ <\">\">  BS+ sum-expr)+
+     ge-expr = sum-expr (BS+ <\">=\"> BS+ sum-expr)+
+     eq-expr = sum-expr (BS+ <\"==\"> BS+ sum-expr)+
+     ne-expr = sum-expr (BS+ <\"/=\"> BS+ sum-expr)+
 
-     mul-expr = prim-expr (BS+ &<\"*\"> <\"*\"> BS+ mult-expr)+
-     mulq-expr = prim-expr (BS+ <\"*'\"> BS+ mult-expr)+
-     div-expr = prim-expr BS+ <\"/\"> BS+ mult-expr
-     mod-expr = prim-expr BS+ <\"%\"> BS+ mult-expr
-     pow-expr = prim-expr BS+ <\"^\"> BS+ mult-expr
+     <sum-expr> = add-expr / addq-expr / sub-expr / subq-expr / cat-expr / mult-expr
 
-     lt-expr = sum-expr BS* <\"<\"> BS* bin-expr
-     le-expr = sum-expr BS* <\"<=\"> BS* bin-expr
-     gt-expr = sum-expr BS* <\">\"> BS* bin-expr
-     ge-expr = sum-expr BS* <\">=\"> BS* bin-expr
-     eq-expr = sum-expr BS* <\"==\"> BS* bin-expr
-     ne-expr = sum-expr BS* <\"/=\"> BS* bin-expr
+     add-expr  = mult-expr  (BS+ <\"+\">  BS+ mult-expr)+
+     addq-expr = mult-expr (BS+ <\"+'\"> BS+ mult-expr)+
+     sub-expr  = mult-expr  (BS+ <\"-\">  BS+ mult-expr)+
+     subq-expr = mult-expr (BS+ <\"-'\"> BS+ mult-expr)+
+     cat-expr  = mult-expr  (BS+ <\"++\"> BS+ mult-expr)+
+
+     <mult-expr> =  mul-expr / mulq-expr / div-expr / mod-expr / factor-expr
+
+     mul-expr  = mult-expr (BS+ &<\"*\"> <\"*\">  BS+ mult-expr)+
+     mulq-expr = mult-expr (BS+ <\"*'\">          BS+ mult-expr)+
+     div-expr  = mult-expr (BS+ <\"/\">           BS+ mult-expr)+
+     mod-expr  = mult-expr (BS+ <\"%\">           BS+ mult-expr)+
+
+     <factor-expr> = pow-expr / prim-expr
+
+     pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
 
      <prim-expr> = paren-expr / func-invokation / constructor / !partial-sub neg-expr / not-expr / ID / NUMBER / STRING / CHAR / range-expr / map-expr / lambda-expr
 
@@ -480,11 +490,8 @@
 (def gen-ids (for [i (iterate inc 1)] (symbol (str \a i))))
 
 (defn make-match-args [fun-body]
-      (println "FUN-BDOY" fun-body)
       (let [args (first (first fun-body))]
-           (println (count args))
-           (vec (take (count args) gen-ids)))
-      )
+           (vec (take (count args) gen-ids))))
 
 
 
