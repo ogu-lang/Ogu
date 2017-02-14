@@ -1,0 +1,16 @@
+
+fact 0 = 1
+
+fact 1 = 1
+
+fact n = n * (fact $ dec n)
+
+test a = fact a
+
+test a b = (fact  a) + (fact b)
+
+println $ test 4
+
+println $ test 3 4
+
+

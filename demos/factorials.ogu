@@ -11,6 +11,8 @@ def sum-fact-2 n = go 0 1 1
         | i <= n = go (acc + fact) (fact * i) (i + 1)
         | otherwise = acc
 
+
+
 println $ sum-fact 10
 
 println $ sum-fact-2 10

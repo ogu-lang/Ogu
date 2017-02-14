@@ -1,8 +1,10 @@
 
-def main (x::xs) = do
+main & args =
+    let h = head args, t = tail args
+    in do
         report x
         recur xs
     end
     where report x = println! "file" x "words: " (file-open x |> split-lines |> split-word |> count)
 
-main OS.args
+

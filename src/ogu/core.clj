@@ -1,5 +1,6 @@
 (ns ogu.core
-    (:require [clojure.set :as s]) (:import (java.security MessageDigest)))
+    (:require [clojure.set :as s])
+    (:import (java.security MessageDigest)))
 
 (def println! println)
 
@@ -87,3 +88,4 @@
            (format "%032x" (BigInteger. 1 raw))))
 
 (defn uuid [] (str (java.util.UUID/randomUUID)))
+

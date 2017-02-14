@@ -104,7 +104,7 @@
 
      let-expr = &'let' <'let'> (BS+|NL BS*) let-vars  BS* [NL BS*]  let-body
      let-vars = let-vars-in
-     <let-vars-in> = let-var {BS* <\",\"> BS* [NL BS*] let-var} BS* [NL BS*] <'in'>
+     <let-vars-in> = let-var {(BS* NL BS*| BS* <\",\"> BS* [NL BS*]) let-var} BS* [NL BS*] <'in'>
      <let-var> = let-var-simple | let-var-tupled
      let-var-simple = ID BS+ <\"=\"> BS+ let-var-value
      let-var-tupled = let-var-tuple BS+ <\"=\"> BS+ let-var-value
@@ -161,7 +161,7 @@
      addq-expr = comp-expr (BS+ <\"+'\"> BS+ bin-expr)+
      sub-expr = comp-expr BS+ <\"-\"> BS+ bin-expr
      subq-expr = comp-expr BS+ <\"-'\"> BS+ bin-expr
-     cat-expr = comp-expr BS+ <\"++\"> BS+ bin-expr
+     cat-expr = comp-expr (BS+ <\"++\"> BS+ bin-expr)+
 
      mul-expr = prim-expr (BS+ &<\"*\"> <\"*\"> BS+ mult-expr)+
      mulq-expr = prim-expr (BS+ <\"*'\"> BS+ mult-expr)+
@@ -465,10 +465,39 @@
                 { (str "defv-" (second form)) {:form form :pos p}   }
                 { (str "expr-" (md5 (str (uuid)))) {:form form :pos p}})))
 
+;check if a list of
+(defn check-all-args-are-symbol [args] (every? symbol? args))
+
+; check if a list of forms has a pattern matching like form
+(defn is-pattern-matching? [forms]
+      (loop [result false head (first forms) tail (rest forms)]
+            (if (empty? tail)
+              (or result (not (every? symbol? (first head))))
+              (recur (or result (not (every? symbol? (first head)))) (first tail) (rest tail)))))
+
+
+;; generate a sequence of ids
+(def gen-ids (for [i (iterate inc 1)] (symbol (str \a i))))
+
+(defn make-match-args [fun-body]
+      (println "FUN-BDOY" fun-body)
+      (let [args (first (first fun-body))]
+           (println (count args))
+           (vec (take (count args) gen-ids)))
+      )
+
+
+
+(defn check-match [fun-body]
+      (if-not (is-pattern-matching? fun-body)
+        fun-body
+        (let [args (make-match-args fun-body)]
+            (cons args (list (concat (cons 'match [args]) (apply concat fun-body)))))))
+
 (defn make-variadic [forms]
-      (loop [pos 999999, head (first forms), tail (rest forms), name nil, result []]
+      (loop [pos (java.lang.Integer/MAX_VALUE), head (first forms), tail (rest forms), name nil, result []]
             (cond
-              (empty? tail) {:form (cons 'defn (cons name result))  :pos pos }
+              (empty? tail) {:form (cons 'defn (cons name (check-match result)))  :pos pos  }
               (= :pos (first head)) (recur (min pos (second head)) (first tail) (rest tail) name result)
               :else (let [form (second head) pn (second form)]
                          (if (= 'def (first form))
@@ -494,7 +523,7 @@
    (merge-variadic (insta/transform ast-transformations ast)))
 
 (def preamble "
-  (require '[ogu.core :refer :all])
+  (require '[ogu.core :refer :all] '[clojure.core.match :refer [match]])
 
   ")
 

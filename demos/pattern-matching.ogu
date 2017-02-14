@@ -1,0 +1,12 @@
+
+
+charName 'a' = "Albert"
+charName 'b' = "Broseph"
+charName 'c' = "Cecil"
+
+
+println! $ charName 'b'
+
+println! $ first (1, 2, 3)
+
+
