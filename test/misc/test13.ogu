@@ -5,7 +5,7 @@ def publica b = interna 24
 
 - inner = 100
 
- public = inner + 100
+public = inner + 100
 
 - test a b = (publica a) * (interna b)
 

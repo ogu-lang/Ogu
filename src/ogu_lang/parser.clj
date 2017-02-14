@@ -15,7 +15,7 @@
 
      <module-name> = TID {\".\" TID} |  (ID|TID) {\".\" (ID|TID)}
 
-     definition = [[&\"def\" <\"def\">] [\"-\"] BS+ ] ID  def-args [def-return-type] def-body [where]
+     definition = (&\"def\" <\"def\"> [\"-\"] BS+ ID | [\"-\" BS+] ID)  def-args [def-return-type] def-body [where]
 
      def-return-type = BS* <\"->\"> BS+ type
 
