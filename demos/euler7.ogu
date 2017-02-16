@@ -18,8 +18,8 @@ def primes n =
     end
 
 def calc-limit n = (int (n * logsum)) + 3
-    where log = Math.log n,
-          loglog = Math.log log,
+    where log = Math.log n
+          loglog = Math.log log
           logsum = log + loglog
 
 def nth-prime 1 = 2

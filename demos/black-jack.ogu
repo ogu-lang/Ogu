@@ -4,8 +4,8 @@ def valor-carta carta = if in? carta ['J', 'Q', 'K'] then 10 else (if carta == '
 
 def valor-mano? mano = if ases && (valor + 10) <= 21 then valor + 10 else valor
    where
-        valores = mano |> map fst,
-        valor = valores |> map valor-carta |> sum,
+        valores = mano |> map fst
+        valor = valores |> map valor-carta |> sum
         ases = valores |> filter \x -> x == 'A'\ |> (not-empty?)
 
 def solicitar-jugada! jugada =

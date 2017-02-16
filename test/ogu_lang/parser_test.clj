@@ -52,7 +52,7 @@
    {:file "test/misc/test14.ogu" :val 166724149741}
    {:file "test/misc/test15.ogu" :val 60}
    {:file "test/misc/test16.ogu" :val '(4 7 6 8 11 4)}
-   {:file "test/misc/test17.ogu" :val true}
+   {:file "test/misc/test17.ogu" :val 10}
    {:file "test/misc/test18.ogu" :val 5040}
    {:file "test/misc/test19.ogu" :val nil}
    {:file "test/misc/test20.ogu" :val (for [p [\C \D \T \P] v [\A 2 3 4 5 6 7 8 9 10 \J \Q \K]] [v p])}

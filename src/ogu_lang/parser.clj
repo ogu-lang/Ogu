@@ -7,7 +7,7 @@
 
 (def grammar
   (insta/parser
-    "module = [module-header] {uses} {NL} {definition / type-def NL / trait-def  / module-expr}
+    "module = [module-header] {uses} {NL} {definition / val-def NL / type-def NL / trait-def  / module-expr}
 
      module-header = <'module'> BS+ module-name BS* NL
 
@@ -16,6 +16,8 @@
      <module-name> = TID {\".\" TID} |  (ID|TID) {\".\" (ID|TID)}
 
      definition = (&\"def\" <\"def\"> [\"-\"] BS+ ID | [\"-\" BS+] ID)  def-args [def-return-type] def-body [where]
+
+     val-def = &(\"val\"|\"let\") <\"val\"|\"let\"> BS+ ID BS+ <\"=\"> BS+ pipe-expr
 
      def-return-type = BS* (\":\"|<\"->\">) BS+ type
 
@@ -53,7 +55,7 @@
 
      where = BS+ <'where'> BS* [NL] where-equations NL
 
-     <where-equations> = BS* where-equation {BS* <\",\"> BS* [NL BS*] where-equation}
+     <where-equations> = BS* where-equation {(BS* <\",\"> BS* [NL BS*] | BS* NL BS+) where-equation}
      <where-equation> =  (equation | guard-equation)
 
      equation = ID [BS+ eq-args] BS+ <\"=\"> BS+ value | tuple-of-ids BS+ <\"=\"> BS+ value
@@ -71,7 +73,7 @@
 
      <pipe-expr> =  piped-expr / func-call-expr
 
-     <piped-expr> = forward-piped-expr  / forward-bang-piped-expr / backward-piped-expr / backward-bang-piped-expr / dollar-expr / argless-func-call
+     <piped-expr> = forward-piped-expr  / forward-bang-piped-expr / backward-piped-expr / backward-bang-piped-expr / dollar-expr
 
      forward-piped-expr = func-call-expr ([NL] BS+ <\"|>\"> BS+ func-call-expr)+
      forward-bang-piped-expr = func-call-expr ([NL] BS+ <\"!>\"> BS+ func-call-expr)+
@@ -83,7 +85,6 @@
      <func-call-expr> = &control-expr control-expr / !control-expr lcons-expr
 
      recur = &'recur' <'recur'> {BS+ arg}
-     return = &'return' <'return'> BS+ {arg}
 
      <control-expr> =  when-expr / if-expr / loop-expr  / block-expr / for-expr / while-expr
 
@@ -205,7 +206,7 @@
 
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
 
-     <prim-expr> = paren-expr / func-invokation / constructor / !partial-sub neg-expr / not-expr / ID / NUMBER / STRING / CHAR / range-expr / map-expr / lambda-expr / at-expr
+     <prim-expr> = argless-func-call / paren-expr / func-invokation / constructor / !partial-sub neg-expr / not-expr / ID / NUMBER / STRING / CHAR / range-expr / map-expr / lambda-expr / at-expr
 
 
      neg-expr = !(NUMBER) \"-\"  prim-expr
@@ -213,7 +214,7 @@
 
      begin-end-expr = &<\"begin\"> <\"begin\"> BS* NL BS* pipe-expr BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
 
-     func-invokation = recur / return / nil-value / partial-bin / func {BS+ arg}
+     func-invokation = recur  / nil-value / partial-bin / func {BS+ arg}
      nil-value = <\"nil\">
      func = ID / TID  <\".\"> ID / KEYWORD
 
@@ -252,7 +253,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
 
-     ID = !('begin '|'def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'repeat '|#'then[ \r\n]'|'uses '|'when '|'where '|'while ') ID-TOKEN
+     ID = !('begin '|'def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'repeat '|#'then[ \r\n]'|'uses '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
      KEYWORD = #':[-]?[_a-z][_0-9a-zA-Z-]*[?!]?'
@@ -299,23 +300,23 @@
 (defn ogu-priv-definition
   ([id args body]
     (if (empty? args)
-      (cons 'def [id  body])
+      (cons 'defn- [id [] body])
       (cons 'defn- [id args body])))
 
   ([id args body where]
     (let [equations (rest where) ]
          (if (empty? args)
-           (cons 'def [id  (ogu-body body equations) ])
+           (cons 'defn- [id [] (ogu-body body equations) ])
            (cons 'defn- [id args (ogu-body body equations)])))))
 
 (defn ogu-definition
-      ([id val] (cons 'def [id val]))
+      ([id val] (cons 'defn [ id [] val]))
 
       ([id args body]
         (if (= "-" id)
           (ogu-definition args body)
           (if (empty? args)
-            (cons 'def [id  body])
+            (cons 'defn [id [] body])
             (cons 'defn [id args body]))))
 
       ([id args body where]
@@ -324,7 +325,7 @@
             (if (and (vector? where) (= :where (first where)))
                   (let [equations (rest where) ]
                        (if (empty? args)
-                         (cons 'def [id  (ogu-body body equations) ])
+                         (cons 'defn [id [] (ogu-body body equations) ])
                          (cons 'defn [id args (ogu-body body equations) ])))
                       (ogu-definition id args where))))
 
@@ -505,6 +506,7 @@
    :eq-args                  (fn [& rest] (vec  (flatten rest) ))
    :def-args                 (fn [& rest] (vec  (flatten rest) ))
    :definition               ogu-definition
+   :val-def                  (fn [& rest] (cons 'def rest))
 
    :argless-func-call        (fn [& rest] rest)
 

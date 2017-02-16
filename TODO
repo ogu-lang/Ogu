@@ -2,7 +2,8 @@
 
 # bugs
 
-- definition of function with empty args, def is not appropiate
+- definiciones de funciones sin parametros, hoy obliga a ejecutarlos asi: (fun), pero el compilador deberia detectar esto.
+
 
 ## Ferrilo
 

@@ -9,6 +9,6 @@ lcm a b
    | (zero? b) = 0
    | otherwise = b * int (a / (gcd a b))
 
-def divisors n = reduce (lcm) 1 [2..n]
+def divisors n = reduce lcm 1 [2..n]
 
 divisors 20

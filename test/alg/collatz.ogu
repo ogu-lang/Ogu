@@ -8,6 +8,6 @@ def chain n
 
 ;for all starting numbers between 1 and 100, how many chains have a length greater than 15?
 
-def numLongChains = map chain [1..100] |> filter \xs -> (count xs) > 15\ |> count
+val numLongChains = map chain [1..100] |> filter \xs -> (count xs) > 15\ |> count
 
 numLongChains
