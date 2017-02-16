@@ -1,0 +1,14 @@
+
+def foo = 10
+ where x = 1
+
+def maxIntentos -> Int = 10
+def intentosHastaAhora -> Int = 0 ; una variable de tipo Int
+
+def contador = 0 ; una variable mutable, es igual que var. Es probable que deprequemos var
+def inmutable = 1 ; no se puede cambiar el valor
+
+maxIntentos + intentosHastaAhora == maxIntentos
+
+maxIntentos * inmutable + intentosHastaAhora == maxIntentos + contador
+

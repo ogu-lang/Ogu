@@ -1,0 +1,15 @@
+
+; this a ugly way to program in Ogu, but is a demo of imperative style and use of vars
+def factorial x =
+    var acc = 1, cnt = x in
+    do
+        while @cnt > 0 in
+        do
+            @acc = @acc * @cnt
+            @cnt = dec @cnt
+        end
+        @acc
+    end
+
+
+factorial 7

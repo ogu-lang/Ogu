@@ -17,7 +17,7 @@
 
      definition = (&\"def\" <\"def\"> [\"-\"] BS+ ID | [\"-\" BS+] ID)  def-args [def-return-type] def-body [where]
 
-     def-return-type = BS* <\"->\"> BS+ type
+     def-return-type = BS* (\":\"|<\"->\">) BS+ type
 
      type = TID | ID
 
@@ -85,9 +85,9 @@
      recur = &'recur' <'recur'> {BS+ arg}
      return = &'return' <'return'> BS+ {arg}
 
-     <control-expr> =  when-expr / if-expr / loop-expr  / block-expr / for-expr
+     <control-expr> =  when-expr / if-expr / loop-expr  / block-expr / for-expr / while-expr
 
-     <block-expr> =  let-expr /  repeat-expr / do-expr
+     <block-expr> =  let-expr /  repeat-expr / do-expr / var-expr
 
      <lcons-expr> =  cons-expr  /  bin-expr
 
@@ -98,9 +98,17 @@
      loop-var =  ID BS+ <\"=\"> BS+ loop-var-value
      <loop-var-value> = pipe-expr
 
-     for-expr = for-header  <'in'> for-body
-     for-header = &<'for'> <'for'> BS+ ID BS+ <\"<-\"> BS+ pipe-expr BS* [NL BS*]
-     for-body = BS* [NL BS*]  pipe-expr
+     while-expr = &'while' <'while'> BS+ func-call-expr BS+ <'in'> BS* [NL BS*] pipe-expr &NL
+
+     for-expr =  &<'for'> <'for'> (BS+|NL BS*)  for-vars  BS* [NL BS*] for-body
+     for-vars = for-vars-in
+     <for-vars-in> = for-var {(BS* NL BS*| BS* <\",\"> BS [NL BS*]) for-var} BS* [NL BS*] <'in'>
+     <for-var> = for-var-simple | for-var-tupled
+     for-var-simple = ID BS+ <\"<-\"> BS+ for-var-value
+     for-var-tupled = for-var-tuple BS+ <\"<-\"> BS+ for-var-value
+     for-var-tuple = <\"(\"> BS* (ID|for-var-tuple) {BS* <\",\"> BS* (ID|for-var-tuple)} BS* <\")\">
+     <for-var-value> = pipe-expr
+     <for-body> = pipe-expr &NL
 
      let-expr = &'let' <'let'> (BS+|NL BS*) let-vars  BS* [NL BS*]  let-body
      let-vars = let-vars-in
@@ -112,6 +120,17 @@
      <let-var-value> = pipe-expr
      <let-body> = pipe-expr &NL
 
+     var-expr = &'var' <'var'> (BS+|NL BS*) var-vars BS* [NL BS*] var-body
+     var-vars = var-vars-in
+     <var-vars-in> = var-var {(BS* NL BS*| BS* <\",\"> BS* [NL BS*]) var-var} BS* [NL BS*] <'in'>
+     <var-var> = var-var-simple | var-var-tupled
+     var-var-simple = ID BS+ <\"=\"> BS+ var-var-value
+     var-var-tupled = var-var-tuple BS+ <\"=\"> BS+ var-var-value
+     var-var-tuple = <\"(\"> BS* (ID|var-var-tuple) {BS* <\",\"> BS* (ID|var-var-tuple)} BS* <\")\">
+     <var-var-value> = pipe-expr
+     <var-body> = pipe-expr &NL
+
+     at-expr = &'@' <'@'> ID [BS+ <\"=\"> BS+ pipe-expr]
 
      if-expr = &'if' <'if'> BS+ if-cond-expr BS* [NL BS*]  <'then'>  ([NL BS*]|BS+) then-expr [NL BS*] <'else'> ([NL BS*]|BS+) else-expr
      <then-expr> = pipe-expr BS*
@@ -186,7 +205,7 @@
 
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
 
-     <prim-expr> = paren-expr / func-invokation / constructor / !partial-sub neg-expr / not-expr / ID / NUMBER / STRING / CHAR / range-expr / map-expr / lambda-expr
+     <prim-expr> = paren-expr / func-invokation / constructor / !partial-sub neg-expr / not-expr / ID / NUMBER / STRING / CHAR / range-expr / map-expr / lambda-expr / at-expr
 
 
      neg-expr = !(NUMBER) \"-\"  prim-expr
@@ -233,7 +252,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
 
-     ID = !('def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'repeat '|#'then[ \r\n]'|'uses '|'when '|'where ') ID-TOKEN
+     ID = !('def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'repeat '|#'then[ \r\n]'|'uses '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
      KEYWORD = #':[-]?[_a-z][_0-9a-zA-Z-]*[?!]?'
@@ -301,12 +320,13 @@
 
       ([id args body where]
         (if (= "-" id)
-          (ogu-priv-definition args body where)
-          (let [equations (rest where) ]
-               (if (empty? args)
-                 (cons 'def [id  (ogu-body body equations) ])
-                 (cons 'defn [id args (ogu-body body equations) ]))))
-        )
+            (ogu-priv-definition args body where)
+            (if (and (vector? where) (= :where (first where)))
+                  (let [equations (rest where) ]
+                       (if (empty? args)
+                         (cons 'def [id  (ogu-body body equations) ])
+                         (cons 'defn [id args (ogu-body body equations) ])))
+                      (ogu-definition id args where))))
 
       ([id args ret body where]
         (if (= "-" id)
@@ -352,6 +372,11 @@
         (if (empty? rest)
           (cons ':require '[ogu.core :refer :all]))
           rest))
+
+(defn ogu-at-expr
+      ([v] (cons 'deref [v]))
+      ([v s] (cons 'var-set [v s])))
+
 
 (def ast-transformations
   {:NUMBER                   clojure.edn/read-string
@@ -399,6 +424,22 @@
    :let-var-simple           (fn [id val] [id val])
    :let-expr                 (fn [& rest] (cons 'let rest))
 
+   :var-var-tuple            (fn [& rest] (vec rest))
+   :var-var-tupled           (fn [ids val] [ids val])
+   :var-vars                 (fn [& rest] (vec (apply concat rest)))
+   :var-var-simple           (fn [id val] [id val])
+   :var-expr                 (fn [& rest] (cons 'with-local-vars rest))
+
+
+   :for-var-tuple            (fn [& rest] (vec rest))
+   :for-var-tupled           (fn [ids val] [ids val])
+   :for-vars                 (fn [& rest] (vec (apply concat rest)))
+   :for-var-simple           (fn [id val] [id val])
+   :for-expr                 (fn [& rest] (cons 'doseq rest))
+
+   :while-expr               (fn [& rest] (cons 'while rest))
+
+
    :otherwise                (fn [& rest] [:else (first rest)])
    :where-otherwise          (fn [& rest] [:else (first rest)])
    :guard                    ogu-guard
@@ -432,6 +473,7 @@
 
    :nil-value                (fn [] nil)
 
+
    :tuple                    (fn [& rest] (vec rest))
    :tupled-lambda-arg        (fn [& rest] (vec rest))
 
@@ -449,6 +491,9 @@
    :backward-bang-piped-expr (fn [& rest] (cons '-> (reverse rest)))
    :forward-piped-expr       (fn [& rest] (cons '->> rest))
    :forward-bang-piped-expr  (fn [& rest] (cons '-> rest))
+
+
+   :at-expr                  ogu-at-expr
 
    :recur                    (fn [& rest] (cons 'recur rest))
 
