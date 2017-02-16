@@ -155,7 +155,7 @@
      <list-compr-expr> = pipe-expr
      <list-source> = list-source-id BS+ <\"<-\"> BS+ list-source-value / pipe-expr
      <list-source-id> = ID / tuple-of-ids
-     <list-source-value> = range-def / ID
+     <list-source-value> = range-expr / ID / simple-list
 
      list-let = BS+ <\"let\"> BS+ let-var {BS* <\",\"> BS+ let-var}
      list-where = BS+ <\"where\"> BS+ if-cond-expr
@@ -461,7 +461,7 @@
 
    :list-where               (fn [& rest] {:when (first rest)})
 
-   :list-comprehension       (fn [expr & rest] (cons 'for [(ogu-flatten-last-while (vec rest)) expr]))
+   :list-comprehension       (fn [expr & rest] (cons 'for [(vec (ogu-flatten-last-while rest)) expr]))
 
    :empty-range              vector
 

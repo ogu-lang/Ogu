@@ -1,6 +1,6 @@
 ; test 9 funciones con listas
 
-def even = [2 * x | x <- 1..100 ]
+def even = [2 * x | x <- [1..100] ]
 
 even !> sum
 

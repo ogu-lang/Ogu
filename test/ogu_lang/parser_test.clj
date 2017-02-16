@@ -55,7 +55,7 @@
    {:file "test/misc/test17.ogu" :val true}
    {:file "test/misc/test18.ogu" :val 5040}
    {:file "test/misc/test19.ogu" :val nil}
-
+   {:file "test/misc/test20.ogu" :val (for [p [\C \D \T \P] v [\A 2 3 4 5 6 7 8 9 10 \J \Q \K]] [v p])}
    ])
 
 (deftest test-2

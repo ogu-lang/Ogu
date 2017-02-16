@@ -1,5 +1,20 @@
-TODO LIST
+# TODO LIST
 
-- bug with function call as parameters: f g a parses as (f g a) instead of (f (g a))
-- write instructions for building
-- semantic analysis
+## Ferrilo
+
+- compile into java class
+- ogu projects
+- lein plugin?
+
+## Ñeclito
+
+- repl
+- traits
+
+
+## Lokán
+
+- better pattern matching (lists, tuples, etc).
+- type pattern matching
+
+

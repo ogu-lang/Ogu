@@ -6,6 +6,7 @@
 
 (def readln! read-line)
 
+
 (defn prompt! [& args]
       (binding [*print-readably* nil] (apply prn args))
       (flush)
@@ -20,11 +21,17 @@
       ([start] (iterate inc' start))
       ([start, step] (iterate #(+' % step) start)))
 
+(defn not-empty? [coll] (not (empty? coll)))
+
 (def tail rest)
 
 (def to-set set)
 
 (def head first)
+
+(def fst first)
+
+(def snd second)
 
 (defn zip [a b] (map vector a b))
 
@@ -32,6 +39,10 @@
 
 (defn is-digit? [d] (Character/isDigit d))
 
+
+(defn in? [v s] (contains? (set s) v))
+
+(defn not-in? [v s] (not (in? v s)))
 
 (defn to-digit
       ([d] (Character/digit d 10))
@@ -42,6 +53,14 @@
 (def aset! aset)
 
 (def length count)
+
+(def trim clojure.string/trim)
+
+(def upper clojure.string/upper-case)
+
+(def lower clojure.string/lower-case)
+
+(def join clojure.string/join)
 
 ;; from here are fragments of numeric-tower
 

@@ -1,10 +1,19 @@
-# Notas sobre el lenguaje Ogu.
+# El lenguaje de programación Ogu
 
-Ideas para el diseño del lenguaje
+## Introducción
 
-Estos son apuntes, no constituyen una guia para el lenguaje, muchas cosas pueden cambiar.
+Esta es la versión 0.1.x de Ogú. 
+Esta versión se conoce también como Plunke.
 
-Autor: Eduardo Díaz
+## Características de Plunke
+
+Plunke usa Clojure como infraestructura.
+
+En Plunke un subconjunto de Ogú es compilado a un formato intermedio (EDN) y es interpretado por Clojure.
+
+Plunke usa la biblioteca core de Clojure y una delgada capa propia llamada ogu.core.
+
+A continuación una descripción de lo que se puede hacer con el subconjunto de Ogú implementado por Plunke.
 
 # Comentarios
 
@@ -15,14 +24,19 @@ En Ogú los comentarios empiezan con ';' (punto y coma) y terminan con el fin de
 
 # Constantes y Variables
 
-Los valores se pueden almacenar en variables inmutables, o constantes, que se indican con la palabra reservada **let** .
+Los valores se pueden almacenar en variables inmutables, o constantes, que se indican con la palabra reservada **val**.
+
+    val c = 300000
+    
 Las variables mutables se declaran con la palabra reservada **var**. 
-La palabra reservada **val** es sinónimo de let, pero sólo para valores inmutables (no se usa para definir funciones)
+
+    var v = 1
+    
 
 Ejemplos:
 
-    let  maxIntentos : Int = 10 ; una constante de tipo Int
-    var intentosHastaAhora : Int = 0 ; una variable
+    val  maxIntentos : Int = 10 ; una constante de tipo Int
+    var intentosHastaAhora : Int = 0 ; una variable de tipo Int
     var contador = 0 ; una variable mutable, es igual que var. Es probable que deprequemos var
     val inmutable = 1 ; no se puede cambiar el valor 
 

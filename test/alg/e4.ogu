@@ -9,4 +9,4 @@ rev num =
 
 palindrome? n = n == rev n
 
-[x * y | x <- 100..<1000, y <- 100..<1000] |> filter palindrome? |> apply max
+[x * y | x <- [100..<1000], y <- [100..<1000] ] |> filter palindrome? |> apply max
