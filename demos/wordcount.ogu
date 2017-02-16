@@ -1,7 +1,7 @@
 
 main & args =
     let h = head args, t = tail args
-    in do
+    in begin
         report x
         recur xs
     end

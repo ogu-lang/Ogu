@@ -1,22 +1,21 @@
 
 
-valor-carta carta = if in? carta ['J', 'Q', 'K'] then 10 else (if carta == 'A' then 1 else carta)
+def valor-carta carta = if in? carta ['J', 'Q', 'K'] then 10 else (if carta == 'A' then 1 else carta)
 
-valor-mano? mano = if ases && (valor + 10) <= 21 then valor + 10 else valor
+def valor-mano? mano = if ases && (valor + 10) <= 21 then valor + 10 else valor
    where
         valores = mano |> map fst,
         valor = valores |> map valor-carta |> sum,
         ases = valores |> filter \x -> x == 'A'\ |> (not-empty?)
 
-solicitar-jugada! jugada =
+def solicitar-jugada! jugada =
     loop opcion =  first <| char-array <| trim <| upper <| prompt! mensaje in
-    do
-        println "opcion[" opcion "]" (type opcion)
-        if  not-in? opcion opciones then do
+    begin
+        if  not-in? opcion opciones then begin
             println! "opción incorrecta"
             repeat opcion = first <| char-array <| trim <| upper <| prompt! mensaje
         end
-        else do
+        else begin
             println! "Opción elegida: "  opcion
             opcion
         end
@@ -30,16 +29,16 @@ solicitar-jugada! jugada =
                    else ['R', 'O', 'M']
 
 
-mostrar-mano! mensaje mano =
+def mostrar-mano! mensaje mano =
     println! "\t" mensaje  mano  " ( Valor: "  (valor-mano? mano) " )"
 
-mostrar-manos! mano-jugador mano-croupier = do
+def mostrar-manos! mano-jugador mano-croupier = begin
     mostrar-mano! "Cartas Jugador:  " mano-jugador
     mostrar-mano! "Cartas Couprier: " mano-croupier
 end
 
 
-determinar-ganancia mano-jugador mano-croupier apuesta jugada
+def determinar-ganancia mano-jugador mano-croupier apuesta jugada
   | jugada == 'R' = (- apuesta)
   | otherwise = let (jugador, croupier) = (valor-mano? mano-jugador, valor-mano? mano-croupier),
                     ganancia = if (croupier <= 21) && (21 < jugador) || (jugador < croupier) && (croupier <= 21)  then (- apuesta) else apuesta
@@ -47,56 +46,53 @@ determinar-ganancia mano-jugador mano-croupier apuesta jugada
                     if jugada == 'D' then ganancia * 2 else ganancia
 
 
-baraja-inicial =  [(valor, palo) | palo <- ['u2665', 'u2666', 'u2663', 'u2660'], valor <- ['A' , 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K']]
+def baraja-inicial =  [(valor, palo) | palo <- ['u2665', 'u2666', 'u2663', 'u2660'], valor <- ['A' , 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K']]
 
 
-jugar-mano! baraja-revuelta apuesta pozo = do
+def jugar-mano! baraja-revuelta apuesta pozo =
+begin
     println! "Nueva mano, apuesta $ " apuesta " pozo $ "  (pozo - apuesta) "\n"
-    var mano-jugador = take 2 baraja-revuelta,
-        mano-croupier = take 2 (drop 2 baraja-revuelta),
-        baraja = drop 4 baraja-revuelta,
+    var mano-jugador = take 2 baraja-revuelta
+        mano-croupier = take 2 (drop 2 baraja-revuelta)
+        baraja = drop 4 baraja-revuelta
         jugada = 'I'
     in
-    do
-        if (valor-mano? @mano-jugador) == 21 then do
+    begin
+        if (valor-mano? @mano-jugador) == 21 then begin
             mostrar-manos! @mano-jugador @mano-croupier
             println! "Jugador tiene black jack!"
             (3 * apuesta) / 2
         end
         else
-        do
-            while in? @jugada ['I', 'O'] in
-            do
+        begin
+            while in? @jugada ['I', 'O'] do
+            begin
                 mostrar-manos! @mano-jugador @mano-croupier
                 @jugada = solicitar-jugada! @jugada
-                println! "JUGADA == " @jugada " " (type @jugada)
                 if @jugada == 'M' then
-                do
-                    println "valor mano croupier " (valor-mano? @mano-croupier) "  mano: " @mano-croupier " baraja " @baraja
-                    while (valor-mano? @mano-croupier) < 17 in
-                    do
+                    while (valor-mano? @mano-croupier) < 17 do
+                    begin
                         @mano-croupier = (head @baraja) :: @mano-croupier
                         @baraja = tail @baraja
                     end
-                end
                 else if @jugada == 'D' then
-                do
+                begin
                     @mano-jugador = (head @baraja) :: @mano-jugador
                     @baraja = tail @baraja
-                    while (valor-mano? @mano-croupier) < 17 in
-                    do
+                    while (valor-mano? @mano-croupier) < 17 do
+                    begin
                         @mano-croupier = (head @baraja) :: @mano-croupier
                         @baraja = tail @baraja
                     end
                 end
                 else when @jugada == 'O' then
-                do
-                    @mano-jugador = ((head @baraja) :: @mano-jugador)
+                begin
+                    @mano-jugador = (head @baraja) :: @mano-jugador
                     when (valor-mano? @mano-jugador) > 21 then
                         @jugada = 'R'
                 end
             end
-            println! "FIN DEL LOOP" @jugada
+            println! "FIN LOOP"
             mostrar-manos! @mano-jugador @mano-croupier
             determinar-ganancia @mano-jugador @mano-croupier apuesta @jugada
         end
@@ -118,8 +114,8 @@ def solicitar-apuesta pozo apuesta-minima =
                  valor
                else
                   repeat read-string $ prompt! msj
-    else do
-        println! "su pozo no le alcanza para seguir jugando, inténtelo en otra oportunidad"
+    else begin
+        println! "su pozo no le alcanza para seguir juganbegin, inténtelo en otra oportunidad"
         -1
     end
 
@@ -135,7 +131,7 @@ loop pozo = 500, apuesta = solicitar-apuesta pozo apuesta-minima in
     else
         let
            resultado = jugar-mano! (shuffle baraja-inicial) apuesta pozo
-        in do
+        in begin
             mostrar-resultado! resultado (pozo + resultado)
             repeat pozo' = pozo + resultado, apuesta' = solicitar-apuesta (pozo + resultado) apuesta-minima
         end

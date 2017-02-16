@@ -1,5 +1,9 @@
 # TODO LIST
 
+# bugs
+
+- definition of function with empty args, def is not appropiate
+
 ## Ferrilo
 
 - compile into java class

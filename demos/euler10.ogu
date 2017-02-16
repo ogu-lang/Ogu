@@ -2,12 +2,12 @@
 def primes n =
     let root =  n |> Math.sqrt |> int,
         sieve = boolean-array! n true
-    in do
+    in begin
         loop i = 2 in
-            when i < root then do
+            when i < root then begin
                 when aget sieve i then
                     loop j = i * 2 in
-                       when j < n then do
+                       when j < n then begin
                          aset! sieve j false
                          repeat j' = j + i
                        end

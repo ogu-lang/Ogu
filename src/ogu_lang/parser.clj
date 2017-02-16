@@ -87,7 +87,7 @@
 
      <control-expr> =  when-expr / if-expr / loop-expr  / block-expr / for-expr / while-expr
 
-     <block-expr> =  let-expr /  repeat-expr / do-expr / var-expr
+     <block-expr> =  let-expr /  repeat-expr / begin-end-expr / var-expr
 
      <lcons-expr> =  cons-expr  /  bin-expr
 
@@ -98,11 +98,11 @@
      loop-var =  ID BS+ <\"=\"> BS+ loop-var-value
      <loop-var-value> = pipe-expr
 
-     while-expr = &'while' <'while'> BS+ func-call-expr BS+ <'in'> BS* [NL BS*] pipe-expr &NL
+     while-expr = &'while' <'while'> BS+ func-call-expr BS+ <'do'> BS* [NL BS*] pipe-expr &NL
 
      for-expr =  &<'for'> <'for'> (BS+|NL BS*)  for-vars  BS* [NL BS*] for-body
      for-vars = for-vars-in
-     <for-vars-in> = for-var {(BS* NL BS*| BS* <\",\"> BS [NL BS*]) for-var} BS* [NL BS*] <'in'>
+     <for-vars-in> = for-var {(BS* NL BS*| BS* <\",\"> BS [NL BS*]) for-var} BS* [NL BS*] <'do'>
      <for-var> = for-var-simple | for-var-tupled
      for-var-simple = ID BS+ <\"<-\"> BS+ for-var-value
      for-var-tupled = for-var-tuple BS+ <\"<-\"> BS+ for-var-value
@@ -130,7 +130,7 @@
      <var-var-value> = pipe-expr
      <var-body> = pipe-expr &NL
 
-     at-expr = &'@' <'@'> ID [BS+ <\"=\"> BS+ pipe-expr]
+     at-expr = &'@' <'@'> ID [BS+ <\"=\"> BS+ pipe-expr &NL]
 
      if-expr = &'if' <'if'> BS+ if-cond-expr BS* [NL BS*]  <'then'>  ([NL BS*]|BS+) then-expr [NL BS*] <'else'> ([NL BS*]|BS+) else-expr
      <then-expr> = pipe-expr BS*
@@ -211,7 +211,7 @@
      neg-expr = !(NUMBER) \"-\"  prim-expr
      not-expr = \"not\" BS+ prim-expr
 
-     do-expr = &<\"do\"> <\"do\"> BS* NL BS* pipe-expr BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
+     begin-end-expr = &<\"begin\"> <\"begin\"> BS* NL BS* pipe-expr BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
 
      func-invokation = recur / return / nil-value / partial-bin / func {BS+ arg}
      nil-value = <\"nil\">
@@ -252,7 +252,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
 
-     ID = !('def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'repeat '|#'then[ \r\n]'|'uses '|'when '|'where '|'while ') ID-TOKEN
+     ID = !('begin '|'def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'repeat '|#'then[ \r\n]'|'uses '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
      KEYWORD = #':[-]?[_a-z][_0-9a-zA-Z-]*[?!]?'
@@ -465,7 +465,7 @@
 
    :empty-range              vector
 
-   :do-expr                  (fn [& rest] (cons 'do rest))
+   :begin-end-expr           (fn [& rest] (cons 'do rest))
 
    :when-expr                (fn [& rest] (cons 'when rest))
 
