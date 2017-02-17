@@ -7,13 +7,18 @@
 
 (def grammar
   (insta/parser
-    "module = [module-header] {uses} {NL} {definition / val-def NL / type-def NL / trait-def  / module-expr}
+    "module = [module-header]  {NL} {definition / val-def NL / type-def NL / trait-def  / module-expr}
 
-     module-header = <'module'> BS+ module-name BS* NL
+     module-header = <'module'> BS+ module-name (NL+ {require|import}| BS*  NL)
 
-     uses = <'uses'> BS* module-name BS* {<\",\"> BS* module-name BS*} NL
+     require = BS* <'require'> BS* module-use {BS* <\",\"> (NL BS*|BS+) module-use } NL
 
-     <module-name> = TID {\".\" TID} |  (ID|TID) {\".\" (ID|TID)}
+     module-use = module-name [BS+ 'as' BS+ (ID|TID) | BS+ 'refer' ((BS+ 'all') | (BS+ <'['> id-list <']'>))]
+
+     import =  BS* <'import'> BS+ import-list {BS* <\",\"> (NL BS*|BS+) import-list } NL
+
+     module-name = TID {\".\" TID} |  (ID|TID) {\".\" (ID|TID)}
+     import-list = module-name {BS+ TID}
 
      definition = (&\"def\" <\"def\"> [\"-\"] BS+ ID | [\"-\" BS+] ID)  def-args [def-return-type] def-body [where]
 
@@ -216,7 +221,7 @@
 
      func-invokation = recur  / nil-value / partial-bin / func {BS+ arg}
      nil-value = <\"nil\">
-     func = ID / TID  <\".\"> ID / KEYWORD
+     func = ID /  KEYWORD / (TID|ID) {<\".\"> (TID|ID)} [<\"/\"> ID]
 
 
      <partial-bin> = partial-add / partial-mul / partial-sub / partial-div / partial-mod
@@ -253,7 +258,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
 
-     ID = !('begin '|'def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'repeat '|#'then[ \r\n]'|'uses '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !('as '|'begin '|'def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'refer '|'repeat '|'require '|#'then[ \r\n]'|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
      KEYWORD = #':[-]?[_a-z][_0-9a-zA-Z-]*[?!]?'
@@ -344,7 +349,8 @@
 
 (defn ogu-id
       ([id] id)
-      ([tid id] (clojure.edn/read-string (str tid \/ id))))
+      ([tid id] (clojure.edn/read-string (str tid \/ id)))
+      ([tid id & rest] nil))
 
 (defn to-char [n]
       (let [l (count n) s (subs n 1 (dec l))]
@@ -377,6 +383,14 @@
 (defn ogu-at-expr
       ([v] (cons 'deref [v]))
       ([v s] (cons 'var-set [v s])))
+
+(defn ogu-module-use
+      ([m] m)
+      ([m op rest]
+        (cond
+          (= op "as")[m :as rest]
+          (and (= op "refer") (= rest "all")) [m :refer :all]
+          (= op "refer") [m :refer rest])))
 
 
 (def ast-transformations
@@ -478,8 +492,13 @@
    :tuple                    (fn [& rest] (vec rest))
    :tupled-lambda-arg        (fn [& rest] (vec rest))
 
-   :module-header            (fn [ns] (cons 'ns [ns '(:require [ogu.core :refer :all])]))
-
+   :id-list                  (fn [& rest] (vec rest))
+   :import-list              (fn [& rest] rest)
+   :require                  (fn [& rest] (cons ':require rest))
+   :import                   (fn [& rest] (cons ':import rest))
+   :module-use               ogu-module-use
+   :module-name              (fn [& rest] (clojure.edn/read-string (apply str rest)))
+   :module-header            (fn [ns & rest] (cons 'ns (cons ns (cons '(:require [ogu.core :refer :all] ) rest) ) ))
    :simple-list              (fn [& rest] (vec rest))
    :tuple-of-ids             (fn [& rest] (vec rest))
 
@@ -512,6 +531,7 @@
 
 
    :module-expr              (fn [& rest] rest)
+
    :module                   (fn [& rest] (str (apply str (string/join \newline rest))))})
 
 
