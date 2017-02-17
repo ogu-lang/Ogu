@@ -3,4 +3,6 @@ module Demo
  import java.util Date GregorianCalendar
 
 
+println! Date()
+
 (upper "hola") == (upper-case "hola")

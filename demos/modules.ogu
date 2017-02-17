@@ -1,0 +1,6 @@
+module Demo
+ require clojure.stacktrace, clojure.java.io as io, clojure.stacktrace refer all, clojure.string refer [upper-case]
+ import java.util Date GregorianCalendar
+
+
+println $ (upper "hola") == (upper-case "hola")

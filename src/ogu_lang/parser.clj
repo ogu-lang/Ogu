@@ -36,7 +36,7 @@
 
      type-def = <'type'> BS+  type-constructor-def [BS* <\":\"> BS* type-constructor-def] {BS* <\":\"> BS* TID} BS*
 
-     type-constructor-def = TID BS* <\"(\"> BS* id-list BS* <\")\">
+     type-constructor-def = TID BS* <\"(\"> BS* [id-list BS*] <\")\">
 
      id-list = ID BS* {<\",\"> BS* ID}
 
@@ -235,7 +235,7 @@
      isa-type = ID BS* <\":\"> BS* TID
      type-pattern = TID BS* <\"(\"> BS* id-list BS* <\")\">
 
-     constructor = TID BS* <\"(\"> BS* field-assign-list BS* <\")\">
+     constructor = TID BS* <\"(\"> BS* [field-assign-list BS*] <\")\">
 
      field-assign-list = field-assign {BS* <\",\"> BS* [NL BS*] field-assign}
      field-assign = ID BS+ <\"=\"> BS+ pipe-expr | pipe-expr
@@ -392,6 +392,8 @@
           (and (= op "refer") (= rest "all")) [m :refer :all]
           (= op "refer") [m :refer rest])))
 
+(defn ogu-constructor
+      ([tid] (list (clojure.edn/read-string (str tid \.)))  ))
 
 (def ast-transformations
   {:NUMBER                   clojure.edn/read-string
@@ -513,6 +515,7 @@
    :forward-bang-piped-expr  (fn [& rest] (cons '-> rest))
 
 
+   :constructor              ogu-constructor
    :at-expr                  ogu-at-expr
 
    :recur                    (fn [& rest] (cons 'recur rest))
@@ -610,7 +613,7 @@
   (let [arch (file module)]
     (if-not (.exists arch)
       (println "no pudo abrir archivo: " module)
-      (let [text (slurp module) ast (grammar text)]
+      (let [text (str (slurp module) \newline)  ast (grammar text)]
         (if (insta/failure? ast)
           (println "ERROR: " (insta/get-failure ast))
           (do (when (:print options) (println ast \newline ) (println (transform-ast ast)))
