@@ -395,6 +395,14 @@
 (defn ogu-constructor
       ([tid] (list (clojure.edn/read-string (str tid \.)))  ))
 
+(defn ogu-def-args [& rest]
+      (letfn [(filter-isa-type [x]
+                               (cond (and (vector? x) (= :isa-type (first x))) (let [v (second x) t (nth x 2)] v) ;; TODO check type
+                                     :else x))]
+             (vec (for [x rest] (filter-isa-type x)))))
+
+;(fn [& rest] (vec  (flatten rest) ))
+
 (def ast-transformations
   {:NUMBER                   clojure.edn/read-string
    :STRING                   clojure.edn/read-string
@@ -523,10 +531,9 @@
    :rest-args                (fn [args] (cons '& [args]))
 
 
-   :isa-type                 (fn [var type] [(symbol (str \^ type)) var])
 
    :eq-args                  (fn [& rest] (vec  (flatten rest) ))
-   :def-args                 (fn [& rest] (vec  (flatten rest) ))
+   :def-args                 ogu-def-args
    :definition               ogu-definition
    :val-def                  (fn [& rest] (cons 'def rest))
 

@@ -1,0 +1,5 @@
+
+def mult-tuple (x, y, z) = x * y * z
+
+
+mult-tuple (10, 20, 10)
