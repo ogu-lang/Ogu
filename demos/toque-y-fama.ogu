@@ -27,16 +27,16 @@ resultado: 2 Toques 2 Famas\n\n\n"
 
 loop intentos = 1, accion = ingresar tam in
     if accion == "salir" || empty? accion then
-        println! "\ngracias por jugar, adios."
+       println! "\ngracias por jugar, adios."
     else
-        let num = validar tam accion
-        in if empty? num then
-           begin
+       let num = validar tam accion
+       in if empty? num then
+          begin
               println! "error!\n"
               repeat inc intentos, ingresar tam
-           end
-           else
-           begin
+          end
+          else
+          begin
                 println! "tu ingresaste " num
                 let (toques, famas) = (toques num sec, famas num sec)
                 in begin
@@ -46,4 +46,4 @@ loop intentos = 1, accion = ingresar tam in
                     else
                         repeat inc intentos, ingresar tam
                 end
-            end
+          end

@@ -21,9 +21,9 @@ def strIMC'' peso:Float altura:Float -> String
   | imc <= gordo = "estas con sobrepeso"
   | otherwise = "estas obeso, cuidado!"
   where
-    imc = peso / altura ^ 2,
-    delgado = 18.5,
-    normal = 25.0,
+    imc = peso / altura ^ 2
+    delgado = 18.5
+    normal = 25.0
     gordo = 30.0
 
 
@@ -32,7 +32,7 @@ def strIMC''' peso altura
   | imc <= normal = "tu peso es normal"
   | imc <= gordo = "estas con sobrepeso"
   | otherwise = "estas obeso, cuidado!"
-  where imc = peso / altura ^ 2,
+  where imc = peso / altura ^ 2
         (delgado, normal, gordo) = (18.5, 25.0, 30.0)
 
 

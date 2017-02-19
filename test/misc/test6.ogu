@@ -5,7 +5,7 @@
 def multiplicar x y = x * y
 
 
-val doblar = partial multiplicar 2
+let doblar = partial multiplicar 2
 
 println! $ multiplicar 2 4
 

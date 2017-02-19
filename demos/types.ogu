@@ -1,8 +1,8 @@
 
 
-type Car  (company, model, year)
+type Car(company, model, year)
 
-type Plane (company, series, year)
+type Plane(company, series, year)
 
 val mustang56 = Car(company = "Ford", model = "Mustang", year = 1956)
 

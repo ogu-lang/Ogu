@@ -2,4 +2,14 @@
 def mult-tuple (x, y, z) = x * y * z
 
 
+def rest (x, y & rest) = do
+    println! $ x * y
+    println! "rest = " rest
+end
+
+rest (10, 20)
+
+rest (10, 20, 30)
+
 mult-tuple (10, 20, 10)
+

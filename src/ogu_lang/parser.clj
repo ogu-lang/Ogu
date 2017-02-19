@@ -78,7 +78,7 @@
 
      <pipe-expr> =  piped-expr / func-call-expr
 
-     <piped-expr> = forward-piped-expr  / forward-bang-piped-expr / backward-piped-expr / backward-bang-piped-expr / dollar-expr
+     <piped-expr> = forward-piped-expr  / forward-bang-piped-expr / backward-piped-expr / backward-bang-piped-expr / dollar-expr / do-expr
 
      forward-piped-expr = func-call-expr ([NL] BS+ <\"|>\"> BS+ func-call-expr)+
      forward-bang-piped-expr = func-call-expr ([NL] BS+ <\"!>\"> BS+ func-call-expr)+
@@ -143,7 +143,7 @@
      <else-expr> = pipe-expr BS*
      <if-cond-expr> = func-call-expr
 
-     when-expr = &'when' <'when'> BS+ if-cond-expr BS* [NL BS*] <'then'> ([NL BS*]|BS+) then-expr &NL
+     when-expr = &'when' <'when'> BS+ if-cond-expr BS* [NL BS*] <'do'> ([NL BS*]|BS+) then-expr &NL
 
      repeat-expr = &'repeat' <'repeat'> BS+ [repeat-var BS* {[NL] BS* <\",\"> BS* [NL BS*] repeat-var} ] &(NL|<'end'>)
      repeat-var  = [ID BS+ <\"=\"> BS+] loop-var-value
@@ -155,7 +155,8 @@
      range-simple = prim-expr BS* <\"..\"> BS* [\"<\"] prim-expr
      range-infinite = prim-expr BS* [<\",\"> BS* prim-expr BS*] <\"...\">
 
-     simple-list = pipe-expr {BS* <\",\"> [BS* NL] BS+ pipe-expr}
+     simple-list = pipe-expr {BS* <\",\"> [BS* NL] BS+ pipe-expr} [BS+ and-token BS+ pipe-expr]
+     and-token = <\"&\">
 
      list-comprehension = list-compr-expr BS* <\"|\"> BS* list-source {BS* <','> BS* list-source} [list-let] [list-where]
      <list-compr-expr> = pipe-expr
@@ -218,6 +219,7 @@
      not-expr = \"not\" BS+ prim-expr
 
      begin-end-expr = &<\"begin\"> <\"begin\"> BS* NL BS* pipe-expr BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
+     do-expr = &<\"do\"> <\"do\"> BS* NL BS* pipe-expr  BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
 
      func-invokation = recur  / nil-value / partial-bin / func {BS+ arg}
      nil-value = <\"nil\">
@@ -250,7 +252,7 @@
      <mul-op> = \"*\" / \"/\" / \"%\" / \"^\"
      <comp-op> = \"<\" / \">\" / \">=\" / \"<=\" / \"==\" / \"/=\"
      <paren-expr> = <\"(\"> BS*  pipe-expr BS* <\")\"> / tuple
-     tuple = <\"(\"> BS* pipe-expr (BS* <\",\"> BS+ pipe-expr)+ <\")\">
+     tuple = <\"(\"> pipe-expr {BS* <\",\"> [BS* NL] BS+ pipe-expr} [BS+ and-token BS+ pipe-expr] <\")\">
      <bin-op> = mul-op / sum-op / comp-op
 
      <pipe-op> = \"|>\" / \"<|\"
@@ -258,7 +260,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
 
-     ID = !('as '|'begin '|'def '|'do '|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'refer '|'repeat '|'require '|#'then[ \r\n]'|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !('as '|'begin[ \r\n]'|'def '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'refer '|'repeat '|'require '|#'then[ \r\n]'|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
      KEYWORD = #':[-]?[_a-z][_0-9a-zA-Z-]*[?!]?'
@@ -484,6 +486,7 @@
    :repeat-expr              (fn [& rest] (cons 'recur rest))
    :repeat-var               ogu-repeat-var
 
+   :and-token                (fn [& rest] '&)
    :list-where               (fn [& rest] {:when (first rest)})
 
    :list-comprehension       (fn [expr & rest] (cons 'for [(vec (ogu-flatten-last-while rest)) expr]))
@@ -491,6 +494,7 @@
    :empty-range              vector
 
    :begin-end-expr           (fn [& rest] (cons 'do rest))
+   :do-expr                  (fn [& rest] (cons 'do rest))
 
    :when-expr                (fn [& rest] (cons 'when rest))
 
@@ -571,12 +575,18 @@
            (vec (take (count args) gen-ids))))
 
 
+(defn filter-for-vec-args [fun-body]
+     (apply concat  (for [[arg value] (partition 2 fun-body)]
+           (cond
+             (and (vector? arg) (vector? (first arg)))  [[(list (first arg) :seq)]  value]
+             :else [arg value] ))))
+
 
 (defn check-match [fun-body]
       (if-not (is-pattern-matching? fun-body)
         fun-body
         (let [args (make-match-args fun-body)]
-            (cons args (list (concat (cons 'match [args]) (apply concat fun-body)))))))
+            (cons args (list (concat (cons 'match [args]) (filter-for-vec-args (apply concat fun-body)) ))))))
 
 (defn make-variadic [forms]
       (loop [pos (java.lang.Integer/MAX_VALUE), head (first forms), tail (rest forms), name nil, result []]
