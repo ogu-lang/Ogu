@@ -1,0 +1,26 @@
+
+
+println "i\t j"
+loop i = 1, j = i + 1 in
+    when i < 10 do begin
+        println i "\t" j
+        repeat i' = inc i, j' = i' + 1
+    end
+
+println "i\t j"
+loop i = 1, j = i + 1 in
+    when i < 10 do begin
+        println i "\t" j
+        repeat inc i, inc j
+    end
+
+
+loop i = 1, j = i + 1 in
+    when i < 10 do begin
+        println i "\t"  j
+        repeat i' = inc i, i' + 1
+    end
+
+loop i = 1, salida = 0 in
+        if i == 10 then salida
+        else repeat i' = inc i, salida = i' * 2

@@ -7,7 +7,7 @@
 
 (def grammar
   (insta/parser
-    "module = [module-header]  {NL} {definition / val-def NL / type-def NL / trait-def  / module-expr}
+    "module = [module-header]  {NL} {definition / val-def NL / type-def  / trait-def  / extension / module-expr}
 
      module-header = <'module'> BS+ module-name (NL+ {require|import}| BS*  NL)
 
@@ -34,16 +34,35 @@
 
      <arg> = &isa-type isa-type / &type-pattern type-pattern / &ID ID /  func-call-expr
 
-     type-def = <'type'> BS+  type-constructor-def [BS* <\":\"> BS* type-constructor-def] {BS* <\":\"> BS* TID} BS*
+     type-def = <'type'> BS+  type-constructor-def (traits-for-type|BS* NL)
 
-     type-constructor-def = TID BS* <\"(\"> BS* [id-list BS*] <\")\">
+     traits-for-type = trait-for-type-1 {trait-for-type-n}
+     trait-for-type-1 = [NL] BS+ <\"as\"> BS+ TID BS* NL (trait-method-impl)+\n
+     trait-for-type-n = NL BS+ <\"as\"> BS+ TID BS* NL (trait-method-impl)+
+
+     trait-method-impl = BS+ [<\"def\"> BS+] ID {BS+ trait-method-arg} def-body [where]
+
+     type-constructor-def = class-constructor-def | record-constructor-def
+
+     class-constructor-def = TID BS* <\"(\"> BS* [class-id-list BS*] <\")\">
+
+     record-constructor-def = TID BS* <\"{\"> BS* [record-id-list BS*] <\"}\">\n
+
+     class-id-list = class-member-id-def BS* {<\",\"> BS class-member-id-def}
+
+     class-member-id-def = ID | \"var\" BS+ ID | \"val\" BS+ ID
+
+     record-id-list = id-list
 
      id-list = ID BS* {<\",\"> BS* ID}
 
-     trait-def = <'trait'> BS+ TID BS* 'is' BS* NL trait-methods   BS* <'end'>
+     trait-def = <'trait'> BS+ TID BS* 'is' BS* NL trait-methods
+
      trait-methods = trait-method {trait-method}
-     trait-method = BS* ID {BS+ trait-method-arg} BS* NL
-     trait-method-arg = TID | ID
+     trait-method = BS+ [<\"def\"> BS+] ID {BS+ trait-method-arg} BS* NL
+     trait-method-arg = ID
+
+     extension = <\"extend\"> BS+ TID traits-for-type
 
      tuple-of-ids = <\"(\"> BS* ID {BS* <\",\"> BS+ ID} BS* <\")\">
 
@@ -53,9 +72,9 @@
 
 
      <def-body> = body-simple / body-guard
-     body-guard = NL guard+ [otherwise]
+     body-guard = BS* ([NL] guard) {guard} [otherwise]
      <body-simple> = BS* <\"=\"> BS* [NL] BS* value BS* NL
-     guard = BS* <\"|\"> !'otherwise' {BS+ arg} BS+ <\"=\"> BS+ value BS* NL
+     guard = BS* <\"|\"> !'otherwise' (BS+ arg)+ BS+ <\"=\"> BS+ value BS* NL
      otherwise = BS* <\"|\"> BS+ <\"otherwise\"> BS+ <\"=\"> BS+ value BS* NL
 
      where = BS+ <'where'> BS* [NL] where-equations NL
@@ -67,8 +86,8 @@
      eq-args = arg {BS+ arg}
 
      guard-equation = ID [BS+ eq-args] BS* [NL BS*] where-body-guard
-     where-body-guard = (NL where-guard)+ [NL where-otherwise]
-     where-guard = BS* <\"|\"> !\"otherwise \" {BS+ arg} BS+ <\"=\"> BS+ value
+     where-body-guard = [NL] where-guard {NL where-guard} [NL where-otherwise]
+     where-guard = BS* <\"|\"> !\"otherwise \" (BS+ arg)+ BS+ <\"=\"> BS+ value
      where-otherwise = BS* <\"|\"> BS+ <\"otherwise\"> BS+ <\"=\"> BS+ value
 
 
@@ -212,7 +231,7 @@
 
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
 
-     <prim-expr> = argless-func-call / paren-expr / func-invokation / constructor / !partial-sub neg-expr / not-expr / ID / NUMBER / STRING / CHAR / range-expr / map-expr / lambda-expr / at-expr
+     <prim-expr> = argless-func-call / paren-expr / func-invokation / constructor-call / !partial-sub neg-expr / not-expr / ID / NUMBER / STRING / CHAR / range-expr / map-expr / lambda-expr / at-expr
 
 
      neg-expr = !(NUMBER) \"-\"  prim-expr
@@ -226,18 +245,22 @@
      func = ID /  KEYWORD / (TID|ID) {<\".\"> (TID|ID)} [<\"/\"> ID]
 
 
-     <partial-bin> = partial-add / partial-mul / partial-sub / partial-div / partial-mod
+     <partial-bin> = partial-add / partial-mul / partial-sub / partial-div / partial-mod / partial-eq
 
      partial-add = <\"(+\"> {BS+ arg} BS* <\")\">
      partial-sub = <\"(-\"> {BS+ arg} BS* <\")\">
      partial-mul = <\"(*\"> {BS+ arg} BS* <\")\">
      partial-div = <\"(/\"> {BS+ arg} BS* <\")\">
      partial-mod = <\"(%\"> {BS+ arg} BS* <\")\">
+     partial-eq = <\"(==\"> {BS+ arg} BS* <\")\">\n
 
      isa-type = ID BS* <\":\"> BS* TID
      type-pattern = TID BS* <\"(\"> BS* id-list BS* <\")\">
 
+     constructor-call = constructor / jvm-constructor
+
      constructor = TID BS* <\"(\"> BS* [field-assign-list BS*] <\")\">
+     jvm-constructor = 'new' BS+ TID BS* <\"(\"> BS* [field-assign-list BS*] <\")\">\n
 
      field-assign-list = field-assign {BS* <\",\"> BS* [NL BS*] field-assign}
      field-assign = ID BS+ <\"=\"> BS+ pipe-expr | pipe-expr
@@ -260,7 +283,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
 
-     ID = !('as '|'begin[ \r\n]'|'def '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'not '|'nil '|'otherwise '|'recur '|'refer '|'repeat '|'require '|#'then[ \r\n]'|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !('as '|'begin[ \r\n]'|'def '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'recur '|'refer '|'repeat '|'require '|#'then[ \r\n]'|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
      KEYWORD = #':[-]?[_a-z][_0-9a-zA-Z-]*[?!]?'
@@ -358,9 +381,18 @@
       (let [l (count n) s (subs n 1 (dec l))]
            (clojure.edn/read-string (str \\ s))))
 
+
 (defn ogu-repeat-var
       ([v] v)
       ([nn v] v))
+
+(defn ogu-repeat-expr [& rest]
+      (let [has-assign (some #(= 3 (count %)) rest)]
+           (if-not has-assign
+                   (cons 'recur (for [[_ v] rest] v))
+                   (list 'let
+                         (vec (apply concat (for [[_ n v] (filter #(= 3 (count %)) rest)] [n v])) )
+                         (cons 'recur (for [[_ v] rest] v))))))
 
 (defn ogu-equation
       ([idf val] (cons 'let [(vec [idf val])]))
@@ -395,7 +427,8 @@
           (= op "refer") [m :refer rest])))
 
 (defn ogu-constructor
-      ([tid] (list (clojure.edn/read-string (str tid \.)))  ))
+      ([tid] (list (clojure.edn/read-string (str tid \.))))
+      ([tid & args] (cons (clojure.edn/read-string (str "->" tid )) args)))
 
 (defn ogu-def-args [& rest]
       (letfn [(filter-isa-type [x]
@@ -412,10 +445,13 @@
    :CHAR                     to-char
    :ID                       clojure.edn/read-string
    :TID                      clojure.edn/read-string
-   :partial-add              (fn [& rest] (if (empty? rest) '+ (cons '+ rest)))
-   :partial-sub              (fn [& rest] (if (empty? rest) '- (cons '- rest)))
-   :partial-mul              (fn [& rest] (if (empty? rest) '* (cons '* rest)))
-   :partial-div              (fn [& rest] (if (empty? rest) '/ (cons '/ rest)))
+   :partial-add              (fn [& rest] (if (empty? rest) '+   (cons '+ rest)))
+   :partial-sub              (fn [& rest] (if (empty? rest) '-   (cons '- rest)))
+   :partial-mul              (fn [& rest] (if (empty? rest) '*   (cons '* rest)))
+   :partial-div              (fn [& rest] (if (empty? rest) '/   (cons '/ rest)))
+   :partial-mod              (fn [& rest] (if (empty? rest) 'mod (cons 'mod rest)))
+   :partial-eq               (fn [& rest] (if (empty? rest) '=   (cons '= rest)))
+
    :add-expr                 (fn [& rest] (cons '+ rest))
    :addq-expr                (fn [& rest] (cons '+' rest))
    :sub-expr                 (fn [& rest] (cons '- rest))
@@ -483,8 +519,7 @@
    :loop-var                 (fn [var val] [var val])
    :loop-expr                (fn [& rest] (cons 'loop rest))
 
-   :repeat-expr              (fn [& rest] (cons 'recur rest))
-   :repeat-var               ogu-repeat-var
+   :repeat-expr              ogu-repeat-expr
 
    :and-token                (fn [& rest] '&)
    :list-where               (fn [& rest] {:when (first rest)})
@@ -512,7 +547,7 @@
    :import                   (fn [& rest] (cons ':import rest))
    :module-use               ogu-module-use
    :module-name              (fn [& rest] (clojure.edn/read-string (apply str rest)))
-   :module-header            (fn [ns & rest] (cons 'ns (cons ns (cons '(:require [ogu.core :refer :all] ) rest) ) ))
+   :module-header            (fn [ns & rest] (cons 'ns (cons ns (cons '(:require [ogu.core :refer :all]) rest))))
    :simple-list              (fn [& rest] (vec rest))
    :tuple-of-ids             (fn [& rest] (vec rest))
 
@@ -536,7 +571,7 @@
 
 
 
-   :eq-args                  (fn [& rest] (vec  (flatten rest) ))
+   :eq-args                  (fn [& rest] (vec (flatten rest)))
    :def-args                 ogu-def-args
    :definition               ogu-definition
    :val-def                  (fn [& rest] (cons 'def rest))

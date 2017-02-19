@@ -1,8 +1,8 @@
 ;test 3
 
-2 + 2 |> range |> println
+2 + 2 |> range |> println!
 
-"a b c d" |> .toUpperCase |> .replace "A" "X" |> .split " " |> first |> println
+"a b c d" |> .toUpperCase |> .replace "A" "X" |> .split " " |> first |> println!
 
 
 "foo" |> str "bar" |> str "zoo" |> println ; zoobarfoo (clojure ->>)
@@ -13,7 +13,8 @@
 val c = 5
 
 
-c !> (+ 3) !> (/ 2)  !> (- 1) !> println
+c !> (+ 3) !> (/ 2)  !> (- 1) !> println!
 
+c |> (== 5) |> println!
 
 "foo" !> str "bar"

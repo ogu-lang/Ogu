@@ -15,25 +15,21 @@ type Circle (var x, var y, val radius)
 
       area self = pi * (radius) ^ 2
 
-      def draw! self = prinln! "draw a circle at (" x ", " y ") with radius " radius
+      def draw! self = println! "draw a circle at (" x ", " y ") with radius " radius
 
-      move! self x' y' = do
-        @x = x'
-        @y = y'
-        draw! self
-      end
 
-type Rectangle(x, y, width, height) : Point(x, y)
+type Rectangle(var x, var y, width, height)
+
+
+extend Rectangle
+
   as Shape
 
-     area self = width * height
+     area self = self.width * self.height
 
-     draw! self = println! "draw a rectangle at (" x ", " y ") with width = " width " and height = " height
+     draw! self = println! "draw a rectangle at (" self.x ", " self.y  ") with width = " self.width " and height = " self.height
 
-     move! self x' y' = do
-        @x = x'
-        @y = y'
-     end
+
 
 
 

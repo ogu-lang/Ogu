@@ -60,6 +60,8 @@
    {:file "test/misc/test22.ogu" :val true}
    {:file "test/misc/test23.ogu" :val 2000}
    {:file "test/misc/test24.ogu" :val '(0 1 2 3 4 5 6 7 8 9)}
+   {:file "test/misc/test25.ogu" :val 20}
+
    ])
 
 (deftest test-2
