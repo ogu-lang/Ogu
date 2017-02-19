@@ -1,6 +1,6 @@
 
 
-def person = {:first-name "Eduardo Alberto",
+let person = {:first-name "Eduardo Alberto",
                :last-name "Diaz Cortes",
                :email nil,
                :pass nil}
@@ -8,7 +8,7 @@ def person = {:first-name "Eduardo Alberto",
 
 println! $ :email person
 
-def data = [{:problem "euler1", :val 233168},
+let data = [{:problem "euler1", :val 233168},
             {:problem "euler2", :val 4613732},
               {:problem "euler3", :val 6857},
               {:problem "euler4", :val 906609},

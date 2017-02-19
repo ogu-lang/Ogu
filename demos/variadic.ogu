@@ -18,7 +18,7 @@ greet "Mampato"
 greet "Mampato" "Rena"
 
 
-greet2 name & rest = apply  prn  ("hola " :: (name :: rest))
+greet2 name & rest =  println! $ str "hola " name ", " (join ", " rest)
 
 
 greet2 "Mampato" "Ogu" "Rena" "Xse"

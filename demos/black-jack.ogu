@@ -46,7 +46,7 @@ def determinar-ganancia mano-jugador mano-croupier apuesta jugada
                     if jugada == 'D' then ganancia * 2 else ganancia
 
 
-def baraja-inicial =  [(valor, palo) | palo <- ['u2665', 'u2666', 'u2663', 'u2660'], valor <- ['A' , 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K']]
+let baraja-inicial =  [(valor, palo) | palo <- ['u2665', 'u2666', 'u2663', 'u2660'], valor <- ['A' , 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K']]
 
 
 def jugar-mano! baraja-revuelta apuesta pozo =
@@ -85,14 +85,13 @@ begin
                         @baraja = tail @baraja
                     end
                 end
-                else when @jugada == 'O' then
+                else when @jugada == 'O' do
                 begin
                     @mano-jugador = (head @baraja) :: @mano-jugador
-                    when (valor-mano? @mano-jugador) > 21 then
+                    when (valor-mano? @mano-jugador) > 21 do
                         @jugada = 'R'
                 end
             end
-            println! "FIN LOOP"
             mostrar-manos! @mano-jugador @mano-croupier
             determinar-ganancia @mano-jugador @mano-croupier apuesta @jugada
         end
@@ -123,7 +122,7 @@ def solicitar-apuesta pozo apuesta-minima =
 
 println! "Bienvenido al juego de black jack"
 
-def apuesta-minima = 10
+let apuesta-minima = 10
 
 loop pozo = 500, apuesta = solicitar-apuesta pozo apuesta-minima in
     if apuesta < apuesta-minima || pozo < apuesta-minima then

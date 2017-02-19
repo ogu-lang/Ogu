@@ -1,28 +1,47 @@
 
 
 trait Shape is
-    area Shape
 
-    draw Shape
+    def area self
 
-    move Shape x y
-end
+    draw! self
 
-type Point(x, y)
-type Circle (x, y, radius) : Point(x, y) : Shape
-type Rectangle(x, y, width, height) : Point(x, y) : Shape
+    move! self x y
 
 
-def area Circle(_, _, r) = pi * r^2
+type Circle (var x, var y, val radius)
 
-def area Rectangle(_, _, w, h) = w * h
+  as Shape
+
+      area self = pi * (radius) ^ 2
+
+      def draw! self = prinln! "draw a circle at (" x ", " y ") with radius " radius
+
+      move! self x' y' = do
+        @x = x'
+        @y = y'
+        draw! self
+      end
+
+type Rectangle(x, y, width, height) : Point(x, y)
+  as Shape
+
+     area self = width * height
+
+     draw! self = println! "draw a rectangle at (" x ", " y ") with width = " width " and height = " height
+
+     move! self x' y' = do
+        @x = x'
+        @y = y'
+     end
 
 
-def show-area! shape:Shape = println! (area shape)
+
+def show-area! shape : Shape = println! " el area es " (area shape) " y es de tipo " (typeof shape )
 
 
-val cir = Circle(10, 10, 10)
-var rec = Rectangle(0,0, 100, 50)
+let cir = Circle(10, 10, 10)
+let rec = Rectangle(0,0, 100, 50)
 
 show-area! cir
 

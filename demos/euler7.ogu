@@ -5,10 +5,10 @@ def primes n =
     in
     begin
         loop i = 2 in
-            when i < root then begin
-                when aget sieve i then
+            when i < root do begin
+                when aget sieve i do
                     loop j = i * 2 in
-                       when j < n then begin
+                       when j < n do begin
                          aset! sieve j false
                          repeat j' = j + i
                        end

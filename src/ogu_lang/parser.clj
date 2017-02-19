@@ -30,7 +30,7 @@
 
      def-args = {BS+ arg} [BS* rest-args]
 
-     rest-args = <\"&\"> BS+ arg
+     <rest-args> = and-token BS+ arg
 
      <arg> = &isa-type isa-type / &type-pattern type-pattern / &ID ID /  func-call-expr
 
