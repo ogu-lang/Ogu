@@ -347,7 +347,7 @@
 
      do-expr = &<\"do\"> <\"do\"> BS* NL BS* pipe-expr  BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
 
-     func-invokation = recur  / nil-value / partial-bin / func ({BS+ arg} | [BS arg {BS* <\"&\"> BS+ arg}])
+     func-invokation = recur  / nil-value / partial-bin / func ({BS+ arg} / <'('> func {BS+ arg} &')' <')'> / [BS arg {BS* <\"~\"> BS+ arg}])
 
      nil-value = <\"nil\">
 
@@ -409,7 +409,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
 
-     ID = !('as '|'begin[ \r\n]'|'def '|'dispatch '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'method '|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !('as '|'begin[ \r\n]'|'def '|'dispatch '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'method '|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 

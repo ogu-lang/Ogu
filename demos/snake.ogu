@@ -27,28 +27,19 @@ def add-points & pts = pts |>  apply map (+) |> vec
 def point-to-screen-rect pt = [(pt 0), (pt 1), 1, 1] |> map \x -> (x * point-size)\
 -- END: board math
 
--- START: apple
-def create-apple =
-  {:location [rand-int width, rand-int height],
-   :color new Color(210, 50, 90),
-   :type :apple}
--- END: apple
+-- START: objects of game
+def create-apple = {:location [rand-int width, rand-int height], :color new Color(210, 50, 90), :type :apple}
 
--- START: snake
-def create-snake =
-  {:body (list [1, 1]),
-   :dir [1, 0],
-   :type :snake,
-   :color new Color(15, 160, 70)}
--- END: snake
+def create-snake = {:body (list [1, 1]), :dir [1, 0], :type :snake, :color new Color(15, 160, 70)}
+-- END: objects
 
 -- START: move
 def move {:keys [body, dir] :as snake} & grow =
-  assoc snake & :body & ((add-points (first body) dir) :: (if grow then body else (butlast body)))
+  (assoc snake  :body  ((add-points (head body) dir) :: (if grow then body else (butlast body))))
 -- END: move
 
 -- START: turn
-def turn snake newdir = assoc snake & :dir & newdir
+def turn snake newdir = (assoc snake  :dir  newdir)
 -- END: turn
 
 -- START: win?
