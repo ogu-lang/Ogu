@@ -21,12 +21,11 @@
   (System/exit status))
 
 (defn usage [options-summary]
-  (->> ["Usage: oguc [options] modules..."
+  (string/join \newline ["Usage: oguc [options] modules..."
         ""
         "Options:"
         options-summary
-        ""]
-       (string/join \newline)))
+        ""]))
 
 (defn akarru []
   (let [msg (com.github.lalyos.jfiglet.FigletFont/convertOneLine "akarrú")]
@@ -40,6 +39,6 @@
       (:help options) (exit 0 (usage summary))
       (not= (count arguments) 1) (exit 1 (usage summary))
       errors (exit 1 (error-msg errors)))
-    (if (:no-banner options) nil (akarru))
+    (when-not (:no-banner options) (akarru))
     (doseq [module arguments]
             (parse-module options module))))
