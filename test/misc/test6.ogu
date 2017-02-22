@@ -1,6 +1,6 @@
-; test 6
+-- test 6
 
-; seudo currying
+-- seudo currying
 
 def multiplicar x y = x * y
 

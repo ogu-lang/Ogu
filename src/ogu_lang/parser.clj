@@ -9,7 +9,7 @@
   (insta/parser
     "module = [module-header] {import-static} {NL} {definition / dispatch / method-definition / val-def NL / type-def  / trait-def / extension / module-expr}
 
-     module-header = <'module'> BS+ module-name (NL+ {require|import}| BS*  NL)
+     module-header = [NL] <'module'> BS+ module-name (NL+ {require|import}| BS*  NL)
 
      require = BS* <'require'> BS* module-use {BS* <\",\"> (NL BS*|BS+) module-use } NL
 
@@ -165,7 +165,7 @@
 
      loop-expr = &'loop' <'loop'> (BS+ loop-vars-in|empty-vars-in) BS* [NL BS*] loop-body
 
-     loop-vars-in = loop-var { BS* <\",\"> BS* [NL BS*] loop-var} BS* [NL BS*]  <'in'>
+     loop-vars-in = loop-var {(BS* <\",\"> BS* [NL BS*] | BS* NL BS+) loop-var} BS* [NL BS*]  <'in'>
 
      empty-vars-in = epsilon
 
@@ -243,7 +243,7 @@
 
      when-expr = &'when' <'when'> BS+ if-cond-expr BS* [NL BS*] <'do'> ([NL BS*]|BS+) then-expr &NL
 
-     repeat-expr = &'repeat' <'repeat'> BS+ [repeat-var BS* {[NL] BS* <\",\"> BS* [NL BS*] repeat-var} ] &(NL|<'end'>)
+     repeat-expr = &'repeat' <'repeat'> (BS* NL|BS+) [repeat-var  {(BS* <\",\"> BS* [NL BS*] | BS* NL BS+) repeat-var} ] &(NL|<'end'>)
 
      repeat-var  = [ID BS+ <\"=\"> BS+] loop-var-value
 
@@ -425,7 +425,7 @@
 
      <NL> = (COMMENT / HARD-NL)+
 
-     <COMMENT> = <#';[^\\r\\n]*[\\n\\r]+'>
+     <COMMENT> = <#'--[^\\r\\n]*[\\n\\r]+'>
 
      <HARD-NL> = <#'[\\n\\r]+'>
      "))

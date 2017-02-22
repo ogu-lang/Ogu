@@ -5,7 +5,7 @@ def fun a = fun 10 a
 
 def fun a b = a + b
 
-((fun)) + (fun 10) + (fun 10 10) ; this ugly ((fun)) is because clojure runtime is being used
+(fun) + (fun 10) + (fun 10 10)
 
 
 

@@ -1,3 +1,6 @@
+-- translation to Ogu of Clojure sample of the book Programming Clojure 2nd Edition
+-- by “Stuart Halloway, Aaron Bedra”
+-- chapter 5
 module snake
   import java.awt Color Dimension,
          javax.swing JPanel JFrame Timer JOptionPane,
@@ -5,10 +8,11 @@ module snake
 
 import static java.awt.event.KeyEvent (VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN)
 
-; ----------------------------------------------------------
-; functional model
-; ----------------------------------------------------------
-; START: constants
+-- ----------------------------------------------------------
+-- functional model
+-- ----------------------------------------------------------
+
+-- START: constants
 let width = 75
 let height = 50
 let point-size = 10
@@ -17,57 +21,56 @@ let win-length = 5
 
 let dirs = {VK_LEFT [-1,  0], VK_RIGHT [1,  0], VK_UP [0, -1], VK_DOWN [0,  1]}
 
-; START: board mathd
+-- START: board math
 def add-points & pts = pts |>  apply map (+) |> vec
 
 def point-to-screen-rect pt = [(pt 0), (pt 1), 1, 1] |> map \x -> (x * point-size)\
-; END: board math
+-- END: board math
 
-; START: apple
+-- START: apple
 def create-apple =
   {:location [rand-int width, rand-int height],
    :color new Color(210, 50, 90),
    :type :apple}
-; END: apple
+-- END: apple
 
-; START: snake
+-- START: snake
 def create-snake =
   {:body (list [1, 1]),
    :dir [1, 0],
    :type :snake,
    :color new Color(15, 160, 70)}
-; END: snake
+-- END: snake
 
-; START: move
+-- START: move
 def move {:keys [body, dir] :as snake} & grow =
-  assoc snake :body ((add-points (first body) dir) :: (if grow then body else (butlast body)))
-; END: move
+  assoc snake & :body & ((add-points (first body) dir) :: (if grow then body else (butlast body)))
+-- END: move
 
-; START: turn
+-- START: turn
 def turn snake newdir = assoc snake & :dir & newdir
-; END: turn
+-- END: turn
 
-; START: win?
+-- START: win?
 def win? {body :body} = (count body) >= win-length
-; END: win?
+-- END: win?
 
-; START: lose?
+-- START: lose?
 def head-overlaps-body? {[head & body] :body} = contains? (set body) head
 
 def lose? x = head-overlaps-body? x
-; END: lose?
+-- END: lose?
 
-; START: eats?
+-- START: eats?
 def eats? {[snake-head] :body} {apple :location} = snake-head == apple
-; END: eats?
+-- END: eats?
 
 
-; ----------------------------------------------------------
-; mutable model
-; ----------------------------------------------------------
-; START: update-positions
-def update-positions snake apple = do
-    println! "update positions, snake = " snake "  apple = " apple
+-- ----------------------------------------------------------
+-- mutable model
+-- ----------------------------------------------------------
+-- START: update-positions
+def update-positions snake apple =
     sync
       if eats? @snake @apple then
       begin
@@ -77,16 +80,16 @@ def update-positions snake apple = do
 	  else
          alter snake move
     nil
-end
-; END: update-positions
 
-; START: update-direction
+-- END: update-positions
+
+-- START: update-direction
 def update-direction snake newdir =
   when newdir do
     sync (alter snake turn newdir)
-; END: update-direction
+-- END: update-direction
 
-; START: reset-game
+-- START: reset-game
 def reset-game snake apple = do
   sync
   begin
@@ -95,38 +98,38 @@ def reset-game snake apple = do
   end
   nil
 end
-; END: reset-game
+-- END: reset-game
 
-; ----------------------------------------------------------
-; gui
-; ----------------------------------------------------------
-; START: fill-point
+-- ----------------------------------------------------------
+-- gui
+-- ----------------------------------------------------------
+-- START: fill-point
 def fill-point g pt color =
   let (x, y, width, height) = (point-to-screen-rect pt)
   in begin
     (.setColor g color)
     (.fillRect g x y width height)
   end
-; END: fill-point
+-- END: fill-point
 
-; START: paint
+-- START: paint
 dispatch paint on (\g object & _ -> :type object\)
 
 method paint :apple ? g {:keys [location, color]}  = fill-point g location color
 
 method paint :snake ? g {:keys [body, color]}      = for point <- body do (fill-point g  point color)
-; END: paint
+-- END: paint
 
-; START: game-panel
+-- START: game-panel
 def game-panel frame snake apple = proxy JPanel() & ActionListener & KeyListener
 is
-    paintComponent g = do ; <label id="code.game-panel.paintComponent"/>
+    def paintComponent g = do -- <label id="code.game-panel.paintComponent"/>
       proxy-super paintComponent g
       paint g @snake
       paint g @apple
     end
 
-    actionPerformed e = do ; <label id="code.game-panel.actionPerformed"/>
+    def actionPerformed e = do -- <label id="code.game-panel.actionPerformed"/>
       update-positions snake apple
       when lose? @snake do begin
 	    reset-game snake apple
@@ -139,33 +142,33 @@ is
       .repaint this
     end
 
-    keyPressed e = ; <label id="code.game-panel.keyPressed"/>
+    def keyPressed e = -- <label id="code.game-panel.keyPressed"/>
       update-direction snake (dirs (.getKeyCode e))
 
-    getPreferredSize = new Dimension ((inc width) * point-size, (inc height) * point-size)
+    def getPreferredSize = new Dimension ((inc width) * point-size, (inc height) * point-size)
 
 
-    keyReleased e = nothing
+    def keyReleased e = nothing
 
-    keyTyped e = nothing
+    def keyTyped e = when (.getKeyChar e) == 'q' do System.exit -1
 
 end
 
-; END: game-panel
+-- END: game-panel
 
-; START: game
+-- START: game
 def game =
-  let snake = ref (create-snake) ; <label id="code.game.let"/>
+  let snake = ref (create-snake)
 	  apple = ref (create-apple)
 	  frame = new JFrame ("Snake")
 	  panel = game-panel frame snake apple
 	  timer = new Timer (turn-millis, panel)
   in begin
-     panel !> .setFocusable true !> .addKeyListener panel; <label id="code.game.panel"/>
-     frame !> .add panel !> (.pack) !> .setVisible true; <label id="code.game.frame"/>
+     panel !> .setFocusable true !> .addKeyListener panel
+     frame !> .add panel !> (.pack) !> .setVisible true
      .start timer
-     [snake, apple, timer] ; <label id="code.game.return"/>
+     [snake, apple, timer] -- <label id="code.game.return"/>
   end
-; END: game
+-- END: game
 
 (game)
