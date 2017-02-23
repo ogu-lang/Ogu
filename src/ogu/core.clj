@@ -8,6 +8,14 @@
 
 (def nothing (fn [] ))
 
+(def typeof type)
+
+
+(defn isa-type? [t obj]
+      (cond
+        (instance? clojure.lang.PersistentArrayMap t) (satisfies? t obj)
+        :else (instance? t obj)))
+
 
 (defn prompt! [& args]
       (binding [*print-readably* nil] (apply prn args))
@@ -109,6 +117,11 @@
            (format "%032x" (BigInteger. 1 raw))))
 
 (defn uuid [] (str (java.util.UUID/randomUUID)))
+
+
+(defmacro -def-ogu-type- [name fields  & opts+specs]
+    (let [filter-fields  (vec (map #(if (vector? %) (with-meta (second %) {:volatile-mutable true})  %) fields))  ]
+         `(deftype ~name ~filter-fields  ~@opts+specs)))
 
 (defmacro import-static
           "Imports the named static fields and/or static methods of the class

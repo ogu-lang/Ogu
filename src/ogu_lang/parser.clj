@@ -1,9 +1,9 @@
 (ns ogu-lang.parser
-  (:require
-    [clojure.string :as string]
-    [instaparse.core :as insta])
-  (:use clojure.java.io)
-  (:use ogu.core))
+    (:require
+      [clojure.string :as string]
+      [instaparse.core :as insta])
+    (:use clojure.java.io)
+    (:use ogu.core))
 
 (def grammar
   (insta/parser
@@ -25,15 +25,13 @@
 
      definition = func-definition
 
-     <func-definition> =  (<\"def\"> [\"-\"] BS+ ID | [\"-\" BS+] ID)  def-args [def-return-type] def-body [where]
+     <func-definition> =  (<\"def\"> [\"-\"] BS+ ID | [\"-\" BS+] ID)  def-args  def-body [where]
 
-     method-definition =  <\"method\"> [\"-\"] BS+ ID BS+ lcons-expr BS* <\"?\"> def-args def-body [where]
+     method-definition =  <\"def\"> [\"-\"] BS+ ID BS+ lcons-expr BS* <\"?\"> def-args def-body [where]
 
      dispatch = &\"dispatch\" <\"dispatch\"> BS+ ID BS+ <\"on\"> BS+ lcons-expr NL
 
      val-def = &(\"val\"|\"let\") <\"val\"|\"let\"> BS+ ID BS+ <\"=\"> BS+ pipe-expr
-
-     def-return-type = BS* (\":\"|<\"->\">) BS+ type
 
      type = TID | ID
 
@@ -45,37 +43,43 @@
 
      as-arg = func-call-expr BS+ <'as'> BS+ ID
 
-     type-def = <'type'> BS+  type-constructor-def (traits-for-type|BS* NL)
+     type-def = <'type'> BS+ type-constructor-def (traits-for-type|BS* NL)
 
-     traits-for-type = trait-for-type-1 {trait-for-type-n}
+     <traits-for-type> = trait-for-type-1 {trait-for-type-n}
 
-     trait-for-type-1 = [NL] BS+ <\"as\"> BS+ TID BS* NL (trait-method-impl)+
+     <trait-for-type-1> = [NL] BS+ <\"as\"> BS+ TID BS* NL (trait-method-impl)+
 
-     trait-for-type-n = NL BS+ <\"as\"> BS+ TID BS* NL (trait-method-impl)+
+     <trait-for-type-n> = BS+ <\"as\"> BS+ TID BS* NL (trait-method-impl)+
 
-     trait-method-impl = BS+ [<\"def\"> BS+] ID {BS+ trait-method-arg} def-body [where]
+     trait-method-impl = BS+ [<\"def\"> BS+] ID trait-method-impl-args def-body [where]
 
-     type-constructor-def = class-constructor-def | record-constructor-def
+     trait-method-impl-args = {BS+ trait-method-impl-arg}
+
+     <trait-method-impl-arg> = ID
+
+     <type-constructor-def> = class-constructor-def | record-constructor-def
 
      class-constructor-def = TID BS* <\"(\"> BS* [class-id-list BS*] <\")\">
 
      record-constructor-def = TID BS* <\"{\"> BS* [record-id-list BS*] <\"}\">\n
 
-     class-id-list = class-member-id-def BS* {<\",\"> BS class-member-id-def}
+     class-id-list = class-member-id-def BS* {<\",\"> BS+ class-member-id-def}
 
      class-member-id-def = ID | \"var\" BS+ ID | \"val\" BS+ ID
 
-     record-id-list = id-list
+     <record-id-list> = id-list
 
      id-list = ID BS* {<\",\"> BS* ID}
 
-     trait-def = <'trait'> BS+ TID BS* 'is' BS* NL trait-methods
+     trait-def = <'trait'> BS+ TID BS* <'is'> BS* NL trait-methods
 
-     trait-methods = trait-method {trait-method}
+     <trait-methods> = trait-method {trait-method}
 
-     trait-method = BS+ [<\"def\"> BS+] ID {BS+ trait-method-arg} BS* NL
+     trait-method = BS+ [<\"def\"> BS+] ID trait-method-args BS* NL
 
-     trait-method-arg = ID
+     trait-method-args = {BS+ trait-method-arg}
+
+     <trait-method-arg> = ID
 
      extension = <\"extend\"> BS+ TID traits-for-type
 
@@ -127,7 +131,7 @@
 
      proxy-super-args = BS* <\"(\"> [BS* lcons-expr {BS* <\",\"> BS+ lcons-expr} BS*] <\")\">
 
-     proxy-method-impl = BS+ [<\"def\"> BS+] ID proxy-method-args def-body
+     proxy-method-impl = BS+ [<\"def\"> BS+] ID proxy-method-args def-body [where]
 
      proxy-method-args = {BS+ proxy-method-arg}
 
@@ -135,7 +139,7 @@
 
      <pipe-expr> =  piped-expr / func-call-expr
 
-     <piped-expr> = forward-piped-expr  / forward-first-piped-expr / backward-piped-expr / backward-bang-piped-expr / doto-expr / dollar-expr / do-expr
+     <piped-expr> = forward-piped-expr  / forward-first-piped-expr / backward-piped-expr / backward-bang-piped-expr / doto-expr / dollar-expr / do-expr / expr-seq
 
      forward-piped-expr = func-call-expr ([NL] BS+ <\"|>\"> BS+ func-call-expr)+
 
@@ -232,6 +236,8 @@
      <var-body> = pipe-expr &NL
 
      at-expr = &'@' <'@'> ID [BS+ <\"=\"> BS+ pipe-expr &NL]
+
+     bang-expr = &'!' <'!'> ID ([BS+ \"=\" BS+ pipe-expr &NL] | <\".\"> ID)
 
      if-expr = &'if' <'if'> BS+ if-cond-expr BS* [NL BS*]  <'then'>  ([NL BS*]|BS+) then-expr [NL BS*] <'else'> ([NL BS*]|BS+) else-expr
 
@@ -337,7 +343,7 @@
 
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
 
-     <prim-expr> = argless-func-call / paren-expr / func-invokation / constructor-call / !partial-sub neg-expr / not-expr / ID / KEYWORD / NUMBER / STRING / CHAR / range-expr / map-expr / at-expr
+     <prim-expr> = argless-func-call / paren-expr / func-invokation / constructor-call / record-constructor-call / !partial-sub neg-expr / not-expr / ID / KEYWORD / NUMBER / STRING / CHAR / range-expr / map-expr / at-expr / bang-expr
 
      neg-expr = !(NUMBER) \"-\"  prim-expr
 
@@ -346,6 +352,8 @@
      begin-end-expr = &<\"begin\"> <\"begin\"> BS* NL BS* pipe-expr BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
 
      do-expr = &<\"do\"> <\"do\"> BS* NL BS* pipe-expr  BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
+
+     expr-seq = (BS* pipe-expr BS* <\";\">[NL] )+ BS* pipe-expr
 
      func-invokation = recur  / nil-value / partial-bin / func ({BS+ arg} / <'('> func {BS+ arg} &')' <')'> / [BS arg {BS* <\"~\"> BS+ arg}])
 
@@ -375,9 +383,11 @@
 
      constructor = TID BS* <\"(\"> BS* [field-assign-list BS*] <\")\">
 
+     record-constructor-call = TID BS* <\"{\"> BS* [field-assign-list BS*] <\"}\">
+
      jvm-constructor = <\"new\"> BS+ TID BS* <\"(\"> BS* [expr-list BS*] <\")\">
 
-     field-assign-list = field-assign {BS* <\",\"> BS* [NL BS*] field-assign}
+     <field-assign-list> = field-assign {BS* <\",\"> BS* [NL BS*] field-assign}
 
      field-assign = ID BS+ <\"=\"> BS+ pipe-expr | pipe-expr
 
@@ -409,7 +419,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
 
-     ID = !('as '|'begin[ \r\n]'|'def '|'dispatch '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'method '|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !('as '|'begin[ \r\n]'|'def '|'dispatch '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -433,13 +443,13 @@
 
 
 (defn def-ogu-step-range
-   ([a b c] (let [step (cons '- [b a]) end (cons 'inc [c])] (cons 'range [a end step])))
+      ([a b c] (let [step (cons '- [b a]) end (cons 'inc [c])] (cons 'range [a end step])))
 
-   ([a b c d] (let [step (cons '- [b a])] (cons 'range [a d step]))))
+      ([a b c d] (let [step (cons '- [b a])] (cons 'range [a d step]))))
 
 
 (defn def-ogu-simple-range
-      ([a b] (let [end (cons 'inc [b])] (cons 'range [a end])) )
+      ([a b] (let [end (cons 'inc [b])] (cons 'range [a end])))
       ([a b c] (cons 'range [a c])))
 
 (defn def-ogu-infinity-range
@@ -452,26 +462,26 @@
       (for [x (apply concat [eq [body]])] x))
 
 (defn ogu-body [body eq]
-      (loop [end (last eq) beg (butlast eq) result body ]
-        (if (empty? end)
-             result
-             (recur (last beg) (butlast beg) (insert-let end result)))    )
+      (loop [end (last eq) beg (butlast eq) result body]
+            (if (empty? end)
+              result
+              (recur (last beg) (butlast beg) (insert-let end result))))
       )
 
 (defn ogu-priv-definition
-  ([id args body]
-    (if (empty? args)
-      (cons 'defn- [id [] body])
-      (cons 'defn- [id args body])))
+      ([id args body]
+        (if (empty? args)
+          (cons 'defn- [id [] body])
+          (cons 'defn- [id args body])))
 
-  ([id args body where]
-    (let [equations (rest where) ]
-         (if (empty? args)
-           (cons 'defn- [id [] (ogu-body body equations) ])
-           (cons 'defn- [id args (ogu-body body equations)])))))
+      ([id args body where]
+        (let [equations (rest where)]
+             (if (empty? args)
+               (cons 'defn- [id [] (ogu-body body equations)])
+               (cons 'defn- [id args (ogu-body body equations)])))))
 
 (defn ogu-definition
-      ([id val] (cons 'defn [ id [] val]))
+      ([id val] (cons 'defn [id [] val]))
 
       ([id args body]
         (if (= "-" id)
@@ -482,13 +492,13 @@
 
       ([id args body where]
         (if (= "-" id)
-            (ogu-priv-definition args body where)
-            (if (and (vector? where) (= :where (first where)))
-                  (let [equations (rest where) ]
-                       (if (empty? args)
-                         (cons 'defn [id [] (ogu-body body equations) ])
-                         (cons 'defn [id args (ogu-body body equations) ])))
-                      (ogu-definition id args where))))
+          (ogu-priv-definition args body where)
+          (if (and (vector? where) (= :where (first where)))
+            (let [equations (rest where)]
+                 (if (empty? args)
+                   (cons 'defn [id [] (ogu-body body equations)])
+                   (cons 'defn [id args (ogu-body body equations)])))
+            (ogu-definition id args where))))
 
       ([id args ret body where]
         (if (= "-" id)
@@ -496,7 +506,7 @@
           (ogu-definition id args body where)))
 
       ([min id args ret body where]
-          (ogu-priv-definition id args body where)))
+        (ogu-priv-definition id args body where)))
 
 
 (defn ogu-guards [& guards] (cons 'cond (apply concat guards)))
@@ -513,7 +523,7 @@
            (clojure.edn/read-string (str \\ s))))
 
 
-(defn ogu-repeat-var
+(defn ogu-field-assign
       ([v] v)
       ([nn v] v))
 
@@ -522,52 +532,61 @@
            (if-not has-assign
                    (cons 'recur (for [[_ v] rest] v))
                    (list 'let
-                         (vec (apply concat (for [[_ n v] (filter #(= 3 (count %)) rest)] [n v])) )
+                         (vec (apply concat (for [[_ n v] (filter #(= 3 (count %)) rest)] [n v])))
                          (cons 'recur (for [[_ v] rest] v))))))
 
 (defn ogu-equation
       ([idf val] (cons 'let [(vec [idf val])]))
       ([idf args val]
         (if (empty? args)
-          (cons 'let [(vec [idf val])] )
-          (list 'letfn [(list idf args val)])  )))
+          (cons 'let [(vec [idf val])])
+          (list 'letfn [(list idf args val)]))))
 
 (defn ogu-flatten-last-while [v]
       (let [end (last v) rest (butlast v) while (:when end)]
            (if (empty? while)
              v
-             (conj (conj (vec rest) :when)  while))))
+             (conj (conj (vec rest) :when) while))))
 
-
-(defn ogu-uses
-      ([ns & rest]
-        (if (empty? rest)
-          (cons ':require '[ogu.core :refer :all]))
-          rest))
 
 (defn ogu-at-expr
       ([v] (cons 'deref [v]))
       ([v s] (cons 'var-set [v s])))
 
+
+(defn ogu-bang-expr
+      ([o f] (cons (symbol (str \. f)) [o]))
+      ([f _ v] (cons 'set! [f v])))
+
 (defn ogu-module-use
       ([m] m)
       ([m op rest]
         (cond
-          (= op "as")[m :as rest]
+          (= op "as") [m :as rest]
           (and (= op "refer") (= rest "all")) [m :refer :all]
           (= op "refer") [m :refer rest])))
 
 (defn ogu-constructor
       ([tid] (list (clojure.edn/read-string (str tid \.))))
-      ([tid & args] (cons (clojure.edn/read-string (str "->" tid )) args)))
+      ([tid & args] (cons (clojure.edn/read-string (str "->" tid)) args)))
 
 (defn ogu-def-args [& rest]
-      (letfn [(filter-isa-type [x]
-                               (cond (and (vector? x) (= :isa-type (first x))) (let [v (second x) t (nth x 2)] v) ;; TODO check type
-                                     :else x))]
-             (vec (for [x rest] (filter-isa-type x)))))
+      (vec (for [x rest] x)))
 
-;(fn [& rest] (vec  (flatten rest) ))
+
+(defn ogu-class-member-id-def
+      ([x] x)
+      ([v x]
+        (cond
+          (= v "val") x
+          (= v "var") [:mutable x]
+          :else x)))
+
+(defn ogu-type-def [& def-type]
+   (let [header (first def-type) body (rest def-type) tag (first header) name (second header) fields (drop 2 header)]
+     (cond
+       (= tag :class-constructor-def) (cons '-def-ogu-type- (concat [name] fields body))
+       :else (cons 'defrecord (concat [name] fields body)))))
 
 (def ast-transformations
   {:NUMBER                   clojure.edn/read-string
@@ -634,6 +653,8 @@
    :while-expr               (fn [& rest] (cons 'while rest))
 
 
+   :field-assign             ogu-field-assign
+
    :dispatch                 (fn [& rest] (cons 'defmulti rest))
    :method-definition        (fn [& rest] (cons 'defmethod rest))
 
@@ -667,6 +688,7 @@
 
    :begin-end-expr           (fn [& rest] (cons 'do rest))
    :do-expr                  (fn [& rest] (cons 'do rest))
+   :expr-seq                 (fn [& rest] (cons 'do rest))
 
    :when-expr                (fn [& rest] (cons 'when rest))
 
@@ -701,23 +723,38 @@
    :doto-expr                (fn [& rest] (cons 'doto rest))
 
 
+   :isa-type                 (fn [obj t]  (list obj ':guard (list 'partial 'isa-type? t)  :as obj))
+
    :jvm-constructor          (fn [& rest] (cons 'new rest))
    :constructor              ogu-constructor
+   :record-constructor-call  ogu-constructor
    :at-expr                  ogu-at-expr
-
+   :bang-expr                ogu-bang-expr
    :sync-expr                (fn [& rest] (cons 'dosync rest))
 
    :proxy-def                (fn [& rest] (cons 'proxy (apply concat rest)))
    :proxy-method-impl        (fn [& rest] (list rest))
    :proxy-method-args        (fn [& rest] (vec rest))
    :proxy-super-args         (fn [& rest] rest)
-   :proxy-extend-list        (fn [& rest] (list (vec (filter #(and (not (vector? %))  (not (nil? %)))  rest)) (vec (filter #(vector? %) rest))))
+   :proxy-extend-list        (fn [& rest] (list (vec (filter #(and (not (vector? %)) (not (nil? %))) rest)) (vec (filter #(vector? %) rest))))
+
+
+   :class-id-list            (fn [& rest] (vec rest))
+   :class-member-id-def      ogu-class-member-id-def
+   :type-def                 ogu-type-def
+
+   :trait-method-impl        (fn [& rest] rest)
+   :trait-method-impl-args   (fn [& rest] (vec rest))
+
+   :extension                (fn [& rest] (cons 'extend-type rest))
 
    :recur                    (fn [& rest] (cons 'recur rest))
 
    :rest-args                (fn [args] (cons '& [args]))
 
-
+   :trait-def                (fn [& rest] (cons 'defprotocol rest))
+   :trait-method             (fn [& rest] rest)
+   :trait-method-args        (fn [& rest] (vec rest))
 
    :eq-args                  (fn [& rest] (vec (flatten rest)))
    :def-args                 ogu-def-args
@@ -734,10 +771,10 @@
 
 (defn classify-form [[p form]]
       (cond
-        (symbol? form) { (str "expr-" (md5 (str (uuid)))) {:form form :pos p}}
+        (symbol? form) {(str "expr-" (md5 (str (uuid)))) {:form form :pos p}}
         :else (if (or (= (first form) 'def) (= (first form) 'defn))
-                { (str "defv-" (second form)) {:form form :pos p}   }
-                { (str "expr-" (md5 (str (uuid)))) {:form form :pos p}})))
+                {(str "defv-" (second form)) {:form form :pos p}}
+                {(str "expr-" (md5 (str (uuid)))) {:form form :pos p}})))
 
 ;check if a list of
 (defn check-all-args-are-symbol [args] (every? symbol? args))
@@ -754,36 +791,37 @@
 (def gen-ids (for [i (iterate inc 1)] (symbol (str \a i))))
 
 (defn make-match-args [fun-body]
-      (let [args  (ffirst fun-body)]
+      (let [args (ffirst fun-body)]
            (vec (take (count args) gen-ids))))
 
 
 (defn filter-for-vec-args [fun-body]
-     (apply concat  (for [[arg value] (partition 2 fun-body)]
-           (cond
-             (and (vector? arg) (vector? (first arg)))  [[(list (first arg) :seq)]  value]
-             :else [arg value] ))))
+      (apply concat (for [[arg value] (partition 2 fun-body)]
+                         (cond
+                           (and (vector? arg) (vector? (first arg))) [[(list (first arg) :seq)] value]
+                           :else [arg value]))))
 
 
 (defn check-match [fun-body]
       (if-not (is-pattern-matching? fun-body)
-        fun-body
-        (let [args (make-match-args fun-body)]
-            (cons args (list (concat (cons 'match [args]) (filter-for-vec-args (apply concat fun-body)) ))))))
+              fun-body
+              (let [args (make-match-args fun-body)]
+
+                   (cons args (list (concat (cons 'match [args]) (filter-for-vec-args (apply concat fun-body))))))))
 
 (defn make-variadic [forms]
       (loop [pos (java.lang.Integer/MAX_VALUE), head (first forms), tail (rest forms), name nil, result []]
             (cond
-              (empty? tail) {:form (cons 'defn (cons name (check-match result)))  :pos pos  }
+              (empty? tail) {:form (cons 'defn (cons name (check-match result))) :pos pos}
               (= :pos (first head)) (recur (min pos (second head)) (first tail) (rest tail) name result)
               :else (let [form (second head) pn (second form)]
                          (if (= 'def (first form))
-                           (recur pos (first tail) (rest tail) pn (conj result (cons '[] (drop 2 form)) ))
+                           (recur pos (first tail) (rest tail) pn (conj result (cons '[] (drop 2 form))))
                            (recur pos (first tail) (rest tail) pn (conj result (drop 2 form))))))))
 
 (defn merge-variadic-function [fun]
       (cond
-        (seq? fun)  (make-variadic fun)
+        (seq? fun) (make-variadic fun)
         :else fun))
 
 (defn merge-functions [[k v]]
@@ -793,11 +831,11 @@
 
 (defn merge-variadic [source]
       (let [tree (clojure.edn/read-string (str "[ " source "]"))
-            forms (apply merge-with concat (mapv classify-form (ogu.core/zip (ogu.core/-range-to-inf 1) tree)))  ]
-           (string/join  (doall (map #(str (:form %) \newline) (sort-by :pos (map merge-functions forms)))) ) )  )
+            forms (apply merge-with concat (mapv classify-form (ogu.core/zip (ogu.core/-range-to-inf 1) tree)))]
+           (string/join (doall (map #(str (:form %) \newline) (sort-by :pos (map merge-functions forms)))))))
 
 (defn transform-ast [ast]
-   (merge-variadic (insta/transform ast-transformations ast)))
+      (merge-variadic (insta/transform ast-transformations ast)))
 
 (def preamble "
   (require '[ogu.core :refer :all] '[clojure.core.match :refer [match]])
@@ -805,17 +843,17 @@
   ")
 
 (defn evalue-ast [module ast]
-  (let [value (transform-ast ast)]
-             (load-string (str preamble value))))
+      (let [value (transform-ast ast)]
+           (load-string (str preamble value))))
 
 
 (defn parse-module [options module]
-  (let [arch (file module)]
-    (if-not (.exists arch)
-      (println "no pudo abrir archivo: " module)
-      (let [text (str (slurp module) \newline)  ast (grammar text)]
-        (if (insta/failure? ast)
-          (println "ERROR: " (insta/get-failure ast))
-          (do (when (:print options) (println ast \newline ) (println (transform-ast ast)))
-              (when (:tree  options) (insta/visualize (grammar text)))
-              (when (:eval options) (evalue-ast module ast))))))))
+      (let [arch (file module)]
+           (if-not (.exists arch)
+                   (println "no pudo abrir archivo: " module)
+                   (let [text (str (slurp module) \newline) ast (grammar text)]
+                        (if (insta/failure? ast)
+                          (println "ERROR: " (insta/get-failure ast))
+                          (do (when (:print options) (println ast \newline) (println (transform-ast ast)))
+                              (when (:tree options) (insta/visualize (grammar text)))
+                              (when (:eval options) (evalue-ast module ast))))))))

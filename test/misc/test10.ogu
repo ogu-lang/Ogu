@@ -1,7 +1,7 @@
 -- test 10 guardias
 
 
-def strIMC imc : Float
+def strIMC imc
   | imc <= 18.5 = "estas bajo el peso normal"
   | imc <= 25.0 = "tu peso es normal"
   | imc <= 30.0 = "estas con sobrepeso"
@@ -15,7 +15,7 @@ def strIMC' peso altura
   where imc = peso / altura ^ 2
 
 
-def strIMC'' peso:Float altura:Float -> String
+def strIMC'' peso altura
   | imc <= delgado = "estas bajo el peso normal"
   | imc <= normal = "tu peso es normal"
   | imc <= gordo = "estas con sobrepeso"

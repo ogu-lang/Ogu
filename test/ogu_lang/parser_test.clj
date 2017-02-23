@@ -61,7 +61,7 @@
    {:file "test/misc/test23.ogu" :val 2000}
    {:file "test/misc/test24.ogu" :val '(0 1 2 3 4 5 6 7 8 9)}
    {:file "test/misc/test25.ogu" :val 20}
-
+   {:file "test/misc/test26.ogu" :val ["area of shape: 314.1592653589793"  "area of rectangle: 5000" "area of shape: 200"]}
    ])
 
 (deftest test-2

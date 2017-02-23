@@ -106,9 +106,9 @@ def fill-point g pt color =
 -- START: paint
 dispatch paint on (\g object & _ -> :type object\)
 
-method paint :apple ? g {:keys [location, color]}  = fill-point g location color
+def paint :apple ? g {:keys [location, color]}  = fill-point g location color
 
-method paint :snake ? g {:keys [body, color]}      = for point <- body do (fill-point g  point color)
+def paint :snake ? g {:keys [body, color]}      = for point <- body do (fill-point g  point color)
 -- END: paint
 
 -- START: game-panel

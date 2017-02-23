@@ -1,12 +1,10 @@
 module toque-y-fama
 
-def ingresar tam =
-    prompt! "Ingresa una secuencia de " tam " dígitos distintos (o escribe salir):"
+def ingresar tam = prompt! "Ingresa una secuencia de " tam " dígitos distintos (o escribe salir):"
 
 def famas num xs = zip num xs |> filter \x -> first x == second x\ |> count
 
 def toques num xs = num |> filter \x -> (contains? (to-set xs) x)\  |> count
-
 
 def validar n xs = if (length num) == n then num else []
     where num = xs |> filter is-digit?  |> map to-digit  |> uniq
@@ -14,7 +12,7 @@ def validar n xs = if (length num) == n then num else []
 let tam = 5
 let sec = shuffle [0..9] |> take tam
 
-print "Bienvenido a Toque y Fama.
+println! "Bienvenido a Toque y Fama.
 ==========================\n\n
 En este juego debes tratar de adivinar una secuencia de " ( tam ) "dígitos generadas por el programa.\n
 Para esto ingresas " ( tam ) " dígitos distintos con el fin de adivinar la secuencia.\n
@@ -31,19 +29,14 @@ loop intentos = 1, accion = ingresar tam in
     else
        let num = validar tam accion
        in if empty? num then
-          begin
-              println! "error!\n"
-              repeat inc intentos, ingresar tam
-          end
+             println! "error!\n"; -- notar el ;
+             repeat inc intentos, ingresar tam
           else
-          begin
-                println! "tu ingresaste " num
-                let (toques, famas) = (toques num sec, famas num sec)
-                in begin
-                    println! "resultado: "  (toques - famas)  " Toques "  famas  "Famas"
-                    if famas == tam then
-                        println! "Ganaste! Acertaste al intento "   intentos  "! La secuencia era "  sec
-                    else
-                        repeat inc intentos, ingresar tam
-                end
-          end
+             println! "tu ingresaste " num;
+             let (toques, famas) = (toques num sec, famas num sec)
+             in
+                println! "resultado: "  (toques - famas)  " Toques "  famas  "Famas";
+                if famas == tam then
+                   println! "Ganaste! Acertaste al intento "   intentos  "! La secuencia era "  sec
+                else
+                   repeat inc intentos, ingresar tam

@@ -1,26 +1,43 @@
 
+trait Vehicle is
 
-type Car(company, model, year)
-
-type Plane(company, series, year)
-
-val mustang56 = Car(company = "Ford", model = "Mustang", year = 1956)
-
-val boeing747 = Plane(company = "Boeing", series = "747", year = 2000)
+    move this
 
 
-def show-model
-    | p : Plane = println! (series  p) (company  p)
-    | c : Car   = println! (model   c) (company  c)
+type Car {company, model, year}
+   as Vehicle
+   def move this = println! "moving car " company model year
+
+type Plane {company, series, year}
+   as Vehicle
+   def move this = println! "flying plane " company series year
 
 
-def show-company
-    | Plane(c,_,_) = println! c
-    | Car(c,_,_)   = println! c
+
+let mustang56 = Car {company = "Ford", model = "Mustang", year = 1956}
+
+let boeing747 = Plane{company = "Boeing", series = "747", year = 2000}
+
+
+def show-model p:Plane = println! (.series  p) (.company  p)
+def show-model c:Car   = println! !c.model !c.company
+
+
+dispatch show on class
+
+def show Plane ? plane = println! "plane " ; (show-model plane)
+def show Car   ? car = println!   "car " ; (show-model car)
+
+
+show mustang56
+show boeing747
+
 
 show-model mustang56
 show-model boeing747
 
-show-company mustang56
-show-company boeing747
+move mustang56
+
+move boeing747
+
 

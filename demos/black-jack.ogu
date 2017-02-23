@@ -17,10 +17,9 @@ def valor-mano? mano
 def solicitar-jugada! jugada =
     loop opcion = solicitar-opcion mensaje  in
         if in? opcion opciones then opcion
-        else begin
-            println! "opción incorrecta"
+        else
+            println! "opción incorrecta";
             repeat opcion = solicitar-opcion mensaje
-        end
     where
         solicitar-opcion mensaje = first <| char-array <| trim <| upper <| prompt! mensaje
         mensaje | jugada == 'I' = "Jugada? ('R':Retirarse, 'D':Doblar, 'O':Otra carta, 'M': Mantener cartas) --> "
@@ -29,10 +28,9 @@ def solicitar-jugada! jugada =
                  | otherwise = ['R', 'O', 'M']
 
 
-def mostrar-manos! mano-jugador mano-croupier = do
-        mostrar-mano! "Cartas Jugador:  " mano-jugador
+def mostrar-manos! mano-jugador mano-croupier =
+        mostrar-mano! "Cartas Jugador:  " mano-jugador;
         mostrar-mano! "Cartas Couprier: " mano-croupier
-    end
     where  mostrar-mano! mensaje mano = println! "\t" mensaje  mano  " ( Valor: "  (valor-mano? mano) " )"
 
 def determinar-ganancia mano-jugador mano-croupier apuesta jugada
@@ -48,11 +46,10 @@ def jugar-mano! baraja-revuelta apuesta pozo = do
         mano-croupier = take 2 (drop 2 baraja-revuelta)
         baraja = drop 4 baraja-revuelta
         jugada = 'I'
-    in if (valor-mano? @mano-jugador) == 21 then begin
-            mostrar-manos! @mano-jugador @mano-croupier
-            println! "Jugador tiene black jack!"
+    in if (valor-mano? @mano-jugador) == 21 then
+            mostrar-manos! @mano-jugador @mano-croupier;
+            println! "Jugador tiene black jack!";
             (3 * apuesta) / 2
-        end
         else
         begin
             while in? @jugada ['I', 'O'] do
@@ -117,7 +114,6 @@ loop pozo = 500, apuesta = solicitar-apuesta pozo apuesta-minima in
     else
         let
            resultado = jugar-mano! (barajar) apuesta pozo
-        in begin
-            mostrar-resultado! resultado (pozo + resultado)
+        in
+            mostrar-resultado! resultado (pozo + resultado);
             repeat pozo' = pozo + resultado, apuesta = solicitar-apuesta pozo' apuesta-minima
-        end
