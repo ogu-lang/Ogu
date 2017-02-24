@@ -1,10 +1,12 @@
 
-main & args =
-    let h = head args, t = tail args
-    in begin
-        report x
-        recur xs
-    end
-    where report x = println! "file" x "words: " (file-open x |> split-lines |> split-word |> count)
+let args = *args*
+
+let x = head args, xs = tail args
+in begin
+    report x
+    recur xs
+end
+where report x = using (reader x) do
+                    println! "file" x "words: " (file-open x |> split-lines |> split-word |> count)
 
 

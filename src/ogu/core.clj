@@ -18,10 +18,15 @@
 
 
 (defn prompt! [& args]
-      (binding [*print-readably* nil] (apply prn args))
+      (binding [*print-readably* nil] (apply pr args))
       (flush)
       (read-line))
 
+; try-parse
+(defn to-int [s d]
+      (try
+        (Integer/parseInt s)
+        (catch java.lang.NumberFormatException e d)))
 
 (defn  sum [args] (reduce + (seq args)))
 
@@ -123,6 +128,8 @@
     (let [filter-fields  (vec (map #(if (vector? %) (with-meta (second %) {:volatile-mutable true})  %) fields))  ]
          `(deftype ~name ~filter-fields  ~@opts+specs)))
 
+; based on this code https://github.com/richhickey/clojure-contrib/blob/master/src/main/clojure/clojure/contrib/import_static.clj
+
 (defmacro import-static
           "Imports the named static fields and/or static methods of the class
           as (private) symbols in the current namespace.
@@ -163,3 +170,45 @@
                                                     'args))))]
                `(do ~@(map import-field fields-to-do)
                     ~@(map import-method methods-to-do))))
+
+
+; based on << macro
+; defined here: https://github.com/clojure/core.incubator/blob/master/src/main/clojure/clojure/core/strint.clj
+
+(defn- silent-read
+       "Attempts to clojure.core/read a single form from the provided String, returning
+       a vector containing the read form and a String containing the unread remainder
+       of the provided String. Returns nil if no valid form can be read from the
+       head of the String."
+       [s]
+       (try
+         (let [r (-> s java.io.StringReader. java.io.PushbackReader.)]
+              [(read r) (slurp r)])
+         (catch Exception e))) ; this indicates an invalid form -- the head of s is just string data
+
+(defn- interpolate
+       "Yields a seq of Strings and read forms."
+       ([s atom?]
+         (lazy-seq
+           (if-let [[form rest] (silent-read (subs s (if atom? 2 1)))]
+                   (cons form (interpolate (if atom? (subs rest 1) rest)))
+                   (cons (subs s 0 2) (interpolate (subs s 2))))))
+       ([^String s]
+         (if-let [start (->> ["${"]
+                             (map #(.indexOf s ^String %))
+                             (remove #(== -1 %))
+                             sort
+                             first)]
+                 (lazy-seq (cons
+                             (subs s 0 start)
+                             (interpolate (subs s start) (= \{ (.charAt s (inc start))))))
+                 [s])))
+
+(defmacro fmt
+          "Limited string interpolation, just ${var}"
+          [& strings]
+          `(str ~@(interpolate (apply str strings))))
+
+(defn func-fmt [s]
+      (println "func-fmt " s)
+      (interpolate s))

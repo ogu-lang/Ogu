@@ -343,7 +343,7 @@
 
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
 
-     <prim-expr> = argless-func-call / paren-expr / func-invokation / constructor-call / record-constructor-call / !partial-sub neg-expr / not-expr / ID / KEYWORD / NUMBER / STRING / CHAR / range-expr / map-expr / at-expr / bang-expr
+     <prim-expr> = &partial-bin partial-bin / argless-func-call / paren-expr / func-invokation / constructor-call / record-constructor-call / !partial-sub neg-expr / not-expr / ID / KEYWORD / NUMBER / FSTRING / STRING / CHAR / range-expr / map-expr / at-expr / bang-expr
 
      neg-expr = !(NUMBER) \"-\"  prim-expr
 
@@ -353,13 +353,13 @@
 
      do-expr = &<\"do\"> <\"do\"> BS* NL BS* pipe-expr  BS* NL {BS* pipe-expr BS* NL} BS* <\"end\">
 
-     expr-seq = (BS* pipe-expr BS* <\";\">[NL] )+ BS* pipe-expr
+     expr-seq = (BS* pipe-expr BS* <\";\">[BS* NL] )+ BS* pipe-expr
 
-     func-invokation = recur  / nil-value / partial-bin / func ({BS+ arg} / <'('> func {BS+ arg} &')' <')'> / [BS arg {BS* <\"~\"> BS+ arg}])
+     func-invokation = recur  / nil-value  / func ({BS+ arg} / <'('> func {BS+ arg} &')' <')'> / [BS arg {BS* <\"~\"> BS+ arg}])
 
      nil-value = <\"nil\">
 
-     func = ID /  KEYWORD / (TID|ID) {<\".\"> (TID|ID)} [<\"/\"> ID]
+     func = ID /  KEYWORD / !constructor (TID|ID) {<\".\"> (TID|ID)} [<\"/\"> ID]
 
      <partial-bin> = partial-add / partial-mul / partial-sub / partial-div / partial-mod / partial-eq
 
@@ -417,9 +417,9 @@
 
      <pipe-op> = \"|>\" / \"<|\"
 
-     <ID-TOKEN> =  #'[\\.]?[-]?[_a-z][_0-9a-zA-Z-]*[?!\\']*'
+     <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !('as '|'begin[ \r\n]'|'def '|'dispatch '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !('++ '|'+ '|'* '|'- '|'as '|'begin[ \r\n]'|'def '|'dispatch '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -428,6 +428,8 @@
      CHAR = #\"'[^']*'\"
 
      STRING = #'\"[^\"]*\"'
+
+     FSTRING = #'#\"[^\"]*\"'
 
      NUMBER = #'[-]?[0-9]+([.][0-9]+)?([eE](-)?[0-9]+)?[NM]?'
 
@@ -518,9 +520,13 @@
       ([tid id] (clojure.edn/read-string (str tid \/ id)))
       ([tid id & rest] nil))
 
-(defn to-char [n]
+(defn ogu-to-char [n]
       (let [l (count n) s (subs n 1 (dec l))]
-           (clojure.edn/read-string (str \\ s))))
+           (cond
+             (= s "\t") \tab
+             (= s "\n") \newline
+             (.startsWith s "\\" ) (clojure.edn/read-string s)
+             :else (clojure.edn/read-string (str \\ s)))))
 
 
 (defn ogu-field-assign
@@ -588,11 +594,17 @@
        (= tag :class-constructor-def) (cons '-def-ogu-type- (concat [name] fields body))
        :else (cons 'defrecord (concat [name] fields body)))))
 
+
+(defn ogu-fstring [s]
+      (let [fs (str "(ogu.core/fmt " (subs s 1) ")")]
+           (clojure.edn/read-string fs)))
+
 (def ast-transformations
   {:NUMBER                   clojure.edn/read-string
    :STRING                   clojure.edn/read-string
+   :FSTRING                  ogu-fstring
    :KEYWORD                  clojure.edn/read-string
-   :CHAR                     to-char
+   :CHAR                     ogu-to-char
    :ID                       clojure.edn/read-string
    :TID                      clojure.edn/read-string
    :partial-add              (fn [& rest] (if (empty? rest) '+ (cons '+ rest)))

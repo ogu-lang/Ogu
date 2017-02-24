@@ -1,25 +1,20 @@
 # TODO LIST
 
 # bugs
+-
 
-- definiciones de funciones sin parametros, hoy obliga a ejecutarlos asi: (fun), pero el compilador deberia detectar esto.
-
-
-## Ferrilo
+# todo
 
 - compile into java class
 - ogu projects
 - lein plugin?
 
-## Ñeclito
 
 - repl
-- traits
-
-
-## Lokán
-
-- better pattern matching (lists, tuples, etc).
 - type pattern matching
-
+- args
+- cond
+- reify
+- using
+- types of args
 

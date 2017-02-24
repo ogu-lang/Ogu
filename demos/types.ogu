@@ -12,7 +12,13 @@ type Plane {company, series, year}
    as Vehicle
    def move this = println! "flying plane " company series year
 
+type Ship {name}
 
+    as Vehicle
+
+    def move this
+        | name == "Titanic" = println! name ~ "sink"
+        | otherwise = println! "sail"
 
 let mustang56 = Car {company = "Ford", model = "Mustang", year = 1956}
 
@@ -29,6 +35,9 @@ def show Plane ? plane = println! "plane " ; (show-model plane)
 def show Car   ? car = println!   "car " ; (show-model car)
 
 
+let titanic = Ship ("Titanic")
+let queen = Ship ("Queen Mary")
+
 show mustang56
 show boeing747
 
@@ -39,5 +48,9 @@ show-model boeing747
 move mustang56
 
 move boeing747
+
+move titanic
+
+move queen
 
 

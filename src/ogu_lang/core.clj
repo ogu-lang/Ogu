@@ -37,7 +37,7 @@
   (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-options)]
     (cond
       (:help options) (exit 0 (usage summary))
-      (not= (count arguments) 1) (exit 1 (usage summary))
+      (empty? arguments) (exit 1 (usage summary))
       errors (exit 1 (error-msg errors)))
     (when-not (:no-banner options) (akarru))
     (doseq [module arguments]
