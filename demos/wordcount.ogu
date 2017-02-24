@@ -1,12 +1,9 @@
 
-let args = *args*
+def main [] = nothing
+def main [x & xs] = report x ; recur xs
+    where
+        count-words line =  line |> split-words |> count
+        report x = using rdr = reader (file x)
+                   in println! "file" x "words: " (rdr |> line-seq |> map count-words |> sum)
 
-let x = head args, xs = tail args
-in begin
-    report x
-    recur xs
-end
-where report x = using (reader x) do
-                    println! "file" x "words: " (file-open x |> split-lines |> split-word |> count)
-
-
+main **args**

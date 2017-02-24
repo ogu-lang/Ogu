@@ -2,6 +2,8 @@
     (:require [clojure.set :as s])
     (:import (java.security MessageDigest)))
 
+(def ^:dynamic **args** [])
+
 (def println! println)
 
 (def readln! read-line)
@@ -10,6 +12,15 @@
 
 (def typeof type)
 
+(def reader clojure.java.io/reader)
+
+(def file clojure.java.io/file)
+
+(defn split-words [s]
+      (let [w (clojure.string/trim s)]
+           (if (empty? w)
+             []
+             (clojure.string/split w #"\s+"))))
 
 (defn isa-type? [t obj]
       (cond

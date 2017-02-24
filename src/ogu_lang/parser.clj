@@ -1,9 +1,9 @@
 (ns ogu-lang.parser
     (:require
       [clojure.string :as string]
-      [instaparse.core :as insta])
-    (:use clojure.java.io)
-    (:use ogu.core))
+      [instaparse.core :as insta]
+      [ogu.core :as ogu])
+    (:use clojure.java.io))
 
 (def grammar
   (insta/parser
@@ -139,7 +139,7 @@
 
      <pipe-expr> =  piped-expr / func-call-expr
 
-     <piped-expr> = forward-piped-expr  / forward-first-piped-expr / backward-piped-expr / backward-bang-piped-expr / doto-expr / dollar-expr / do-expr / expr-seq
+     <piped-expr> = forward-piped-expr  / forward-first-piped-expr / backward-piped-expr / backward-bang-piped-expr / doto-expr / dollar-expr / expr-seq
 
      forward-piped-expr = func-call-expr ([NL] BS+ <\"|>\"> BS+ func-call-expr)+
 
@@ -159,7 +159,7 @@
 
      recur = &'recur' <'recur'> {BS+ arg}
 
-     <control-expr> =  when-expr / if-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr
+     <control-expr> =  when-expr / if-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr / using-expr / do-expr
 
      sync-expr = <\"sync\"> (BS+ pipe-expr | BS* NL BS+ pipe-expr) &NL
 
@@ -198,6 +198,15 @@
      <for-var-value> = pipe-expr
 
      <for-body> = pipe-expr &NL
+
+     using-expr = <'using'> (BS+|NL BS*) using-vars-in BS* [NL BS*] using-body
+
+
+     <using-vars-in> = using-var {(BS* NL BS*| BS* <\",\"> BS* [NL BS*]) using-var} BS* [NL BS*] <'in'>
+
+     <using-var> = let-var-simple
+
+     <using-body> = pipe-expr &NL
 
      let-expr = &'let' <'let'> (BS+|NL BS*) let-vars  BS* [NL BS*]  let-body
 
@@ -419,7 +428,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !('++ '|'+ '|'* '|'- '|'as '|'begin[ \r\n]'|'def '|'dispatch '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !('++ '|'+ '|'* '|'- '|'as '|'begin[ \r\n]'|'def '|'dispatch '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -649,6 +658,8 @@
    :let-var-simple           (fn [id val] [id val])
    :let-expr                 (fn [& rest] (cons 'let rest))
 
+   :using-expr               (fn [& rest] (cons 'with-open rest))
+
    :var-var-tuple            (fn [& rest] (vec rest))
    :var-var-tupled           (fn [ids val] [ids val])
    :var-vars                 (fn [& rest] (vec (apply concat rest)))
@@ -783,10 +794,10 @@
 
 (defn classify-form [[p form]]
       (cond
-        (symbol? form) {(str "expr-" (md5 (str (uuid)))) {:form form :pos p}}
+        (symbol? form) {(str "expr-" (ogu/md5 (str (ogu/uuid)))) {:form form :pos p}}
         :else (if (or (= (first form) 'def) (= (first form) 'defn))
                 {(str "defv-" (second form)) {:form form :pos p}}
-                {(str "expr-" (md5 (str (uuid)))) {:form form :pos p}})))
+                {(str "expr-" (ogu/md5 (str (ogu/uuid)))) {:form form :pos p}})))
 
 ;check if a list of
 (defn check-all-args-are-symbol [args] (every? symbol? args))

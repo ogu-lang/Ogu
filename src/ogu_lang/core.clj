@@ -1,7 +1,8 @@
 (ns ogu-lang.core (:gen-class)
     (:require [clojure.string :as string]
               [clojure.tools.cli :as cli]
-              [ogu-lang.parser :refer [parse-module]]))
+              [ogu-lang.parser :refer [parse-module]]
+              [ogu.core :refer [**args**]]))
 
 (def VERSION "Ogu compiler version 0.1.0 (Plunke)")
 
@@ -36,9 +37,12 @@
   "Parse an Ogu Module"
   (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-options)]
     (cond
-      (:help options) (exit 0 (usage summary))
-      (empty? arguments) (exit 1 (usage summary))
-      errors (exit 1 (error-msg errors)))
+       (:help options) (exit 0 (usage summary))
+       (empty? arguments) (exit 1 (usage summary))
+       errors (exit 1 (error-msg errors)))
     (when-not (:no-banner options) (akarru))
-    (doseq [module arguments]
-            (parse-module options module))))
+       (let [[modules args] (split-with #(not= "args:" %) arguments)]
+            (println "arguments" arguments "modules" modules "args" args)
+            (doseq [module modules]
+                   (binding [**args** (if (empty? args) [] (rest args))]
+                            (parse-module options module))))))
