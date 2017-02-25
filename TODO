@@ -8,14 +8,11 @@
 - compile into java class
 - ogu projects
 - lein plugin?
-
-
-- *args* for cli
+- regular expressions
+- dates
 - repl
 - type pattern matching
-- cond
 - reify
-- using
 - types of args
 - global vars
 

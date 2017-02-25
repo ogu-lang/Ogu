@@ -12,6 +12,8 @@
 
 (def typeof type)
 
+(def curry partial)
+
 (def reader clojure.java.io/reader)
 
 (def file clojure.java.io/file)

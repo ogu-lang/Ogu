@@ -159,7 +159,14 @@
 
      recur = &'recur' <'recur'> {BS+ arg}
 
-     <control-expr> =  when-expr / if-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr / using-expr / do-expr
+     <control-expr> =  when-expr / if-expr / cond-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr / using-expr / do-expr
+
+
+     cond-expr = <\"cond\"> (cond-pair)+[cond-otherwise]
+
+     cond-pair = (BS+|NL BS*) lcons-expr BS+ <\"->\"> BS+ pipe-expr BS* &NL
+
+     cond-otherwise = (BS+|NL BS*) <\"otherwise\"> BS+ <\"->\"> BS+ pipe-expr BS* &NL
 
      sync-expr = <\"sync\"> (BS+ pipe-expr | BS* NL BS+ pipe-expr) &NL
 
@@ -428,7 +435,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !('++ '|'+ '|'* '|'- '|'as '|'begin[ \r\n]'|'def '|'dispatch '|'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !('++ '|'+ '|'* '|'- '|'as '|#'begin[ \r\n]'|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -675,14 +682,18 @@
 
    :while-expr               (fn [& rest] (cons 'while rest))
 
+   :cond-expr                (fn [& rest] (cons 'cond (apply concat rest)))
+   :cond-pair                 (fn [& rest] rest)
 
-   :field-assign             ogu-field-assign
+                                  :field-assign             ogu-field-assign
 
    :dispatch                 (fn [& rest] (cons 'defmulti rest))
    :method-definition        (fn [& rest] (cons 'defmethod rest))
 
    :otherwise                (fn [& rest] [:else (first rest)])
    :where-otherwise          (fn [& rest] [:else (first rest)])
+   :cond-otherwise          (fn [& rest] [:else (first rest)])
+
    :guard                    ogu-guard
    :where-guard              ogu-guard
    :body-guard               ogu-guards
