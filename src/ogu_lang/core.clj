@@ -42,7 +42,6 @@
        errors (exit 1 (error-msg errors)))
     (when-not (:no-banner options) (akarru))
        (let [[modules args] (split-with #(not= "args:" %) arguments)]
-            (println "arguments" arguments "modules" modules "args" args)
             (doseq [module modules]
                    (binding [**args** (if (empty? args) [] (rest args))]
                             (parse-module options module))))))

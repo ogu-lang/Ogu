@@ -18,9 +18,10 @@ def solicitar-jugada! jugada =
     loop opcion = solicitar-opcion mensaje  in
         if in? opcion opciones
         then opcion
-        else
+        else begin
             println! "opción incorrecta";
             repeat opcion = solicitar-opcion mensaje
+        end
     where
         solicitar-opcion mensaje = first <| char-array <| trim <| upper <| prompt! mensaje
 
@@ -31,10 +32,11 @@ def solicitar-jugada! jugada =
                  | otherwise     = ['R', 'O', 'M']
 
 
-def mostrar-manos! mano-jugador mano-croupier =
-    println! " ";
-    mostrar-mano! "Cartas Jugador:  " mano-jugador;
-    mostrar-mano! "Cartas Couprier: " mano-croupier
+def mostrar-manos! mano-jugador mano-croupier = do
+        println! " "
+        mostrar-mano! "Cartas Jugador:  " mano-jugador
+        mostrar-mano! "Cartas Couprier: " mano-croupier
+    end
     where
          mostrar-mano! mensaje mano = println! #"\t ${mensaje}  " mano " ( Valor: "  (valor-mano? mano) " )"
 
@@ -52,9 +54,11 @@ def jugar-mano! baraja-revuelta apuesta pozo = do
         baraja = drop 4 baraja-revuelta
         jugada = 'I'
     in if (valor-mano? @mano-jugador) == 21 then
+       begin
             mostrar-manos! @mano-jugador @mano-croupier;
             println! "\nJugador tiene black jack!";
             (3 * apuesta) / 2
+        end
         else
         begin
             while in? @jugada ['I', 'O'] do
@@ -111,7 +115,7 @@ def solicitar-apuesta pozo apuesta-minima =
              then repeat v = ask m
              else v
 
--- Programa principal
+; Programa principal
 
 println! "Bienvenido al juego de black jack"
 
@@ -123,6 +127,7 @@ loop pozo = 500, apuesta = solicitar-apuesta pozo apuesta-minima in
     else
         let
            resultado = jugar-mano! (barajar) apuesta pozo
-        in
+        in do
             mostrar-resultado! resultado (pozo + resultado);
             repeat pozo' = pozo + resultado, apuesta = solicitar-apuesta pozo' apuesta-minima
+        end

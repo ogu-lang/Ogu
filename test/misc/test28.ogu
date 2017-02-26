@@ -8,8 +8,8 @@ def greeting "Spanish" ? person = println "Hola" (person "name")
 
 def greeting otherwise ?  _ = println "?????"
 
-greeting  {"name" "Michelle", "language" "French"} -- Bonjour Michell
+greeting  {"name" "Michelle", "language" "French"} ; Bonjour Michell
 
-greeting  {"name" "Pedro", "language" "Spanish"} -- Hola Pedro
+greeting  {"name" "Pedro", "language" "Spanish"} ; Hola Pedro
 
-greeting {"name" "Hans", "language" "German"} -- ?????
+greeting {"name" "Hans", "language" "German"} ; ?????

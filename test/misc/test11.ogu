@@ -1,4 +1,4 @@
--- test 11 min max
+; test 11 min max
 
 def aob a b = a || b
 

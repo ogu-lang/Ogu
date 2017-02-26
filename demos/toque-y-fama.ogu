@@ -28,15 +28,18 @@ loop intentos = 1, accion = ingresar tam in
        println! "\ngracias por jugar, adios."
     else
        let num = validar tam accion
-       in if empty? num then
-             println! "error!\n"; -- notar el ;
+       in if empty? num then begin
+             println! "error!\n"
              repeat inc intentos, ingresar tam
-          else
-             println! "tu ingresaste " num;
+          end
+          else begin
+             println! "tu ingresaste " num
              let (toques, famas) = (toques num sec, famas num sec)
-             in
+             in begin
                 println! "resultado: "  (toques - famas)  " Toques "  famas  "Famas";
                 if famas == tam then
                    println! "Ganaste! Acertaste al intento "   intentos  "! La secuencia era "  sec
                 else
                    repeat inc intentos, ingresar tam
+             end
+          end

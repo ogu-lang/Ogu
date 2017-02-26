@@ -441,7 +441,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !(COMMENT|'++ '|'+ '|'* '|'- '|'as '|#'begin[ \r\n]'|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|'as '|#'begin[ \r\n]'|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -459,7 +459,7 @@
 
      <NL> = (COMMENT / HARD-NL)+
 
-     <COMMENT> = <#'--[^\\r\\n]*[\\n\\r]+'>
+     <COMMENT> = <#';[^\\r\\n]*[\\n\\r]+'>
 
      <HARD-NL> = <#'[\\n\\r]+'>
      "))
@@ -729,7 +729,6 @@
 
    :begin-end-expr           (fn [& rest] (cons 'do rest))
    :do-expr                  (fn [& rest] (cons 'do rest))
-   :expr-seq                 (fn [& rest] (cons 'do rest))
 
    :when-expr                (fn [& rest] (cons 'when rest))
 

@@ -1,11 +1,11 @@
--- test 4
+; test 4
 println max 10 4
 
 println $ max  10 4
 
 println (max 10 4)
 
--- comentario
+; comentario
 
 println $ max 4 5 + 2
 
