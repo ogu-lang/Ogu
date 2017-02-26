@@ -104,7 +104,78 @@ En ese caso si se quiere rescatar los valores de retorno de la tupla en forma se
 
 **let** y **val** son sinonimos cuando declaramos variables globales.
 
+# Listas y Vectores
 
+Las listas y vectores, o secuencias en general, se escriben entre corchetes:
+
+    [1, 2, 3]
+    
+    ["a", "b", "c"]
+    
+Los rangos corresponden a listas donde se definen los inicios y terminos de una secuencia de números
+
+    [1..100] -- del 1 al 100 inclusive
+    [1..<100] -- del 1 al 99
+    
+Una forma especial de escribir un rango es defininiendo el paso entre los elementos>
+    
+    [3, 6..999] -- 3, 6, 9, 12, ... 999
+
+Los rangos pueden ser infinitos:
+    
+    [10...]
+    
+Las listas se pueden escribir por comprension:
+    
+    [x * y | x <- [100..<1000], y <- [100..<1000] ]
+    
+Si tienes un vector puedes acceder al elemento i-esimo del siguiente modo:
+
+    let v = [100, 200, 300]
+    
+    (v 1) -- 200
+    
+# Mapas
+    
+Los mapas se escriben entre {}:
+    
+    {"nombre" "Pedro", "edad" 15}
+    
+Existen keywords, que empiezan con : y son utiles para operar con mapa:
+
+    {:nombre "Pedro", :edad 15}
+       
+    
+Si tienes un mapa, puedes acceder a sus elementos como una función
+    
+    let mapa = {"nombre" "Pedro", "edad" 15}
+    
+    let edad-de-pedro = mapa "edad"
+    
+Con un keyword podemos hacer:
+    
+    let mapa =  {:nombre  "Pedro", :edad  15}
+                  
+    let edad-de-pedro = mapa :edad
+    
+o
+ 
+    let edad-de-pedro = :edad mapa
+    
+    
+Un mapa vacio se designa así
+   
+    {}
+    
+# Conjuntos
+         
+Un conjunto se designa asi:
+     
+     #{elemento1, elemento2}
+     
+Un conjunto vacio se designa así:
+
+    #{}
 
 # Funciones
 
@@ -472,7 +543,43 @@ Los valores false y true son valores reservados para representar booleanos.
 El valor **nil** también es especial. En una expresión booleana el valor nil es equivalente a false.
 
 
+# Recursividad
 
+Para implementar tail recursion usamos recur:
+
+
+    def siracusa n
+        | n == 1 = 4
+        | n == 2 = 1
+        | n % 2 == 0 = recur (n / 2)
+        | otherwise = recur (n * 3 + 1)
+
+
+Existe una construcción **similar** a la implementada en Clojure:
+
+    def rev num =
+        loop  reversed = 0, n = num in
+            if zero? then
+                reversed
+            else
+                repeat reversed * 10 + n % 10, int (n / 10)
+
+Loop inicializa las variables, cuando invocas repeat haces una llamada recursiva
+al loop con nuevos valores para las variables.
+
+Hay dos diferencias con el loop de Clojure:
+
+1. se itera con repeat, no con recur
+2. puedes nombrar a las variables nuevamente en el repeat, peo puedes capturar su valor temporalmente
+    
+    
+    loop i = 1, salida = 0 in
+        if i == 10 then salida
+        else repeat i' = inc i, salida = i' * 2
+        
+    -- salida es 20, si no usaramos i' el resultado seria 18
+        
+        
 # Types
 
 Hay dos tipos en Ogú, las clases y los records.
@@ -489,8 +596,26 @@ Un record se define así:
 
 La diferencia son las llaves. Pero una clase puede tener campos mutables, como veremos más adelante.
 
+Se usan de la siguiente manera:
 
 
+    let mustang56 = Car {company = "Ford", model = "Mustang", year = 1956}
+    
+    let cir = Circle(10, 10, 10)
+
+Los records son útiles para modelar entidades del dominio del negocio.
+Las clases son usadas de manera preferente para implementar tipos de datos más estructurales.
+
+Los campos de un record o de una clase se acceden como funciones aplicadas sobre la instancia, 
+llevan el nombre del campo precedido de un punto, por ejemploÑ
+
+    .company mustang56 -- "Ford"
+    
+Hay una notación especial para acceder a un campo:
+
+    !mustang56.company 
+   
+    
 # Traits 
 
 Un trait es como los protocolos de Clojure.
@@ -517,6 +642,22 @@ Una clase o un record pueden implementar un trait
       as Vehicle
          def move this = println! "moving car " company model year
          
+Notar que cuando implementamos un metodo de un trait podemos acceder a los campos de la clase, 
+como en el caso del metodo self.
+Otra cosa que es obligatorio tener un parametro que corresponde al objeto.
+Podriamos haber reescrito type Circle del siguiente modo:
+
+    type Circle (x, y, radius)
+         as Shape
+         def area self = pi * (!self.radius ^ 2)
+         
+Como el argumento que representa a la instancia del objeto se puede ignorar podemos escribir area del siguiente modo:
+         
+    type Circle (x, y, radius)
+         as Shape
+         def area _ = pi * (radius ^ 2)  
+         
+El primer argumento de un metodo trait puede llamarse como quiera el programador, por convencion se le llama self o this.
          
 Una vez que tenemos definido un trait podemos extender un tipo que ya existe del siguiente modo:
 
@@ -527,485 +668,174 @@ Una vez que tenemos definido un trait podemos extender un tipo que ya existe del
 
 (Notar la indentación)
 
-Esto permite definir "protocolo" para tipos, es una forma de herencia más flexible que la Interfaces de java o que los 
-traits de Scala.
-
-# Tipos algebraicos
+Cuando extendemos un tipo no podemos acceder a sus campos directamente. Por eso usamos .width self.
 
 
-    data Shape = Circle Float Float Float Float | Rectangle Float Float Float Float
+## Clases mutables
 
-Esto define una clase algebraica Shape.
-La clase Shape puede ser un Circle o un Rectangle.
-(Esto es conoce como sum types).
+La mutabilidad es algo no muy deseable en Ogú, es por esto que los records no pueden tener campos mutables, 
+su valor se mantiene inmutable durante la ejecución del programa.
 
-Con esto podemos hacer
+Sin embargo, las clases sí pueden tener mutabilidad, declarando los campos con el atributo **var**.
 
-    val circle = Circle 10 20 5
-    val rect   = Rectangle 50 230 60 90
+Veamos un ejemplo:
 
 
-
-## Clases
-
-
-En Ogú se pueden crear clases
-
-    mut class Persona (val nombre : String, var edad : Int)
-
-Esto define una clase mutable con dos variables de instancia, nombre y edad.
-
-Si la clase declara uno de sus campos como var, debe declararse como mut class.
-
-Una clase inmutable se declara así:
-
-    class Persona(nombre:String, edad:Int)
-
-Si declaras una clase como mutable, la palabra reservada 'var' es redundante:
-
-    mut class Persona (nombre:String, var edad:Int) ;; var edad es redundante
+    trait Shape is
     
-Si declara una clase como inmutable, la palabra reservada 'val' es redundante:
-
-    class Persona(nombre:String, val edad:Int) ;; val edad es redundante
+        def area self
     
-Pero **val** es útil si queremos que un atributo sea inmutable dentro de una clase mutable:
-
-    mut class Persona(val nombre:String, edad:Int) ;; no se puede cambiar el nombre
+    trait Widget is
     
-
-Otros ejemplos:
-
-    class Circulo(val x, y: Int; val radius : Float)
-
-    class Rectangulo(val x,y, alto, ancho:Int)
-
-Para crear un elemento de estas clases se invoca su constructor
-
-    var circulo := Circulo(0,0, 100.0)
-    var cuadro = Rectangulo(0, 0, 50, 50)
-    var box : Circulo = Circulo(0, 0, 50, 50)
-
-
-La sintaxis presentada permite crear una clase con variables de instancia que estarán en su constructor.
-
-Se pueden agregar más atributos a una clase que no necesariamente son inicializados en el constructor
-
-    mut class Empresa (val rut:String, val razonSocial:String) where 
-        var cantidadEmpleados : Int = 0
-        var patrimonioInicial : Money = 1000000
-
-Una clase puede tener métodos, los que se declaran del siguiente modo:
-
-    mut class Auto(val modelo:String, año:Int) where 
-        var bencina = 0
-        var kilometraje = 0
-        
-        let kilometrosPorLitro = 12
-        
-        let avanzar! self kms = 
-           set kilometraje self = (kilometraje self)  + kms
-           $bencina <- $bencina - (kms/$kilometrosPorLitro) 
-
-           
-Los métodos se invocan del siguiente modo:
-
-    var auto = Auto("Ford", 2015)
+         def draw! self
     
-    avanzar! auto 100
-    
-    set kilometraje auto = (kilometraje auto) + 200
-    
-    println "el kilometrake de tu auto es: " ++ (kilometraje auto) ;; imprime 300
+         def move! self x y
+         
+    type Circle (var x,  var y, val radius)
+
+       as Shape
+
+          def area self = pi * (!self.radius ^ 2)
+
+       as Widget
+
+          def draw! self = println! "draw a circle at (" x ", " y ") with radius " radius
+
+          def move! self new-x new-y = begin
+            !x = new-x
+            !y = new-y
+            draw! self
+          end
+
+Notar como x e y son declaradas mutables al colocar el atributo var.
+Sin embargo, como no queremos que radius varie, lo declaramos inmutable con val.
+
+Dado esto podemos, dentro de la definición de la clase, modificar el valor de x e y, con la notación
+
+    !x = new-x
+    !y = new-y
     
     
-Las variables de instancia de una clase se pueden obtener así:
-        
-     variable objeto
-     
-Para modificarlas (sólo si son mutables):
-     
-     set variable objeto = valor
-     
-Un método se invoca así:
-     
-     metodo objeto args...
-     
+Hay un costo para esto, x e y no son visibles furera de la clase.
 
-La variable especial self puede ser usada cuando se define un método.
-
-No es necesario definir métodos como los vimos recién, puesto que Ogú es funcional, podríamos haber
-definido avanzar del siguiente modo:
-
-    def avanzar! : Auto -> ()
-    
-    let avanzar! auto kms =
-       set kilometraje auto = (kilometraje auto) + kms
-       set bencina auto = (bencina auto) - (kms/(kilometrosPorLitro auto)) 
+Esto obliga a definir un protocolo para poder acceder a sus valores, para esto debemos hacer lo siguiente:
 
 
-La ventaja es que al definirlo en clase podemos usar la notación $variable.
+    trait Shape is
 
-    $variable es igual a decir (variable self)
-    
-Sólo se puede usar cuando estamos definiendo un método.
+        def area self
 
-En vez de hacer
-    set variable = valor
-    set variable objeto = valor
-    
-Podemos usar la notación <-
+    trait Widget is
 
-    variable <- valor
-    variable objeto <- valor
-    
-Esto sólo sirve para variables mutables.
-    
+        def draw! self
+
+        def move! self x y
+
+    trait Origin is
+
+        def getX self
+        def getY self
+
+    type Circle (var x,  var y, val radius)
+
+        as Shape
+
+           def area self = pi * (!self.radius ^ 2)
+
+        as Widget
+
+           def draw! self = println! "draw a circle at (" x ", " y ") with radius " radius
+
+           def move! self new-x new-y = begin
+                !x = new-x
+                !y = new-y
+                draw! self
+           end
+
+        as Origin
+
+           def getX self = x
+
+           def getY self = y
+
+
+# Polimorfismo
+
+Podemos crear funciones polimórficas que nos permiten operar con distintos tipos de la siguiente manera:
+
+    def show-area! shape : Rectangle = println! "el area de un rectangulo es " (area shape) " y es de tipo " (typeof shape )
+
+    def show-area! shape : Shape = println! "el area es " (area shape) " y es de tipo " (typeof shape )
+
+
+# Despacho dinamico
+
+El dispacho dinámico es una forma de ejecutar un metodo en base a un discriminador, este corresponde a una función.
+
+Por ejemplo,
+
+
+    dispatch greeting on \x -> (x "language")\
    
-Una clase en Ogú es una forma conveniente de combinar un tipo record (declarado con data), un trait y una instance.  
-    
-En Ogú los métodos son funciones que se restringen a la clase y que siempre reciben un parámetro (self).
-Se invocan como cualquier función, en Ogú no existe la notación objeto . metodo.
-
-Veamos otro ejemplo:
-
-    class Stack() where
-    
-        var _data : [Int] = []
-
-        let push! self x:Int = 
-            $_data <- x :: $_data
-
-        let pop! self = 
-            val result = head $_data
-            $_data <- tail $_data
-            result
-
-        let empty? self = 
-            empty? $_data
-    
-    
-     var stack = Stack()
-     push! stack 10
-     push! stack 20
-     pop! stack ;; <- retorna 20
+    def greeting "French" ? person = println "Bonjour" (person "name")
+   
+    def greeting "English" ? person = println "Hello" (person "name")
+   
+    def greeting "Spanish" ? person = println "Hola" (person "name")
+   
+    def greeting otherwise ?  _ = println "?????"
+   
+    greeting  {"name" "Michelle", "language" "French"} -- Bonjour Michell
+   
+    greeting  {"name" "Pedro", "language" "Spanish"} -- Hola Pedro
+   
+    greeting {"name" "Hans", "language" "German"} -- ?????
 
 
-Sin clases tendríamos que haber hecho lo siguiente:
-
-    data Stack = StackData { _data : [Int] }
-    
-    trait Stackable t where
-    
-        def push! : t -> Int -> ()
-        def pop! : t -> Int
-        def empty? : t -> Boolean
-        
-    instance Stackable Stack where
-    
-        val _self : Stack
-        
-        let push! _self x:Int = set _data _self = x :: _data _self
-        
-        let pop! _self = 
-           val result = head (_data _self)
-           set _data _self = tail (_data _self)
-           result
-           
-        let empty? self = empty? (_data _self)
-
-        
-    var stack = Stack { _data = [] }
-    push! stack 10
-    push! stack 20
-    pop! stack ;; <- retorna 20
-    
-
-Esta es una definición de una clase mutable (con estado).
-Es una convención en Ogú que las funciones que mutan una clase deben llevar el signo ! al final del nombre, 
-de este modo se sabe que mutan el estado del objeto.
-Por eso se las llama mutadores.
-
-Otra convención es que los métodos que permiten consultar el estado de una clase llevan el signo ? al final del nombre.
-
-Los metodos de clase deben tener siempre el parámetro self, es opcional colocar el tipo, porque en realidad siempre será del tipo de la clase.
-
-Es un error declarar un método sin el parámetro self dentro de la clase.
+Acá cada método se invoca dependiendo del resultado de la expresión lambda.
+do sin el parámetro self dentro de la clase.
 
 ## Herencia de clases
 
 Ogú no tiene herencia de clases.
 
-Sin embargo, existe una característica que permite simularla:
-
-    class Rectangulo(x,y,w,h:Int)
-    
-    class Cuadrado(x,y,l:Int) = Rectangulo(x,y,l)
-
-Con esto decimos que en realidad Cuadrado es un caso especial de rectángulo.
-
-(En realidad es un constructor con otro nombre).
-
-En este caso Cuadrado no puede tener una sentencia where para definir nuevos métodos ni sobre escribirlos.
-
-Esto es util para crear nuevos constructores:
-
-    mut class Auto(modelo:String) = Auto(modelo, 0)
-    mut class Auto() = Auto(“Sin modelo”, 0)
-
 # Módulos
 
-Las clases, tipos y funciones se pueden declarar dentro de un módulo.
+Las clases, tipos y funciones se pueden declarar dentro de un módulo,
+usando **module**:
 
 
     module Collections 
-        class Stack where...
-        class List where...
+       
 
-Si module aparece al principio del archivo se pueden omitir las llaves y se considera todo el archivo como parte del módulo.
+Los modulos se importan con la palabra reservada **requires** de una forma 
+muy parecida a Clojure:
+
+    module Demo
+        require clojure.stacktrace, clojure.java.io as io, clojure.stacktrace refer all, clojure.string refer [upper-case]
+        import java.util Date GregorianCalendar
 
 
-Los modulos se importan con la palabra reservada **uses**.
+**require** se usa para importar otros modulos escrintos en Ogu o Clojure.
 
 
-    module ModA 
-    
-        class A() where
-         … def foo … 
-    
-    module ModB 
-        class B()
-    
-    
-    module ModC 
-        
-    uses ModA
-    val obj = A()
-    foo obj ; ok
-    bar obj ;; errror
+**import** permite importar clases de la JVM.
 
+**import static** es una operación adicional que sirve para importar
+definiciones estáticas de la JVM.
+
+
+
+    module snake-game
+        import java.awt Color Dimension,
+         javax.swing JPanel JFrame Timer JOptionPane,
+         java.awt.event ActionListener KeyListener
+
+    import static java.awt.event.KeyEvent (VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN)
 
 Para desambiguar clases o tipos uno puede usar la notación modulo.Tipo
 
-    module ModA 
-    
-    class A() ...
-    
-    module ModB 
-    
-    class A() ...
-    
-    uses ModA, ModB
-    val x := A() // <- error, ambiguo
-    val y := ModA.A() // ok
-    val z := ModB.A() // ok
 
-
-Los nombres de módulo también empiezan en mayúsculas.
-
-Se puede definir alias usando type y alias
-
-    uses ModA, ModB
-    type AA = ModA.A
-    type AB = ModB.A
-
-    uses ModA, ModB
-    alias AA = ModA.A
-    alias AB = ModB.A
-    alias mA = ModA.m
-
-La diferencia es que alias se puede usar con funciones y type solo con tipos.
-
-Además alias no introduce un tipo nuevo, por lo tanto no se puede aplicar en expresiones de algebra de tipos.
-
-
-# Traits
-
-Un trait es similar al concepto de type clases en Haskell
-Los traits:
-
-    1. no pueden ser instanciados (es decir, no tienen constructores).
-    2. pueden tener sólo prototipos de funciones (una clase puede tener prototipos de funciones, pero también debe tener la implementación de la función)
-    3. Pueden tener variables de instancia (en este caso deben llevar el prefijo mut):
-
-
-Por ejemplo:
-
-   trait Figura self where
-    
-        def area :: self -> Float
-        def perimetro :: self -> Perimetro
-    
-   mut trait Container e where
-        
-        var _data : [e] = []
-        
-
-El argumento que recibe un trait es el tipo al que se le implementarán las funciones del trait.
-        
-
-Con esto podemos crear clases que implementan el trait Figura
-
-    class Circulo(x,y:Int, radio:Int)
-    
-    instance Figura Circulo where
-    
-        let area circ = pi * (radio circ) ^ 2
-        
-        let perimetro c = 2 * pi * (radio c)
-        
-    class Rectangulo(x,y, ancho,alto:Int) 
-    
-    
-    instance Figura Rectangulo where
-    
-        let area self = (ancho self) * (alto self)
-    
-        let perimetro = 2 * ((ancho self) + (alto self))
-
-
-# Tipos de datos algebraicos
-
-En Ogú se puede hacer lo siguiente:
-
-    class Circulo(…)
-    class Rectangulo(…)
-    class Cuadrado(…) = Rectangulo(…) 
-    class Triangulo(…) 
-    
-    data Figura = Circulo | Rectangulo | Cuadrado | Triangulo
-    
-    def area :: Figura -> Int
-    def area c:Circulo : Int = …
-    def area r:Rectangulo : Int = …
-    def area t:Triangulo : Int = …
-    ;; como Cuadrado es un Rectangulo no es necesario implementarlo, salvo que se quiera realizar una implementación más eficiente.
-
-
-También podemos hacer esto:
-
-    class Leaf(value:Int)
-    
-    type Tree = Empty | Leaf | Node(Tree,Tree)
-    
-    def depth : Tree -> Int
-    def depth Empty = 0
-    def depth Leaf = 1
-    def depth Node(l,r) = 1 + max (depth l) (depth r)
-
-Otro ejemplo:
-
-    class Number(value:Int)
-    
-    type Expression = Number
-                    | Add(Expression, Expression)
-                    | Minus(Expression, Expression)
-                    | Mult (Expression, Expression)
-                    | Divide(Expression, Expression)
-    
-    
-    def evaluate :: Expression -> Int
-    let evaluate a:Number = value a
-    let evaluate Add (e1, e2) = evaluate e1 + evaluate e2
-    let evaluate Minus(e1, e2) = evaluate e1 - evaluate e2
-    let evaluate Mult(e1, e2) = evaluate e1 * evaluate e2
-    let evaluate Divide(e1, e2) = evaluate e1 / evaluate e2
-
-    val e : Expression = Add(Number(3), Number(4))
-    evaluate e ;; = 7
-    val es := Multiply( Add(Number(3),Number(4)), Divide(Number(8), Number(2)) )
-    evaluate es ;; = 28
-
-
-
-# Clases Paramétricas
-
-Las clases pueden ser paramétricas (como los templates en C++):
-
-    mut class Stack t () where
-    
-        var _data : [t] = []
-    
-        let push! self x:T = 
-            $_data <- x :: $_data
-
-        let pop! self = 
-            val result = head $_data
-            $_data <- tail $_data
-            result
-    
-        let empty? self =
-            empty? $_data
-    
-
-Entonces podemos definir cosas como
-
-    type IntStack = Stack Int
-
-Y usarlo:
-
-    var stack = IntStack()
-    push! stack 10
-    push! stack 20
-    pop! stack ; <- retorna 20
-    
-
-Sin esta característica escribir una clase Stack genérica sería así de tortuoso:
-    
-    
-    trait Stackable s e where
-    
-        def push!  : s -> e -> !
-        def pop!   : s -> e
-        def empty? : s -> Bool
-        
-    
-    ;; Un contenedor de elementos tipo e
-    mut trait MutContainer e where
-    
-        var _data : [e] = []   ;; los traits pueden tener variables mutables
-    
-    ;; acá reemplazamos s por (MutContainer e)
-    instance Stackable (MutContainer e) e where
-    
-        let push! stack x = ;;; stack es de tipo MutContainer e, x es de tipo e
-           set _data s = x :: _data
-        
-        let pop! stack =
-           let result = head (_data stack) ;; fallará si _data en stack es [])
-           set _data stack = tail (_data stack)
-           result
-        
-        let empty? stack = null? (_data stack)
-        
-    
-    type Stack x = Stackable (MutContainer x) x
-    
-    type IntStack = Stack Int
-    
-    var stack = IntStack() ;; las instancias de un trait tienen el contructor ()
-    
-    push! stack 10
-    push! stack 20
-    pop! stack ; <- retorna 20
-
-
-# Tipos Paramétricos
-
-También se pueden presentar tipos paramétricos algebraicos
-
-    data Maybe t = Nothing | Some t
-    
-    val any : Maybe String = Nothing
-    val some  : Maybe String = Some “algo”
-
-A los tipos y clases paramétricos se les puede exigir que cumplan ciertas restricciones
-
-
-    class (t:Ord) => Stack t () where …
-    
-    data (t:Ord) => Maybe t = Nothing | Some t
-     
      
     
 

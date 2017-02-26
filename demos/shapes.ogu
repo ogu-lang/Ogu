@@ -19,7 +19,7 @@ type Circle (var x,  var y, val radius)
 
   as Shape
 
-      area self = pi * (radius ^ 2)
+      area self = pi * (!self.radius ^ 2)
 
   as Widget
 

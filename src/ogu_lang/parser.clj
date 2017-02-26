@@ -27,9 +27,11 @@
 
      <func-definition> =  (<\"def\"> [\"-\"] BS+ ID | [\"-\" BS+] ID)  def-args  def-body [where]
 
-     method-definition =  <\"def\"> [\"-\"] BS+ ID BS+ lcons-expr BS* <\"?\"> def-args def-body [where]
+     method-definition =  <\"def\"> [\"-\"] BS+ ID BS+ (lcons-expr|method-otherwise) BS* <\"?\"> def-args def-body [where]
 
-     dispatch = &\"dispatch\" <\"dispatch\"> BS+ ID BS+ <\"on\"> BS+ lcons-expr NL
+     method-otherwise = <\"otherwise\">
+
+     dispatch = &\"dispatch\" <\"dispatch\"> BS+ ID BS+ <\"on\"> BS+ func-call-expr NL
 
      val-def = &(\"val\"|\"let\") <\"val\"|\"let\"> BS+ ID BS+ <\"=\"> BS+ pipe-expr
 
@@ -253,7 +255,7 @@
 
      at-expr = &'@' <'@'> ID [BS+ <\"=\"> BS+ pipe-expr &NL]
 
-     bang-expr = &'!' <'!'> ID ([BS+ \"=\" BS+ pipe-expr &NL] | <\".\"> ID)
+     bang-expr = &'!' <'!'> ID [<\".\"> ID] (BS+ \"=\" BS+ pipe-expr &NL | <\".\">  ID)
 
      if-expr = &'if' <'if'> BS+ if-cond-expr BS* [NL BS*]  <'then'>  ([NL BS*]|BS+) then-expr [NL BS*] <'else'> ([NL BS*]|BS+) else-expr
 
@@ -359,7 +361,7 @@
 
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
 
-     <prim-expr> = &partial-bin partial-bin / argless-func-call / paren-expr / func-invokation / constructor-call / record-constructor-call / !partial-sub neg-expr / not-expr / ID / KEYWORD / NUMBER / FSTRING / STRING / CHAR / range-expr / map-expr / at-expr / bang-expr
+     <prim-expr> = &partial-bin partial-bin / argless-func-call / paren-expr / func-invokation / constructor-call / record-constructor-call / !partial-sub neg-expr / not-expr / ID / KEYWORD / NUMBER / FSTRING / STRING / CHAR / range-expr / map-expr / set-expr / at-expr / bang-expr
 
      neg-expr = !(NUMBER) \"-\"  prim-expr
 
@@ -413,7 +415,11 @@
 
      as-token = ':as'
 
-     <map-pair> = BS* KEYWORD BS+ pipe-expr | TID BS+ pipe-expr | ID BS+ pipe-expr | pipe-expr BS+ pipe-expr
+     <map-pair> = BS* (KEYWORD BS+ pipe-expr | TID BS+ pipe-expr | ID BS+ pipe-expr | pipe-expr BS+ pipe-expr)
+
+     set-expr = <\"#{\"> [  set-element {BS* <\",\"> BS* [NL] set-element} ] [NL BS*] <\"}\">
+
+     <set-element> = BS* (KEYWORD | ID | pipe-expr)
 
      <and-op> = \"&&\"
 
@@ -435,7 +441,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !('++ '|'+ '|'* '|'- '|'as '|#'begin[ \r\n]'|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !(COMMENT|'++ '|'+ '|'* '|'- '|'as '|#'begin[ \r\n]'|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -685,14 +691,15 @@
    :cond-expr                (fn [& rest] (cons 'cond (apply concat rest)))
    :cond-pair                 (fn [& rest] rest)
 
-                                  :field-assign             ogu-field-assign
+   :field-assign             ogu-field-assign
 
    :dispatch                 (fn [& rest] (cons 'defmulti rest))
    :method-definition        (fn [& rest] (cons 'defmethod rest))
 
    :otherwise                (fn [& rest] [:else (first rest)])
    :where-otherwise          (fn [& rest] [:else (first rest)])
-   :cond-otherwise          (fn [& rest] [:else (first rest)])
+   :cond-otherwise           (fn [& rest] [:else (first rest)])
+   :method-otherwise         (fn [& rest] ':default)
 
    :guard                    ogu-guard
    :where-guard              ogu-guard
@@ -727,6 +734,8 @@
    :when-expr                (fn [& rest] (cons 'when rest))
 
    :map-expr                 (fn [& rest] (into {} (map vec (partition 2 rest))))
+
+   :set-expr                 (fn [& rest] (into #{} rest))
 
    :nil-value                (fn [] nil)
 

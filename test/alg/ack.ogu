@@ -9,8 +9,8 @@ ackermann m n
 siracusa n
   | n == 1 = 4
   | n == 2 = 1
-  | n % 2 == 0 = siracusa (n / 2)
-  | otherwise = siracusa (n * 3 + 1)
+  | n % 2 == 0 = recur (n / 2)
+  | otherwise = recur (n * 3 + 1)
 
 
 (ackermann 2 3) + (siracusa 11)

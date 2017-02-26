@@ -35,4 +35,6 @@ let cir = Circle(10, 10, 10)
 let rec = Rectangle(0,0, 100, 50)
 let tri = Triangle(10, 20)
 
+println! !cir.x !cir.y !cir.radius
+
 [test-area cir, test-area rec, test-area tri]

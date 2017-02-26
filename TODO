@@ -12,6 +12,7 @@
 - dates
 - repl
 - type pattern matching
+- variadic trait methods
 - reify
 - types of args
 - global vars
