@@ -7,7 +7,7 @@
 
 (def grammar
   (insta/parser
-    "module = [module-header] {import-static} {NL} {definition / dispatch / method-definition / val-def NL / type-def  / trait-def / extension / module-expr}
+    "module = [module-header] {import-static} {NL} {definition | dispatch | method-definition | val-def NL | type-def | trait-def | extension | module-expr}
 
      module-header = [NL] <'module'> BS+ module-name (NL+ {require|import}| BS*  NL)
 
@@ -41,7 +41,7 @@
 
      <rest-args> = and-token BS+ arg
 
-     <arg> = &isa-type isa-type  / &ID ID  / func-call-expr
+     <arg> = &isa-type isa-type  | &ID ID  | func-call-expr
 
      type-def = <'type'> BS+ type-constructor-def (traits-for-type|BS* NL)
 
@@ -89,15 +89,15 @@
 
      <module-expr> = BS* pipe-expr BS* NL
 
-     <def-body> = body-simple  / body-guard
+     <def-body> = body-simple  | body-guard
 
      body-guard = BS* ([NL] guard) {guard} [otherwise]
 
-     <body-simple> = BS* <\"=\"> BS* [NL] BS* value BS* NL
+     <body-simple> = BS* <\"=\"> BS* [NL] BS* pipe-expr BS* NL
 
-     guard = BS* <\"|\"> !'otherwise' (BS+ arg)+ BS+ <\"=\"> BS+ value BS* NL
+     guard = BS* <\"|\"> !'otherwise' (BS+ arg)+ BS+ <\"=\"> BS+ pipe-expr BS* NL
 
-     otherwise = BS* <\"|\"> BS+ <\"otherwise\"> BS+ <\"=\"> BS+ value BS* NL
+     otherwise = BS* <\"|\"> BS+ <\"otherwise\"> BS+ <\"=\"> BS+ pipe-expr BS* NL
 
      where = BS+ <'where'> BS* [NL] where-equations NL
 
@@ -105,7 +105,7 @@
 
      <where-equation> =  (equation | guard-equation)
 
-     equation = ID [BS+ eq-args] BS+ <\"=\"> BS+ value | tuple-of-ids BS+ <\"=\"> BS+ value
+     equation = ID [BS+ eq-args] BS+ <\"=\"> BS+ pipe-expr | tuple-of-ids BS+ <\"=\"> BS+ pipe-expr
 
      eq-args = arg {BS+ arg}
 
@@ -113,15 +113,11 @@
 
      where-body-guard = [NL] where-guard {NL where-guard} [NL where-otherwise]
 
-     where-guard = BS* <\"|\"> !\"otherwise \" (BS+ arg)+ BS+ <\"=\"> BS+ value
+     where-guard = BS* <\"|\"> !\"otherwise \" (BS+ arg)+ BS+ <\"=\"> BS+ pipe-expr
 
-     where-otherwise = BS* <\"|\"> BS+ <\"otherwise\"> BS+ <\"=\"> BS+ value
+     where-otherwise = BS* <\"|\"> BS+ <\"otherwise\"> BS+ <\"=\"> BS+ pipe-expr
 
-     <value> = lazy-value / eager-value
-
-     lazy-value = &<'lazy'> <'lazy'> BS+ pipe-expr
-
-     <eager-value> = [<'eager'> BS+] pipe-expr
+     lazy-value =  &'lazy '<'lazy'> BS+ pipe-expr &(NL| ')' | '|>' | '!>' | '>|' | '<|')
 
      proxy-def = <'proxy'> BS* proxy-extend-list (NL BS*| BS+) <'is'> NL proxy-method-impl+ BS* <\"end\">
 
@@ -358,6 +354,7 @@
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
 
      <prim-expr> = &partial-bin partial-bin / argless-func-call / paren-expr / func-invokation / constructor-call
+                 / lazy-value
                  / record-constructor-call / !partial-sub neg-expr / not-expr
                  / range-expr / map-expr / set-expr / at-expr / bang-expr
                  / ID / KEYWORD / NUMBER / FSTRING / STRING / CHAR / INSTANT
@@ -438,7 +435,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|'as '|#'begin[ \r\n]'|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'imports '|#'lazy[ \r\n]'|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|'as '|#'begin[ \r\n]'|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
