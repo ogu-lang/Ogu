@@ -1,15 +1,14 @@
 dispatch greeting on \x -> (x "language")\
 
-def greeting "French" ? person = println "Bonjour" (person "name")
+def greeting "French" ? person = str "Bonjour " (person "name")
 
-def greeting "English" ? person = println "Hello" (person "name")
+def greeting "English" ? person = str "Hello " (person "name")
 
-def greeting "Spanish" ? person = println "Hola" (person "name")
+def greeting "Spanish" ? person = str "Hola " (person "name")
 
-def greeting otherwise ?  _ = println "?????"
+def greeting otherwise ?  _ = str "?????"
 
 greeting  {"name" "Michelle", "language" "French"} ; Bonjour Michell
 
 greeting  {"name" "Pedro", "language" "Spanish"} ; Hola Pedro
 
-greeting {"name" "Hans", "language" "German"} ; ?????

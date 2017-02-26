@@ -345,7 +345,7 @@
 
      <mult-expr> =  mul-expr / mulq-expr / div-expr / mod-expr / factor-expr
 
-     mul-expr  = mult-expr (BS+ &<\"*\"> <\"*\">  BS+ mult-expr)+
+     mul-expr  = mult-expr (BS+ <\"*\">  BS+ mult-expr)+
 
      mulq-expr = mult-expr (BS+ <\"*'\">          BS+ mult-expr)+
 
@@ -357,7 +357,10 @@
 
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
 
-     <prim-expr> = &partial-bin partial-bin / argless-func-call / paren-expr / func-invokation / constructor-call / record-constructor-call / !partial-sub neg-expr / not-expr / ID / KEYWORD / NUMBER / FSTRING / STRING / CHAR / range-expr / map-expr / set-expr / at-expr / bang-expr
+     <prim-expr> = &partial-bin partial-bin / argless-func-call / paren-expr / func-invokation / constructor-call
+                 / record-constructor-call / !partial-sub neg-expr / not-expr
+                 / range-expr / map-expr / set-expr / at-expr / bang-expr
+                 / ID / KEYWORD / NUMBER / FSTRING / STRING / CHAR / INSTANT
 
      neg-expr = !(NUMBER) \"-\"  prim-expr
 
@@ -443,11 +446,15 @@
 
      CHAR = #\"'[^']*'\"
 
+     INSTANT = #'#([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])([Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\\.[0-9]+)?)?(([Zz])|([\\+|\\-]([01][0-9]|2[0-3]):[0-5][0-9]))?'
+
      STRING = #'\"[^\"]*\"'
 
      FSTRING = #'#\"[^\"]*\"'
 
      NUMBER = #'[-]?[0-9]+([.][0-9]+)?([eE](-)?[0-9]+)?[NM]?'
+
+
 
      <BS> = <#'[ \\t]'>\n
 
@@ -619,6 +626,7 @@
   {:NUMBER                   clojure.edn/read-string
    :STRING                   clojure.edn/read-string
    :FSTRING                  ogu-fstring
+   :INSTANT                  (fn [s] (clojure.edn/read-string (str "#inst \"" (subs s 1) "\"")))
    :KEYWORD                  clojure.edn/read-string
    :CHAR                     ogu-to-char
    :ID                       clojure.edn/read-string

@@ -63,6 +63,7 @@
    {:file "test/misc/test25.ogu" :val 20}
    {:file "test/misc/test26.ogu" :val ["area of shape: 314.1592653589793"  "area of rectangle: 5000" "area of shape: 200"]}
    {:file "test/misc/test27.ogu" :val "estas obeso, cuidado!"}
+   {:file "test/misc/test28.ogu" :val "Hola Pedro"}
    ])
 
 (deftest test-2
