@@ -41,9 +41,7 @@
 
      <rest-args> = and-token BS+ arg
 
-     <arg> = &isa-type isa-type / &type-pattern type-pattern / &ID ID / as-arg / func-call-expr
-
-     as-arg = func-call-expr BS+ <'as'> BS+ ID
+     <arg> = &isa-type isa-type  / &ID ID  / func-call-expr
 
      type-def = <'type'> BS+ type-constructor-def (traits-for-type|BS* NL)
 
@@ -163,7 +161,6 @@
 
      <control-expr> =  when-expr / if-expr / cond-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr / using-expr / do-expr
 
-
      cond-expr = <\"cond\"> (cond-pair)+[cond-otherwise]
 
      cond-pair = (BS+|NL BS*) lcons-expr BS+ <\"->\"> BS+ pipe-expr BS* &NL
@@ -209,7 +206,6 @@
      <for-body> = pipe-expr &NL
 
      using-expr = <'using'> (BS+|NL BS*) using-vars-in BS* [NL BS*] using-body
-
 
      <using-vars-in> = using-var {(BS* NL BS*| BS* <\",\"> BS* [NL BS*]) using-var} BS* [NL BS*] <'in'>
 
@@ -373,7 +369,7 @@
 
      expr-seq = (BS* pipe-expr BS* <\";\">[BS* NL] )+ BS* pipe-expr
 
-     func-invokation = recur  / nil-value  / func ({BS+ arg} / <'('> func {BS+ arg} &')' <')'> / [BS arg {BS* <\"~\"> BS+ arg}])
+     func-invokation = recur  / nil-value  / func {BS+ arg} / <'('> func {BS+ arg} &')' <')'> / func [BS arg {BS* <\"~\"> BS+ arg}]
 
      nil-value = <\"nil\">
 
@@ -394,8 +390,6 @@
      partial-eq = <\"(==\"> {BS+ arg} BS* <\")\">\n
 
      isa-type = ID BS* <\":\"> BS* TID
-
-     type-pattern = TID BS* <\"(\"> BS* id-list BS* <\")\">
 
      <constructor-call> = constructor | jvm-constructor
 

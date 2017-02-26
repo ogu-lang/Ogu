@@ -39,7 +39,7 @@ def move {:keys [body, dir] :as snake} & grow =
 ; END: move
 
 ; START: turn
-def turn snake newdir = (assoc snake ~ :dir ~ newdir)
+def turn snake newdir = (assoc snake :dir  newdir)
 ; END: turn
 
 ; START: win?
