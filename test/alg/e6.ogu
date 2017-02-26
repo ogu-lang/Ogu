@@ -3,7 +3,7 @@ sum-n n = (n * (n + 1)) / 2
 
 square-sum n = let s = sum-n n in s * s
 
-sum-n-square n = reduce (+) (map \x -> x * x\ [1..n])
+sum-n-square n = reduce (+) ~  map  (\x -> x * x)  [1..n]
 
 dif-squares n = (square-sum n) - (sum-n-square n)
 

@@ -1,4 +1,4 @@
-dispatch greeting on \x -> (x "language")\
+dispatch greeting on \x -> (x "language")
 
 def greeting "French" ? person = str "Bonjour " (person "name")
 

@@ -295,7 +295,7 @@
 
      cons-expr = func-call-expr (BS* <'::'> BS* func-call-expr)+
 
-     lambda-expr = <#'\\\\'> BS* lambda-args BS+ <\"->\"> BS+ lambda-value BS* <#'\\\\'>
+     lambda-expr = <#'\\\\'> BS* lambda-args BS+ <\"->\"> BS+ lambda-value
 
      lambda-args = lambda-arg {BS+ lambda-arg} [BS+ and-token BS+ lambda-arg]
 
@@ -303,7 +303,7 @@
 
      tupled-lambda-arg = <\"(\"> BS* lambda-arg BS* {<\",\"> BS+ lambda-arg} BS* <\")\">
 
-     <lambda-value> = &func-call-expr func-call-expr
+     <lambda-value> = &func-call-expr func-call-expr  &(NL | BS+ NL | '|>' | BS+ '|>' | '<|' | BS+ '<|' | '!>' | BS+ '!>' | '>|' | BS+ '>|' | ')' | BS+ ')' | '~' | BS+ '~')
 
      <bin-expr> =  logical-expr
 

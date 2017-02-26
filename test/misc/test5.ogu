@@ -1,3 +1,3 @@
 ; test 5
 
-[0...] |> take-while \x -> x < 4000000\ |> filter even? |> reduce (+)
+[0...] |> take-while \x -> x < 4000000 |> filter even? |> reduce (+)

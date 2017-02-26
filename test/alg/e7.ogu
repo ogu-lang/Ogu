@@ -16,7 +16,7 @@ def primes n =
                        end
                 repeat i' = inc i
             end
-        filter \i -> aget sieve i\ [2..<n]
+        filter (\i -> aget sieve i) [2..<n]
     end
 
 def calc-limit n = (int (n * logsum)) + 3
