@@ -77,6 +77,6 @@ These are the future editions>
 
 ## License
 
-Copyright © 2017 Eduardo Díaz Cortés
+Copyright © 2011, 2017 Eduardo Díaz Cortés
 
 Distributed under the BSD License, see LICENSE for details.
