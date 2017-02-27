@@ -1,0 +1,15 @@
+; test 6
+
+; seudo currying
+
+def multiplicar x y = x * y
+
+
+let doblar = partial multiplicar 2
+
+println! $ multiplicar 2 4
+
+println! $ doblar 4
+
+doblar 4
+

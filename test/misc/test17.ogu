@@ -1,0 +1,5 @@
+
+def foo = 10
+ where x = 1
+
+(foo)

@@ -1,0 +1,10 @@
+
+def factor-of? f n = zero? (n % f)
+
+def prime-factors f n
+    | n == 1 = lazy []
+    | (factor-of? f n) = lazy f :: prime-factors f (n / f)
+    | otherwise = recur (f + 1) n
+
+prime-factors 2 600851475143 |> last |> println!
+

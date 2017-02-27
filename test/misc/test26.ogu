@@ -1,0 +1,40 @@
+
+
+trait Shape is
+
+    def area self
+
+
+type Circle(x,  y, radius)
+
+  as Shape
+
+      area self = pi * (radius ^ 2)
+
+
+type Rectangle(x, y, width, height)
+
+
+extend Rectangle
+
+  as Shape
+
+     area self = (.width self) * (.height self)
+
+
+type Triangle(b, h)
+  as Shape
+
+    area self = !self.b * !self.h
+
+def test-area shape : Rectangle = str "area of rectangle: " (area shape)
+
+def test-area shape : Shape = str  "area of shape: "  (area shape)
+
+let cir = Circle(10, 10, 10)
+let rec = Rectangle(0,0, 100, 50)
+let tri = Triangle(10, 20)
+
+println! !cir.x !cir.y !cir.radius
+
+[test-area cir, test-area rec, test-area tri]

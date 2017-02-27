@@ -1,0 +1,22 @@
+
+
+let person = {:first-name "Eduardo Alberto",
+               :last-name "Diaz Cortes",
+               :email nil,
+               :pass nil}
+
+
+println! $ :email person
+
+let data = [{:problem "euler1", :val 233168},
+            {:problem "euler2", :val 4613732},
+              {:problem "euler3", :val 6857},
+              {:problem "euler4", :val 906609},
+              {:problem "euler5", :val 232792560},
+              {:problem "euler6", :val 25164150},
+              {:problem "euler7", :val 104743},
+              {:problem "euler8", :val 23514624000},
+              {:problem "euler9", :val 31875000},
+              {:problem "euler10", :val 142913828922}]
+
+data |> map :val |> sum |> println! "suma es: "

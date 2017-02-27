@@ -1,0 +1,13 @@
+
+def- interna a = a + 10
+
+def publica b = interna 24
+
+- inner = 100
+
+public = (inner) + 100
+
+- check a b = (publica a) * (interna b)
+
+
+(check (inner) (public) )

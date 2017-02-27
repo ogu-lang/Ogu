@@ -1,0 +1,6 @@
+; test let
+
+
+
+let a = 1, b = 2 + 2, c = min 2 6 in a * b / c
+

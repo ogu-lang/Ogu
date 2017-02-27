@@ -27,3 +27,6 @@ src/OguParser.java
 .gradle
 build
 *.iml
+/target
+/.lein-repl-history
+/.nrepl-port

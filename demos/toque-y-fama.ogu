@@ -1,0 +1,45 @@
+module toque-y-fama
+
+def ingresar tam = prompt! #"Ingresa una secuencia de ${tam} dígitos distintos (o escribe salir):"
+
+def famas num xs = zip num xs |> filter \x -> first x == second x |> count
+
+def toques num xs = num |> filter \x -> (in? x xs)  |> count
+
+def validar n xs = if (length num) == n then num else []
+    where num = xs |> filter is-digit?  |> map to-digit  |> uniq
+
+let tam = 5
+let sec = shuffle [0..9] |> take tam
+
+println! $ fmt "Bienvenido a Toque y Fama.
+==========================\n\n
+En este juego debes tratar de adivinar una secuencia de ${tam} dígitos generadas por el programa.\n
+Para esto ingresas ${tam} dígitos distintos con el fin de adivinar la secuencia.\n
+Si has adivinado correctamente la posición de un dígito se produce una Fama.\n
+Si has adivinado uno de los dígitos de la secuencia, pero en una posición distinta se trata de un Toque.\n\n
+Ejemplo: Si la secuencia es : [8, 0, 6, 1, 3] e ingresas  40863, entonces en pantalla aparecerá:\n
+tu ingresaste [4, 0, 8, 6, 3]\n
+resultado: 2 Toques 2 Famas\n\n\n"
+
+
+loop intentos = 1, accion = ingresar tam in
+    if accion == "salir" || empty? accion then
+       println! "\ngracias por jugar, adios."
+    else
+       let num = validar tam accion
+       in if empty? num then begin
+             println! "error!\n"
+             repeat inc intentos, ingresar tam
+          end
+          else begin
+             println! "tu ingresaste " num
+             let (toques, famas) = (toques num sec, famas num sec)
+             in begin
+                println! "resultado: "  (toques - famas)  " Toques "  famas  "Famas";
+                if famas == tam then
+                   println! "Ganaste! Acertaste al intento "   intentos  "! La secuencia era "  sec
+                else
+                   repeat inc intentos, ingresar tam
+             end
+          end

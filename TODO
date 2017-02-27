@@ -1,5 +1,20 @@
-TODO LIST
+# TODO LIST
 
-- bug with function call as parameters: f g a parses as (f g a) instead of (f (g a))
-- write instructions for building
-- semantic analysis
+# bugs
+- eager should performs a (doall)
+
+# todo
+
+- compile into java class
+- ogu projects
+- lein plugin?
+- regular expressions
+- repl
+- type pattern matching
+- variadic trait methods
+- reify
+- types of args
+- global vars
+- ogu core library
+- ogu datetime library
+
