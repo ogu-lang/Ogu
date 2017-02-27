@@ -1,9 +1,8 @@
 # ogu-lang
 
-Ogú is a dynamic language.
+Ogú is a dynamic programming language.
 
 This is the Plunke edition of this language. See below for details.
-
 
 ## Usage
 
@@ -16,7 +15,38 @@ You can run an Ogú script (script.ogu) this way:
 You can read about Ogú syntax on the file OGU-0.1,md 
 
 ## About Name
-     
+=======
+Ogú is a dynamic programming language.
+
+This is the Plunke edition of this language. See below for details.
+
+## Building Ogu
+
+
+You will need Java 1.8 and leiningen [https://leiningen.org].
+
+You can build Ogú this way:
+
+    $ lein uberjar
+    
+# Usage
+    
+You can use Ogu this way
+    
+    $ java -jar target/ogu-lang-0.1.0-standalone.jar
+    
+(After lein uberjar)
+    
+To run an Ogu Script you write it on a file with .ogu extension, and then run with the -e
+
+Inside demos directory are many samples of ogu scripts, for example, to play a simple snake game you can do this:
+   
+   $ java -jar target/ogu-lang-0.1.0-standalone.jar -e demos/snake.ogu
+    
+You can read about Ogú syntax on the file OGU-0.1.md (in spanish for now, sorry). 
+
+# About Name
+
 Ogú is a comic character created by chilean illustrator [Themo Lobos](https://en.wikipedia.org/wiki/Themo_Lobos).
 
 ## Editions
