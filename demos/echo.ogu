@@ -1,2 +1,2 @@
 
-main & args = args |> println!
+**args** |> println!

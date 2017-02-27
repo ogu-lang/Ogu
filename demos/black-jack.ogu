@@ -12,7 +12,7 @@ def valor-mano? mano
    | otherwise = valor
    where
         valor = mano |> map valor-carta |> sum
-        ases  = mano |> filter  \(v, p) -> v == 'A'\ |> not-empty?
+        ases  = mano |> filter  \(v, p) -> v == 'A' |> not-empty?
 
 def solicitar-jugada! jugada =
     loop opcion = solicitar-opcion mensaje  in

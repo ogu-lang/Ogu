@@ -357,7 +357,7 @@
                  / lazy-value
                  / record-constructor-call / !partial-sub neg-expr / not-expr
                  / range-expr / map-expr / set-expr / at-expr / bang-expr
-                 / ID / KEYWORD / NUMBER / FSTRING / STRING / CHAR / INSTANT
+                 / NUMBER / FSTRING / STRING / CHAR / INSTANT
 
      neg-expr = !(NUMBER) \"-\"  prim-expr
 
@@ -369,7 +369,11 @@
 
      expr-seq = (BS* pipe-expr BS* <\";\">[BS* NL] )+ BS* pipe-expr
 
-     func-invokation = recur  / nil-value  / func {BS+ arg} / <'('> func {BS+ arg} &')' <')'> / func [BS arg {BS* <\"~\"> BS+ arg}]
+     func-invokation = recur  / nil-value
+              / func &((BS+ arg)+) (BS+ arg)+ &(NL | BS+ NL | 'then' | BS+ 'then' | 'do' | BS+ 'do' | 'in' | BS+ 'in' |  '|' | BS+ '|' | '|>' | BS+ '|>' | '<|' | BS+ '<|' | '!>' | BS+ '!>' | '>|' | BS+ '>|' | ')' | BS+ ')' | '$' | BS+ '$')
+              / <'('> func {BS+ arg} &(')' | BS+ ')') <')'>
+              / func BS+ arg {BS+ <\"~\"> BS+ arg}
+              / func
 
      nil-value = <\"nil\">
 
