@@ -1,6 +1,7 @@
-(defproject ogu-lang "0.1.0-SNAPSHOT"
+(defproject ogu-lang "0.1.0"
   :description "Ogu Language Bootstrap Compiler"
   :main ^:skip-aot ogu-lang.core
+  :profiles {:uberjar {:aot :all}}
   :url "http://ogu-lang.org"
   :license {:name "BSD"
             :url "http://www.eclipse.org/legal/epl-v10.html"}

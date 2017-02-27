@@ -1,4 +1,4 @@
-(ns ogu-lang.parser
+(ns ogu-lang.parser (:gen-class)
     (:require
       [clojure.string :as string]
       [instaparse.core :as insta]

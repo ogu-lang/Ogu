@@ -1,4 +1,4 @@
-(ns ogu.core
+(ns ogu.core (:gen-class)
     (:require [clojure.set :as s])
     (:import (java.security MessageDigest)))
 
