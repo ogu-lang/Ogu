@@ -63,6 +63,6 @@ Estas son las versiones futuras (esto está sujeto a cambio).
 
 ## Licencia
 
-Copyright © 2017 Eduardo Díaz Cortés
+Copyright © 2011, 2017 Eduardo Díaz Cortés
 
 Distribuido bajo licencia BSD, ver el archivo LICENSE para los dealles.
