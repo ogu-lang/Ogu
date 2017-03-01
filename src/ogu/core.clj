@@ -67,6 +67,10 @@
 
 (defn is-digit? [d] (Character/isDigit d))
 
+(defn elem [v s] (contains? (set s) v))
+
+(defn not-elem [v s] (not (elem v s)))
+
 (defn member? [v s] (contains? (set s) v))
 
 (defn not-member? [v s] (not (member? v s)))

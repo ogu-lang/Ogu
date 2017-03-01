@@ -45,7 +45,7 @@ def determinar-ganancia mano-jugador mano-croupier apuesta jugada
   | jugada == 'D' = 2 * ganancia
   | otherwise = ganancia
   where (jugador, croupier) = (valor-mano? mano-jugador, valor-mano? mano-croupier),
-         ganancia = if (croupier <= 21 && jugador > 21) || (jugador < croupier) && (croupier <= 21)  then (- apuesta) else apuesta
+         ganancia = if (croupier <= 21 && jugador > 21) || (jugador < croupier <= 21)  then (- apuesta) else apuesta
 
 def jugar-mano! baraja-revuelta apuesta pozo = do
     println! #"\nNueva mano, apuesta $ ${apuesta}  pozo $ " (pozo - apuesta)

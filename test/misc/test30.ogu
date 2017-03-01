@@ -12,7 +12,7 @@ def h a b c  = a * b * c
 
 println $ f g h 1 2 3
 
-println $ f  g  ~ h ~ 1 ~ 2 ~ (3 + 4)
+println $ f  g   h  1 + 2  3 + 4 5 + 6
 
 println $ f g h n n n
 

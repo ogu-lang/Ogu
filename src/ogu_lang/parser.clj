@@ -293,15 +293,15 @@
 
      <list-compr-expr> = pipe-expr
 
-     <list-source> = list-source-id BS+ <\"<-\"> BS+ list-source-value / pipe-expr
+     <list-source> = list-source-id BS+ <\"<-\"> BS+ (list-source-value / pipe-expr)
 
      <list-source-id> = ID / tuple-of-ids
 
      <list-source-value> = range-expr / ID / simple-list
 
-     list-let = BS+ <\"let\"> BS+ let-var {BS* <\",\"> BS+ let-var}
+     list-let = BS+ (<\"&\">|<\"let\">) BS+ let-var
 
-     list-where = BS+ <\"where\"> BS+ if-cond-expr
+     list-where = BS+ (<\"&\">|<\"where\">) BS+ if-cond-expr
 
      cons-expr = func-call-expr (BS* <'::'> BS* func-call-expr)+
 
@@ -584,12 +584,13 @@
           (cons 'let [(vec [idf val])])
           (list 'letfn [(list idf args val)]))))
 
+(defn ogu-flatten-list-let [& rest] rest)
+
 (defn ogu-flatten-last-while [v]
       (let [end (last v) rest (butlast v) while (:when end)]
            (if (empty? while)
              v
              (conj (conj (vec rest) :when) while))))
-
 
 (defn ogu-at-expr
       ([v] (cons 'deref [v]))
@@ -614,7 +615,6 @@
 
 (defn ogu-def-args [& rest]
       (vec (for [x rest] x)))
-
 
 (defn ogu-class-member-id-def
       ([x] x)
@@ -744,7 +744,8 @@
    :as-token                 (fn [& rest] ':as)
 
 
-   :list-where               (fn [& rest] {:when (first rest)})
+   :list-where               (fn [& rest] {:when (apply concat rest)})
+   :list-let                 (fn [& rest] (cons ':let rest))
 
    :list-comprehension       (fn [expr & rest] (cons 'for [(vec (ogu-flatten-last-while rest)) expr]))
 
