@@ -2,7 +2,7 @@
 
 def aob a b = a || b
 
-def compara' a b c = if a > b  > c then a else b
+def compara' a b c = if a > b && b > c then a else b
 
 def compara a b c = if a > b || a > c then a else b
 
