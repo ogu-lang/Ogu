@@ -22,7 +22,7 @@ This is the Plunke edition of this language. See below for details.
 
 ## Building Ogu
 
-You will need Java 1.8 and leiningen [https://leiningen.org].
+You will need Java 1.8 and [Leiningen](https://leiningen.org).
 
 You can build Ogú this way:
 
