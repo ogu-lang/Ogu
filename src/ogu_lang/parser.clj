@@ -2,12 +2,12 @@
     (:require
       [clojure.string :as string]
       [instaparse.core :as insta]
-      [ogu.core :as ogu])
+      [ogu.core :as o])
     (:use clojure.java.io))
 
 (def grammar
   (insta/parser
-    "module = [module-header] {import-static} {NL} {definition | dispatch | method-definition | val-def NL | type-def | trait-def | extension | module-expr}
+    "module = [module-header] {import-static} {NL} {definition | dispatch | method-definition | val-def | var-def  | type-def | trait-def | extension | module-expr}
 
      module-header = [NL] <'module'> BS+ module-name (NL+ {require|import}| BS*  NL)
 
@@ -33,7 +33,9 @@
 
      dispatch = &\"dispatch\" <\"dispatch\"> BS+ ID BS+ <\"on\"> BS+ func-call-expr NL
 
-     val-def = &(\"val\"|\"let\") <\"val\"|\"let\"> BS+ ID BS+ <\"=\"> BS+ pipe-expr
+     val-def = &(\"val\"|\"let\") <\"val\"|\"let\"> BS+ ID BS+ <\"=\"> BS+ pipe-expr NL
+
+     var-def = &(\"var\") <\"var\"> BS+ ID BS+ <\"=\"> BS+ pipe-expr NL
 
      type = TID | ID
 
@@ -135,7 +137,7 @@
 
      <pipe-expr> =  piped-expr / func-call-expr
 
-     <piped-expr> = forward-piped-expr  / forward-first-piped-expr / backward-piped-expr / backward-bang-piped-expr / doto-expr / dollar-expr / expr-seq
+     <piped-expr> = forward-piped-expr  / forward-first-piped-expr / backward-piped-expr / backward-first-piped-expr / doto-expr / backward-doto-expr / dollar-expr / expr-seq
 
      forward-piped-expr = func-call-expr ([NL] BS+ <\"|>\"> BS+ func-call-expr)+
 
@@ -143,9 +145,12 @@
 
      backward-piped-expr = func-call-expr ([NL] BS+ <\"<|\"> BS+ func-call-expr)+
 
-     backward-bang-piped-expr = func-call-expr ([NL] BS+ <\"<!\"> BS+ func-call-expr)+
+     backward-first-piped-expr = func-call-expr ([NL] BS+ <\"|<\"> BS+ func-call-expr)+
 
      doto-expr = func-call-expr ([NL] BS+ <\"!>\"> BS+ func-call-expr)+
+
+
+     backward-doto-expr = func-call-expr ([NL] BS+ <\"<!\"> BS+ func-call-expr)+\n
 
      dollar-expr = func-call-expr (BS+ <\"$\"> BS+ func-call-expr)+
 
@@ -155,7 +160,8 @@
 
      recur = &'recur' <'recur'> {BS+ arg}
 
-     <control-expr> =  when-expr / if-expr / cond-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr / using-expr / do-expr
+
+     <control-expr> =  when-expr / if-expr / cond-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr / using-expr / do-expr / set-var-expr
 
      cond-expr = <\"cond\"> (cond-pair)+[cond-otherwise]
 
@@ -165,7 +171,7 @@
 
      sync-expr = <\"sync\"> (BS+ pipe-expr | BS* NL BS+ pipe-expr) &NL
 
-     <block-expr> =  let-expr /  repeat-expr / begin-end-expr / var-expr / proxy-def
+     <block-expr> =  let-expr / binding-expr /  repeat-expr / begin-end-expr / var-expr / proxy-def
 
      <lcons-expr> =  cons-expr  /  bin-expr
 
@@ -208,6 +214,8 @@
      <using-var> = let-var-simple
 
      <using-body> = pipe-expr &NL
+
+     binding-expr = <\"bind\"> (BS+|NL BS*) let-vars  BS* [NL BS*]  let-body
 
      let-expr = &'let' <'let'> (BS+|NL BS*) let-vars  BS* [NL BS*]  let-body
 
@@ -259,6 +267,8 @@
 
      when-expr = &'when' <'when'> BS+ if-cond-expr BS* [NL BS*] <'do'> ([NL BS*]|BS+) then-expr &NL
 
+     set-var-expr = <\"set\"> BS+ ID BS+ <\"=\"> BS+ func-call-expr &NL
+
      repeat-expr = &'repeat' <'repeat'> (BS* NL|BS+) [repeat-var  {(BS* <\",\"> BS* [NL BS*] | BS* NL BS+) repeat-var} ] &(NL|<'end'>)
 
      repeat-var  = [ID BS+ <\"=\"> BS+] loop-var-value
@@ -283,15 +293,15 @@
 
      <list-compr-expr> = pipe-expr
 
-     <list-source> = list-source-id BS+ <\"<-\"> BS+ list-source-value / pipe-expr
+     <list-source> = list-source-id BS+ <\"<-\"> BS+ (list-source-value / pipe-expr)
 
      <list-source-id> = ID / tuple-of-ids
 
      <list-source-value> = range-expr / ID / simple-list
 
-     list-let = BS+ <\"let\"> BS+ let-var {BS* <\",\"> BS+ let-var}
+     list-let = BS+ (<\"&\">|<\"let\">) BS+ let-var
 
-     list-where = BS+ <\"where\"> BS+ if-cond-expr
+     list-where = BS+ (<\"&\">|<\"where\">) BS+ if-cond-expr
 
      cons-expr = func-call-expr (BS* <'::'> BS* func-call-expr)+
 
@@ -303,7 +313,7 @@
 
      tupled-lambda-arg = <\"(\"> BS* lambda-arg BS* {<\",\"> BS+ lambda-arg} BS* <\")\">
 
-     <lambda-value> = &func-call-expr func-call-expr  &(NL | BS+ NL | '|>' | BS+ '|>' | '<|' | BS+ '<|' | '!>' | BS+ '!>' | '>|' | BS+ '>|' | ')' | BS+ ')' | '~' | BS+ '~')
+     <lambda-value> = &func-call-expr func-call-expr  &(NL | BS+ NL | '|>' | BS+ '|>' | '<|' | BS+ '<|' | '!>' | BS+ '!>' | '>|' | BS+ '>|' | ')' | BS+ ')' | '~' | BS+ '~' | 'in' | BS+ 'in')
 
      <bin-expr> =  logical-expr
 
@@ -315,29 +325,29 @@
 
      <comp-expr> = lt-expr / le-expr / gt-expr / ge-expr / eq-expr / ne-expr / sum-expr
 
-     lt-expr = sum-expr (BS+ <\"<\">  BS+ sum-expr)+
+     lt-expr = sum-expr (BS+ <\"<\">  BS+ sum-expr)
 
-     le-expr = sum-expr (BS+ <\"<=\"> BS+ sum-expr)+
+     le-expr = sum-expr (BS+ <\"<=\"> BS+ sum-expr)
 
-     gt-expr = sum-expr (BS+ <\">\">  BS+ sum-expr)+
+     gt-expr = sum-expr (BS+ <\">\">  BS+ sum-expr)
 
-     ge-expr = sum-expr (BS+ <\">=\"> BS+ sum-expr)+
+     ge-expr = sum-expr (BS+ <\">=\"> BS+ sum-expr)
 
-     eq-expr = sum-expr (BS+ <\"==\"> BS+ sum-expr)+
+     eq-expr = sum-expr (BS+ <\"==\"> BS+ sum-expr)
 
      ne-expr = sum-expr (BS+ <\"/=\"> BS+ sum-expr)+
 
      <sum-expr> = add-expr / addq-expr / sub-expr / subq-expr / cat-expr / mult-expr
 
-     add-expr  = mult-expr  (BS+ <\"+\">  BS+ mult-expr)+
+     add-expr  = sum-expr  (BS+ <\"+\">  BS+ sum-expr)+
 
-     addq-expr = mult-expr (BS+ <\"+'\"> BS+ mult-expr)+
+     addq-expr = sum-expr (BS+ <\"+'\"> BS+ sum-expr)+
 
-     sub-expr  = mult-expr  (BS+ <\"-\">  BS+ mult-expr)+
+     sub-expr  = sum-expr  (BS+ <\"-\">  BS+ sum-expr)+
 
-     subq-expr = mult-expr (BS+ <\"-'\"> BS+ mult-expr)+
+     subq-expr = sum-expr (BS+ <\"-'\"> BS+ sum-expr)+
 
-     cat-expr  = mult-expr  (BS+ <\"++\"> BS+ mult-expr)+
+     cat-expr  = sum-expr  (BS+ <\"++\"> BS+ sum-expr)+
 
      <mult-expr> =  mul-expr / mulq-expr / div-expr / mod-expr / factor-expr
 
@@ -353,7 +363,7 @@
 
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
 
-     <prim-expr> = &partial-bin partial-bin / argless-func-call / paren-expr / func-invokation / constructor-call
+     <prim-expr> =  &partial-bin partial-bin / argless-func-call / func-invokation / constructor-call / paren-expr
                  / lazy-value
                  / record-constructor-call / !partial-sub neg-expr / not-expr
                  / range-expr / map-expr / set-expr / at-expr / bang-expr
@@ -369,9 +379,9 @@
 
      expr-seq = (BS* pipe-expr BS* <\";\">[BS* NL] )+ BS* pipe-expr
 
+
      func-invokation = recur  / nil-value
-              / func &((BS+ arg)+) (BS+ arg)+ &(NL | BS+ NL | 'then' | BS+ 'then' | 'do' | BS+ 'do' | 'in' | BS+ 'in' |  '|' | BS+ '|' | '|>' | BS+ '|>' | '<|' | BS+ '<|' | '!>' | BS+ '!>' | '>|' | BS+ '>|' | ')' | BS+ ')' | '$' | BS+ '$')
-              / <'('> func {BS+ arg} &(')' | BS+ ')') <')'>
+              / func (BS+ arg)+
               / func BS+ arg {BS+ <\"~\"> BS+ arg}
               / func
 
@@ -439,7 +449,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|'as '|#'begin[ \r\n]'|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'eager[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|'as '|#'begin[ \r\n]'|'bind '|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'set '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -454,8 +464,6 @@
      FSTRING = #'#\"[^\"]*\"'
 
      NUMBER = #'[-]?[0-9]+([.][0-9]+)?([eE](-)?[0-9]+)?[NM]?'
-
-
 
      <BS> = <#'[ \\t]'>\n
 
@@ -572,12 +580,13 @@
           (cons 'let [(vec [idf val])])
           (list 'letfn [(list idf args val)]))))
 
+(defn ogu-flatten-list-let [& rest] rest)
+
 (defn ogu-flatten-last-while [v]
       (let [end (last v) rest (butlast v) while (:when end)]
            (if (empty? while)
              v
              (conj (conj (vec rest) :when) while))))
-
 
 (defn ogu-at-expr
       ([v] (cons 'deref [v]))
@@ -603,7 +612,6 @@
 (defn ogu-def-args [& rest]
       (vec (for [x rest] x)))
 
-
 (defn ogu-class-member-id-def
       ([x] x)
       ([v x]
@@ -622,6 +630,9 @@
 (defn ogu-fstring [s]
       (let [fs (str "(ogu.core/fmt " (subs s 1) ")")]
            (clojure.edn/read-string fs)))
+
+(defn ogu-def-var [n v]
+  (cons '-def-ogu-var- [n v]))
 
 (def ast-transformations
   {:NUMBER                   clojure.edn/read-string
@@ -674,7 +685,12 @@
    :let-var-simple           (fn [id val] [id val])
    :let-expr                 (fn [& rest] (cons 'let rest))
 
+
+   :binding-expr             (fn [& rest] (cons 'binding rest))
    :using-expr               (fn [& rest] (cons 'with-open rest))
+
+   :var-def                  ogu-def-var
+   :set-var-expr             (fn [v & rest] (cons 'alter-var-root [(cons 'var [v]) (cons 'constantly rest)]))
 
    :var-var-tuple            (fn [& rest] (vec rest))
    :var-var-tupled           (fn [ids val] [ids val])
@@ -724,7 +740,8 @@
    :as-token                 (fn [& rest] ':as)
 
 
-   :list-where               (fn [& rest] {:when (first rest)})
+   :list-where               (fn [& rest] {:when (apply concat rest)})
+   :list-let                 (fn [& rest] (cons ':let rest))
 
    :list-comprehension       (fn [expr & rest] (cons 'for [(vec (ogu-flatten-last-while rest)) expr]))
 
@@ -744,7 +761,6 @@
 
    :tuple                    (fn [& rest] (vec rest))
    :tupled-lambda-arg        (fn [& rest] (vec rest))
-
    :id-list                  (fn [& rest] (vec rest))
    :import-list              (fn [& rest] rest)
    :require                  (fn [& rest] (cons ':require rest))
@@ -762,10 +778,12 @@
    :func                     ogu-id
    :func-invokation          (fn [& rest] (if (= 1 (count rest)) (first rest) rest))
    :backward-piped-expr      (fn [& rest] (cons '->> (reverse rest)))
-   :backward-bang-piped-expr (fn [& rest] (cons '-> (reverse rest)))
+   :backward-first-piped-expr (fn [& rest] (cons '-> (reverse rest)))
    :forward-piped-expr       (fn [& rest] (cons '->> rest))
    :forward-first-piped-expr (fn [& rest] (cons '-> rest))
    :doto-expr                (fn [& rest] (cons 'doto rest))
+   :backward-doto-expr       (fn [& rest] (cons 'doto (reverse rest)))
+
 
 
    :isa-type                 (fn [obj t]  (list obj ':guard (list 'partial 'isa-type? t)  :as obj))
@@ -816,10 +834,10 @@
 
 (defn classify-form [[p form]]
       (cond
-        (symbol? form) {(str "expr-" (ogu/md5 (str (ogu/uuid)))) {:form form :pos p}}
+        (symbol? form) {(str "expr-" (o/md5 (str (o/uuid)))) {:form form :pos p}}
         :else (if (or (= (first form) 'def) (= (first form) 'defn))
                 {(str "defv-" (second form)) {:form form :pos p}}
-                {(str "expr-" (ogu/md5 (str (ogu/uuid)))) {:form form :pos p}})))
+                {(str "expr-" (o/md5 (str (o/uuid)))) {:form form :pos p}})))
 
 ;check if a list of
 (defn check-all-args-are-symbol [args] (every? symbol? args))
