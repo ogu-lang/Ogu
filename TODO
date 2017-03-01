@@ -13,7 +13,6 @@
 - variadic trait methods
 - reify
 - types of args
-- global vars
 - ogu core library
 - ogu datetime library
 

@@ -3,7 +3,15 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
-## [0.1.0] - 2017-01-22
+## [0.1.1] - 2017-03-01
+
+### Changed
+
+- Add vars
+- Fix issues with grammar on comp-expr
+- add more text to OGU-0.1 notes.
+
+## [0.1.0] - 2017-02-26
 
 ### Changed
 
