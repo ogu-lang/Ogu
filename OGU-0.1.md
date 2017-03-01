@@ -43,23 +43,20 @@ Es un identificador, en cambio
     
 Es una expressión.
 
-# Constantes y Variables
+# Valores y Variables
 
-Los valores se pueden almacenar en variables inmutables, o constantes, que se indican con la palabra reservada **val**.
+Los valores se pueden almacenar en variables inmutables, que se indican con la palabra reservada **val**.
 
     val c = 300000
     
-Las variables mutables se declaran con la palabra reservada **var**. 
 
-    var v = 1
-    
 
 Ejemplos:
 
     val  maxIntentos = 10
     var intentosHastaAhora  = 0 
 
-# Identificadores
+## Identificadores
 
 Los nombres de los identificacdores pueden contener letras, los simbolos _,-,+ y *. Pueden finalizar con los simbolos ', ! o ?.
 
@@ -103,6 +100,85 @@ En ese caso si se quiere rescatar los valores de retorno de la tupla en forma se
 (Acá suponemos que frac(x) retorna un número real como una fracción)
 
 **let** y **val** son sinonimos cuando declaramos variables globales.
+
+
+# Variables locales
+
+En una expresión podemos declarar una declaración local de la siguiente manera
+
+    let x = 10
+     in x + 10
+     
+Acá x sólo tiene un valor en la expresión x + 10.
+     
+
+     let a = 1, b = 2 + 2, c = min 2 6 in a * b / c
+     
+Esta expresión tiene el valor final 2.
+
+## variables locales mutables
+     
+También podemos crear variables mutables locales, es el único modo de tener variables mutables en Ogú:
+     
+     var a = 1, b =2 in @a * @b
+     
+Notar que en este caso debemos referenciar la variable dentro de la expresión usando "@".
+
+
+Podemos modificar el valor dentro de la expresión, esto es útil para operaciones imperativas.
+
+    let x = 4
+    let f = var acc = 1, cnt = x in
+            begin
+                while @cnt > 0 do
+                begin
+                    @acc = @acc * @cnt
+                    @cnt = dec @cnt
+                end
+                @acc
+            end
+
+Acá f tendrá el valor 24 al finalizar.
+
+## variables globales mutables
+
+Una variable global mutable se declara con **var**
+
+    var x = 10
+    
+Para modificar el valor de x usamos la sentencia **set**
+
+    set x = 20
+    
+Podemos modificar temporalmente el valor de una variable global para ser usado en una expresión usando bind
+
+    ; x = 20 por la sentencia anterior
+    bind x = 30 in x * 10 ; 300
+    
+    
+    ; acá x vuelve a valer 20
+    
+El uso de variables mutables globales no se considera una buena práctica en ogú.
+    
+Sin embargo **bind** permite implementar ciertas características de aspect oriented programming:
+
+    var log = \x -> nothing
+    
+    def p x = 
+        bind log = \ x -> println! "log :" x 
+        in
+          log x
+    
+    
+    def q x = 
+        log x
+    
+    
+    p 10 ; -> "log : 10"
+    
+    q 10 ; ->
+    
+    
 
 # Listas y Vectores
 

@@ -67,10 +67,13 @@
 
 (defn is-digit? [d] (Character/isDigit d))
 
+(defn elem [v s] (contains? (set s) v))
 
-(defn in? [v s] (contains? (set s) v))
+(defn not-elem [v s] (not (elem v s)))
 
-(defn not-in? [v s] (not (in? v s)))
+(defn member? [v s] (contains? (set s) v))
+
+(defn not-member? [v s] (not (member? v s)))
 
 (defn to-digit
       ([d] (Character/digit d 10))
@@ -136,10 +139,13 @@
 
 (defn uuid [] (str (java.util.UUID/randomUUID)))
 
+(defmacro -def-ogu-var- [name value]
+  (let [meta-name (with-meta name  {:dynamic true}) ]
+    `(def ~meta-name ~value)))
 
 (defmacro -def-ogu-type- [name fields  & opts+specs]
-    (let [filter-fields  (vec (map #(if (vector? %) (with-meta (second %) {:volatile-mutable true})  %) fields))  ]
-         `(deftype ~name ~filter-fields  ~@opts+specs)))
+  (let [filter-fields  (vec (map #(if (vector? %) (with-meta (second %) {:volatile-mutable true})  %) fields))  ]
+    `(deftype ~name ~filter-fields  ~@opts+specs)))
 
 ; based on this code https://github.com/richhickey/clojure-contrib/blob/master/src/main/clojure/clojure/contrib/import_static.clj
 

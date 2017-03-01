@@ -4,7 +4,7 @@ def ingresar tam = prompt! #"Ingresa una secuencia de ${tam} dígitos distintos 
 
 def famas num xs = zip num xs |> filter \x -> first x == second x |> count
 
-def toques num xs = num |> filter \x -> (in? x xs)  |> count
+def toques num xs = num |> filter \x -> (elem x xs)  |> count
 
 def validar n xs = if (length num) == n then num else []
     where num = xs |> filter is-digit?  |> map to-digit  |> uniq
