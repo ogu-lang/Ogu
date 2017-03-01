@@ -65,6 +65,8 @@
    {:file "test/misc/test27.ogu" :val "estas obeso, cuidado!"}
    {:file "test/misc/test28.ogu" :val "Hola Pedro"}
    {:file "test/misc/test29.ogu" :val 117}
+   {:file "test/misc/test30.ogu" :val 90}
+
    ])
 
 (deftest test-2
