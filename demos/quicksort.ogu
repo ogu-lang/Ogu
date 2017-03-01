@@ -3,8 +3,8 @@ quicksort [] = []
 quicksort [x & xs] =
     smallerSorted ++ [x] ++ biggerSorted
     where
-        smallerSorted = quicksort [a | a <- xs where a <= x]
-        biggerSorted  = quicksort [a | a <- xs where a > x]
+        smallerSorted = quicksort [a | a <- xs & a <= x]
+        biggerSorted  = quicksort [a | a <- xs & a > x]
 
 
 println! $ quicksort [3, 5, 8, 2, 4, 1, 9, 7]

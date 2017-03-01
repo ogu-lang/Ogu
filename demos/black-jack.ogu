@@ -16,7 +16,7 @@ def valor-mano? mano
 
 def solicitar-jugada! jugada =
     loop opcion = solicitar-opcion mensaje  in
-        if in? opcion opciones
+        if elem opcion opciones
         then opcion
         else begin
             println! "opción incorrecta";
@@ -45,7 +45,7 @@ def determinar-ganancia mano-jugador mano-croupier apuesta jugada
   | jugada == 'D' = 2 * ganancia
   | otherwise = ganancia
   where (jugador, croupier) = (valor-mano? mano-jugador, valor-mano? mano-croupier),
-         ganancia = if (croupier <= 21 && jugador > 21) || (jugador < croupier <= 21)  then (- apuesta) else apuesta
+         ganancia = if (croupier <= 21 && jugador > 21) || (jugador < croupier && croupier <= 21)  then (- apuesta) else apuesta
 
 def jugar-mano! baraja-revuelta apuesta pozo = do
     println! #"\nNueva mano, apuesta $ ${apuesta}  pozo $ " (pozo - apuesta)
@@ -61,7 +61,7 @@ def jugar-mano! baraja-revuelta apuesta pozo = do
         end
         else
         begin
-            while in? @jugada ['I', 'O'] do
+            while elem @jugada ['I', 'O'] do
             begin
                 mostrar-manos! @mano-jugador @mano-croupier
                 @jugada = solicitar-jugada! @jugada
@@ -104,7 +104,7 @@ def solicitar-apuesta pozo apuesta-minima =
         println! "su pozo no le alcanza para seguir jugando, inténtelo en otra oportunidad"
      else
         loop valor =  input msj in
-            if valor == 0 || (apuesta-minima <= valor <= pozo) then
+            if valor == 0 || (apuesta-minima <= valor && valor <= pozo) then
                valor
             else
                repeat input msj

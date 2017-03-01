@@ -325,29 +325,29 @@
 
      <comp-expr> = lt-expr / le-expr / gt-expr / ge-expr / eq-expr / ne-expr / sum-expr
 
-     lt-expr = sum-expr (BS+ <\"<\">  BS+ sum-expr)+
+     lt-expr = sum-expr (BS+ <\"<\">  BS+ sum-expr)
 
-     le-expr = sum-expr (BS+ <\"<=\"> BS+ sum-expr)+
+     le-expr = sum-expr (BS+ <\"<=\"> BS+ sum-expr)
 
-     gt-expr = sum-expr (BS+ <\">\">  BS+ sum-expr)+
+     gt-expr = sum-expr (BS+ <\">\">  BS+ sum-expr)
 
-     ge-expr = sum-expr (BS+ <\">=\"> BS+ sum-expr)+
+     ge-expr = sum-expr (BS+ <\">=\"> BS+ sum-expr)
 
-     eq-expr = sum-expr (BS+ <\"==\"> BS+ sum-expr)+
+     eq-expr = sum-expr (BS+ <\"==\"> BS+ sum-expr)
 
      ne-expr = sum-expr (BS+ <\"/=\"> BS+ sum-expr)+
 
      <sum-expr> = add-expr / addq-expr / sub-expr / subq-expr / cat-expr / mult-expr
 
-     add-expr  = mult-expr  (BS+ <\"+\">  BS+ mult-expr)+
+     add-expr  = sum-expr  (BS+ <\"+\">  BS+ sum-expr)+
 
-     addq-expr = mult-expr (BS+ <\"+'\"> BS+ mult-expr)+
+     addq-expr = sum-expr (BS+ <\"+'\"> BS+ sum-expr)+
 
-     sub-expr  = mult-expr  (BS+ <\"-\">  BS+ mult-expr)+
+     sub-expr  = sum-expr  (BS+ <\"-\">  BS+ sum-expr)+
 
-     subq-expr = mult-expr (BS+ <\"-'\"> BS+ mult-expr)+
+     subq-expr = sum-expr (BS+ <\"-'\"> BS+ sum-expr)+
 
-     cat-expr  = mult-expr  (BS+ <\"++\"> BS+ mult-expr)+
+     cat-expr  = sum-expr  (BS+ <\"++\"> BS+ sum-expr)+
 
      <mult-expr> =  mul-expr / mulq-expr / div-expr / mod-expr / factor-expr
 
@@ -379,12 +379,8 @@
 
      expr-seq = (BS* pipe-expr BS* <\";\">[BS* NL] )+ BS* pipe-expr
 
-     <prim-arg> = ID / KEYWORD
-
-     func-arg = BS+ arg
 
      func-invokation = recur  / nil-value
-              / func (BS+ prim-arg)+
               / func (BS+ arg)+
               / func BS+ arg {BS+ <\"~\"> BS+ arg}
               / func
