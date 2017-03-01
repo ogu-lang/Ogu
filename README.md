@@ -12,7 +12,7 @@ You can run an Ogú script (script.ogu) this way:
 
     $ lein run -- -e script.ogu
     
-You can read about Ogú syntax on the file OGU-0.1,md 
+You can read about Ogú syntax on the file OGU-0.1.md 
 
 ## About Name
 
