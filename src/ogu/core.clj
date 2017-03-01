@@ -67,10 +67,9 @@
 
 (defn is-digit? [d] (Character/isDigit d))
 
+(defn member? [v s] (contains? (set s) v))
 
-(defn in? [v s] (contains? (set s) v))
-
-(defn not-in? [v s] (not (in? v s)))
+(defn not-member? [v s] (not (member? v s)))
 
 (defn to-digit
       ([d] (Character/digit d 10))

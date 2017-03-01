@@ -353,7 +353,7 @@
 
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
 
-     <prim-expr> = &partial-bin partial-bin / argless-func-call / paren-expr / func-invokation / constructor-call
+     <prim-expr> =  &partial-bin partial-bin / argless-func-call / func-invokation / constructor-call / paren-expr
                  / lazy-value
                  / record-constructor-call / !partial-sub neg-expr / not-expr
                  / range-expr / map-expr / set-expr / at-expr / bang-expr
@@ -369,9 +369,11 @@
 
      expr-seq = (BS* pipe-expr BS* <\";\">[BS* NL] )+ BS* pipe-expr
 
+     <prim-arg> = ID / KEYWORD
+
      func-invokation = recur  / nil-value
-              / func &((BS+ arg)+) (BS+ arg)+ &(NL | BS+ NL | 'then' | BS+ 'then' | 'do' | BS+ 'do' | 'in' | BS+ 'in' |  '|' | BS+ '|' | '|>' | BS+ '|>' | '<|' | BS+ '<|' | '!>' | BS+ '!>' | '>|' | BS+ '>|' | ')' | BS+ ')' | '$' | BS+ '$')
-              / <'('> func {BS+ arg} &(')' | BS+ ')') <')'>
+              / func &((BS+ prim-arg)+) (BS+ prim-arg)+
+              / func &((BS+ arg)+) (BS+ arg)+
               / func BS+ arg {BS+ <\"~\"> BS+ arg}
               / func
 

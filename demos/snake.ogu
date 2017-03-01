@@ -38,15 +38,15 @@ def move {:keys [body, dir] :as snake} & grow =
 ; END: move
 
 ; START: turn
-def turn snake newdir =  assoc snake  :dir newdir
+def turn snake newdir = assoc snake :dir newdir
 ; END: turn
 
 ; START: win?
-def win? {body :body} = (count body) >= win-length
+def win? {body :body} = count body >= win-length
 ; END: win?
 
 ; START: lose?
-def head-overlaps-body? {[head & body] :body} = contains? (set body) head
+def head-overlaps-body? {[head & body] :body} = member? head body
 
 def lose? x = head-overlaps-body? x
 ; END: lose?
@@ -140,7 +140,7 @@ is
 
     def keyReleased e = nothing
 
-    def keyTyped e = when (.getKeyChar e) == 'q' do System.exit -1
+    def keyTyped e = when .getKeyChar e == 'q' do System.exit -1
 
 end
 
@@ -155,7 +155,7 @@ def game =
 	  timer = new Timer (turn-millis, panel)
   in begin
      panel !> .setFocusable true !> .addKeyListener panel
-     frame !> .add panel !> (.pack) !> .setVisible true
+     frame !> .add panel !> .pack !> .setVisible true
      .start timer
      [snake, apple, timer] ; <label id="code.game.return"/>
   end
