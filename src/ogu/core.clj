@@ -135,10 +135,13 @@
 
 (defn uuid [] (str (java.util.UUID/randomUUID)))
 
+(defmacro -def-ogu-var- [name value]
+  (let [meta-name (with-meta name  {:dynamic true}) ]
+    `(def ~meta-name ~value)))
 
 (defmacro -def-ogu-type- [name fields  & opts+specs]
-    (let [filter-fields  (vec (map #(if (vector? %) (with-meta (second %) {:volatile-mutable true})  %) fields))  ]
-         `(deftype ~name ~filter-fields  ~@opts+specs)))
+  (let [filter-fields  (vec (map #(if (vector? %) (with-meta (second %) {:volatile-mutable true})  %) fields))  ]
+    `(deftype ~name ~filter-fields  ~@opts+specs)))
 
 ; based on this code https://github.com/richhickey/clojure-contrib/blob/master/src/main/clojure/clojure/contrib/import_static.clj
 
