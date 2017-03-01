@@ -6,8 +6,7 @@ Esta es la edición Plunke del lenguaje (ver más abajo.)
 
 ## Compiar Ogu
 
-
-Necesitarás  Java 1.8 y leiningen [https://leiningen.org].
+Necesitarás  Java 1.8 y [Leiningen](https://leiningen.org).
 
 Para generar el compilador debes hacer:
 
@@ -29,7 +28,7 @@ Dentro del directorio demos hay varios ejemplos de scripts Ogú, por ejemplo, pa
 
     $ java -jar target/ogu-lang-0.1.0-standalone.jar -e demos/snake.ogu
 
-Puedes leer algunas notas sobre la sintáxis de Ogú en el archivo OGU-0.1.md.
+Puedes leer algunas notas sobre la sintáxis de Ogú en el archivo OGU-0.1-es.md.
 
 # Sobre el nombre
 

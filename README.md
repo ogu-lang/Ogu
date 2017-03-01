@@ -12,7 +12,7 @@ You can run an Ogú script (script.ogu) this way:
 
     $ lein run -- -e script.ogu
     
-You can read about Ogú syntax on the file OGU-0.1.md 
+You can read about Ogú syntax on the file OGU-0.1-en.md.
 
 ## About Name
 
@@ -42,7 +42,7 @@ Inside demos directory are many samples of ogu scripts, for example, to play a s
    
     $ java -jar target/ogu-lang-0.1.0-standalone.jar -e demos/snake.ogu
     
-You can read about Ogú syntax on the file OGU-0.1.md (in spanish for now, sorry). 
+You can read about the Ogú syntax on the file OGU-0.1-en.md.
 
 # About Name
 
