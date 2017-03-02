@@ -422,7 +422,7 @@ The previous function computes over and over the BMI, we can simplify this using
 
 If we want to document this function a bit more we can do the following:
 
-    def strIMC’ weight height
+    def strBMI’ weight height
         | bmi <= thin = "you are underweight"
         | bmi <= normal = "normal weight"
         | bmi <= fat = "you are overweight"
@@ -435,7 +435,7 @@ If we want to document this function a bit more we can do the following:
 
 A more compact form would be:
 
-    def strIMC’ weight height
+    def strBMI’ weight height
       | bmi <= thin = "you are underweight"
       | bmi <= normal = "normal weight"
       | bmi <= fat = "you are overweight"
@@ -467,7 +467,6 @@ También hemos visto como usar guardias y pattern matching.
 Pero, ¿qué pasa cuando las funciones son más complejas, con varias expresiones?
 
 Consideremos la función minmax, que retorna una dupla con los valores máximos y mínimos de una lista.
-
     
     
     def minmax [] = println! "debe contener al menos un elemento"
