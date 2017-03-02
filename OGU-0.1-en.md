@@ -107,292 +107,286 @@ In this case, if you want to capture the values returned in the tuple separately
 
 # Lists y Vectors
 
-Las listas y vectores, o secuencias en general, se escriben entre corchetes:
+Lists and vectors, or sequences in general, are written between brackets:
 
     [1, 2, 3]
     
     ["a", "b", "c"]
     
-Los rangos corresponden a listas donde se definen los inicios y terminos de una secuencia de números
+Ranges are lists where both ends are defined:
 
-    [1..100] ; del 1 al 100 inclusive
-    [1..<100] ; del 1 al 99
+    [1..100] ; 1 to 100, both inclusive
+    [1..<100] ; 1 to 99
     
-Una forma especial de escribir un rango es defininiendo el paso entre los elementos>
+A special way to write a range is to define the step between the elements:
     
     [3, 6..999] ; 3, 6, 9, 12, ... 999
 
-Los rangos pueden ser infinitos:
+Ranges can be infinite:
     
     [10...]
     
-Las listas se pueden escribir por comprension:
+Lists can be written using comprehensions:
     
     [x * y | x <- [100..<1000], y <- [100..<1000] ]
     
-Si tienes un vector puedes acceder al elemento i-esimo del siguiente modo:
+If you have a vector, you can access the i-th element like this:
 
     let v = [100, 200, 300]
     
     (v 1) ; 200
     
-# Mapas
+# Maps
     
-Los mapas se escriben entre {}:
+Maps are written between `{}`:
     
-    {"nombre" "Pedro", "edad" 15}
+    {"nombre" "Peter", "age" 15}
     
-Existen keywords, que empiezan con : y son utiles para operar con mapa:
+There are keywords, that start with `:` and are useful to operate with maps:
 
-    {:nombre "Pedro", :edad 15}
+    {:name "Peter", :age 15}
        
     
-Si tienes un mapa, puedes acceder a sus elementos como una función
+If you have a map, you can access its elements as a function:
     
-    let mapa = {"nombre" "Pedro", "edad" 15}
+    let mymap = {"name" "Peter", "age" 15}
     
-    let edad-de-pedro = mapa "edad"
+    let peters-age = mymap "age"
     
-Con un keyword podemos hacer:
+Where with a keyword we can do:
     
-    let mapa =  {:nombre  "Pedro", :edad  15}
+    let mymap =  {:name  "Pedro", :age  15}
                   
-    let edad-de-pedro = mapa :edad
+    let peters-age = mymap :edad
     
-o
+or
  
-    let edad-de-pedro = :edad mapa
+    let peters-age = :age mymap
     
-    
-Un mapa vacio se designa así
+The following is an empty map:
    
     {}
     
-# Conjuntos
+# Sets
          
-Un conjunto se designa asi:
+A set can be written like the following:
      
-     #{elemento1, elemento2}
+     #{element1, element2}
      
-Un conjunto vacio se designa así:
+The following is an empty set:
 
     #{}
 
-# Funciones
+# Functions
 
-Ogú es un lenguaje principalmente funcional, con gran influencia de Haskell. 
+Ogú is mainly a functional language, with a great influence from Haskell.
 
-Consideremos la función max, que entrega el máximo entre dos número, en Ogú se puede invocar de la siguiente manera:
+Let's consider the `max` function, which returns the maximum between two numbers. In Ogú, it can be invoked like this:
 
     max 10 4
 
-El valor de retorno es 10. 
+The value returned is 10.
 
-Otra manera de invocar esta función es:
+Another way to invoke this function is:
 
     (max 10 4)
 
-Como se hace en Lisp, esto es útil en contextos donde puede haber ambigüedad.
+Like is done in Lisp, whihc is useful in contexts where it could be ambiguous.
 
-Consideremos los siguientes casos
+Let's consider the following cases:
 
     max 4 5 + 2
     2 + max 4 5
     max 4 + 5 2
 
-¿Cómo interpreta esto el compilador Plunke de Ogú?
+How does the Ogú Plunke compiler interpret it?
 
-En el primer caso el resultado es 7. En el segundo caso también es 7. 
-En el tercer caso es 9, tal como se puede esperar.
+In the first case, the result is 7. In the second case, it's also 7.
+In the third case is 9, as you can expect.
 
     max 4 5 + 2 ; (max 4 5) + 2 
     2 + max 4 5 ; (2 + (max 4 5))
     max 4 + 5 2 ; (max (4 + 5) 2)
     
-    
-La opcion -p del compilador permite ver el AST (Abstract Syntax Tree) que corresponde a S-Expressions en Clojure, con lo que puedes depurar si tienes dudas.
+The `-p` compiler flag allows you to see the AST (Abstract Syntax Tree) that corresponds to S-Expressions in Clojure, which you can use for debugging.
 
-Ante la duda es bueno usar parentesis.
+When in doubt, is good to use parens.
 
-## Invocando funciones con tuplas
+## Calling functions with tuples
 
-Supongamos ahora que existe otra función que llamaremos max’ que en este caso ha sido definida para recibir una tupla de dos elementos (dupla). 
-En este caso para invocarla se deben usar paréntesis y comas en su invocación.
+Let's assume that there's another function called `max’` which has been defined to receive a two-element tuple as argument.
+In this case, to call the function you must use parents and commas to call it.
 
     max’ (4, 5)
 
-Porque esta función recibe una dupla y retorna un valor.
+Because this function receives a 2-tuple and returns a value.
 
-Las funciones que hemos visto se declaran en Ogú de la siguiente manera:
+The functions that we've seen are declared in Ogú like this:
 
     def max a b = if a > b then a else b
 
-en cambio la función max’ se declara en Ogú de esta manera
+where the function `max'` is declared like this:
 
     def max' (a, b) = if a > b then a else b
 
+A function in Ogú is declared with **def**.
 
-Una funciónn en Ogú se declara con **def**.
+Despite similar looks, both functions are evaluated differently.
 
-Aunque parecen similares, las dos funciones se evalúan de manera diferente. 
-
-Podemos hacer aplicaciones parciales del siguiente modo:
+We can do partial application in the following way:
 
     let from5 = partial max 5
 
-define una función parcial que retorna 5 o cualquier número mayor que 5.
+which defines a partial function which returns 5 or a number greater than 5.
 
-Con lo anterior tendremos lo siguiente:
+With the function above, we'd have the following:
 
-    from5 3 ; retorna 5
-    from5 8 ; retorna 8
+    from5 3 ; returns 5
+    from5 8 ; returns 8
 
-## Aplicaciones parciales
+## Partial application
 
-En Ogú se puede usar aplicaciones igual que en Clojure. No hay soporte de Currying.
+In Ogú you can use application just like in Clojure. There is no support for Currying.
 
+Examples:
 
-Ejemplos:
+    def multiply x y = x * y
+    let double  = multiply 2
+    let ten  = double 5
+    let twelve = double 6
 
-    def multiplicar x y = x * y
-    let doblar  = multiplicar 2
-    let diez  = doblar 5
-    let doce = double 6
+The first case defines a function `multiply` which takes two numbers.
 
-El primer caso define una función multiply, que recibe dos números.
+The second case defines a function which returns another function which multiplies its arguments.
 
-En segundo caso define una función que retorna otra función que multiplica por dos sus argumentos.
+In this case, `ten` and `twelve` are functions which always return the same value (the compiler should optimize this to constant values).
 
-De este modo diez y doce son funciones que retornan el mismo valor (el compilador debería optimizar esto a valores fijos).
+## Functions with no arguments
 
-## Funciones sin parametros
+Note that in the previous section we did
 
-Notar que en la seciónn anterior hicimos lo siguiente
-
-    let doblar  = multiplicar 2
+    let double = multiply 2
     
-Acá doblar es un valor, una variable ligada a una función.
+Here `double` is a value, a variable bound to a function.
     
-Si la declararamos como una función sería así:
+If we declared it as a function it would be:
     
-    def doblar' = multiplicar 2
+    def double' = multiply 2
     
-El problema es que doblar' es una función sin argumentos, las funciones sin argumentos en Ogú deben ser invocadas entre parentesis, así:
+The problem is that `double'` is a function without arguments, and these functions need to be called in parens in Ogú, like this:
     
-    def fun = println! "no tengo argumentos"
+    def fun = println! "I have no arguments"
     
     (fun)
      
-     
-Por lo que te tendriamos que hacer
+To make this work, we'd need to have the following:
 
-    (doblar) 10 ; esto no funciona
+    (doblar) 10 ; this won't work
     
-    
-Y aun asi no funcionaria.
+And it still wouldn't work.
 
-Hay una forma de lograr que funcione, pero la veremos más adelante.
+There's a way to make this work, but we'll see it later.
 
-¿Por qué es esto?
+Why is it?
 
-Porque en Ogú las clases son objetos de primera clase, es decir, las funciones pueden ser pasadas como argumentos a otras funciones:
+It's because in Ogú functions are first class, which means, functions can be passed as arguments to other functions:
 
     def my-apply f x = f x
     
     my-apply upper "hola" ; "HOLA"
+
     
-## Declaración de funciones
+## Function declaration
 
-La forma de declarar una función es la siguiente
+The way to declare a function is the following:
 
-    def nombreDeLaFuncion args = expresión
+    def nameOfTheFunction args = expression
 
-Ejemplos:
 
+Examples:
 
     def factorial n = if n == 0 then 1 else n * factorial (n-1)
 
-Esto es similar a Haskell, pero agregamos la palabra def antes del nombre de la función.
 
-El def se puede omitir, pero no se recomienda.
+This is similar to Haskell, but we add the `def` keyword before the name of the function.
 
-El def debe ir en la primera columna de una linea, sin indentación (si se omite el def, el nombre de la función debe ir en la primera columna).
+The `def` keyword can be omitted but it's not recommended.
 
+The `def` keyword must be in the first column of a line, with no indentation (if `def` is omitted, the name of the function must go in the first column).
 
-El parámetro puede ser una tupla como en este ejemplo:
+The parameter can be a tuple like in this example:
 
     def min' (a, b) = if a < b then a else b
 
-Por supuesto el valor de retorno puede también ser una tupla:
+
+Of course, the returned value can also be a tuple:
 
     def swap'(a, b) = (b,a)
 
 
-El uso de tuplas  permite hacer cosas interesantes como lo siguiente:
+Using tuples allows to do interesting things, like:
 
-    def sumar-vectores (a, b) (c, d) = (a + c, b + d)
+    def sum-vectors (a, b) (c, d) = (a + c, b + d)
     
-    sumar-ivectores (10, 10) (20, 20) ; produce (30,30)
+    sum-vectors (10, 10) (20, 20) ; returns (30,30)
 
-Por supuesto lo habitual es declarar las funciones de este modo:
 
-    def sumar a b = a + b ; recordar los espacios
+Of course, the usual is to declare functions in this way:
+
+    def sum a b = a + b ; remember spaces are significant
     
-Con esto la función sumar se puede invocar:
+Then the `sum` function could be inkoked:
 
-    sumar 10 20
+    sum 10 20
     
-    sumar 1.0 2.0 ; error
+    sum 1.0 2.0 ; error
     
+## Functions Pattern Matching
 
-## Pattern Matching de Funciones
-
-Esta es una característica tomada de Haskell, que permite definir funciones de manera bastante conveniente:
+This is a feature borrowed from Haskell, which allows to define functions in a convenient form:
 
     def factorial 0 = 1
     def factorial 1 = 1
     def factorial n = n * factorial (n - 1)
 
 
-Otro ejemplo:
+Another example
 
-    let radioAlfa ‘a’ = “Alfa”
-    let radioAlfa ‘b’ = “Bravo”
-    let radioAlfa ‘c’ = “Charlie”
-    let radioAlfa ‘d’ = “Delta”
+    let radioAlfa 'a' = "Alfa"
+    let radioAlfa 'b' = "Bravo"
+    let radioAlfa 'c' = "Charlie"
+    let radioAlfa 'd' = "Delta"
 
-En este caso estamos definiendo una función que retorna un string por cada carácter usando el alfabeto radiofónico.
+In this case we're defining a function which returns a string for each character using the radiophonic alphabet.
 
-
-Otros ejemplos:
-
+Other examples:
     
     def first (a, _, _) = a
 
     def second (_,b,_) = b
 
-el símbolo _ indica que no nos interesa el valor. 
+the symbol `_` denotes that we're not interested in this value.
 
-En estos dos ejemplos hemos creado funciones para obtener elementos de una 3-tupla.
-
-
-## Funciones con listas 
-
-Veamos algunos ejemplos:
-
-    def head’ [] = error! “Lista vacía”
-    def head’ [x & _] = x
-
-    def length’ [] = 0
-    def length’ [x & xs] = 1 + length’ xs
-
-    def tell [] = “lista vacía”
-    def tell [x] = “la lista tiene un elemento “ 
-    def tell [x, y] = “la lista tiene dos elementos:“ 
-    def tell [x, y & _]= “la lista es larga."
+In these two examples we're created functions to obtain elements out of a 3-tuple.
 
 
-## Guardias
+## Functions on lists
+
+Let's see some examples
+
+    def head' [] = error! "Empty list"
+    def head' [x & _] = x
+
+    def length' [] = 0
+    def length' [x & xs] = 1 + length' xs
+
+    def tell [] = "empty list"
+    def tell [x] = "the list contains one element"
+    def tell [x, y] = "the list contains two elements"
+    def tell [x, y & _] = "the list is long"
+
+
+## Guards
 
 A veces una función se puede expresar mejor en base a varias condiciones que deben cumplirse.
 
