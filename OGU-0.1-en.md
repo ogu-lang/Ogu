@@ -191,7 +191,7 @@ Another way to invoke this function is:
 
     (max 10 4)
 
-Like is done in Lisp, whihc is useful in contexts where it could be ambiguous.
+Like it's done in Lisp, which is useful in contexts where it could be ambiguous otherwise.
 
 Let's consider the following cases:
 
