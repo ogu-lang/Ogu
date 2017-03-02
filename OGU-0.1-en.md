@@ -105,7 +105,7 @@ In this case, if you want to capture the values returned in the tuple separately
 
 **let** y **val** are synonims when we declare global variables.
 
-# Lists y Vectors
+# Lists and Vectors
 
 Lists and vectors, or sequences in general, are written between brackets:
 
@@ -157,7 +157,7 @@ Where with a keyword we can do:
     
     let mymap =  {:name  "Pedro", :age  15}
                   
-    let peters-age = mymap :edad
+    let peters-age = mymap :age
     
 or
  
@@ -388,80 +388,77 @@ Let's see some examples
 
 ## Guards
 
-A veces una función se puede expresar mejor en base a varias condiciones que deben cumplirse.
+Sometimes a function can be expressed better in terms of several conditions that must be met.
 
-Por ejemplo, supongamos que queremos una función que nos clasifique según nuestro indice de masa corporal (imc).
+As an example, let's say we want a function that classifies us according to our body mass index (BMI).
 
-    def strIMC imc
-      | imc <= 18.5 = "estas bajo el peso normal"
-      | imc <= 25.0 = "tu peso es normal"
-      | imc <= 30.0 = "estas con sobrepeso"
-      | otherwise   = "estas obeso, cuidado!"
+    def strBMI bmi
+      | bmi <= 18.5 = "you are underweight"
+      | bmi <= 25.0 = "normal weight"
+      | bmi <= 30.0 = "you are overweight"
+      | otherwise   = "you are obese, careful!"
 
-A diferencia del pattern matching, que sólo permite valores o formas de una expresión, los guardias permiten expresiones booleanas.
-En este caso los guardias se separan por una barra vertical | y están antes del cuerpo de la función.
+Compared to pattern matching that only allows values or expressions, guards allow boolean expressions.
+In this case guards are separated with a vertical bar (`|`) before the body of the function.
 
-Otro ejemplo, en este caso calculamos el IMC en base a la estatura y el peso.
+Another example to compute the BMI using the height and weight.
 
-    def strIMC’ peso altura 
-        | peso / altura ^ 2 <= 18.5 = “estas bajo el peso normal”
-        | peso / altura ^ 2 <= 25.0 = “tu peso es normal”
-        | peso / altura ^ 2 <= 30.0 = “estas con sobrepeso”
-        | otherwise = “estas obeso, cuidado!”
-
+    def strBMI’ weight height 
+        | weight / height ^ 2 <= 18.5 = "you are underweight"
+        | weight / height ^ 2 <= 25.0 = "normal weight"
+        | weight / height ^ 2 <= 30.0 = "you are overweight"
+        | otherwise = "you are obese, careful!"
 
 ## **where** 
 
-La función anterior calcula una y otra vez el IMC. Podemos simplificar esto usando  **where** :
+The previous function computes over and over the BMI, we can simplify this using the **where** clause:
 
-    def strIMC’ peso altura 
-        | imc <= 18.5 = “estas bajo el peso normal”
-        | imc <= 25.0 = “tu peso es normal”
-        | imc <= 30.0 = “estas con sobrepeso”
-        | otherwise = “estas obeso, cuidado!”
-        where imc = peso / altura ^ 2
+    def strBMI’ weight height
+        | bmi <= 18.5 = "you are underweight"
+        | bmi <= 25.0 = "normal weight"
+        | bmi <= 30.0 = "you are overweight"
+        | otherwise   = "you are obese, careful!"
+        where bmi = weight / height ^ 2
 
-Si queremos documentar un poco más esta función podemos hacer lo siguiente
+If we want to document this function a bit more we can do the following:
 
-    def strIMC’ peso altura 
-        | imc <= delgado = “estas bajo el peso normal”
-        | imc <= normal = “tu peso es normal”
-        | imc <= gordo = “estas con sobrepeso”
-        | otherwise = “estas obeso, cuidado!”
-        where 
-          imc = peso / altura ^ 2 
-          delgado = 18.5
+    def strIMC’ weight height
+        | bmi <= thin = "you are underweight"
+        | bmi <= normal = "normal weight"
+        | bmi <= fat = "you are overweight"
+        | otherwise   = "you are obese, careful!"
+        where
+          bmi = weight / height ^ 2
+          thin = 18.5
           normal = 25.0
-          gordo = 30.0
+          fat = 30.0
 
-Una forma más compacta es:
+A more compact form would be:
 
-    def strIMC''' peso altura
-      | imc <= delgado = "estas bajo el peso normal"
-      | imc <= normal = "tu peso es normal"
-      | imc <= gordo = "estas con sobrepeso"
-      | otherwise = "estas obeso, cuidado!"
-      where imc = peso / altura ^ 2
-            (delgado, normal, gordo) = (18.5, 25.0, 30.0)
+    def strIMC’ weight height
+      | bmi <= thin = "you are underweight"
+      | bmi <= normal = "normal weight"
+      | bmi <= fat = "you are overweight"
+      | otherwise   = "you are obese, careful!"
+      where bmi = weight / height ^ 2
+            (thin, normal, fat) = (18.5, 25.0, 30.0)
 
-La cláusula **where**  después del cuerpo de una función permite definir variables o funciones. 
+The **where** clause after a function body allows to define variables or functions.
 
-Notar que se deben indentar tanto los guards como las declaraciones en el where.
+Note that both the guards and the declarations of the `where` clause must be indented.
 
-Veamos otro ejemplo:
-
+Let's see another example:
     
-    def calcIMCs lista = [imc p a | (p, a) <- lista]
-       where imc peso altura = peso / altura ^ 2
+    def calcBMIs pairs = [bmi w h | (w, h) <- pairs]
+       where bmi weight height = weight / height ^ 2
 
-Esta función recibe una lista de duplas con pesos y alturas retornando una lista de los indices de masa corporal respectivos.
+This function receives a list of 2-tuples with weights and heights and returns a list of the respective BMIs.
 
-(Notar que se parece mucho a Haskell)
+(Note it looks a lot like Haskell)
 
-La notación [imc p a | (p, a) <- xs] indica que se debe armar una lista por comprensión, donde cada elemento de la lista corresponde la aplicación de
-la función imc para cada parámetro p y a, donde p y a son los elementos de la dupla en xs. 
+The notation `[bmi w h | (w, h) <- xs]` means that a comprehension list is built, where each element of the list corresponds to the application of the function `bmi` for each parameter `w` and `h`, where `w` and `h` are the elements of each tuple in `xs`.
 
-El operador <- toma cada uno de los elementos de la lista. 
+The `<-` operator takes each element of the list.
 
 ## Cuerpo de la función
 
