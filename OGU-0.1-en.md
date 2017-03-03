@@ -46,11 +46,11 @@ is an expression.
 
 # Constants and Variables
 
-Values can be stored in immutable variables, or constants, which are denoted with the reserved keyword **val**.
+Values can be stored in immutable variables, or constants, which are denoted with the reserved keyword `val`
 
     val c = 300000
     
-Variables that can be mutated are declared with the reserved keyword **var**.
+Variables that can be mutated are declared with the reserved keyword `var`
 
     var v = 1
     
@@ -103,7 +103,7 @@ In this case, if you want to capture the values returned in the tuple separately
 
 (Here we assume `frac(x)` returns a real number as a fraction)
 
-**let** y **val** are synonims when we declare global variables.
+`let` y `val` are synonyms when we declare global variables.
 
 # Lists and Vectors
 
@@ -210,7 +210,7 @@ In the third case is 9, as you can expect.
     
 The `-p` compiler flag allows you to see the AST (Abstract Syntax Tree) that corresponds to S-Expressions in Clojure, which you can use for debugging.
 
-When in doubt, is good to use parens.
+When in doubt, is good to use parenthesis.
 
 ## Calling functions with tuples
 
@@ -229,7 +229,7 @@ where the function `max'` is declared like this:
 
     def max' (a, b) = if a > b then a else b
 
-A function in Ogú is declared with **def**.
+A function in Ogú is declared with `def`
 
 Despite similar looks, both functions are evaluated differently.
 
@@ -273,7 +273,7 @@ If we declared it as a function it would be:
     
     def double' = multiply 2
     
-The problem is that `double'` is a function without arguments, and these functions need to be called in parens in Ogú, like this:
+The problem is that `double'` is a function without arguments, and these functions need to be called inside parenthesis in Ogú, like this:
     
     def fun = println! "I have no arguments"
     
@@ -281,7 +281,7 @@ The problem is that `double'` is a function without arguments, and these functio
      
 To make this work, we'd need to have the following:
 
-    (doblar) 10 ; this won't work
+    (double') 10 ; this won't work
     
 And it still wouldn't work.
 
@@ -409,9 +409,9 @@ Another example to compute the BMI using the height and weight.
         | weight / height ^ 2 <= 30.0 = "you are overweight"
         | otherwise = "you are obese, careful!"
 
-## **where** 
+## where
 
-The previous function computes over and over the BMI, we can simplify this using the **where** clause:
+The previous function computes over and over the BMI, we can simplify this using the `where` clause:
 
     def strBMI’ weight height
         | bmi <= 18.5 = "you are underweight"
@@ -443,7 +443,7 @@ A more compact form would be:
       where bmi = weight / height ^ 2
             (thin, normal, fat) = (18.5, 25.0, 30.0)
 
-The **where** clause after a function body allows to define variables or functions.
+The `where` clause after a function body allows to define variables or functions.
 
 Note that both the guards and the declarations of the `where` clause must be indented.
 
@@ -487,17 +487,17 @@ Let's consider the `minmax` function which returns a tuple with the maximum and 
 This is an imperative implementation of this problem.
 It's not the best way to implement this solution in Ogú, but it's helpful to introduce several concepts.
 
-First, when there's more than one expression they are put in a block starting with a **begin** and ending with **end**.
+First, when there's more than one expression they are put in a block starting with a `begin` and ending with `end`.
 
 Each expression goes into its own line.
 
 In a block corresponding to a function body the value of the function will be the last expression in the block.
 
-The **when** sentence is used in Ogú because an **if** is an expression which always requires an **else**.
+The `when` sentence is used in Ogú because an `if` is an expression which always requires an `else`
 
-Using **when** instead allows running a sentence only when its conditional expression is true.
+Using `when` instead allows running a sentence only when its conditional expression is true.
 
-The choice of using **when** and its syntax is to make the code "uglier" to promote a more functional style.
+The choice of using `when` and its syntax is to make the code "uglier" to promote a more functional style.
 
 In general, sentences using `do` are imperative and break the functional paradygm.
 
