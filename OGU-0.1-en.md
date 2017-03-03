@@ -246,7 +246,7 @@ With the function above, we'd have the following:
 
 ## Partial application
 
-In Ogú you can use application just like in Clojure. There is no support for Currying.
+In Ogú you can use partial application just like in Clojure. There is no support for Currying.
 
 Examples:
 
@@ -460,16 +460,15 @@ The notation `[bmi w h | (w, h) <- xs]` means that a comprehension list is built
 
 The `<-` operator takes each element of the list.
 
-## Cuerpo de la función
+## Function body
 
-Hasta ahora hemos visto sólo casos en que la función consiste en una expresión simple. 
-También hemos visto como usar guardias y pattern matching.
-Pero, ¿qué pasa cuando las funciones son más complejas, con varias expresiones?
+So far we've seen only cases in which the function consists of a simple expression.
+We've also seen how to use guards and pattern matching.
+But what happens when functions are more complex, with several expressions?
 
-Consideremos la función minmax, que retorna una dupla con los valores máximos y mínimos de una lista.
+Let's consider the `minmax` function which returns a tuple with the maximum and minimum values of a list.
     
-    
-    def minmax [] = println! "debe contener al menos un elemento"
+    def minmax [] = println! "must contain at least one element"
     
     def minmax xs =
         var cmin = head xs
@@ -485,34 +484,33 @@ Consideremos la función minmax, que retorna una dupla con los valores máximos 
     
     println! $ minmax [10, 20, 4, 5, 9, 8, 80, 100, 23, 32]
     
-Esta es una implementación imperativa de este problema. 
-No es la mejor manera de implementar esta solución en Ogú. 
-Pero sirve para introducir varios conceptos.
+This is an imperative implementation of this problem.
+It's not the best way to implement this solution in Ogú, but it's helpful to introduce several concepts.
 
-Lo primero, cuando hay más de una expresión se colocan en un bloque, el que se distingue por empezar con **begin** y terminar con **end**.
+First, when there's more than one expression they are put in a block starting with a **begin** and ending with **end**.
 
-Cada expresión va en una linea.
+Each expression goes into its own line.
 
-Cuando un bloque corresponde al cuerpo de una función entonces el valor de la función será la última expresión del bloque.
+In a block corresponding to a function body the value of the function will be the last expression in the block.
 
-La sentencia *when* se usa porque en Ogú un **if** es una expresión que requiere siempre un *else*. 
+The **when** sentence is used in Ogú because an **if** is an expression which always requires an **else**.
 
-En cambio when permite ejecutar una sentencia cuando su expresión condicional es verdadera. 
+Using **when** instead allows running a sentence only when its conditional expression is true.
 
-La elección de when y su sintáxis es para hacer el código más "feo", con el fin de impulsar un estilo más funcional.
+The choice of using **when** and its syntax is to make the code "uglier" to promote a more functional style.
 
-En general las sentencias que tienen do son imperativas y rompen el paradigma funcional.
+In general, sentences using `do` are imperative and break the functional paradygm.
 
-La forma de when es 
+A `when` form looks like this
 
-    when expresión do (expresión o bloque de expresiones)
+    when expression do (expression or expression block)
 
-El loop for es es bastante simple de entender, lo explicaremos en más detalle más adelante.
-También es imperativo.
+The `for` loop is simple to understand but we'll explain it in detail later.
+It's imperative style too.
 
-Las expresiones imperativas tienen valor nil, esto es importante.
+Imperative expressions have a `nil` value, and this is important.
 
-La estructura **var** **in** permite declarar variables locales. La forma es:
+The `var` ... `in` structure allows declaring local variables, in this form:
 
     var
        v1 = expr1
@@ -521,32 +519,32 @@ La estructura **var** **in** permite declarar variables locales. La forma es:
     in
        expr
        
-Las variables deben ser referenciadas con el operador @. Y para cambiar el valor usamos el operador =.
+Variables can be referenced with the `@` operator, and to change its value we use the `=` operator.
 
-No se puede usar el valor de las variables fuera del in (incluso cuando se están declarando).
-
-
-# Valores booleanos en Ogú
+You can't use the value of these variables outside of the `in` section (even when they are being declared).
 
 
-Los valores false y true son valores reservados para representar booleanos.
-
-El valor **nil** también es especial. En una expresión booleana el valor nil es equivalente a false.
+# Boolean values in Ogú
 
 
-# Recursividad
+The values `false` and `true` are reserved values to represent booleans.
 
-Para implementar tail recursion usamos recur:
+The `nil` value is also special. In a boolean expression the boolean value of `nil` is equivalent to `false`.
 
 
-    def siracusa n
+# Recursion
+
+We use `recur` to implement tail recursion:
+
+
+    def siracuse n
         | n == 1 = 4
         | n == 2 = 1
         | n % 2 == 0 = recur (n / 2)
         | otherwise = recur (n * 3 + 1)
 
 
-Existe una construcción **similar** a la implementada en Clojure:
+There is a **similar** construction to the one implemented in Clojure:
 
     def rev num =
         loop  reversed = 0, n = num in
@@ -555,61 +553,59 @@ Existe una construcción **similar** a la implementada en Clojure:
             else
                 repeat reversed * 10 + n % 10, int (n / 10)
 
-Loop inicializa las variables, cuando invocas repeat haces una llamada recursiva
-al loop con nuevos valores para las variables.
+`loop` initializes variables, when you call `repeat` you're making a recursive call to the loop with the new values for the variables.
 
-Hay dos diferencias con el loop de Clojure:
+There are two differences with Clojure's `loop`:
 
-1. se itera con repeat, no con recur
-2. puedes nombrar a las variables nuevamente en el repeat, peo puedes capturar su valor temporalmente
-    
-    
-    loop i = 1, salida = 0 in
-        if i == 10 then salida
-        else repeat i' = inc i, salida = i' * 2
+1. iteration uses `repeat` not `recur`
+2. you can name variables again in the `repeat` form, but you can capture their value temporarily
+
+    loop i = 1, exit = 0 in
+        if i == 10 then exit
+        else repeat i' = inc i, exit = i' * 2
         
-    ; salida es 20, si no usaramos i' el resultado seria 18
+    ; returns 20, if we didn't use `i'` the result would be 18
         
         
 # Types
 
-Hay dos tipos en Ogú, las clases y los records.
+There are two types in Ogú, classes and records.
 
-Una clase se define así:
+A class is defined with:
 
     type Circle (x, y, radius)
     
     type Rectangle( x,  y, width, height)
 
-Un record se define así:
+A record is defined with:
 
     type Car {company, model, year}
 
-La diferencia son las llaves. Pero una clase puede tener campos mutables, como veremos más adelante.
+The difference is on the keys. A class can have mutable fields too, as we'll see later.
 
-Se usan de la siguiente manera:
+They are used this way:
 
 
     let mustang56 = Car {company = "Ford", model = "Mustang", year = 1956}
     
     let cir = Circle(10, 10, 10)
 
-Los records son útiles para modelar entidades del dominio del negocio.
-Las clases son usadas de manera preferente para implementar tipos de datos más estructurales.
+Records are useful to model entities of the business domain.l negocio.
+Classes are best used to implement more structured datatypes.
 
-Los campos de un record o de una clase se acceden como funciones aplicadas sobre la instancia, 
-llevan el nombre del campo precedido de un punto, por ejemploÑ
+The fields of a record or a class are accessed as functions applied on the instance,
+and they have the name of the field with a `.` prefix, like:
 
     .company mustang56 ; "Ford"
     
-Hay una notación especial para acceder a un campo:
+There's a special notation to access to a field:
 
     !mustang56.company 
    
     
 # Traits 
 
-Un trait es como los protocolos de Clojure.
+A trait is like Clojure's protocols.
 
     
     trait Shape is
@@ -620,9 +616,9 @@ Un trait es como los protocolos de Clojure.
 
         def move this    
 
-Los traits definen listas de funciones que son soportadas por el trait.
+Traits define lists of functions which are supported by the trait.
 
-Una clase o un record pueden implementar un trait 
+A class or a record may implement a trait
 
 
     type Circle (x, y, radius)
@@ -633,43 +629,43 @@ Una clase o un record pueden implementar un trait
       as Vehicle
          def move this = println! "moving car " company model year
          
-Notar que cuando implementamos un metodo de un trait podemos acceder a los campos de la clase, 
-como en el caso del metodo self.
-Otra cosa que es obligatorio tener un parametro que corresponde al objeto.
-Podriamos haber reescrito type Circle del siguiente modo:
+Note that when we implement a trait's method we can access to the fields of a class,
+like in the case of the `move` method.
+It is mandatory to have a parameter corresponding to the instance.
+We could have rewritten the `Circle` type like the following:
 
     type Circle (x, y, radius)
          as Shape
          def area self = pi * (!self.radius ^ 2)
          
-Como el argumento que representa a la instancia del objeto se puede ignorar podemos escribir area del siguiente modo:
+As the argument which represents the instance of the object, it can be ignored and we can write the `area` method like:
          
     type Circle (x, y, radius)
          as Shape
          def area _ = pi * (radius ^ 2)  
          
-El primer argumento de un metodo trait puede llamarse como quiera el programador, por convencion se le llama self o this.
+The first argument of a trait can be called as the programmer wants but by convention we call it `self` or `this`.
          
-Una vez que tenemos definido un trait podemos extender un tipo que ya existe del siguiente modo:
+Once we have a trait defined we can extend an already existing type like this:
 
     extend Rectangle
         as Shape
     
         def area self = (.width self) * (.height self)
 
-(Notar la indentación)
+(Note the indentation)
 
-Cuando extendemos un tipo no podemos acceder a sus campos directamente. Por eso usamos .width self.
+When we extend a type we cannot access their fields directly, so we use `.width self`.
 
 
-## Clases mutables
+## Mutable classes
 
-La mutabilidad es algo no muy deseable en Ogú, es por esto que los records no pueden tener campos mutables, 
-su valor se mantiene inmutable durante la ejecución del programa.
+Mutability is not very desirable in Ogú, so that's why records cannot have mutable fields,
+their value is kept immutable during the program execution.
 
-Sin embargo, las clases sí pueden tener mutabilidad, declarando los campos con el atributo **var**.
+However, classes can have mutable parts by declaring their fields with the `var` attribute.
 
-Veamos un ejemplo:
+Let's see an example:
 
 
     trait Shape is
@@ -698,18 +694,18 @@ Veamos un ejemplo:
             draw! self
           end
 
-Notar como x e y son declaradas mutables al colocar el atributo var.
-Sin embargo, como no queremos que radius varie, lo declaramos inmutable con val.
+Note that both `x` and `y` are declared as mutable by setting the `var` attribute.
+However, since we don't want the `radius` to vary, we declare it immutable by using `val`.
 
-Dado esto podemos, dentro de la definición de la clase, modificar el valor de x e y, con la notación
+With this we can modify the value of `x` and `y` inside the class definition with this notation
 
     !x = new-x
     !y = new-y
     
     
-Hay un costo para esto, x e y no son visibles furera de la clase.
+The cost for it is that `x` and `y` are not visible outside of the class.
 
-Esto obliga a definir un protocolo para poder acceder a sus valores, para esto debemos hacer lo siguiente:
+This forces us to define a protocol to access their values, so we must do the following:
 
 
     trait Shape is
@@ -750,20 +746,20 @@ Esto obliga a definir un protocolo para poder acceder a sus valores, para esto d
            def getY self = y
 
 
-# Polimorfismo
+# Polymorfism
 
-Podemos crear funciones polimórficas que nos permiten operar con distintos tipos de la siguiente manera:
+We can create polymorphic functions which allows us to operate with different datatypes in the following way:
 
-    def show-area! shape : Rectangle = println! "el area de un rectangulo es " (area shape) " y es de tipo " (typeof shape )
+    def show-area! shape : Rectangle = println! "the area of a rectangle is " (area shape) " and is of type " (typeof shape)
 
-    def show-area! shape : Shape = println! "el area es " (area shape) " y es de tipo " (typeof shape )
+    def show-area! shape : Shape = println! "the area is " (area shape) " and is of type " (typeof shape)
 
 
-# Despacho dinamico
+# Dynamic dispatch
 
-El dispacho dinámico es una forma de ejecutar un metodo en base a un discriminador, este corresponde a una función.
+Dynamic dispatch is a way to execute a method based on a discriminator function.
 
-Por ejemplo,
+Example:
 
 
     dispatch greeting on \x -> (x "language")\
@@ -776,45 +772,40 @@ Por ejemplo,
    
     def greeting otherwise ?  _ = println "?????"
    
-    greeting  {"name" "Michelle", "language" "French"} ; Bonjour Michell
+    greeting {"name" "Michelle", "language" "French"} ; Bonjour Michell
    
-    greeting  {"name" "Pedro", "language" "Spanish"} ; Hola Pedro
+    greeting {"name" "Pedro", "language" "Spanish"} ; Hola Pedro
    
     greeting {"name" "Hans", "language" "German"} ; ?????
 
 
-Acá cada método se invoca dependiendo del resultado de la expresión lambda.
-do sin el parámetro self dentro de la clase.
+Here each method is invoked depending on the result of the lamba expression.
 
-## Herencia de clases
+## Class inheritance
 
-Ogú no tiene herencia de clases.
+Ogú doesn't have class inheritance.
 
-# Módulos
+# Modules
 
-Las clases, tipos y funciones se pueden declarar dentro de un módulo,
-usando **module**:
+Classes, types and functions cab be declared inside a module using `module`:
 
 
     module Collections 
        
 
-Los modulos se importan con la palabra reservada **requires** de una forma 
-muy parecida a Clojure:
+Modules are imported with the reserved keyword `requires` in a manner similar to Clojure:
 
     module Demo
         require clojure.stacktrace, clojure.java.io as io, clojure.stacktrace refer all, clojure.string refer [upper-case]
         import java.util Date GregorianCalendar
 
 
-**require** se usa para importar otros modulos escrintos en Ogu o Clojure.
+`require` is used to import other modules written in Ogú or Clojure.
 
 
-**import** permite importar clases de la JVM.
+`import` allows importing JVM classes.
 
-**import static** es una operación adicional que sirve para importar
-definiciones estáticas de la JVM.
-
+`import static` is an additional operation to import static definitions from Java code.
 
 
     module snake-game
@@ -824,15 +815,5 @@ definiciones estáticas de la JVM.
 
     import static java.awt.event.KeyEvent (VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN)
 
-Para desambiguar clases o tipos uno puede usar la notación modulo.Tipo
-
-
-     
-    
-
-    
-
-
-
-
+To disambiguate classes or types you can use the `module.Type` notation.
 
