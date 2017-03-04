@@ -560,6 +560,7 @@ There are two differences with Clojure's `loop`:
 1. iteration uses `repeat` not `recur`
 2. you can name variables again in the `repeat` form, but you can capture their value temporarily
 
+
     loop i = 1, exit = 0 in
         if i == 10 then exit
         else repeat i' = inc i, exit = i' * 2
@@ -573,9 +574,9 @@ There are two types in Ogú, classes and records.
 
 A class is defined with:
 
-    type Circle (x, y, radius)
+    type Circle(x, y, radius)
     
-    type Rectangle( x,  y, width, height)
+    type Rectangle(x,  y, width, height)
 
 A record is defined with:
 
@@ -762,7 +763,7 @@ Dynamic dispatch is a way to execute a method based on a discriminator function.
 Example:
 
 
-    dispatch greeting on \x -> (x "language")\
+    dispatch greeting on \x -> (x "language")
    
     def greeting "French" ? person = println "Bonjour" (person "name")
    
