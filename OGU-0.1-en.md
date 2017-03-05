@@ -46,11 +46,11 @@ is an expression.
 
 # Constants and Variables
 
-Values can be stored in immutable variables, or constants, which are denoted with the reserved keyword **val**.
+Values can be stored in immutable variables, or constants, which are denoted with the reserved keyword `val`
 
     val c = 300000
     
-Variables that can be mutated are declared with the reserved keyword **var**.
+Variables that can be mutated are declared with the reserved keyword `var`
 
     var v = 1
     
@@ -103,383 +103,372 @@ In this case, if you want to capture the values returned in the tuple separately
 
 (Here we assume `frac(x)` returns a real number as a fraction)
 
-**let** y **val** are synonims when we declare global variables.
+`let` y `val` are synonyms when we declare global variables.
 
-# Lists y Vectors
+# Lists and Vectors
 
-Las listas y vectores, o secuencias en general, se escriben entre corchetes:
+Lists and vectors, or sequences in general, are written between brackets:
 
     [1, 2, 3]
     
     ["a", "b", "c"]
     
-Los rangos corresponden a listas donde se definen los inicios y terminos de una secuencia de números
+Ranges are lists where both ends are defined:
 
-    [1..100] ; del 1 al 100 inclusive
-    [1..<100] ; del 1 al 99
+    [1..100] ; 1 to 100, both inclusive
+    [1..<100] ; 1 to 99
     
-Una forma especial de escribir un rango es defininiendo el paso entre los elementos>
+A special way to write a range is to define the step between the elements:
     
     [3, 6..999] ; 3, 6, 9, 12, ... 999
 
-Los rangos pueden ser infinitos:
+Ranges can be infinite:
     
     [10...]
     
-Las listas se pueden escribir por comprension:
+Lists can be written using comprehensions:
     
     [x * y | x <- [100..<1000], y <- [100..<1000] ]
     
-Si tienes un vector puedes acceder al elemento i-esimo del siguiente modo:
+If you have a vector, you can access the i-th element like this:
 
     let v = [100, 200, 300]
     
     (v 1) ; 200
     
-# Mapas
+# Maps
     
-Los mapas se escriben entre {}:
+Maps are written between `{}`:
     
-    {"nombre" "Pedro", "edad" 15}
+    {"nombre" "Peter", "age" 15}
     
-Existen keywords, que empiezan con : y son utiles para operar con mapa:
+There are keywords, that start with `:` and are useful to operate with maps:
 
-    {:nombre "Pedro", :edad 15}
+    {:name "Peter", :age 15}
        
     
-Si tienes un mapa, puedes acceder a sus elementos como una función
+If you have a map, you can access its elements as a function:
     
-    let mapa = {"nombre" "Pedro", "edad" 15}
+    let mymap = {"name" "Peter", "age" 15}
     
-    let edad-de-pedro = mapa "edad"
+    let peters-age = mymap "age"
     
-Con un keyword podemos hacer:
+Where with a keyword we can do:
     
-    let mapa =  {:nombre  "Pedro", :edad  15}
+    let mymap =  {:name  "Pedro", :age  15}
                   
-    let edad-de-pedro = mapa :edad
+    let peters-age = mymap :age
     
-o
+or
  
-    let edad-de-pedro = :edad mapa
+    let peters-age = :age mymap
     
-    
-Un mapa vacio se designa así
+The following is an empty map:
    
     {}
     
-# Conjuntos
+# Sets
          
-Un conjunto se designa asi:
+A set can be written like the following:
      
-     #{elemento1, elemento2}
+     #{element1, element2}
      
-Un conjunto vacio se designa así:
+The following is an empty set:
 
     #{}
 
-# Funciones
+# Functions
 
-Ogú es un lenguaje principalmente funcional, con gran influencia de Haskell. 
+Ogú is mainly a functional language, with a great influence from Haskell.
 
-Consideremos la función max, que entrega el máximo entre dos número, en Ogú se puede invocar de la siguiente manera:
+Let's consider the `max` function, which returns the maximum between two numbers. In Ogú, it can be invoked like this:
 
     max 10 4
 
-El valor de retorno es 10. 
+The value returned is 10.
 
-Otra manera de invocar esta función es:
+Another way to invoke this function is:
 
     (max 10 4)
 
-Como se hace en Lisp, esto es útil en contextos donde puede haber ambigüedad.
+Like it's done in Lisp, which is useful in contexts where it could be ambiguous otherwise.
 
-Consideremos los siguientes casos
+Let's consider the following cases:
 
     max 4 5 + 2
     2 + max 4 5
     max 4 + 5 2
 
-¿Cómo interpreta esto el compilador Plunke de Ogú?
+How does the Ogú Plunke compiler interpret it?
 
-En el primer caso el resultado es 7. En el segundo caso también es 7. 
-En el tercer caso es 9, tal como se puede esperar.
+In the first case, the result is 7. In the second case, it's also 7.
+In the third case is 9, as you can expect.
 
     max 4 5 + 2 ; (max 4 5) + 2 
     2 + max 4 5 ; (2 + (max 4 5))
     max 4 + 5 2 ; (max (4 + 5) 2)
     
-    
-La opcion -p del compilador permite ver el AST (Abstract Syntax Tree) que corresponde a S-Expressions en Clojure, con lo que puedes depurar si tienes dudas.
+The `-p` compiler flag allows you to see the AST (Abstract Syntax Tree) that corresponds to S-Expressions in Clojure, which you can use for debugging.
 
-Ante la duda es bueno usar parentesis.
+When in doubt, is good to use parenthesis.
 
-## Invocando funciones con tuplas
+## Calling functions with tuples
 
-Supongamos ahora que existe otra función que llamaremos max’ que en este caso ha sido definida para recibir una tupla de dos elementos (dupla). 
-En este caso para invocarla se deben usar paréntesis y comas en su invocación.
+Let's assume that there's another function called `max’` which has been defined to receive a two-element tuple as argument.
+In this case, to call the function you must use parents and commas to call it.
 
     max’ (4, 5)
 
-Porque esta función recibe una dupla y retorna un valor.
+Because this function receives a 2-tuple and returns a value.
 
-Las funciones que hemos visto se declaran en Ogú de la siguiente manera:
+The functions that we've seen are declared in Ogú like this:
 
     def max a b = if a > b then a else b
 
-en cambio la función max’ se declara en Ogú de esta manera
+where the function `max'` is declared like this:
 
     def max' (a, b) = if a > b then a else b
 
+A function in Ogú is declared with `def`
 
-Una funciónn en Ogú se declara con **def**.
+Despite similar looks, both functions are evaluated differently.
 
-Aunque parecen similares, las dos funciones se evalúan de manera diferente. 
-
-Podemos hacer aplicaciones parciales del siguiente modo:
+We can do partial application in the following way:
 
     let from5 = partial max 5
 
-define una función parcial que retorna 5 o cualquier número mayor que 5.
+which defines a partial function which returns 5 or a number greater than 5.
 
-Con lo anterior tendremos lo siguiente:
+With the function above, we'd have the following:
 
-    from5 3 ; retorna 5
-    from5 8 ; retorna 8
+    from5 3 ; returns 5
+    from5 8 ; returns 8
 
-## Aplicaciones parciales
+## Partial application
 
-En Ogú se puede usar aplicaciones igual que en Clojure. No hay soporte de Currying.
+In Ogú you can use partial application just like in Clojure. There is no support for Currying.
 
+Examples:
 
-Ejemplos:
+    def multiply x y = x * y
+    let double  = multiply 2
+    let ten  = double 5
+    let twelve = double 6
 
-    def multiplicar x y = x * y
-    let doblar  = multiplicar 2
-    let diez  = doblar 5
-    let doce = double 6
+The first case defines a function `multiply` which takes two numbers.
 
-El primer caso define una función multiply, que recibe dos números.
+The second case defines a function which returns another function which multiplies its arguments.
 
-En segundo caso define una función que retorna otra función que multiplica por dos sus argumentos.
+In this case, `ten` and `twelve` are functions which always return the same value (the compiler should optimize this to constant values).
 
-De este modo diez y doce son funciones que retornan el mismo valor (el compilador debería optimizar esto a valores fijos).
+## Functions with no arguments
 
-## Funciones sin parametros
+Note that in the previous section we did
 
-Notar que en la seciónn anterior hicimos lo siguiente
-
-    let doblar  = multiplicar 2
+    let double = multiply 2
     
-Acá doblar es un valor, una variable ligada a una función.
+Here `double` is a value, a variable bound to a function.
     
-Si la declararamos como una función sería así:
+If we declared it as a function it would be:
     
-    def doblar' = multiplicar 2
+    def double' = multiply 2
     
-El problema es que doblar' es una función sin argumentos, las funciones sin argumentos en Ogú deben ser invocadas entre parentesis, así:
+The problem is that `double'` is a function without arguments, and these functions need to be called inside parenthesis in Ogú, like this:
     
-    def fun = println! "no tengo argumentos"
+    def fun = println! "I have no arguments"
     
     (fun)
      
-     
-Por lo que te tendriamos que hacer
+To make this work, we'd need to have the following:
 
-    (doblar) 10 ; esto no funciona
+    (double') 10 ; this won't work
     
-    
-Y aun asi no funcionaria.
+And it still wouldn't work.
 
-Hay una forma de lograr que funcione, pero la veremos más adelante.
+There's a way to make this work, but we'll see it later.
 
-¿Por qué es esto?
+Why is it?
 
-Porque en Ogú las clases son objetos de primera clase, es decir, las funciones pueden ser pasadas como argumentos a otras funciones:
+It's because in Ogú functions are first class, which means, functions can be passed as arguments to other functions:
 
     def my-apply f x = f x
     
     my-apply upper "hola" ; "HOLA"
+
     
-## Declaración de funciones
+## Function declaration
 
-La forma de declarar una función es la siguiente
+The way to declare a function is the following:
 
-    def nombreDeLaFuncion args = expresión
+    def nameOfTheFunction args = expression
 
-Ejemplos:
 
+Examples:
 
     def factorial n = if n == 0 then 1 else n * factorial (n-1)
 
-Esto es similar a Haskell, pero agregamos la palabra def antes del nombre de la función.
 
-El def se puede omitir, pero no se recomienda.
+This is similar to Haskell, but we add the `def` keyword before the name of the function.
 
-El def debe ir en la primera columna de una linea, sin indentación (si se omite el def, el nombre de la función debe ir en la primera columna).
+The `def` keyword can be omitted but it's not recommended.
 
+The `def` keyword must be in the first column of a line, with no indentation (if `def` is omitted, the name of the function must go in the first column).
 
-El parámetro puede ser una tupla como en este ejemplo:
+The parameter can be a tuple like in this example:
 
     def min' (a, b) = if a < b then a else b
 
-Por supuesto el valor de retorno puede también ser una tupla:
+
+Of course, the returned value can also be a tuple:
 
     def swap'(a, b) = (b,a)
 
 
-El uso de tuplas  permite hacer cosas interesantes como lo siguiente:
+Using tuples allows to do interesting things, like:
 
-    def sumar-vectores (a, b) (c, d) = (a + c, b + d)
+    def sum-vectors (a, b) (c, d) = (a + c, b + d)
     
-    sumar-ivectores (10, 10) (20, 20) ; produce (30,30)
+    sum-vectors (10, 10) (20, 20) ; returns (30,30)
 
-Por supuesto lo habitual es declarar las funciones de este modo:
 
-    def sumar a b = a + b ; recordar los espacios
+Of course, the usual is to declare functions in this way:
+
+    def sum a b = a + b ; remember spaces are significant
     
-Con esto la función sumar se puede invocar:
+Then the `sum` function could be inkoked:
 
-    sumar 10 20
+    sum 10 20
     
-    sumar 1.0 2.0 ; error
+    sum 1.0 2.0 ; error
     
+## Functions Pattern Matching
 
-## Pattern Matching de Funciones
-
-Esta es una característica tomada de Haskell, que permite definir funciones de manera bastante conveniente:
+This is a feature borrowed from Haskell, which allows to define functions in a convenient form:
 
     def factorial 0 = 1
     def factorial 1 = 1
     def factorial n = n * factorial (n - 1)
 
 
-Otro ejemplo:
+Another example
 
-    let radioAlfa ‘a’ = “Alfa”
-    let radioAlfa ‘b’ = “Bravo”
-    let radioAlfa ‘c’ = “Charlie”
-    let radioAlfa ‘d’ = “Delta”
+    let radioAlfa 'a' = "Alfa"
+    let radioAlfa 'b' = "Bravo"
+    let radioAlfa 'c' = "Charlie"
+    let radioAlfa 'd' = "Delta"
 
-En este caso estamos definiendo una función que retorna un string por cada carácter usando el alfabeto radiofónico.
+In this case we're defining a function which returns a string for each character using the radiophonic alphabet.
 
-
-Otros ejemplos:
-
+Other examples:
     
     def first (a, _, _) = a
 
     def second (_,b,_) = b
 
-el símbolo _ indica que no nos interesa el valor. 
+the symbol `_` denotes that we're not interested in this value.
 
-En estos dos ejemplos hemos creado funciones para obtener elementos de una 3-tupla.
-
-
-## Funciones con listas 
-
-Veamos algunos ejemplos:
-
-    def head’ [] = error! “Lista vacía”
-    def head’ [x & _] = x
-
-    def length’ [] = 0
-    def length’ [x & xs] = 1 + length’ xs
-
-    def tell [] = “lista vacía”
-    def tell [x] = “la lista tiene un elemento “ 
-    def tell [x, y] = “la lista tiene dos elementos:“ 
-    def tell [x, y & _]= “la lista es larga."
+In these two examples we're created functions to obtain elements out of a 3-tuple.
 
 
-## Guardias
+## Functions on lists
 
-A veces una función se puede expresar mejor en base a varias condiciones que deben cumplirse.
+Let's see some examples
 
-Por ejemplo, supongamos que queremos una función que nos clasifique según nuestro indice de masa corporal (imc).
+    def head' [] = error! "Empty list"
+    def head' [x & _] = x
 
-    def strIMC imc
-      | imc <= 18.5 = "estas bajo el peso normal"
-      | imc <= 25.0 = "tu peso es normal"
-      | imc <= 30.0 = "estas con sobrepeso"
-      | otherwise   = "estas obeso, cuidado!"
+    def length' [] = 0
+    def length' [x & xs] = 1 + length' xs
 
-A diferencia del pattern matching, que sólo permite valores o formas de una expresión, los guardias permiten expresiones booleanas.
-En este caso los guardias se separan por una barra vertical | y están antes del cuerpo de la función.
-
-Otro ejemplo, en este caso calculamos el IMC en base a la estatura y el peso.
-
-    def strIMC’ peso altura 
-        | peso / altura ^ 2 <= 18.5 = “estas bajo el peso normal”
-        | peso / altura ^ 2 <= 25.0 = “tu peso es normal”
-        | peso / altura ^ 2 <= 30.0 = “estas con sobrepeso”
-        | otherwise = “estas obeso, cuidado!”
+    def tell [] = "empty list"
+    def tell [x] = "the list contains one element"
+    def tell [x, y] = "the list contains two elements"
+    def tell [x, y & _] = "the list is long"
 
 
-## **where** 
+## Guards
 
-La función anterior calcula una y otra vez el IMC. Podemos simplificar esto usando  **where** :
+Sometimes a function can be expressed better in terms of several conditions that must be met.
 
-    def strIMC’ peso altura 
-        | imc <= 18.5 = “estas bajo el peso normal”
-        | imc <= 25.0 = “tu peso es normal”
-        | imc <= 30.0 = “estas con sobrepeso”
-        | otherwise = “estas obeso, cuidado!”
-        where imc = peso / altura ^ 2
+As an example, let's say we want a function that classifies us according to our body mass index (BMI).
 
-Si queremos documentar un poco más esta función podemos hacer lo siguiente
+    def strBMI bmi
+      | bmi <= 18.5 = "you are underweight"
+      | bmi <= 25.0 = "normal weight"
+      | bmi <= 30.0 = "you are overweight"
+      | otherwise   = "you are obese, careful!"
 
-    def strIMC’ peso altura 
-        | imc <= delgado = “estas bajo el peso normal”
-        | imc <= normal = “tu peso es normal”
-        | imc <= gordo = “estas con sobrepeso”
-        | otherwise = “estas obeso, cuidado!”
-        where 
-          imc = peso / altura ^ 2 
-          delgado = 18.5
+Compared to pattern matching that only allows values or expressions, guards allow boolean expressions.
+In this case guards are separated with a vertical bar (`|`) before the body of the function.
+
+Another example to compute the BMI using the height and weight.
+
+    def strBMI’ weight height 
+        | weight / height ^ 2 <= 18.5 = "you are underweight"
+        | weight / height ^ 2 <= 25.0 = "normal weight"
+        | weight / height ^ 2 <= 30.0 = "you are overweight"
+        | otherwise = "you are obese, careful!"
+
+## where
+
+The previous function computes over and over the BMI, we can simplify this using the `where` clause:
+
+    def strBMI’ weight height
+        | bmi <= 18.5 = "you are underweight"
+        | bmi <= 25.0 = "normal weight"
+        | bmi <= 30.0 = "you are overweight"
+        | otherwise   = "you are obese, careful!"
+        where bmi = weight / height ^ 2
+
+If we want to document this function a bit more we can do the following:
+
+    def strBMI’ weight height
+        | bmi <= thin = "you are underweight"
+        | bmi <= normal = "normal weight"
+        | bmi <= fat = "you are overweight"
+        | otherwise   = "you are obese, careful!"
+        where
+          bmi = weight / height ^ 2
+          thin = 18.5
           normal = 25.0
-          gordo = 30.0
+          fat = 30.0
 
-Una forma más compacta es:
+A more compact form would be:
 
-    def strIMC''' peso altura
-      | imc <= delgado = "estas bajo el peso normal"
-      | imc <= normal = "tu peso es normal"
-      | imc <= gordo = "estas con sobrepeso"
-      | otherwise = "estas obeso, cuidado!"
-      where imc = peso / altura ^ 2
-            (delgado, normal, gordo) = (18.5, 25.0, 30.0)
+    def strBMI’ weight height
+      | bmi <= thin = "you are underweight"
+      | bmi <= normal = "normal weight"
+      | bmi <= fat = "you are overweight"
+      | otherwise   = "you are obese, careful!"
+      where bmi = weight / height ^ 2
+            (thin, normal, fat) = (18.5, 25.0, 30.0)
 
-La cláusula **where**  después del cuerpo de una función permite definir variables o funciones. 
+The `where` clause after a function body allows to define variables or functions.
 
-Notar que se deben indentar tanto los guards como las declaraciones en el where.
+Note that both the guards and the declarations of the `where` clause must be indented.
 
-Veamos otro ejemplo:
-
+Let's see another example:
     
-    def calcIMCs lista = [imc p a | (p, a) <- lista]
-       where imc peso altura = peso / altura ^ 2
+    def calcBMIs pairs = [bmi w h | (w, h) <- pairs]
+       where bmi weight height = weight / height ^ 2
 
-Esta función recibe una lista de duplas con pesos y alturas retornando una lista de los indices de masa corporal respectivos.
+This function receives a list of 2-tuples with weights and heights and returns a list of the respective BMIs.
 
-(Notar que se parece mucho a Haskell)
+(Note it looks a lot like Haskell)
 
-La notación [imc p a | (p, a) <- xs] indica que se debe armar una lista por comprensión, donde cada elemento de la lista corresponde la aplicación de
-la función imc para cada parámetro p y a, donde p y a son los elementos de la dupla en xs. 
+The notation `[bmi w h | (w, h) <- xs]` means that a comprehension list is built, where each element of the list corresponds to the application of the function `bmi` for each parameter `w` and `h`, where `w` and `h` are the elements of each tuple in `xs`.
 
-El operador <- toma cada uno de los elementos de la lista. 
+The `<-` operator takes each element of the list.
 
-## Cuerpo de la función
+## Function body
 
-Hasta ahora hemos visto sólo casos en que la función consiste en una expresión simple. 
-También hemos visto como usar guardias y pattern matching.
-Pero, ¿qué pasa cuando las funciones son más complejas, con varias expresiones?
+So far we've seen only cases in which the function consists of a simple expression.
+We've also seen how to use guards and pattern matching.
+But what happens when functions are more complex, with several expressions?
 
-Consideremos la función minmax, que retorna una dupla con los valores máximos y mínimos de una lista.
-
+Let's consider the `minmax` function which returns a tuple with the maximum and minimum values of a list.
     
-    
-    def minmax [] = println! "debe contener al menos un elemento"
+    def minmax [] = println! "must contain at least one element"
     
     def minmax xs =
         var cmin = head xs
@@ -495,34 +484,33 @@ Consideremos la función minmax, que retorna una dupla con los valores máximos 
     
     println! $ minmax [10, 20, 4, 5, 9, 8, 80, 100, 23, 32]
     
-Esta es una implementación imperativa de este problema. 
-No es la mejor manera de implementar esta solución en Ogú. 
-Pero sirve para introducir varios conceptos.
+This is an imperative implementation of this problem.
+It's not the best way to implement this solution in Ogú, but it's helpful to introduce several concepts.
 
-Lo primero, cuando hay más de una expresión se colocan en un bloque, el que se distingue por empezar con **begin** y terminar con **end**.
+First, when there's more than one expression they are put in a block starting with a `begin` and ending with `end`.
 
-Cada expresión va en una linea.
+Each expression goes into its own line.
 
-Cuando un bloque corresponde al cuerpo de una función entonces el valor de la función será la última expresión del bloque.
+In a block corresponding to a function body the value of the function will be the last expression in the block.
 
-La sentencia *when* se usa porque en Ogú un **if** es una expresión que requiere siempre un *else*. 
+The `when` sentence is used in Ogú because an `if` is an expression which always requires an `else`
 
-En cambio when permite ejecutar una sentencia cuando su expresión condicional es verdadera. 
+Using `when` instead allows running a sentence only when its conditional expression is true.
 
-La elección de when y su sintáxis es para hacer el código más "feo", con el fin de impulsar un estilo más funcional.
+The choice of using `when` and its syntax is to make the code "uglier" to promote a more functional style.
 
-En general las sentencias que tienen do son imperativas y rompen el paradigma funcional.
+In general, sentences using `do` are imperative and break the functional paradygm.
 
-La forma de when es 
+A `when` form looks like this
 
-    when expresión do (expresión o bloque de expresiones)
+    when expression do (expression or expression block)
 
-El loop for es es bastante simple de entender, lo explicaremos en más detalle más adelante.
-También es imperativo.
+The `for` loop is simple to understand but we'll explain it in detail later.
+It's imperative style too.
 
-Las expresiones imperativas tienen valor nil, esto es importante.
+Imperative expressions have a `nil` value, and this is important.
 
-La estructura **var** **in** permite declarar variables locales. La forma es:
+The `var` ... `in` structure allows declaring local variables, in this form:
 
     var
        v1 = expr1
@@ -531,32 +519,32 @@ La estructura **var** **in** permite declarar variables locales. La forma es:
     in
        expr
        
-Las variables deben ser referenciadas con el operador @. Y para cambiar el valor usamos el operador =.
+Variables can be referenced with the `@` operator, and to change its value we use the `=` operator.
 
-No se puede usar el valor de las variables fuera del in (incluso cuando se están declarando).
-
-
-# Valores booleanos en Ogú
+You can't use the value of these variables outside of the `in` section (even when they are being declared).
 
 
-Los valores false y true son valores reservados para representar booleanos.
-
-El valor **nil** también es especial. En una expresión booleana el valor nil es equivalente a false.
+# Boolean values in Ogú
 
 
-# Recursividad
+The values `false` and `true` are reserved values to represent booleans.
 
-Para implementar tail recursion usamos recur:
+The `nil` value is also special. In a boolean expression the boolean value of `nil` is equivalent to `false`.
 
 
-    def siracusa n
+# Recursion
+
+We use `recur` to implement tail recursion:
+
+
+    def siracuse n
         | n == 1 = 4
         | n == 2 = 1
         | n % 2 == 0 = recur (n / 2)
         | otherwise = recur (n * 3 + 1)
 
 
-Existe una construcción **similar** a la implementada en Clojure:
+There is a **similar** construction to the one implemented in Clojure:
 
     def rev num =
         loop  reversed = 0, n = num in
@@ -565,61 +553,60 @@ Existe una construcción **similar** a la implementada en Clojure:
             else
                 repeat reversed * 10 + n % 10, int (n / 10)
 
-Loop inicializa las variables, cuando invocas repeat haces una llamada recursiva
-al loop con nuevos valores para las variables.
+`loop` initializes variables, when you call `repeat` you're making a recursive call to the loop with the new values for the variables.
 
-Hay dos diferencias con el loop de Clojure:
+There are two differences with Clojure's `loop`:
 
-1. se itera con repeat, no con recur
-2. puedes nombrar a las variables nuevamente en el repeat, peo puedes capturar su valor temporalmente
-    
-    
-    loop i = 1, salida = 0 in
-        if i == 10 then salida
-        else repeat i' = inc i, salida = i' * 2
+1. iteration uses `repeat` not `recur`
+2. you can name variables again in the `repeat` form, but you can capture their value temporarily
+
+
+    loop i = 1, exit = 0 in
+        if i == 10 then exit
+        else repeat i' = inc i, exit = i' * 2
         
-    ; salida es 20, si no usaramos i' el resultado seria 18
+    ; returns 20, if we didn't use `i'` the result would be 18
         
         
 # Types
 
-Hay dos tipos en Ogú, las clases y los records.
+There are two types in Ogú, classes and records.
 
-Una clase se define así:
+A class is defined with:
 
-    type Circle (x, y, radius)
+    type Circle(x, y, radius)
     
-    type Rectangle( x,  y, width, height)
+    type Rectangle(x,  y, width, height)
 
-Un record se define así:
+A record is defined with:
 
     type Car {company, model, year}
 
-La diferencia son las llaves. Pero una clase puede tener campos mutables, como veremos más adelante.
+The difference is on the keys. A class can have mutable fields too, as we'll see later.
 
-Se usan de la siguiente manera:
+They are used this way:
 
 
     let mustang56 = Car {company = "Ford", model = "Mustang", year = 1956}
     
     let cir = Circle(10, 10, 10)
 
-Los records son útiles para modelar entidades del dominio del negocio.
-Las clases son usadas de manera preferente para implementar tipos de datos más estructurales.
+Records are useful to model entities of the business domain.l negocio.
+Classes are best used to implement more structured datatypes.
 
-Los campos de un record o de una clase se acceden como funciones aplicadas sobre la instancia, 
-llevan el nombre del campo precedido de un punto, por ejemploÑ
+The fields of a record or a class are accessed as functions applied on the instance,
+and they have the name of the field with a `.` prefix, like:
 
     .company mustang56 ; "Ford"
     
-Hay una notación especial para acceder a un campo:
+There's a special notation to access to a field:
 
     !mustang56.company 
    
     
 # Traits 
 
-Un trait es como los protocolos de Clojure.
+A trait is like Clojure's protocols.
 
     
     trait Shape is
@@ -630,9 +617,9 @@ Un trait es como los protocolos de Clojure.
 
         def move this    
 
-Los traits definen listas de funciones que son soportadas por el trait.
+Traits define lists of functions which are supported by the trait.
 
-Una clase o un record pueden implementar un trait 
+A class or a record may implement a trait
 
 
     type Circle (x, y, radius)
@@ -643,43 +630,43 @@ Una clase o un record pueden implementar un trait
       as Vehicle
          def move this = println! "moving car " company model year
          
-Notar que cuando implementamos un metodo de un trait podemos acceder a los campos de la clase, 
-como en el caso del metodo self.
-Otra cosa que es obligatorio tener un parametro que corresponde al objeto.
-Podriamos haber reescrito type Circle del siguiente modo:
+Note that when we implement a trait's method we can access to the fields of a class,
+like in the case of the `move` method.
+It is mandatory to have a parameter corresponding to the instance.
+We could have rewritten the `Circle` type like the following:
 
     type Circle (x, y, radius)
          as Shape
          def area self = pi * (!self.radius ^ 2)
          
-Como el argumento que representa a la instancia del objeto se puede ignorar podemos escribir area del siguiente modo:
+As the argument which represents the instance of the object, it can be ignored and we can write the `area` method like:
          
     type Circle (x, y, radius)
          as Shape
          def area _ = pi * (radius ^ 2)  
          
-El primer argumento de un metodo trait puede llamarse como quiera el programador, por convencion se le llama self o this.
+The first argument of a trait can be called as the programmer wants but by convention we call it `self` or `this`.
          
-Una vez que tenemos definido un trait podemos extender un tipo que ya existe del siguiente modo:
+Once we have a trait defined we can extend an already existing type like this:
 
     extend Rectangle
         as Shape
     
         def area self = (.width self) * (.height self)
 
-(Notar la indentación)
+(Note the indentation)
 
-Cuando extendemos un tipo no podemos acceder a sus campos directamente. Por eso usamos .width self.
+When we extend a type we cannot access their fields directly, so we use `.width self`.
 
 
-## Clases mutables
+## Mutable classes
 
-La mutabilidad es algo no muy deseable en Ogú, es por esto que los records no pueden tener campos mutables, 
-su valor se mantiene inmutable durante la ejecución del programa.
+Mutability is not very desirable in Ogú, so that's why records cannot have mutable fields,
+their value is kept immutable during the program execution.
 
-Sin embargo, las clases sí pueden tener mutabilidad, declarando los campos con el atributo **var**.
+However, classes can have mutable parts by declaring their fields with the `var` attribute.
 
-Veamos un ejemplo:
+Let's see an example:
 
 
     trait Shape is
@@ -708,18 +695,18 @@ Veamos un ejemplo:
             draw! self
           end
 
-Notar como x e y son declaradas mutables al colocar el atributo var.
-Sin embargo, como no queremos que radius varie, lo declaramos inmutable con val.
+Note that both `x` and `y` are declared as mutable by setting the `var` attribute.
+However, since we don't want the `radius` to vary, we declare it immutable by using `val`.
 
-Dado esto podemos, dentro de la definición de la clase, modificar el valor de x e y, con la notación
+With this we can modify the value of `x` and `y` inside the class definition with this notation
 
     !x = new-x
     !y = new-y
     
     
-Hay un costo para esto, x e y no son visibles furera de la clase.
+The cost for it is that `x` and `y` are not visible outside of the class.
 
-Esto obliga a definir un protocolo para poder acceder a sus valores, para esto debemos hacer lo siguiente:
+This forces us to define a protocol to access their values, so we must do the following:
 
 
     trait Shape is
@@ -760,23 +747,23 @@ Esto obliga a definir un protocolo para poder acceder a sus valores, para esto d
            def getY self = y
 
 
-# Polimorfismo
+# Polymorfism
 
-Podemos crear funciones polimórficas que nos permiten operar con distintos tipos de la siguiente manera:
+We can create polymorphic functions which allows us to operate with different datatypes in the following way:
 
-    def show-area! shape : Rectangle = println! "el area de un rectangulo es " (area shape) " y es de tipo " (typeof shape )
+    def show-area! shape : Rectangle = println! "the area of a rectangle is " (area shape) " and is of type " (typeof shape)
 
-    def show-area! shape : Shape = println! "el area es " (area shape) " y es de tipo " (typeof shape )
-
-
-# Despacho dinamico
-
-El dispacho dinámico es una forma de ejecutar un metodo en base a un discriminador, este corresponde a una función.
-
-Por ejemplo,
+    def show-area! shape : Shape = println! "the area is " (area shape) " and is of type " (typeof shape)
 
 
-    dispatch greeting on \x -> (x "language")\
+# Dynamic dispatch
+
+Dynamic dispatch is a way to execute a method based on a discriminator function.
+
+Example:
+
+
+    dispatch greeting on \x -> (x "language")
    
     def greeting "French" ? person = println "Bonjour" (person "name")
    
@@ -786,45 +773,40 @@ Por ejemplo,
    
     def greeting otherwise ?  _ = println "?????"
    
-    greeting  {"name" "Michelle", "language" "French"} ; Bonjour Michell
+    greeting {"name" "Michelle", "language" "French"} ; Bonjour Michell
    
-    greeting  {"name" "Pedro", "language" "Spanish"} ; Hola Pedro
+    greeting {"name" "Pedro", "language" "Spanish"} ; Hola Pedro
    
     greeting {"name" "Hans", "language" "German"} ; ?????
 
 
-Acá cada método se invoca dependiendo del resultado de la expresión lambda.
-do sin el parámetro self dentro de la clase.
+Here each method is invoked depending on the result of the lamba expression.
 
-## Herencia de clases
+## Class inheritance
 
-Ogú no tiene herencia de clases.
+Ogú doesn't have class inheritance.
 
-# Módulos
+# Modules
 
-Las clases, tipos y funciones se pueden declarar dentro de un módulo,
-usando **module**:
+Classes, types and functions cab be declared inside a module using `module`:
 
 
     module Collections 
        
 
-Los modulos se importan con la palabra reservada **requires** de una forma 
-muy parecida a Clojure:
+Modules are imported with the reserved keyword `requires` in a manner similar to Clojure:
 
     module Demo
         require clojure.stacktrace, clojure.java.io as io, clojure.stacktrace refer all, clojure.string refer [upper-case]
         import java.util Date GregorianCalendar
 
 
-**require** se usa para importar otros modulos escrintos en Ogu o Clojure.
+`require` is used to import other modules written in Ogú or Clojure.
 
 
-**import** permite importar clases de la JVM.
+`import` allows importing JVM classes.
 
-**import static** es una operación adicional que sirve para importar
-definiciones estáticas de la JVM.
-
+`import static` is an additional operation to import static definitions from Java code.
 
 
     module snake-game
@@ -834,15 +816,5 @@ definiciones estáticas de la JVM.
 
     import static java.awt.event.KeyEvent (VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN)
 
-Para desambiguar clases o tipos uno puede usar la notación modulo.Tipo
-
-
-     
-    
-
-    
-
-
-
-
+To disambiguate classes or types you can use the `module.Type` notation.
 

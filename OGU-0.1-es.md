@@ -193,7 +193,7 @@ Los rangos corresponden a listas donde se definen los inicios y terminos de una 
     [1..100] ; del 1 al 100 inclusive
     [1..<100] ; del 1 al 99
     
-Una forma especial de escribir un rango es defininiendo el paso entre los elementos>
+Una forma especial de escribir un rango es defininiendo el paso entre los elementos
     
     [3, 6..999] ; 3, 6, 9, 12, ... 999
 
@@ -683,7 +683,7 @@ Los records son útiles para modelar entidades del dominio del negocio.
 Las clases son usadas de manera preferente para implementar tipos de datos más estructurales.
 
 Los campos de un record o de una clase se acceden como funciones aplicadas sobre la instancia, 
-llevan el nombre del campo precedido de un punto, por ejemploÑ
+llevan el nombre del campo precedido de un punto, por ejemplo
 
     .company mustang56 ; "Ford"
     
