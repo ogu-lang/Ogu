@@ -135,6 +135,18 @@
 
      <proxy-method-arg> = ID
 
+     reify-expr = <'reify'> BS* as-reification+
+
+     <as-reification> = <'as'> BS+ reify-type NL reify-method-impl+ BS* <\"end\">
+
+     reify-method-impl = BS+ [<\"def\"> BS+] ID reify-method-args def-body [where]
+
+     reify-method-args = {BS+ reify-method-arg}
+
+     <reify-type> = ID | TID
+
+     <reify-method-arg> = ID
+
      <pipe-expr> =  piped-expr / func-call-expr
 
      <piped-expr> = forward-piped-expr  / forward-first-piped-expr / backward-piped-expr / backward-first-piped-expr / doto-expr / backward-doto-expr / dollar-expr / expr-seq
@@ -171,7 +183,7 @@
 
      sync-expr = <\"sync\"> (BS+ pipe-expr | BS* NL BS+ pipe-expr) &NL
 
-     <block-expr> =  let-expr / binding-expr /  repeat-expr / begin-end-expr / var-expr / proxy-def
+     <block-expr> =  let-expr / binding-expr /  repeat-expr / begin-end-expr / var-expr / proxy-def / reify-expr
 
      <lcons-expr> =  cons-expr  /  bin-expr
 
@@ -449,7 +461,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|'as '|#'begin[ \r\n]'|'bind '|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'repeat '|'require '|'set '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|'as '|#'begin[ \r\n]'|'bind '|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'reify '|'repeat '|'require '|'set '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -794,6 +806,11 @@
    :at-expr                  ogu-at-expr
    :bang-expr                ogu-bang-expr
    :sync-expr                (fn [& rest] (cons 'dosync rest))
+
+
+   :reify-expr               (fn [& rest] (cons 'reify rest))
+   :reify-method-args        (fn [& rest] (vec rest))
+   :reify-method-impl        (fn [& rest] rest)
 
    :proxy-def                (fn [& rest] (cons 'proxy (apply concat rest)))
    :proxy-method-impl        (fn [& rest] (list rest))

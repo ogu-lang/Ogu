@@ -11,7 +11,6 @@
 - repl
 - type pattern matching
 - variadic trait methods
-- reify
 - types of args
 - ogu core library
 - ogu datetime library
