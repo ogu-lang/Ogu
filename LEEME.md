@@ -46,7 +46,7 @@ Estas son las versiones futuras (esto está sujeto a cambio).
 
 - Ñeclito (0.3)
 
-- Lokán (0.4)
+- Bromisnar (0.4)
 
 - Cucufato (0.5)
 
@@ -54,7 +54,7 @@ Estas son las versiones futuras (esto está sujeto a cambio).
 
 - Alaraco (0.7)
 
-- Tinalín (0.8)
+- Guigá (0.8)
 
 - Agú (0.9)
 

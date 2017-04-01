@@ -46,7 +46,7 @@ These are the future editions:
 
 - Ñeclito (0.3)
 
-- Lokán (0.4)
+- Bromisnar (0.4)
 
 - Cucufato (0.5)
 
@@ -54,7 +54,7 @@ These are the future editions:
 
 - Alaraco (0.7)
 
-- Tinalin (0.8)
+- Guigá (0.8)
 
 - Agú (0.9)
 
