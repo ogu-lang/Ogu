@@ -1,4 +1,4 @@
-# ogu-lang
+# ogu-lang-compiler
 
 Ogú es un lenguage de programación dinámico.
 
