@@ -871,9 +871,6 @@
                 {(str "defv-" (second form)) {:form form :pos p}}
                 {(str "expr-" (o/md5 (str (o/uuid)))) {:form form :pos p}})))
 
-;check if a list of
-(defn check-all-args-are-symbol [args] (every? symbol? args))
-
 ; check if a list of forms has a pattern matching like form
 (defn is-pattern-matching? [forms]
       (loop [result false head (first forms) tail (rest forms)]
@@ -932,10 +929,8 @@
 (defn transform-ast [ast]
       (merge-variadic (insta/transform ast-transformations ast)))
 
-(def preamble "
-  (require '[ogu.core :refer :all] '[clojure.core.match :refer [match]])
-
-  ")
+(def preamble
+  '(require '[ogu.core :refer :all] '[clojure.core.match :refer [match]]) )
 
 (defn evalue-ast [module ast]
       (let [value (transform-ast ast)]
