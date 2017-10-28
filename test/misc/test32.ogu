@@ -1,0 +1,19 @@
+
+
+def divide a b = try
+                   println! "dividir " a " en " b
+                    a / b
+                 catch a : ArithmeticException -> "can't divide by 0"
+                 catch e : Exception ->
+                    "something wrong happened"
+                 finally
+                    println! "Always executed a = " a " and b = " b
+                 end
+
+
+println! $ divide 10 2
+
+println! $ divide 10 0
+
+
+divide 10 0
