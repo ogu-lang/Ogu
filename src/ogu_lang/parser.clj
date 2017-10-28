@@ -173,7 +173,19 @@
      recur = &'recur' <'recur'> {BS+ arg}
 
 
-     <control-expr> =  when-expr / if-expr / cond-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr / using-expr / do-expr / set-var-expr
+     <control-expr> =  when-expr / if-expr / cond-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr / using-expr / do-expr / set-var-expr / try-catch-expr
+
+     try-catch-expr = <'try'> (BS+ [NL BS*]|NL BS+) try-exprs catches BS* NL BS* <'end'>
+
+     <try-exprs> = pipe-expr {(BS* <\",\"> BS* [NL BS*] | BS* NL BS+) pipe-expr} &catches
+
+     <catches> = catch+ [finally]
+
+     catch = NL BS* <'catch'> BS+ catch-ex-var  BS+ [NL BS*] <'->'>  (BS+|NL BS+) pipe-expr {(BS* <\",\"> BS* [NL BS*] | BS* NL BS+) pipe-expr}
+
+     catch-ex-var = ID BS* <':'> BS+ TID
+
+     finally = NL BS* <'finally'> (BS+|NL BS+) pipe-expr {(BS* <\",\"> BS* [NL BS*] | BS* NL BS+) pipe-expr}
 
      cond-expr = <\"cond\"> (cond-pair)+[cond-otherwise]
 
@@ -461,7 +473,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|'as '|#'begin[ \r\n]'|'bind '|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'reify '|'repeat '|'require '|'set '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|'as '|#'begin[ \r\n]'|'bind '|'catch '|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'finally '|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'reify '|'repeat '|'require '|'set '|'static '|#'then[ \r\n]'|'trait '|'try '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -591,8 +603,6 @@
         (if (empty? args)
           (cons 'let [(vec [idf val])])
           (list 'letfn [(list idf args val)]))))
-
-(defn ogu-flatten-list-let [& rest] rest)
 
 (defn ogu-flatten-last-while [v]
       (let [end (last v) rest (butlast v) while (:when end)]
@@ -769,6 +779,11 @@
    :set-expr                 (fn [& rest] (into #{} rest))
 
    :nil-value                (fn [] nil)
+
+   :try-catch-expr          (fn [& rest] (cons 'try rest))
+   :catch                   (fn [& rest] (cons 'catch (flatten rest)))
+   :catch-ex-var            (fn [v t] (vec [t v]))
+   :finally                 (fn [& rest] (cons 'finally rest))
 
 
    :tuple                    (fn [& rest] (vec rest))
