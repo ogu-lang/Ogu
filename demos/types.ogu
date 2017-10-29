@@ -4,15 +4,15 @@ trait Vehicle is
     move this
 
 
-type Car {company, model, year}
+record Car {company, model, year}
    as Vehicle
    def move this = println! "moving car " company model year
 
-type Plane {company, series, year}
+record Plane {company, series, year}
    as Vehicle
    def move this = println! "flying plane " company series year
 
-type Ship {name}
+record Ship {name}
 
     as Vehicle
 
@@ -27,7 +27,6 @@ let boeing747 = Plane{company = "Boeing", series = "747", year = 2000}
 
 def show-model p:Plane = println! (.series  p) (.company  p)
 def show-model c:Car   = println! !c.model !c.company
-
 
 dispatch show on class
 

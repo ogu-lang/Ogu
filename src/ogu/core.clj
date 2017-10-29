@@ -12,6 +12,8 @@
 
 (def typeof type)
 
+(def classof class)
+
 (def curry partial)
 
 (def reader clojure.java.io/reader)

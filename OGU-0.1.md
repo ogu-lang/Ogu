@@ -662,13 +662,14 @@ Hay dos tipos en Ogú, las clases y los records.
 
 Una clase se define así:
 
-    type Circle (x, y, radius)
+    class Circle (x, y, radius)
     
-    type Rectangle( x,  y, width, height)
+    class Rectangle( x,  y, width, height)
+      
 
 Un record se define así:
 
-    type Car {company, model, year}
+    record Car {company, model, year}
 
 La diferencia son las llaves. Pero una clase puede tener campos mutables, como veremos más adelante.
 
@@ -710,26 +711,26 @@ Los traits definen listas de funciones que son soportadas por el trait.
 Una clase o un record pueden implementar un trait 
 
 
-    type Circle (x, y, radius)
+    class Circle (x, y, radius)
          as Shape
          def area self = pi * (radius ^ 2)
 
-    type Car {company, model, year}
+    record Car {company, model, year}
       as Vehicle
          def move this = println! "moving car " company model year
          
 Notar que cuando implementamos un metodo de un trait podemos acceder a los campos de la clase, 
 como en el caso del metodo self.
 Otra cosa que es obligatorio tener un parametro que corresponde al objeto.
-Podriamos haber reescrito type Circle del siguiente modo:
+Podriamos haber reescrito class Circle del siguiente modo:
 
-    type Circle (x, y, radius)
+    class Circle (x, y, radius)
          as Shape
          def area self = pi * (!self.radius ^ 2)
          
 Como el argumento que representa a la instancia del objeto se puede ignorar podemos escribir area del siguiente modo:
          
-    type Circle (x, y, radius)
+    class Circle (x, y, radius)
          as Shape
          def area _ = pi * (radius ^ 2)  
          
@@ -767,7 +768,7 @@ Veamos un ejemplo:
     
          def move! self x y
          
-    type Circle (var x,  var y, val radius)
+    class Circle (var x,  var y, val radius)
 
        as Shape
 
@@ -812,7 +813,7 @@ Esto obliga a definir un protocolo para poder acceder a sus valores, para esto d
         def getX self
         def getY self
 
-    type Circle (var x,  var y, val radius)
+    class Circle (var x,  var y, val radius)
 
         as Shape
 
