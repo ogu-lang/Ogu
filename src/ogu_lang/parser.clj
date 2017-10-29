@@ -31,7 +31,11 @@
 
      method-otherwise = <\"otherwise\">
 
-     dispatch = &\"dispatch\" <\"dispatch\"> BS+ ID BS+ <\"on\"> BS+ func-call-expr NL
+     dispatch = &\"dispatch\" <\"dispatch\"> BS+ ID BS+ <\"on\"> BS+ (func-call-expr|class-disp|type-disp) NL
+
+     class-disp = <'class'>
+
+     type-disp = <'type'>
 
      val-def = &(\"val\"|\"let\") <\"val\"|\"let\"> BS+ ID BS+ <\"=\"> BS+ pipe-expr NL
 
@@ -45,7 +49,7 @@
 
      <arg> = &isa-type isa-type  | &ID ID  | func-call-expr
 
-     type-def = <'type'> BS+ type-constructor-def (traits-for-type|BS* NL)
+     type-def = type-constructor-def (traits-for-type|BS* NL)
 
      <traits-for-type> = trait-for-type-1 {trait-for-type-n}
 
@@ -61,9 +65,9 @@
 
      <type-constructor-def> = class-constructor-def | record-constructor-def
 
-     class-constructor-def = TID BS* <\"(\"> BS* [class-id-list BS*] <\")\">
+     class-constructor-def = <'class'> BS+ TID BS* <\"(\"> BS* [class-id-list BS*] <\")\">
 
-     record-constructor-def = TID BS* <\"{\"> BS* [record-id-list BS*] <\"}\">\n
+     record-constructor-def = <'record'> BS+ TID BS* <\"{\"> BS* [record-id-list BS*] <\"}\">\n
 
      class-id-list = class-member-id-def BS* {<\",\"> BS+ class-member-id-def}
 
@@ -161,7 +165,6 @@
 
      doto-expr = func-call-expr ([NL] BS+ <\"!>\"> BS+ func-call-expr)+
 
-
      backward-doto-expr = func-call-expr ([NL] BS+ <\"<!\"> BS+ func-call-expr)+\n
 
      dollar-expr = func-call-expr (BS+ <\"$\"> BS+ func-call-expr)+
@@ -171,7 +174,6 @@
      <func-call-expr> = &control-expr control-expr / !control-expr lcons-expr
 
      recur = &'recur' <'recur'> {BS+ arg}
-
 
      <control-expr> =  when-expr / if-expr / cond-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr / using-expr / do-expr / set-var-expr / try-catch-expr
 
@@ -473,7 +475,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|'as '|#'begin[ \r\n]'|'bind '|'catch '|#'cond[ \r\n]'|'def '|'dispatch '|#'do[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|'extend '|'finally '|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|'module '|'new '|'not '|'nil '|'otherwise '|'proxy '|'recur '|'refer '|'reify '|'repeat '|'require '|'set '|'static '|#'then[ \r\n]'|'trait '|'try '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|#'as[ \r\n]'|#'begin[ \r\n]'|#'bind[ \r\n]'|#'class[ \r\n]'|#'cond[ \r\n]'|#'def[ \r\n]'|#'dispatch[ \r\n]'|#'do[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|#'extend[ \r\n]'|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|#'module[ \r\n]'|#'new[ \r\n]'|'not '|#'nil[ \r\n]'|#'otherwise[ \r\n]'|'proxy '|#'record[ \r\n]'|'recur '|'refer '|'repeat '|'require '|'set '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -736,6 +738,8 @@
 
    :dispatch                 (fn [& rest] (cons 'defmulti rest))
    :method-definition        (fn [& rest] (cons 'defmethod rest))
+   :class-disp               (fn [& rest] 'class)
+   :type-disp               (fn [& rest] 'type)
 
    :otherwise                (fn [& rest] [:else (first rest)])
    :where-otherwise          (fn [& rest] [:else (first rest)])

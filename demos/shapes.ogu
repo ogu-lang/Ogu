@@ -15,7 +15,7 @@ trait Origin is
      getX self
      getY self
 
-type Circle (var x,  var y, val radius)
+class Circle (var x,  var y, val radius)
 
   as Shape
 
@@ -38,7 +38,7 @@ type Circle (var x,  var y, val radius)
      def getY self = y
 
 
-type Rectangle( x,  y, width, height)
+class Rectangle( x,  y, width, height)
 
 
 extend Rectangle

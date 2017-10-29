@@ -5,14 +5,14 @@ trait Shape is
     def area self
 
 
-type Circle(x,  y, radius)
+class Circle(x,  y, radius)
 
   as Shape
 
       area self = pi * (radius ^ 2)
 
 
-type Rectangle(x, y, width, height)
+class Rectangle(x, y, width, height)
 
 
 extend Rectangle
@@ -22,7 +22,7 @@ extend Rectangle
      area self = (.width self) * (.height self)
 
 
-type Triangle(b, h)
+class Triangle(b, h)
   as Shape
 
     area self = !self.b * !self.h
