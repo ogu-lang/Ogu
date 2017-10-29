@@ -385,9 +385,18 @@
 
      mod-expr  = mult-expr (BS+ <\"%\">           BS+ mult-expr)+
 
-     <factor-expr> = pow-expr / prim-expr
+     <factor-expr> = pow-expr / re-expr / prim-expr
 
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
+
+     <re-expr> = re-match | re-find | re-seq
+
+     re-match = prim-expr BS+ <\"=~\"> BS+ prim-expr
+
+     re-find = prim-expr BS+ <\"~\"> BS+ prim-expr\n
+
+     re-seq = prim-expr BS+ <\"~~\"> BS+ prim-expr
+
 
      <prim-expr> =  &partial-bin partial-bin / argless-func-call / func-invokation / constructor-call / paren-expr
                  / lazy-value
@@ -689,6 +698,9 @@
    :mod-expr                 (fn [& rest] (cons 'mod rest))
    :neg-expr                 (fn [& rest] (cons '- rest))
 
+   :re-match                 (fn [& rest] (cons 're-matches (reverse rest)))
+   :re-find                  (fn [& rest] (cons 're-find (reverse rest)))
+   :re-seq                   (fn [& rest] (cons 're-seq (reverse rest)))
 
    :pow-expr                 (fn [& rest] (cons 'pow rest))
 

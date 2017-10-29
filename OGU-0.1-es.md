@@ -69,13 +69,15 @@ Ejemplos:
     
 Siempre se debe colocar su valor inicial usando el operador =.
 
-En Ogu-Plunke no hay tipos.
+### Fechas
     
 Las fechas se pueden ingresar usando el símbolo #  seguido de la fecha expresada en un subconjunto del formato ISO8601.
 
     val timestamp = #2016-01-19T20:30:01.245
     val horazulu = #2016-01-19T16:40:01.s45Z
     val horasantiago = #2016-01-19T16:40:01.s45-03:00
+    
+### Números    
     
 Los números se expresan de la manera tradicional, incluyendo notación exponencial.
 
@@ -88,6 +90,25 @@ El sufijo N indica un BigInteger, es decir, un numero entero con cantidad arbitr
 El sufijo M indica un BigDecimal, es decir, un numero de precision indefinida.
 
 
+### Expresiones Regulares
+
+Las expresiones regulares se expresan del siguiente modo
+
+    let patron = #/abc(.*)/#
+    
+Van encerradas por los delimitadores #/ /#
+
+Usan las convenciones definidas en Clojure y Java.
+
+Los siguientes operadores se definen
+
+    "abcxyz" =~ patron  -- hace match con todo el string, retorna ["abcxyz", "xyz"]
+
+    "xyzabcxyz" ~ patron -- hace match con la parte del string, retorna ["abcxyz", "xyz"]
+    
+    "qweqwehkzabcsdada" ~~  #/qwe/# -- retorna todos los matches encontrados, retorna (qwe, qwe)
+
+### Tuplas
 
 En Ogú las tuplas son usadas en varios contextos. 
 
@@ -252,6 +273,7 @@ Un conjunto se designa asi:
 Un conjunto vacio se designa así:
 
     #{}
+
 
 # Funciones
 

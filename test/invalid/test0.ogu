@@ -1,4 +1,4 @@
-;; errores semánticos
+-- errores semánticos
 
 alias ok = M1.M2.ok ; ok
 
