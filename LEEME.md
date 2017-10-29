@@ -1,19 +1,18 @@
-# ogu-lang
+# ogu-lang-compiler
 
 Ogú es un lenguage de programación dinámico.
 
 Esta es la edición Plunke del lenguaje (ver más abajo.)
 
-## Compiar Ogu
+## Compilar Ogú
 
-
-Necesitarás  Java 1.8 y leiningen [https://leiningen.org].
+Necesitarás Java 1.8 y [Leiningen](https://leiningen.org).
 
 Para generar el compilador debes hacer:
 
     $ lein uberjar
-        
-Esto dejará un archivo .jar en el directorio target.
+
+Esto dejará un archivo .jar en el directorio `target`.
 
 # Uso
 
@@ -29,7 +28,7 @@ Dentro del directorio demos hay varios ejemplos de scripts Ogú, por ejemplo, pa
 
     $ java -jar target/ogu-lang-0.1.0-standalone.jar -e demos/snake.ogu
 
-Puedes leer algunas notas sobre la sintáxis de Ogú en el archivo OGU-0.1.md.
+Puedes leer algunas notas sobre la sintáxis de Ogú en el archivo OGU-0.1-es.md.
 
 # Sobre el nombre
 
@@ -47,7 +46,7 @@ Estas son las versiones futuras (esto está sujeto a cambio).
 
 - Ñeclito (0.3)
 
-- Lokán (0.4)
+- Bromisnar (0.4)
 
 - Cucufato (0.5)
 
@@ -55,7 +54,7 @@ Estas son las versiones futuras (esto está sujeto a cambio).
 
 - Alaraco (0.7)
 
-- Tinalín (0.8)
+- Guigá (0.8)
 
 - Agú (0.9)
 

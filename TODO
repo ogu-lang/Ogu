@@ -4,6 +4,7 @@
 
 # todo
 
+- exceptions
 - compile into java class
 - ogu projects
 - lein plugin?
@@ -11,7 +12,6 @@
 - repl
 - type pattern matching
 - variadic trait methods
-- reify
 - types of args
 - ogu core library
 - ogu datetime library

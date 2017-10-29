@@ -139,6 +139,18 @@
 
      <proxy-method-arg> = ID
 
+     reify-expr = <'reify'> BS* as-reification+
+
+     <as-reification> = <'as'> BS+ reify-type NL reify-method-impl+ BS* <\"end\">
+
+     reify-method-impl = BS+ [<\"def\"> BS+] ID reify-method-args def-body [where]
+
+     reify-method-args = {BS+ reify-method-arg}
+
+     <reify-type> = ID | TID
+
+     <reify-method-arg> = ID
+
      <pipe-expr> =  piped-expr / func-call-expr
 
      <piped-expr> = forward-piped-expr  / forward-first-piped-expr / backward-piped-expr / backward-first-piped-expr / doto-expr / backward-doto-expr / dollar-expr / expr-seq
@@ -153,7 +165,6 @@
 
      doto-expr = func-call-expr ([NL] BS+ <\"!>\"> BS+ func-call-expr)+
 
-
      backward-doto-expr = func-call-expr ([NL] BS+ <\"<!\"> BS+ func-call-expr)+\n
 
      dollar-expr = func-call-expr (BS+ <\"$\"> BS+ func-call-expr)+
@@ -164,7 +175,19 @@
 
      recur = &'recur' <'recur'> {BS+ arg}
 
-     <control-expr> =  when-expr / if-expr / cond-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr / using-expr / do-expr / set-var-expr
+     <control-expr> =  when-expr / if-expr / cond-expr / loop-expr  / block-expr / for-expr / while-expr / sync-expr / lambda-expr / using-expr / do-expr / set-var-expr / try-catch-expr
+
+     try-catch-expr = <'try'> (BS+ [NL BS*]|NL BS+) try-exprs catches BS* NL BS* <'end'>
+
+     <try-exprs> = pipe-expr {(BS* <\",\"> BS* [NL BS*] | BS* NL BS+) pipe-expr} &catches
+
+     <catches> = catch+ [finally]
+
+     catch = NL BS* <'catch'> BS+ catch-ex-var  BS+ [NL BS*] <'->'>  (BS+|NL BS+) pipe-expr {(BS* <\",\"> BS* [NL BS*] | BS* NL BS+) pipe-expr}
+
+     catch-ex-var = ID BS* <':'> BS+ TID
+
+     finally = NL BS* <'finally'> (BS+|NL BS+) pipe-expr {(BS* <\",\"> BS* [NL BS*] | BS* NL BS+) pipe-expr}
 
      cond-expr = <\"cond\"> (cond-pair)+[cond-otherwise]
 
@@ -174,7 +197,7 @@
 
      sync-expr = <\"sync\"> (BS+ pipe-expr | BS* NL BS+ pipe-expr) &NL
 
-     <block-expr> =  let-expr / binding-expr /  repeat-expr / begin-end-expr / var-expr / proxy-def
+     <block-expr> =  let-expr / binding-expr /  repeat-expr / begin-end-expr / var-expr / proxy-def / reify-expr
 
      <lcons-expr> =  cons-expr  /  bin-expr
 
@@ -583,8 +606,6 @@
           (cons 'let [(vec [idf val])])
           (list 'letfn [(list idf args val)]))))
 
-(defn ogu-flatten-list-let [& rest] rest)
-
 (defn ogu-flatten-last-while [v]
       (let [end (last v) rest (butlast v) while (:when end)]
            (if (empty? while)
@@ -763,6 +784,11 @@
 
    :nil-value                (fn [] nil)
 
+   :try-catch-expr          (fn [& rest] (cons 'try rest))
+   :catch                   (fn [& rest] (cons 'catch (flatten rest)))
+   :catch-ex-var            (fn [v t] (vec [t v]))
+   :finally                 (fn [& rest] (cons 'finally rest))
+
 
    :tuple                    (fn [& rest] (vec rest))
    :tupled-lambda-arg        (fn [& rest] (vec rest))
@@ -799,6 +825,11 @@
    :at-expr                  ogu-at-expr
    :bang-expr                ogu-bang-expr
    :sync-expr                (fn [& rest] (cons 'dosync rest))
+
+
+   :reify-expr               (fn [& rest] (cons 'reify rest))
+   :reify-method-args        (fn [& rest] (vec rest))
+   :reify-method-impl        (fn [& rest] rest)
 
    :proxy-def                (fn [& rest] (cons 'proxy (apply concat rest)))
    :proxy-method-impl        (fn [& rest] (list rest))
@@ -843,9 +874,6 @@
         :else (if (or (= (first form) 'def) (= (first form) 'defn))
                 {(str "defv-" (second form)) {:form form :pos p}}
                 {(str "expr-" (o/md5 (str (o/uuid)))) {:form form :pos p}})))
-
-;check if a list of
-(defn check-all-args-are-symbol [args] (every? symbol? args))
 
 ; check if a list of forms has a pattern matching like form
 (defn is-pattern-matching? [forms]
@@ -905,10 +933,8 @@
 (defn transform-ast [ast]
       (merge-variadic (insta/transform ast-transformations ast)))
 
-(def preamble "
-  (require '[ogu.core :refer :all] '[clojure.core.match :refer [match]])
-
-  ")
+(def preamble
+  '(require '[ogu.core :refer :all] '[clojure.core.match :refer [match]]) )
 
 (defn evalue-ast [module ast]
       (let [value (transform-ast ast)]

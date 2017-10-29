@@ -193,7 +193,7 @@ Los rangos corresponden a listas donde se definen los inicios y terminos de una 
     [1..100] ; del 1 al 100 inclusive
     [1..<100] ; del 1 al 99
     
-Una forma especial de escribir un rango es defininiendo el paso entre los elementos>
+Una forma especial de escribir un rango es defininiendo el paso entre los elementos
     
     [3, 6..999] ; 3, 6, 9, 12, ... 999
 
@@ -684,7 +684,7 @@ Los records son útiles para modelar entidades del dominio del negocio.
 Las clases son usadas de manera preferente para implementar tipos de datos más estructurales.
 
 Los campos de un record o de una clase se acceden como funciones aplicadas sobre la instancia, 
-llevan el nombre del campo precedido de un punto, por ejemploÑ
+llevan el nombre del campo precedido de un punto, por ejemplo
 
     .company mustang56 ; "Ford"
     
@@ -913,8 +913,99 @@ definiciones estáticas de la JVM.
 Para desambiguar clases o tipos uno puede usar la notación modulo.Tipo
 
 
+## Proxy y Reify
+
+Proxy permite crear una clase anonima, por ejemplo:
+
+
+    def game-panel frame snake apple = proxy JPanel() & ActionListener & KeyListener
+    is
+        def paintComponent g = do ; <label id="code.game-panel.paintComponent"/>
+          proxy-super paintComponent g
+          paint g @snake
+          paint g @apple
+        end
+    
+        def actionPerformed e = do ; <label id="code.game-panel.actionPerformed"/>
+          update-positions snake apple
+          when lose? @snake do begin
+            reset-game snake apple
+            JOptionPane.showMessageDialog frame "You lose!"
+          end
+          when win? @snake do begin
+            reset-game snake apple
+            JOptionPane/showMessageDialog frame "You win!"
+          end
+          .repaint this
+        end
+    
+        def keyPressed e = ; <label id="code.game-panel.keyPressed"/>
+          update-direction snake (dirs (.getKeyCode e))
+    
+        def getPreferredSize = new Dimension ((inc width) * point-size, (inc height) * point-size)
+    
+    
+        def keyReleased e = nothing
+    
+        def keyTyped e = when (.getKeyChar e) == 'q' do System.exit -1
+    
+    end
+    
+    
+En este caso definimos una función (game-panel) que nos devuelve una implementación de la clase
+JPanel de Java y que ademas implementa las interfaces ActionListener y KeyListener.
+
+proxy es una expresión, aunque su sintaxis parezca la de la declaración de una clase.
+Esto es muy útil para trabajar con clases de la JVM.
+
+Reify, por otro lado, es una manera de implementar traits anomimos, también es una expresión, veamos un ejemplo:
+
+
+    type Banana {quantity}
+    type Grape  {quantity}
+    type Orange {quantity}
+
+    trait Fruit is
+          def subtotal item
+
+
+    extend Banana
+        as Fruit
+           def subtotal item = 158 * (.quantity item)
+
+    extend Grape
+        as Fruit
+           def subtotal item = 178 * (.quantity item)
+
+    extend Orange
+        as Fruit
+            def subtotal item = 98 * (.quantity item)
+
+
+    def coupon item = reify as Fruit
+                            def subtotal _ = 0.75 * (subtotal item)
+
+                        end
+
+Acá definimos 3 clases de negocios (Banana, Grape y Orange) y las extendemos para que soporte
+el trait Fruit, que nos permite calcular el costo de cada una, segun la cantidad comprada 
+
+La función coupon, por otro lado, retorna una reification de Fruta en que implementa
+el método subtotal pero aplicado al item recibido como parámetro, esto permite implementar
+algo como lo siguiente:
+
+
+
+    [Orange{10}, Banana{15}, coupon Grape{10}] |> map subtotal |> sum |> println!
      
     
+Acá tenemos una lista de compra, de 10 naranjas, 15 plátanos y 10 racimos de uvas.
+
+Pero hemos aplicado un cupón de descuento a las uvas.
+
+Con esto logramos que el valor de las uvas tengan un 25% de descuento.
+
+
 
     
 

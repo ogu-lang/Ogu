@@ -66,7 +66,8 @@
    {:file "test/misc/test28.ogu" :val "Hola Pedro"}
    {:file "test/misc/test29.ogu" :val 117}
    {:file "test/misc/test30.ogu" :val 90}
-
+   {:file "test/misc/test31.ogu" :val 4685.0}
+   {:file "test/misc/test32.ogu" :val "can't divide by 0"}
    ])
 
 (deftest test-2
