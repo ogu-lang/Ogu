@@ -7,7 +7,7 @@
 
 (def grammar
   (insta/parser
-    "module = [module-header] {import-static} {NL} {definition | dispatch | method-definition | val-def | var-def  | type-def | trait-def | extension | module-expr}
+    "module = [module-header] {import-static} {NL} {definition | dispatch | method-definition | val-def | var-def  | type-def | adt-def | trait-def | extension | module-expr}
 
      module-header = [NL] <'module'> BS+ module-name (NL+ {require|import}| BS*  NL)
 
@@ -67,7 +67,13 @@
 
      class-constructor-def = <'class'> BS+ TID BS* <\"(\"> BS* [class-id-list BS*] <\")\">
 
-     record-constructor-def = <'record'> BS+ TID BS* <\"{\"> BS* [record-id-list BS*] <\"}\">\n
+     record-constructor-def = <'record'> BS+ TID BS* <\"{\"> BS* [record-id-list BS*] <\"}\">
+
+     adt-def = <'data'> BS+ TID BS+ <'='> BS+ adt-types NL
+
+     <adt-types> = adt-type { (BS+|NL BS*) <'|'> BS+ adt-type }
+
+     adt-type = TID  [ BS* <'('> BS* id-list BS* <')'> ]
 
      class-id-list = class-member-id-def BS* {<\",\"> BS+ class-member-id-def}
 
@@ -484,7 +490,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|#'as[ \r\n]'|#'begin[ \r\n]'|#'bind[ \r\n]'|#'class[ \r\n]'|#'cond[ \r\n]'|#'def[ \r\n]'|#'dispatch[ \r\n]'|#'do[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|#'extend[ \r\n]'|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|#'module[ \r\n]'|#'new[ \r\n]'|'not '|#'nil[ \r\n]'|#'otherwise[ \r\n]'|'proxy '|#'record[ \r\n]'|'recur '|'refer '|'repeat '|'require '|'set '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|#'as[ \r\n]'|#'begin[ \r\n]'|#'bind[ \r\n]'|#'class[ \r\n]'|#'cond[ \r\n]'|#'data[ \r\n]'|#'def[ \r\n]'|#'dispatch[ \r\n]'|#'do[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|#'extend[ \r\n]'|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|#'module[ \r\n]'|#'new[ \r\n]'|'not '|#'nil[ \r\n]'|#'otherwise[ \r\n]'|'proxy '|#'record[ \r\n]'|'recur '|'refer '|'repeat '|'require '|'set '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -857,6 +863,11 @@
 
    :class-id-list            (fn [& rest] (vec rest))
    :class-member-id-def      ogu-class-member-id-def
+
+   :adt-def                  (fn [& rest] (cons 'data rest))
+
+   :adt-type                 (fn [& rest] (flatten rest))
+
    :type-def                 ogu-type-def
 
    :trait-method-impl        (fn [& rest] rest)
