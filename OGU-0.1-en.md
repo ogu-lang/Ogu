@@ -18,9 +18,9 @@ The following is a description of what can be done with the subset of Ogú imple
 
 # Comments
 
-In Ogú comments start with a `;` (semicolon) and end with the end of the line.
+In Ogú comments start with a `--` and end with the end of the line.
 
-    ; this is a comment
+    -- this is a comment
 
 # Whitespace
 
@@ -99,7 +99,7 @@ For instance, there are functions that return tuples.
 
 In this case, if you want to capture the values returned in the tuple separately the following notation must be used:
 
-    let (p, q) = frac(0.4) ; x = 4, y = 10
+    let (p, q) = frac(0.4) -- x = 4, y = 10
 
 (Here we assume `frac(x)` returns a real number as a fraction)
 
@@ -115,12 +115,12 @@ Lists and vectors, or sequences in general, are written between brackets:
     
 Ranges are lists where both ends are defined:
 
-    [1..100] ; 1 to 100, both inclusive
-    [1..<100] ; 1 to 99
+    [1..100] -- 1 to 100, both inclusive
+    [1..<100] -- 1 to 99
     
 A special way to write a range is to define the step between the elements:
     
-    [3, 6..999] ; 3, 6, 9, 12, ... 999
+    [3, 6..999] -- 3, 6, 9, 12, ... 999
 
 Ranges can be infinite:
     
@@ -134,7 +134,7 @@ If you have a vector, you can access the i-th element like this:
 
     let v = [100, 200, 300]
     
-    (v 1) ; 200
+    (v 1) -- 200
     
 # Maps
     
@@ -204,9 +204,9 @@ How does the Ogú Plunke compiler interpret it?
 In the first case, the result is 7. In the second case, it's also 7.
 In the third case is 9, as you can expect.
 
-    max 4 5 + 2 ; (max 4 5) + 2 
-    2 + max 4 5 ; (2 + (max 4 5))
-    max 4 + 5 2 ; (max (4 + 5) 2)
+    max 4 5 + 2 -- (max 4 5) + 2 
+    2 + max 4 5 -- (2 + (max 4 5))
+    max 4 + 5 2 -- (max (4 + 5) 2)
     
 The `-p` compiler flag allows you to see the AST (Abstract Syntax Tree) that corresponds to S-Expressions in Clojure, which you can use for debugging.
 
@@ -241,8 +241,8 @@ which defines a partial function which returns 5 or a number greater than 5.
 
 With the function above, we'd have the following:
 
-    from5 3 ; returns 5
-    from5 8 ; returns 8
+    from5 3 -- returns 5
+    from5 8 -- returns 8
 
 ## Partial application
 
@@ -281,7 +281,7 @@ The problem is that `double'` is a function without arguments, and these functio
      
 To make this work, we'd need to have the following:
 
-    (double') 10 ; this won't work
+    (double') 10 -- this won't work
     
 And it still wouldn't work.
 
@@ -293,7 +293,7 @@ It's because in Ogú functions are first class, which means, functions can be pa
 
     def my-apply f x = f x
     
-    my-apply upper "hola" ; "HOLA"
+    my-apply upper "hola" -- "HOLA"
 
     
 ## Function declaration
@@ -328,18 +328,18 @@ Using tuples allows to do interesting things, like:
 
     def sum-vectors (a, b) (c, d) = (a + c, b + d)
     
-    sum-vectors (10, 10) (20, 20) ; returns (30,30)
+    sum-vectors (10, 10) (20, 20) -- returns (30,30)
 
 
 Of course, the usual is to declare functions in this way:
 
-    def sum a b = a + b ; remember spaces are significant
+    def sum a b = a + b -- remember spaces are significant
     
 Then the `sum` function could be inkoked:
 
     sum 10 20
     
-    sum 1.0 2.0 ; error
+    sum 1.0 2.0 -- error
     
 ## Functions Pattern Matching
 
@@ -565,7 +565,7 @@ There are two differences with Clojure's `loop`:
         if i == 10 then exit
         else repeat i' = inc i, exit = i' * 2
         
-    ; returns 20, if we didn't use `i'` the result would be 18
+    -- returns 20, if we didn't use `i'` the result would be 18
         
         
 # Types
@@ -597,7 +597,7 @@ Classes are best used to implement more structured datatypes.
 The fields of a record or a class are accessed as functions applied on the instance,
 and they have the name of the field with a `.` prefix, like:
 
-    .company mustang56 ; "Ford"
+    .company mustang56 -- "Ford"
     
 There's a special notation to access to a field:
 
@@ -773,11 +773,11 @@ Example:
    
     def greeting otherwise ?  _ = println "?????"
    
-    greeting {"name" "Michelle", "language" "French"} ; Bonjour Michell
+    greeting {"name" "Michelle", "language" "French"} -- Bonjour Michell
    
-    greeting {"name" "Pedro", "language" "Spanish"} ; Hola Pedro
+    greeting {"name" "Pedro", "language" "Spanish"} -- Hola Pedro
    
-    greeting {"name" "Hans", "language" "German"} ; ?????
+    greeting {"name" "Hans", "language" "German"} -- ?????
 
 
 Here each method is invoked depending on the result of the lamba expression.

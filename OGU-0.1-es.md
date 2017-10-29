@@ -17,9 +17,9 @@ A continuación una descripción de lo que se puede hacer con el subconjunto de 
 
 # Comentarios
 
-En Ogú los comentarios empiezan con ';'  (punto y coma) y terminan con el fin de linea
+En Ogú los comentarios empiezan con '--' y terminan con el fin de linea
 
-    ; este es un comentario
+    -- este es un comentario
 
 # Espacios en blanco
 
@@ -95,7 +95,7 @@ Por ejemplo, hay funciones que retornan tuplas.
 
 En ese caso si se quiere rescatar los valores de retorno de la tupla en forma separada se debe usar la siguiente notación:
 
-    let (p, q) = frac(0.4) ; x = 4, y = 10
+    let (p, q) = frac(0.4) -- x = 4, y = 10
 
 (Acá suponemos que frac(x) retorna un número real como una fracción)
 
@@ -152,11 +152,11 @@ Para modificar el valor de x usamos la sentencia **set**
     
 Podemos modificar temporalmente el valor de una variable global para ser usado en una expresión usando bind
 
-    ; x = 20 por la sentencia anterior
-    bind x = 30 in x * 10 ; 300
+    -- x = 20 por la sentencia anterior
+    bind x = 30 in x * 10 -- 300
     
     
-    ; acá x vuelve a valer 20
+    -- acá x vuelve a valer 20
     
 El uso de variables mutables globales no se considera una buena práctica en ogú.
     
@@ -174,9 +174,9 @@ Sin embargo **bind** permite implementar ciertas características de aspect orie
         log x
     
     
-    p 10 ; -> "log : 10"
+    p 10 -- -> "log : 10"
     
-    q 10 ; ->
+    q 10 -- ->
     
     
 
@@ -190,12 +190,12 @@ Las listas y vectores, o secuencias en general, se escriben entre corchetes:
     
 Los rangos corresponden a listas donde se definen los inicios y terminos de una secuencia de números
 
-    [1..100] ; del 1 al 100 inclusive
-    [1..<100] ; del 1 al 99
+    [1..100] -- del 1 al 100 inclusive
+    [1..<100] -- del 1 al 99
     
 Una forma especial de escribir un rango es defininiendo el paso entre los elementos
     
-    [3, 6..999] ; 3, 6, 9, 12, ... 999
+    [3, 6..999] -- 3, 6, 9, 12, ... 999
 
 Los rangos pueden ser infinitos:
     
@@ -209,7 +209,7 @@ Si tienes un vector puedes acceder al elemento i-esimo del siguiente modo:
 
     let v = [100, 200, 300]
     
-    (v 1) ; 200
+    (v 1) -- 200
     
 # Mapas
     
@@ -280,9 +280,9 @@ Consideremos los siguientes casos
 En el primer caso el resultado es 7. En el segundo caso también es 7. 
 En el tercer caso es 9, tal como se puede esperar.
 
-    max 4 5 + 2 ; (max 4 5) + 2 
-    2 + max 4 5 ; (2 + (max 4 5))
-    max 4 + 5 2 ; (max (4 + 5) 2)
+    max 4 5 + 2 -- (max 4 5) + 2 
+    2 + max 4 5 -- (2 + (max 4 5))
+    max 4 + 5 2 -- (max (4 + 5) 2)
     
     
 La opcion -p del compilador permite ver el AST (Abstract Syntax Tree) que corresponde a S-Expressions en Clojure, con lo que puedes depurar si tienes dudas.
@@ -319,8 +319,8 @@ define una función parcial que retorna 5 o cualquier número mayor que 5.
 
 Con lo anterior tendremos lo siguiente:
 
-    from5 3 ; retorna 5
-    from5 8 ; retorna 8
+    from5 3 -- retorna 5
+    from5 8 -- retorna 8
 
 ## Aplicaciones parciales
 
@@ -361,7 +361,7 @@ El problema es que doblar' es una función sin argumentos, las funciones sin arg
      
 Por lo que te tendriamos que hacer
 
-    (doblar) 10 ; esto no funciona
+    (doblar) 10 -- esto no funciona
     
     
 Y aun asi no funcionaria.
@@ -374,7 +374,7 @@ Porque en Ogú las clases son objetos de primera clase, es decir, las funciones 
 
     def my-apply f x = f x
     
-    my-apply upper "hola" ; "HOLA"
+    my-apply upper "hola" -- "HOLA"
     
 ## Declaración de funciones
 
@@ -407,17 +407,17 @@ El uso de tuplas  permite hacer cosas interesantes como lo siguiente:
 
     def sumar-vectores (a, b) (c, d) = (a + c, b + d)
     
-    sumar-ivectores (10, 10) (20, 20) ; produce (30,30)
+    sumar-ivectores (10, 10) (20, 20) -- produce (30,30)
 
 Por supuesto lo habitual es declarar las funciones de este modo:
 
-    def sumar a b = a + b ; recordar los espacios
+    def sumar a b = a + b -- recordar los espacios
     
 Con esto la función sumar se puede invocar:
 
     sumar 10 20
     
-    sumar 1.0 2.0 ; error
+    sumar 1.0 2.0 -- error
     
 
 ## Pattern Matching de Funciones
@@ -653,7 +653,7 @@ Hay dos diferencias con el loop de Clojure:
         if i == 10 then salida
         else repeat i' = inc i, salida = i' * 2
         
-    ; salida es 20, si no usaramos i' el resultado seria 18
+    -- salida es 20, si no usaramos i' el resultado seria 18
         
         
 # Types
@@ -686,7 +686,7 @@ Las clases son usadas de manera preferente para implementar tipos de datos más 
 Los campos de un record o de una clase se acceden como funciones aplicadas sobre la instancia, 
 llevan el nombre del campo precedido de un punto, por ejemplo
 
-    .company mustang56 ; "Ford"
+    .company mustang56 -- "Ford"
     
 Hay una notación especial para acceder a un campo:
 
@@ -862,11 +862,11 @@ Por ejemplo,
    
     def greeting otherwise ?  _ = println "?????"
    
-    greeting  {"name" "Michelle", "language" "French"} ; Bonjour Michell
+    greeting  {"name" "Michelle", "language" "French"} -- Bonjour Michell
    
-    greeting  {"name" "Pedro", "language" "Spanish"} ; Hola Pedro
+    greeting  {"name" "Pedro", "language" "Spanish"} -- Hola Pedro
    
-    greeting {"name" "Hans", "language" "German"} ; ?????
+    greeting {"name" "Hans", "language" "German"} -- ?????
 
 
 Acá cada método se invoca dependiendo del resultado de la expresión lambda.
@@ -920,13 +920,13 @@ Proxy permite crear una clase anonima, por ejemplo:
 
     def game-panel frame snake apple = proxy JPanel() & ActionListener & KeyListener
     is
-        def paintComponent g = do ; <label id="code.game-panel.paintComponent"/>
+        def paintComponent g = do -- <label id="code.game-panel.paintComponent"/>
           proxy-super paintComponent g
           paint g @snake
           paint g @apple
         end
     
-        def actionPerformed e = do ; <label id="code.game-panel.actionPerformed"/>
+        def actionPerformed e = do -- <label id="code.game-panel.actionPerformed"/>
           update-positions snake apple
           when lose? @snake do begin
             reset-game snake apple
@@ -939,7 +939,7 @@ Proxy permite crear una clase anonima, por ejemplo:
           .repaint this
         end
     
-        def keyPressed e = ; <label id="code.game-panel.keyPressed"/>
+        def keyPressed e = -- <label id="code.game-panel.keyPressed"/>
           update-direction snake (dirs (.getKeyCode e))
     
         def getPreferredSize = new Dimension ((inc width) * point-size, (inc height) * point-size)
@@ -961,9 +961,9 @@ Esto es muy útil para trabajar con clases de la JVM.
 Reify, por otro lado, es una manera de implementar traits anomimos, también es una expresión, veamos un ejemplo:
 
 
-    type Banana {quantity}
-    type Grape  {quantity}
-    type Orange {quantity}
+    record Banana {quantity}
+    record Grape  {quantity}
+    record Orange {quantity}
 
     trait Fruit is
           def subtotal item
