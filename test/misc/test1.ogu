@@ -1,4 +1,4 @@
-; test 1
+-- test 1
 val a = 10
 
 println "a es = " a

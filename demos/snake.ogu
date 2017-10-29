@@ -1,6 +1,6 @@
-; translation to Ogu of Clojure sample of the book Programming Clojure 2nd Edition
-; by “Stuart Halloway, Aaron Bedra”
-; chapter 5
+-- translation to Ogu of Clojure sample of the book Programming Clojure 2nd Edition
+-- by “Stuart Halloway, Aaron Bedra”
+-- chapter 5
 module snake
   import java.awt Color Dimension,
          javax.swing JPanel JFrame Timer JOptionPane,
@@ -8,11 +8,11 @@ module snake
 
 import static java.awt.event.KeyEvent (VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN)
 
-; ----------------------------------------------------------
-; functional model
-; ----------------------------------------------------------
+-- ----------------------------------------------------------
+-- functional model
+-- ----------------------------------------------------------
 
-; START: constants
+-- START: constants
 let width = 75
 let height = 50
 let point-size = 10
@@ -20,46 +20,46 @@ let turn-millis = 75
 let win-length = 5
 let dirs = {VK_LEFT [-1,  0], VK_RIGHT [1,  0], VK_UP [0, -1], VK_DOWN [0,  1]}
 
-; START: board math
+-- START: board math
 def add-points & pts = pts |>  apply map (+) |> vec
 
 def point-to-screen-rect pt = [(pt 0), (pt 1), 1, 1] |> map \x -> (x * point-size)
-; END: board math
+-- END: board math
 
-; START: objects of game
+-- START: objects of game
 def create-apple = {:location [rand-int width, rand-int height], :color new Color(210, 50, 90), :type :apple}
 
 def create-snake = {:body (list [1, 1]), :dir [1, 0], :type :snake, :color new Color(15, 160, 70)}
-; END: objects
+-- END: objects
 
-; START: move
+-- START: move
 def move {:keys [body, dir] :as snake} & grow =
-  assoc snake :body ((add-points (head body) dir) :: (if grow then body else (butlast body)))
-; END: move
+  assoc snake ` :body ` ((add-points (head body) dir) :: (if grow then body else (butlast body)))
+-- END: move
 
-; START: turn
-def turn snake newdir = assoc snake ~ :dir ~ newdir ; without this compiler interpretes assoc snake (:dir newdir)
-; END: turn
+-- START: turn
+def turn snake newdir = assoc snake ` :dir ` newdir -- without this compiler interpretes assoc snake (:dir newdir)
+-- END: turn
 
-; START: win?
+-- START: win?
 def win? {body :body} = count body >= win-length
-; END: win?
+-- END: win?
 
-; START: lose?
+-- START: lose?
 def head-overlaps-body? {[head & body] :body} = member? head body
 
 def lose? x = head-overlaps-body? x
-; END: lose?
+-- END: lose?
 
-; START: eats?
+-- START: eats?
 def eats? {[snake-head] :body} {apple :location} = snake-head == apple
-; END: eats?
+-- END: eats?
 
 
-; ----------------------------------------------------------
-; mutable model
-; ----------------------------------------------------------
-; START: update-positions
+-- ----------------------------------------------------------
+-- mutable model
+-- ----------------------------------------------------------
+-- START: update-positions
 def update-positions snake apple =
     sync
       if eats? @snake @apple then
@@ -71,15 +71,15 @@ def update-positions snake apple =
          alter snake move
     nil
 
-; END: update-positions
+-- END: update-positions
 
-; START: update-direction
+-- START: update-direction
 def update-direction snake newdir =
   when newdir do
     sync (alter snake turn newdir)
-; END: update-direction
+-- END: update-direction
 
-; START: reset-game
+-- START: reset-game
 def reset-game snake apple = do
   sync
   begin
@@ -88,38 +88,38 @@ def reset-game snake apple = do
   end
   nil
 end
-; END: reset-game
+-- END: reset-game
 
-; ----------------------------------------------------------
-; gui
-; ----------------------------------------------------------
-; START: fill-point
+-- ----------------------------------------------------------
+-- gui
+-- ----------------------------------------------------------
+-- START: fill-point
 def fill-point g pt color =
   let (x, y, width, height) = (point-to-screen-rect pt)
   in begin
     (.setColor g color)
     (.fillRect g x y width height)
   end
-; END: fill-point
+-- END: fill-point
 
-; START: paint
+-- START: paint
 dispatch paint on \g object & _ -> :type object
 
 def paint :apple ? g {:keys [location, color]}  = fill-point g location color
 
 def paint :snake ? g {:keys [body, color]}      = for point <- body do (fill-point g  point color)
-; END: paint
+-- END: paint
 
-; START: game-panel
+-- START: game-panel
 def game-panel frame snake apple = proxy JPanel() & ActionListener & KeyListener
 is
-    def paintComponent g = do ; <label id="code.game-panel.paintComponent"/>
+    def paintComponent g = do -- <label id="code.game-panel.paintComponent"/>
       proxy-super paintComponent g
       paint g @snake
       paint g @apple
     end
 
-    def actionPerformed e = do ; <label id="code.game-panel.actionPerformed"/>
+    def actionPerformed e = do -- <label id="code.game-panel.actionPerformed"/>
       update-positions snake apple
       when lose? @snake do begin
 	    reset-game snake apple
@@ -132,7 +132,7 @@ is
       .repaint this
     end
 
-    def keyPressed e = ; <label id="code.game-panel.keyPressed"/>
+    def keyPressed e = -- <label id="code.game-panel.keyPressed"/>
       update-direction snake (dirs (.getKeyCode e))
 
     def getPreferredSize = new Dimension ((inc width) * point-size, (inc height) * point-size)
@@ -144,9 +144,9 @@ is
 
 end
 
-; END: game-panel
+-- END: game-panel
 
-; START: game
+-- START: game
 def game =
   let snake = ref (create-snake)
 	  apple = ref (create-apple)
@@ -157,8 +157,8 @@ def game =
      panel !> .setFocusable true !> .addKeyListener panel
      frame !> .add panel !> .pack !> .setVisible true
      .start timer
-     [snake, apple, timer] ; <label id="code.game.return"/>
+     [snake, apple, timer] -- <label id="code.game.return"/>
   end
-; END: game
+-- END: game
 
 (game)
