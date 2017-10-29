@@ -8,7 +8,7 @@ def greeting "Spanish" ? person = str "Hola " (person "name")
 
 def greeting otherwise ?  _ = str "?????"
 
-greeting  {"name" "Michelle", "language" "French"} ; Bonjour Michell
+greeting  {"name" "Michelle", "language" "French"} -- Bonjour Michell
 
-greeting  {"name" "Pedro", "language" "Spanish"} ; Hola Pedro
+greeting  {"name" "Pedro", "language" "Spanish"} -- Hola Pedro
 

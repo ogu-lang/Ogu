@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [0.1.3] - 2017-10-29
+
+### Added
+
+- regular expressions
+- operators over regular expression
+- Algebraics data types
+
+### Changed
+
+- Coments now begin with --, like haskell
+- glue operator now is ` or ´ 
+
 ## [0.1.2] - 2017-10-29
 
 ### Added

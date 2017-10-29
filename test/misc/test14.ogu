@@ -1,6 +1,6 @@
 
 
-val data = [{:problem "euler1", :value 233168},
+val d = [{:problem "euler1", :value 233168},
             {:problem "euler2", :value 4613732},
               {:problem "euler3", :value 6857},
               {:problem "euler4", :value 906609},
@@ -11,5 +11,5 @@ val data = [{:problem "euler1", :value 233168},
               {:problem "euler9", :value 31875000},
               {:problem "euler10", :value 142913828922}]
 
-data |> map :value |> sum
+d |> map :value |> sum
 

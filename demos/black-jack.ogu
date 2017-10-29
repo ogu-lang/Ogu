@@ -19,7 +19,7 @@ def solicitar-jugada! jugada =
         if elem opcion opciones
         then opcion
         else begin
-            println! "opción incorrecta";
+            println! "opción incorrecta"
             repeat opcion = solicitar-opcion mensaje
         end
     where
@@ -55,8 +55,8 @@ def jugar-mano! baraja-revuelta apuesta pozo = do
         jugada = 'I'
     in if (valor-mano? @mano-jugador) == 21 then
        begin
-            mostrar-manos! @mano-jugador @mano-croupier;
-            println! "\nJugador tiene black jack!";
+            mostrar-manos! @mano-jugador @mano-croupier
+            println! "\nJugador tiene black jack!"
             (3 * apuesta) / 2
         end
         else
@@ -115,7 +115,7 @@ def solicitar-apuesta pozo apuesta-minima =
              then repeat v = ask m
              else v
 
-; Programa principal
+-- Programa principal
 
 println! "Bienvenido al juego de black jack"
 
@@ -128,6 +128,6 @@ loop pozo = 500, apuesta = solicitar-apuesta pozo apuesta-minima in
         let
            resultado = jugar-mano! (barajar) apuesta pozo
         in do
-            mostrar-resultado! resultado (pozo + resultado);
+            mostrar-resultado! resultado (pozo + resultado)
             repeat pozo' = pozo + resultado, apuesta = solicitar-apuesta pozo' apuesta-minima
         end
