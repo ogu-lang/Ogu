@@ -574,13 +574,13 @@ There are two types in Ogú, classes and records.
 
 A class is defined with:
 
-    type Circle(x, y, radius)
+    class Circle(x, y, radius)
     
-    type Rectangle(x,  y, width, height)
+    class Rectangle(x,  y, width, height)
 
 A record is defined with:
 
-    type Car {company, model, year}
+    record Car {company, model, year}
 
 The difference is on the keys. A class can have mutable fields too, as we'll see later.
 
@@ -622,11 +622,11 @@ Traits define lists of functions which are supported by the trait.
 A class or a record may implement a trait
 
 
-    type Circle (x, y, radius)
+    class Circle (x, y, radius)
          as Shape
          def area self = pi * (radius ^ 2)
 
-    type Car {company, model, year}
+    record Car {company, model, year}
       as Vehicle
          def move this = println! "moving car " company model year
          
@@ -635,13 +635,13 @@ like in the case of the `move` method.
 It is mandatory to have a parameter corresponding to the instance.
 We could have rewritten the `Circle` type like the following:
 
-    type Circle (x, y, radius)
+    class Circle (x, y, radius)
          as Shape
          def area self = pi * (!self.radius ^ 2)
          
 As the argument which represents the instance of the object, it can be ignored and we can write the `area` method like:
          
-    type Circle (x, y, radius)
+    class Circle (x, y, radius)
          as Shape
          def area _ = pi * (radius ^ 2)  
          
@@ -679,7 +679,7 @@ Let's see an example:
     
          def move! self x y
          
-    type Circle (var x,  var y, val radius)
+    class Circle (var x,  var y, val radius)
 
        as Shape
 
@@ -724,7 +724,7 @@ This forces us to define a protocol to access their values, so we must do the fo
         def getX self
         def getY self
 
-    type Circle (var x,  var y, val radius)
+    class Circle (var x,  var y, val radius)
 
         as Shape
 
