@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [0.1.3] - 2017-10-29
+
 ### Added
 
 - regular expressions
