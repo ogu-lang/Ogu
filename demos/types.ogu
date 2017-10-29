@@ -17,7 +17,7 @@ record Ship {name}
     as Vehicle
 
     def move this
-        | name == "Titanic" = println! name ~ "sink"
+        | name == "Titanic" = println! $ name "sink"
         | otherwise = println! "sail"
 
 let mustang56 = Car {company = "Ford", model = "Mustang", year = 1956}
