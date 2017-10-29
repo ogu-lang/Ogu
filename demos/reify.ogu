@@ -1,8 +1,8 @@
 
 
-type Banana {quantity}
-type Grape  {quantity}
-type Orange {quantity}
+record Banana {quantity}
+record Grape  {quantity}
+record Orange {quantity}
 
 trait Fruit is
 

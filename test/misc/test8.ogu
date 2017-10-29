@@ -1,4 +1,4 @@
-; test 8 , guards
+-- test 8 , guards
 
 def factorial n
     | n == 0 = 1

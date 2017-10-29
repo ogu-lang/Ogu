@@ -1,5 +1,4 @@
 
-
 trait Shape is
 
     def area self

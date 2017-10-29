@@ -1,11 +1,11 @@
-; test 6
+-- test 6
 
-; seudo currying
+-- seudo currying
 
 def multiplicar x y = x * y
 
 
-let doblar = partial multiplicar 2
+let doblar = curry multiplicar 2
 
 println! $ multiplicar 2 4
 

@@ -339,7 +339,7 @@
 
      tupled-lambda-arg = <\"(\"> BS* lambda-arg BS* {<\",\"> BS+ lambda-arg} BS* <\")\">
 
-     <lambda-value> = &func-call-expr func-call-expr  &(NL | BS+ NL | '|>' | BS+ '|>' | '<|' | BS+ '<|' | '!>' | BS+ '!>' | '>|' | BS+ '>|' | ')' | BS+ ')' | '~' | BS+ '~' | 'in' | BS+ 'in')
+     <lambda-value> = &func-call-expr func-call-expr  &(NL | BS+ NL | '|>' | BS+ '|>' | '<|' | BS+ '<|' | '!>' | BS+ '!>' | '>|' | BS+ '>|' | ')' | BS+ ')' | GLUE  | 'in' | BS+ 'in')
 
      <bin-expr> =  logical-expr
 
@@ -385,15 +385,24 @@
 
      mod-expr  = mult-expr (BS+ <\"%\">           BS+ mult-expr)+
 
-     <factor-expr> = pow-expr / prim-expr
+     <factor-expr> = pow-expr / re-expr / prim-expr
 
      pow-expr = prim-expr BS+ <\"^\"> BS+ factor-expr
+
+     <re-expr> = re-match | re-find | re-seq
+
+     re-match = prim-expr BS+ <\"=~\"> BS+ prim-expr
+
+     re-find = prim-expr BS+ <\"~\"> BS+ prim-expr\n
+
+     re-seq = prim-expr BS+ <\"~~\"> BS+ prim-expr
+
 
      <prim-expr> =  &partial-bin partial-bin / argless-func-call / func-invokation / constructor-call / paren-expr
                  / lazy-value
                  / record-constructor-call / !partial-sub neg-expr / not-expr
                  / range-expr / map-expr / set-expr / at-expr / bang-expr
-                 / NUMBER / FSTRING / STRING / CHAR / INSTANT
+                 / NUMBER / FSTRING / STRING / CHAR / INSTANT / REGEXP
 
      neg-expr = !(NUMBER) \"-\"  prim-expr
 
@@ -408,7 +417,7 @@
 
      func-invokation = recur  / nil-value
               / func (BS+ arg)+
-              / func BS+ arg {BS+ <\"~\"> BS+ arg}
+              / func BS+ arg {BS+ <GLUE> BS+ arg}
               / func
 
      nil-value = <\"nil\">
@@ -485,9 +494,13 @@
 
      INSTANT = #'#([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])([Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\\.[0-9]+)?)?(([Zz])|([\\+|\\-]([01][0-9]|2[0-3]):[0-5][0-9]))?'
 
+     GLUE = ('´'|'`')
+
      STRING = #'\"[^\"]*\"'
 
      FSTRING = #'#\"[^\"]*\"'
+
+     REGEXP = #'#/.*/#'
 
      NUMBER = #'[-]?[0-9]+([.][0-9]+)?([eE](-)?[0-9]+)?[NM]?'
 
@@ -495,7 +508,7 @@
 
      <NL> = (COMMENT / HARD-NL)+
 
-     <COMMENT> = <#';[^\\r\\n]*[\\n\\r]+'>
+     <COMMENT> = <#'--[^\\r\\n]*[\\n\\r]+'>
 
      <HARD-NL> = <#'[\\n\\r]+'>
      "))
@@ -667,6 +680,7 @@
    :CHAR                     ogu-to-char
    :ID                       clojure.edn/read-string
    :TID                      clojure.edn/read-string
+   :REGEXP                   (fn [s] (list 're-pattern (apply str (subs s 2 (- (.length s) 2))) ))
    :partial-add              (fn [& rest] (if (empty? rest) '+ (cons '+ rest)))
    :partial-sub              (fn [& rest] (if (empty? rest) '- (cons '- rest)))
    :partial-mul              (fn [& rest] (if (empty? rest) '* (cons '* rest)))
@@ -684,6 +698,9 @@
    :mod-expr                 (fn [& rest] (cons 'mod rest))
    :neg-expr                 (fn [& rest] (cons '- rest))
 
+   :re-match                 (fn [& rest] (cons 're-matches (reverse rest)))
+   :re-find                  (fn [& rest] (cons 're-find (reverse rest)))
+   :re-seq                   (fn [& rest] (cons 're-seq (reverse rest)))
 
    :pow-expr                 (fn [& rest] (cons 'pow rest))
 
