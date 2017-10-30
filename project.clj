@@ -1,4 +1,4 @@
-(defproject ogu-lang "0.1.2"
+(defproject ogu-lang "0.1.2-PLUNKE"
   :description "Ogu Language Bootstrap Compiler"
   :main ^:skip-aot ogu-lang.core
   :profiles {:uberjar {:aot :all}}
