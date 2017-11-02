@@ -4,7 +4,7 @@
               [ogu-lang.parser :refer [parse-module]]
               [ogu.core :refer [**args** banner]]))
 
-(def VERSION "Ogu compiler version 0.1.0 (Plunke)")
+(def VERSION "Ogu compiler version 0.1.4 (Plunke)")
 
 (def cli-options
   [["-t" "--tree" "Show Visual representation of AST"]
