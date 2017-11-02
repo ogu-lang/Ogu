@@ -29,7 +29,7 @@
   (right turtle (- degrees)))
 
 (def to-awt-type {:bold Font/BOLD :plain Font/PLAIN})
-(defn set-font [turtle name type size]
+(defn set-font [turtle  size type]
   (let [font (Font. name (to-awt-type type) size)]
     (dosync (alter turtle merge {:font font}))))
 

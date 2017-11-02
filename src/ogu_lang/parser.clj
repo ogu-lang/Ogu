@@ -163,17 +163,17 @@
 
      <piped-expr> = forward-piped-expr  / forward-first-piped-expr / backward-piped-expr / backward-first-piped-expr / doto-expr / backward-doto-expr / dollar-expr / expr-seq
 
-     forward-piped-expr = func-call-expr ([NL] BS+ <\"|>\"> BS+ func-call-expr)+
+     forward-piped-expr = func-call-expr ([BS* NL] BS+ <\"|>\"> BS+ func-call-expr)+
 
-     forward-first-piped-expr = func-call-expr ([NL] BS+ <\">|\"> BS+ func-call-expr)+
+     forward-first-piped-expr = func-call-expr ([BS* NL] BS+ <\">|\"> BS+ func-call-expr)+
 
-     backward-piped-expr = func-call-expr ([NL] BS+ <\"<|\"> BS+ func-call-expr)+
+     backward-piped-expr = func-call-expr ([BS* NL] BS+ <\"<|\"> BS+ func-call-expr)+
 
      backward-first-piped-expr = func-call-expr ([NL] BS+ <\"|<\"> BS+ func-call-expr)+
 
-     doto-expr = func-call-expr ([NL] BS+ <\"!>\"> BS+ func-call-expr)+
+     doto-expr = func-call-expr ([BS* NL] BS+ <\"!>\"> BS+ func-call-expr)+
 
-     backward-doto-expr = func-call-expr ([NL] BS+ <\"<!\"> BS+ func-call-expr)+\n
+     backward-doto-expr = func-call-expr  ([BS* NL] BS+ <\"<!\"> BS+ func-call-expr)+
 
      dollar-expr = func-call-expr (BS+ <\"$\"> BS+ func-call-expr)+
 
@@ -589,6 +589,14 @@
       ([min id args ret body where]
         (ogu-priv-definition id args body where)))
 
+(defn ogu-method
+  ([id discriminator args body]
+    (cons 'defmethod [id discriminator args body] ))
+  ([id discriminator args body where]
+   (if (and (vector? where ) (= :where (first where)))
+     (let [equations (rest where)]
+         (cons 'defmethod [id discriminator args (ogu-body body equations)]))
+     (cons 'defmethod [id discriminator args body]))))
 
 (defn ogu-guards [& guards] (cons 'cond (apply concat guards)))
 
@@ -762,7 +770,7 @@
    :field-assign             ogu-field-assign
 
    :dispatch                 (fn [& rest] (cons 'defmulti rest))
-   :method-definition        (fn [& rest] (cons 'defmethod rest))
+   :method-definition        ogu-method
    :class-disp               (fn [& rest] 'class)
    :type-disp               (fn [& rest] 'type)
 
