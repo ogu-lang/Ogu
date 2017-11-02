@@ -4,6 +4,10 @@
 
 (def ^:dynamic **args** [])
 
+; big banner ascii art
+(defn banner [msg]
+  (com.github.lalyos.jfiglet.FigletFont/convertOneLine msg))
+
 (def println! println)
 
 (def readln! read-line)
@@ -166,15 +170,15 @@
           first-class fns."
           [class & fields-and-methods]
           (let [only (set (map str fields-and-methods))
-                the-class (. Class forName (str class))
+                the-class (Class/forName (str class))
                 static? (fn [x]
-                            (. java.lang.reflect.Modifier
-                               (isStatic (. x (getModifiers)))))
+                            (java.lang.reflect.Modifier/isStatic
+                                (.getModifiers x)))
                 statics (fn [array]
                             (set (map (memfn getName)
                                       (filter static? array))))
-                all-fields (statics (. the-class (getFields)))
-                all-methods (statics (. the-class (getMethods)))
+                all-fields (statics (.getFields the-class))
+                all-methods (statics (.gerMethods the-class))
                 fields-to-do (s/intersection all-fields only)
                 methods-to-do (s/intersection all-methods only)
                 make-sym (fn [string]
@@ -228,7 +232,7 @@
 (defmacro fmt
           "Limited string interpolation, just ${var}"
           [& strings]
-          `(str ~@(interpolate (apply str strings))))
+          `(str ~@(interpolate (clojure.string/join strings))))
 
 (defn func-fmt [s]
       (println "func-fmt " s)

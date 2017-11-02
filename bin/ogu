@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+# Ogu compiler and interpreter
+# Plunke Edition
+
+export OGU_HOME="${OGU_HOME:-"$HOME/.ogu"}"
+
+export OGU_VERSION="0.1.4-PLUNKE"
+
+OGU_JAR="${OGU_HOME}/installs/ogu-lang-$OGU_VERSION-standalone.jar"
+
+# normalize $0 on certain BSDs
+if [ "$(dirname "$0")" = "." ]; then
+    SCRIPT="$(which "$(basename "$0")")"
+    if [ -z "$SCRIPT" ]; then
+        SCRIPT="$0"
+    fi
+else
+    SCRIPT="$0"
+fi
+
+# resolve symlinks to the script itself portably
+while [ -h "$SCRIPT" ] ; do
+    ls=$(ls -ld "$SCRIPT")
+    link=$(expr "$ls" : '.*-> \(.*\)$')
+    if expr "$link" : '/.*' > /dev/null; then
+        SCRIPT="$link"
+    else
+        SCRIPT="$(dirname "$SCRIPT"$)/$link"
+    fi
+done
+
+BIN_DIR="$(dirname "$SCRIPT")"
+
+export OGU_JVM_OPTS="${OGU_JVM_OPTS-"-Xverify:none -XX:+TieredCompilation -XX:TieredStopAtLevel=1"}"
+
+if [ ! -x "$JAVA_CMD" ] && ! type -f java >/dev/null
+then
+    >&2 echo "Ogu couldn't find 'java' executable, which is required."
+    >&2 echo "Please either set JAVA_CMD or put java (>=1.7) in your \$PATH ($PATH)."
+    exit 1
+fi
+
+export OGU_JAVA_CMD="${OGU_JAVA_CMD:-${JAVA_CMD:-java}}"
+
+export OGU_HOME="${OGU_HOME:-"$HOME/.ogu"}"
+
+export OGU_OPTS="-e"
+
+# Support $JAVA_OPTS for backwards-compatibility.
+export JVM_OPTS="${JVM_OPTS:-"$JAVA_OPTS"}"
+
+"$OGU_JAVA_CMD" \
+    -Dfile.encoding=UTF-8 \
+    $OGU_JVM_OPTS \
+    -Dogu.script="$SCRIPT" \
+    -classpath "$CLASSPATH" \
+    -jar "$OGU_JAR" "$OGU_OPTS"  "$@"

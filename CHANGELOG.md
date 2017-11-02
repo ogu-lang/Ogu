@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [0.1.4] - 2017-10-30
+
+### Added
+
+- bash command for ogu
+- ogu.turtle module
+- use sentence
+
 ## [0.1.3] - 2017-10-29
 
 ### Added
