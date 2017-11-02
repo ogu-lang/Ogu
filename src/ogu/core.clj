@@ -4,6 +4,10 @@
 
 (def ^:dynamic **args** [])
 
+; big banner ascii art
+(defn banner [msg]
+  (com.github.lalyos.jfiglet.FigletFont/convertOneLine msg))
+
 (def println! println)
 
 (def readln! read-line)
