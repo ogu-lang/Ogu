@@ -1,4 +1,4 @@
-(defproject ogu-lang "0.1.2-PLUNKE"
+(defproject ogu-lang "0.1.4-PLUNKE"
   :description "Ogu Language Bootstrap Compiler"
   :main ^:skip-aot ogu-lang.core
   :profiles {:uberjar {:aot :all}}
@@ -9,5 +9,5 @@
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [com.github.lalyos/jfiglet "0.0.8"]
-                 [instaparse "1.4.5"]
+                 [instaparse "1.4.8"]
                  [rhizome "0.2.7"]])

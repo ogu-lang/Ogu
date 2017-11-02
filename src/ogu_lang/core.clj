@@ -2,14 +2,14 @@
     (:require [clojure.string :as string]
               [clojure.tools.cli :as cli]
               [ogu-lang.parser :refer [parse-module]]
-              [ogu.core :refer [**args**]]))
+              [ogu.core :refer [**args** banner]]))
 
 (def VERSION "Ogu compiler version 0.1.0 (Plunke)")
 
 (def cli-options
   [["-t" "--tree" "Show Visual representation of AST"]
    ["-p" "--print" "Print AST and Clojure code"]
-   ["-n" "--no-banner" "Don't Show Ogu Banner" :id :no-banner ]
+   ["-n" "--no-banner" "Don't Show Ogu akarru Banner" :id :no-banner ]
    ["-e" "--eval" "Evaluate AST"]
    ["-h" "--help" "Shows Usage"]] )
 
@@ -22,14 +22,14 @@
   (System/exit status))
 
 (defn usage [options-summary]
-  (string/join \newline ["Usage: oguc [options] modules..."
+  (string/join \newline ["Usage: ogu [options] modules..."
         ""
         "Options:"
         options-summary
         ""]))
 
 (defn akarru []
-  (let [msg (com.github.lalyos.jfiglet.FigletFont/convertOneLine "akarrú")]
+  (let [msg (banner "akarrú")]
     (println msg)
     (println VERSION)))
 

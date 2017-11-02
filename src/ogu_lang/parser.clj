@@ -7,7 +7,7 @@
 
 (def grammar
   (insta/parser
-    "module = [module-header] {import-static} {NL} {definition | dispatch | method-definition | val-def | var-def  | type-def | adt-def | trait-def | extension | module-expr}
+    "module = [module-header] {use} {import-static} {NL} {definition | dispatch | method-definition | val-def | var-def  | type-def | adt-def | trait-def | extension | module-expr}
 
      module-header = [NL] <'module'> BS+ module-name (NL+ {require|import}| BS*  NL)
 
@@ -16,6 +16,8 @@
      module-use = module-name [BS+ 'as' BS+ (ID|TID) | BS+ 'refer' ((BS+ 'all') | (BS+ <'['> id-list <']'>))]
 
      import = !import-static BS* <'import'> BS+ import-list {BS* <\",\"> (NL BS*|BS+) import-list } NL
+
+     use = [NL] BS* <'use'> BS+ module-name BS* NL
 
      import-static =  BS* <'import'> BS+ <'static'> BS+ module-name BS* <\"(\"> BS* (ID|TID) {BS* <\",\"> (NL BS*|BS+) (ID|TID) } BS* <\")\"> NL
 
@@ -423,7 +425,7 @@
 
      func-invokation = recur  / nil-value
               / func (BS+ arg)+
-              / func BS+ arg {BS+ <GLUE> BS+ arg}
+              / func BS+ arg {GLUE BS+ arg | BS+ <GLUE> BS+ arg}
               / func
 
      nil-value = <\"nil\">
@@ -490,7 +492,7 @@
 
      <ID-TOKEN> =  #'[\\.]?[_a-z-*][_0-9a-zA-Z-*]*[?!\\']*'
 
-     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|#'as[ \r\n]'|#'begin[ \r\n]'|#'bind[ \r\n]'|#'class[ \r\n]'|#'cond[ \r\n]'|#'data[ \r\n]'|#'def[ \r\n]'|#'dispatch[ \r\n]'|#'do[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|#'extend[ \r\n]'|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|#'module[ \r\n]'|#'new[ \r\n]'|'not '|#'nil[ \r\n]'|#'otherwise[ \r\n]'|'proxy '|#'record[ \r\n]'|'recur '|'refer '|'repeat '|'require '|'set '|'static '|#'then[ \r\n]'|'trait '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
+     ID = !(COMMENT|'++ '|'+ '|\"+' \"|'* '|\"*' \"|'- '|\"-' \"|#'as[ \r\n]'|#'begin[ \r\n]'|#'bind[ \r\n]'|#'class[ \r\n]'|#'cond[ \r\n]'|#'data[ \r\n]'|#'def[ \r\n]'|#'dispatch[ \r\n]'|#'do[ \r\n]'|#'else[ \r\n]'|#'end[ \r\n]'|#'extend[ \r\n]'|'for '|'if '|#'in[ \r\n]'|'import '|'lazy '|#'let[ \r\n]'|#'loop[ \r\n]'|#'module[ \r\n]'|#'new[ \r\n]'|'not '|#'nil[ \r\n]'|#'otherwise[ \r\n]'|'proxy '|#'record[ \r\n]'|'recur '|'refer '|'repeat '|'require '|'set '|'static '|#'then[ \r\n]'|'trait '|'use '|'using '|'val '|'when '|'where '|'while ') ID-TOKEN
 
      TID = #'[A-Z][_0-9a-zA-Z-]*'
 
@@ -500,7 +502,7 @@
 
      INSTANT = #'#([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])([Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\\.[0-9]+)?)?(([Zz])|([\\+|\\-]([01][0-9]|2[0-3]):[0-5][0-9]))?'
 
-     GLUE = ('´'|'`')
+     GLUE = ('´'|'`'|',,')
 
      STRING = #'\"[^\"]*\"'
 
@@ -817,6 +819,7 @@
    :tupled-lambda-arg        (fn [& rest] (vec rest))
    :id-list                  (fn [& rest] (vec rest))
    :import-list              (fn [& rest] rest)
+   :use                      (fn [& rest] (list 'use (cons 'quote rest)))
    :require                  (fn [& rest] (cons ':require rest))
    :import                   (fn [& rest] (cons ':import rest))
    :import-static            (fn [& rest] (cons 'import-static rest))

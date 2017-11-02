@@ -5,7 +5,7 @@
 
 export OGU_HOME="${OGU_HOME:-"$HOME/.ogu"}"
 
-export OGU_VERSION="0.1.2-PLUNKE"
+export OGU_VERSION="0.1.4-PLUNKE"
 
 OGU_JAR="${OGU_HOME}/installs/ogu-lang-$OGU_VERSION-standalone.jar"
 
