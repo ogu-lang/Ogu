@@ -70,6 +70,7 @@
    {:file "test/misc/test32.ogu" :val "can't divide by 0"}
    {:file "test/misc/test33.ogu" :val ["abcxyz" "xyz"]}
    {:file "test/misc/test34.ogu" :val 80}
+   {:file "test/misc/test35.ogu" :val [89, 463]}
    ])
 
 (deftest test-2

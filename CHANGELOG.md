@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [0.1.5] - 2017-11-4
+
+### Added
+
+- more support for ADT (see demos/adt.ogu   )
+
 ## [0.1.4] - 2017-10-30
 
 ### Added
