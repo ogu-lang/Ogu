@@ -242,6 +242,8 @@
   [obj]
   (-> obj meta :adt))
 
+;; based on https://github.com/andrewberls/clojure-adt/tree/master/src/clojure_adt
+
 (defmacro data
   "Declare a sum type with a set of constructors
    (data Tree

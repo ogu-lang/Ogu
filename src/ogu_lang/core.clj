@@ -22,7 +22,7 @@
   (System/exit status))
 
 (defn usage [options-summary]
-  (string/join \newline ["Usage: ogu [options] modules..."
+  (string/join \newline  [\newline \tab "\t\tOLA AMIKO MIO DE MI" \newline "Usage: ogu [options] modules..."
         ""
         "Options:"
         options-summary

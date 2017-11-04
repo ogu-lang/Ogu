@@ -49,7 +49,7 @@
 
      <rest-args> = and-token BS+ arg
 
-     <arg> = &isa-type isa-type  | &ID ID  | func-call-expr
+     <arg> = &type-pattern-arg type-pattern-arg | &isa-type isa-type  | &ID ID  | func-call-expr
 
      type-def = type-constructor-def (traits-for-type|BS* NL)
 
@@ -64,6 +64,8 @@
      trait-method-impl-args = {BS+ trait-method-impl-arg}
 
      <trait-method-impl-arg> = ID
+
+     type-pattern-arg = TID BS* <\"(\"> BS* [class-id-list BS*] <\")\"> | TID  BS* <\"{\"> BS* [record-id-list BS*] <\"}\">
 
      <type-constructor-def> = class-constructor-def | record-constructor-def
 
@@ -894,6 +896,7 @@
    :trait-method             (fn [& rest] rest)
    :trait-method-args        (fn [& rest] (vec rest))
 
+
    :eq-args                  (fn [& rest] (vec (flatten rest)))
    :def-args                 ogu-def-args
    :definition               ogu-definition
@@ -926,23 +929,31 @@
 (def gen-ids (for [i (iterate inc 1)] (symbol (str \a i))))
 
 (defn make-match-args [fun-body]
-      (let [args (ffirst fun-body)]
-           (vec (take (count args) gen-ids))))
+      (let [args (ffirst fun-body)
+            ret-args (vec (take (count args) gen-ids))]
+        (if (some #(= :type-pattern-arg %) (flatten args))
+          ['matchm ret-args ]
+          ['match ret-args])))
 
+(defn filter-type-pattern-arg [arg]
+  (if (some #(= :type-pattern-arg %) (flatten arg))
+    (let [t  {:type (second (flatten arg))}  vars (drop 2 (flatten arg)) ]
+      [(conj t (into {} (map vector (map keyword vars) vars)))])
+    arg))
 
 (defn filter-for-vec-args [fun-body]
-      (apply concat (for [[arg value] (partition 2 fun-body)]
-                         (cond
-                           (and (vector? arg) (vector? (first arg))) [[(list (first arg) :seq)] value]
-                           :else [arg value]))))
+      (apply concat (for [[arg' value] (partition 2 fun-body)]
+                      (let [arg (filter-type-pattern-arg arg')]
+                        (cond
+                          (and (vector? arg) (vector? (first arg))) [[(list (first arg) :seq)] value]
+                          :else [arg value])))))
 
 
 (defn check-match [fun-body]
       (if-not (is-pattern-matching? fun-body)
               fun-body
-              (let [args (make-match-args fun-body)]
-
-                   (cons args (list (concat (cons 'match [args]) (filter-for-vec-args (apply concat fun-body))))))))
+              (let [[m args]  (make-match-args fun-body)]
+                   (cons args (list (concat (cons m [args]) (filter-for-vec-args (apply concat fun-body))))))))
 
 (defn make-variadic [forms]
       (loop [pos (java.lang.Integer/MAX_VALUE), head (first forms), tail (rest forms), name nil, result []]
@@ -973,7 +984,7 @@
       (merge-variadic (insta/transform ast-transformations ast)))
 
 (def preamble
-  '(require '[ogu.core :refer :all] '[clojure.core.match :refer [match]]) )
+  '(require '[ogu.core :refer :all] '[clojure.core.match :refer [match matchm]]) )
 
 (defn evalue-ast [module ast]
       (let [value (transform-ast ast)]
