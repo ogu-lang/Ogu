@@ -16,7 +16,6 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseModule() : Module = {
-    println("parse module")
     tokens.consume(MODULE)
     val moduleName = tokens.consume(classOf[ID])
     tokens.consume(NL)
@@ -136,7 +135,6 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseWhereBlock(): WhereBlock = {
-    println(s"!!parseWhereBlock (tokens = ${tokens}")
     tokens.consume(INDENT)
     var whereBlock = parseUnindentedWhereBlock()
     tokens.consume(DEDENT)

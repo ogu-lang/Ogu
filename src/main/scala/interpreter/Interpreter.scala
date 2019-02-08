@@ -16,7 +16,9 @@ object Interpreter {
     val require = Clojure.`var`("clojure.core", "require")
     require.invoke(Clojure.read("clojure.set"))
     loadStr.invoke(readOguRuntime())
-    loadStr.invoke(clojureStr)
+    val result = loadStr.invoke(clojureStr)
+    println(s"@@RESULT = ${result}")
+    result
   }
 
   def toClojure(node: LangNode): String = {

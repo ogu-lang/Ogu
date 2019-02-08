@@ -17,6 +17,10 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           }
         case AddExpression(left, right) =>
           strBuf ++= s"(+ ${toClojure(left)} ${toClojure(right)})"
+
+        case MultiplyExpression(left, right) =>
+          strBuf ++= s"(* ${toClojure(left)} ${toClojure(right)})"
+
         case Identifier(id) =>
           strBuf ++= id
         case IntLiteral(i) =>
@@ -30,6 +34,16 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
             strBuf ++= s" ${toClojure(arg)}"
           }
           strBuf ++= ")\n\n"
+        case DeclIdVar(id) =>
+          strBuf ++= id
+        case LetDecl(decls) =>
+          for (decl <- decls) {
+            strBuf ++= s"(def ${toClojure(decl._1)} ${toClojure(decl._2)})\n"
+          }
+        case VarDecl(decls) =>
+          for (decl <- decls) {
+            strBuf ++= s"(-def-ogu-var- ${toClojure(decl._1)} ${toClojure(decl._2)})\n"
+          }
         case _ =>
           strBuf ++= node.toString
       }

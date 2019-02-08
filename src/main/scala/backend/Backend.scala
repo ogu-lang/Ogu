@@ -9,24 +9,34 @@ import parser._
 import scala.util.{Failure, Success, Try}
 
 
-case class Backend(fileNames: List[String]) {
+object Backend {
 
-  def compile(): Unit = {
+  def compile(fileNames: List[String]): Unit = {
     for (fileName <- fileNames) {
       println(s"scanning ${fileName}...")
       compileFile(fileName)
     }
   }
 
-  def compileFile(fileName: String): AnyRef = {
-    Try(new FileInputStream(new File(fileName))) match {
-      case Success(inputStream) => compileFile(fileName, inputStream)
-      case Failure(exception) =>
-        Failure(exception)
+  def compileFromResource(fileName: String) : AnyRef = {
+    Try(getClass.getResourceAsStream(fileName)) match {
+      case Success(inputStream) => compileStream(fileName, inputStream)
+      case Failure(exception) => Failure(exception)
     }
   }
 
-  def compileFile(fileName: String, inputStream: InputStream): AnyRef = {
+  def compileFile(fileName: String): AnyRef = {
+    Try(new FileInputStream(new File(fileName))) match {
+      case Success(inputStream) => compileStream(fileName, inputStream)
+      case Failure(exception) => Failure(exception)
+    }
+  }
+
+  def compileStream(fileName: String, inputStream: InputStream): AnyRef = {
+    if (inputStream == null) {
+      return Failure(new NullPointerException)
+    }
+
     val lexer = new Lexer()
     val tryScan = lexer.scan(fileName, inputStream)
     tryScan match {
@@ -34,8 +44,7 @@ case class Backend(fileNames: List[String]) {
         val parser = new Parser(fileName, tokens, defaultRuntime())
         val ast = parser.parse()
         Interpreter.load(ast)
-      case Failure(exception) =>
-        Failure(exception)
+      case Failure(exception) => Failure(exception)
     }
   }
 

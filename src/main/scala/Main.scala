@@ -16,8 +16,7 @@ object Main {
   val usageMessage = "ogu-parser modulo.ogu ...."
 
   def compileModules(fileNames: List[String]) : Unit = {
-    val backend = Backend(fileNames)
-    backend.compile()
+    Backend.compile(fileNames)
   }
 
   def main(args: Array[String]): Unit =

@@ -348,6 +348,7 @@ class Lexer {
       case Failure(e) =>
         Failure(CantScanFileException(filename, e))
       case Success(rdr) =>
+        println(s"stream = ${fileStream}")
         Success(scanLines(rdr.getLines))
     }
   }
