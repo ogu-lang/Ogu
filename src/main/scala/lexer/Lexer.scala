@@ -1,6 +1,6 @@
 package lexer
 
-import java.io.File
+import java.io.{File, FileInputStream, InputStream}
 
 import org.joda.time.DateTime
 
@@ -339,15 +339,21 @@ class Lexer {
     new TokenStream(result.reverse)
   }
 
+  def scanFromResources(filename: String) : Try[TokenStream] = {
+    scan(filename, getClass.getResourceAsStream(filename))
+  }
 
-
-  def scan(filename:String) : Try[TokenStream] = {
-    Try(Source.fromFile(new File(filename), encoding, bufferSize)) match {
+  def scan(filename: String, fileStream: InputStream) : Try[TokenStream] = {
+    Try(Source.fromInputStream(fileStream)) match {
       case Failure(e) =>
         Failure(CantScanFileException(filename, e))
       case Success(rdr) =>
         Success(scanLines(rdr.getLines))
     }
+  }
+
+  def scan(filename:String) : Try[TokenStream] = {
+    scan(filename, new FileInputStream(new File(filename)))
   }
 
   def scanString(code:String) : Try[TokenStream] = {
