@@ -1,4 +1,6 @@
-
+/target
+/.idea
+project/target/
 src/main/net/lnds/ogu/antlr/parser/Ogu.tokens
 
 src/main/net/lnds/ogu/antlr/parser/OguLexer.java
@@ -30,3 +32,5 @@ build
 /target
 /.lein-repl-history
 /.nrepl-port
+.DS_Store
+project/project
