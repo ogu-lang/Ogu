@@ -32,3 +32,5 @@ build
 /target
 /.lein-repl-history
 /.nrepl-port
+.DS_Store
+project/project
