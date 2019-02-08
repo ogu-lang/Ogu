@@ -1,5 +1,5 @@
 
-name := "ogu-parser"
+name := "ogu-ferrilo"
 
 version := "0.1"
 
