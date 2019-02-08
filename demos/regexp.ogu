@@ -1,40 +1,6 @@
--- regular expressions
+'aaabbb' =~ #/(a|b)+/
 
-let pattern = #/abc(.*)/#
+'basas' !~ #/(a|b)+/
 
-let pattern2 = #/qwe/#
 
-let s1 = "abcxyz"
 
-let s2 = "qweqwehkzabcsdada"
-
-println! $ "xyzabcxyz" ~ pattern
-
-println! $ "xyzabcxyz" =~ pattern
-
-println! $ "qweqwehkzabcsdada" ~~  #/qwe/#
-
-println! " ---- "
-println! $ s1 =~ pattern
-
-println! $ s1 ~ pattern
-
-println! $ s1 ~~ pattern
-
-println! $ s1 =~ pattern2
-
-println! $ s1 ~ pattern2
-
-println! $ s1 ~~ pattern2
-
-println! $ s2 =~ pattern
-
-println! $ s2 ~ pattern
-
-println! $ s2 ~~ pattern
-
-println! $ s2 =~ pattern2
-
-println! $ s2 ~ pattern2
-
-println! $ s2 ~~ pattern2
