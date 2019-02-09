@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+
+### Changed
+
+- new parser in scala, but runtime still is clojure
+- function definitions require def keyword
+- val is marked deprecated, in next release will be removed
+
+### Removed
+
+- begin/end, now you must indent like python.
+
+
 ## [0.1.5] - 2017-11-4
 
 ### Added
