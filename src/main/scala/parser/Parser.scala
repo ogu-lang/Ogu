@@ -2,6 +2,8 @@ package parser
 
 import lexer._
 
+import scala.collection.mutable
+
 
 class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Option[SymbolTable]) {
 
@@ -26,7 +28,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     var result = List.empty[LangNode]
     while (tokens.nonEmpty) {
       if (tokens.peek(DEF))
-        result = parseDef() :: result
+        result = multiDef(parseDef()) :: result
       else if (tokens.peek(LET))
         result = parseLet() :: result
       else if (tokens.peek(VAR))
@@ -34,7 +36,49 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       else
         result = parsePipedExpr() :: result
       while (tokens.peek(NL)) tokens.consume(NL)
-      println(s"PARSED SO FAR: ${result.reverse}\n\n")
+      //println(s"PARSED SO FAR: ${result.reverse}\n\n")
+    }
+    filter(result.reverse)
+  }
+
+  var defs = mutable.HashMap.empty[String, MultiDefDecl]
+
+  private[this] def multiDef(node: LangNode) : LangNode = {
+    val decl = node.asInstanceOf[SimpleDefDecl]
+    println(s"@multiDef(node = ${node}) ")
+    if (defs.contains(decl.id)) {
+      defs.get(decl.id).map { defDecl =>
+        val decls = decl :: defDecl.decls
+        val mDecl = MultiDefDecl(defDecl.id, decls)
+        defs.update(mDecl.id,  mDecl)
+        println(s"@defs=>${defs}")
+        mDecl
+      }.get
+    }
+    else {
+      val mDecl = MultiDefDecl(decl.id, List(decl))
+      defs.put(mDecl.id, mDecl)
+      println(s"@defs=>${defs}")
+      mDecl
+    }
+  }
+
+  private[this] def filter(nodes: List[LangNode]) : List[LangNode] = {
+    var result = List.empty[LangNode]
+    for (node <- nodes) {
+      node match {
+        case md: MultiDefDecl =>
+          defs.get(md.id).map { md =>
+            val multiDef = MultiDefDecl(md.id, md.decls.reverse)
+            if (multiDef.decls.length == 1)
+              result = multiDef.decls.head :: result
+            else
+              result = multiDef :: result
+            defs.remove(md.id)
+          }
+        case _ =>
+          result = node :: result
+      }
     }
     result.reverse
   }
@@ -48,10 +92,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val body = parseDefBodyGuards()
       body match {
         case bd: BodyGuardsExpresionAndWhere =>
-          DefDecl(defId.value, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
+          SimpleDefDecl(defId.value, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
         case _ =>
           val where = tryParseWhereBlock()
-          DefDecl(defId.value, args, body, where)
+          SimpleDefDecl(defId.value, args, body, where)
       }
     }
     else if (tokens.peek(ASSIGN)) {
@@ -65,7 +109,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       }
       val where = tryParseWhereBlock()
 
-      DefDecl(defId.value, args, body, where)
+      SimpleDefDecl(defId.value, args, body, where)
     } else {
       throw InvalidDef()
     }
@@ -384,7 +428,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         value = parseForwardPipeFirstArgExpr()
       }
       args = value :: args
-      expr = ForwardPipeFuncCallExpression(args)
+      expr = ForwardPipeFuncCallExpression(args.reverse)
     }
     expr
   }
@@ -400,7 +444,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         value = parseDollarExpr()
       }
       args = value :: args
-      expr = ForwardPipeFirstArgFuncCallExpression(args)
+      expr = ForwardPipeFirstArgFuncCallExpression(args.reverse)
     }
     expr
   }
@@ -416,7 +460,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         value = parseBackwardFirstArgPipeExpr()
       }
       args = value :: args
-      expr = BackwardPipeFuncCallExpression(args.reverse)
+      expr = BackwardPipeFuncCallExpression(args)
     }
     expr
   }
@@ -432,7 +476,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         value = parseDollarExpr()
       }
       args = value :: args
-      expr = BackwardPipeFirstArgFuncCallExpression(args.reverse)
+      expr = BackwardPipeFirstArgFuncCallExpression(args)
     }
     expr
   }
@@ -903,7 +947,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       var args = List.empty[Expression]
       val func = expr
       while (!funcCallEndToken()) {
-        expr = parsePipedExpr()
+        expr = parseDollarExpr()
         args = expr :: args
       }
       expr = FunctionCallExpression(func, args.reverse)
@@ -921,7 +965,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseAtomExpr() : Expression = {
     var expr : Expression = null
-    if (tokens.peek(LPAREN)) {
+    if (tokens.peek(LPAREN) && tokens.peek(2, classOf[OPER])) {
+      expr = parsePartialOper()
+    }
+    else if (tokens.peek(LPAREN)) {
       tokens.consume(LPAREN)
       expr = parsePipedExpr()
       if (tokens.peek(COMMA)) {
@@ -986,6 +1033,38 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     expr
   }
 
+  def parsePartialOper() : Expression = {
+    tokens.consume(LPAREN)
+    val parOp = tokens.consume(classOf[OPER])
+    var listOfArgs = List.empty[Expression]
+    while (!tokens.peek(RPAREN)) {
+      val expr = parseLogicalExpr()
+      listOfArgs = expr :: listOfArgs
+    }
+    tokens.consume(RPAREN)
+    classifyPartialOper(parOp, listOfArgs)
+  }
+  
+  def classifyPartialOper(parOp: OPER, args: List[Expression]) : Expression = {
+    parOp match {
+      case PLUS => PartialAdd(args)
+      case MINUS => PartialSub(args)
+      case MULT => PartialMul(args)
+      case DIV => PartialDiv(args)
+      case MOD => PartialMod(args)
+      case EQUALS => PartialEQ(args)
+      case NOT_EQUALS => PartialNE(args)
+      case LT => PartialLT(args)
+      case GT => PartialGT(args)
+      case LE => PartialLE(args)
+      case GE => PartialGE(args)
+      case POW => PartialPow(args)
+      case CONS => PartialCons(args)
+      case PLUS_PLUS => PartialConcat(args)
+      case _ => throw PartialOperNotSupported(parOp)
+    }
+  }
+
   def parseRangeExpr() : Expression = {
     tokens.consume(LBRACKET)
     if (tokens.peek(RBRACKET)) {
@@ -1019,7 +1098,11 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
           expr = RangeExpression(rangeInit, rangeEnd)
       }
     }
-    if (tokens.peek(GUARD)) {
+    if (tokens.peek(DOTDOTDOT)) {
+      tokens.consume(DOTDOTDOT)
+      expr = InfiniteRangeExpression(expr)
+    }
+    else if (tokens.peek(GUARD)) {
       tokens.consume(GUARD)
       var listOfGuards = List.empty[ListGuard]
       var guard = parseListGuard()

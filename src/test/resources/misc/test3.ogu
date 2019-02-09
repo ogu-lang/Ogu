@@ -2,7 +2,7 @@
 
 2 + 2 |> range |> println!
 
-"a b c d" |> .toUpperCase |> .replace "A" "X" |> .split " " |> first |> println!
+"a b c d" |> .toUpperCase |> .split " " |> first |> println!
 
 
 "foo" |> str "bar" |> str "zoo" |> println -- zoobarfoo (clojure ->>)

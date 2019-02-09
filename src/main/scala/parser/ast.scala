@@ -40,7 +40,41 @@ case class WhereDefTupledWithGuards(idList: List[String], args: Option[List[Expr
 case class WhereBlock(whereDefs: List[WhereDef]) extends LangNode
 
 case class DefArg(expression: Expression)
-case class DefDecl(id: String, args: List[DefArg], body: Expression, whereBlock: Option[WhereBlock]) extends LangNode
+
+class DefDecl(val id: String) extends LangNode
+case class SimpleDefDecl(override val id: String, args: List[DefArg], body: Expression, whereBlock: Option[WhereBlock])
+  extends DefDecl(id) {
+  def patterMatching(): Boolean =
+    args.exists {
+      case DefArg(Identifier(_)) => false
+      case _ => true
+    }
+}
+
+case class MultiDefDecl(override val id: String, decls: List[SimpleDefDecl]) extends DefDecl(id) {
+  def patternMatching(): Boolean = decls.exists(_.patterMatching())
+
+  def args : List[String] = {
+    var count = decls.map(_.args.size).max
+    var ids = List.empty[String]
+    for (decl <- decls) {
+      for (arg <- decl.args) {
+        arg match {
+          case DefArg(Identifier(id)) =>
+            if (!ids.contains(id))
+              ids = id :: ids
+          case _ =>
+        }
+      }
+    }
+    if (ids.size == count) {
+      ids.reverse
+    }
+    else {
+      throw InvalidDef()
+    }
+  }
+}
 
 trait LiteralExpression extends Expression
 case class StringLiteral(value: String) extends LiteralExpression
@@ -141,7 +175,7 @@ case class ModAssignExpr(left: Expression, right: Expression) extends Expression
 trait ValidRangeExpression extends Expression
 case class RangeExpression(rangeInit:Expression, rangeEnd:Expression) extends ValidRangeExpression
 case class RangeWithIncrementExpression(rangeInit:Expression, rangeIncrement: Expression, rangeEnd:Expression) extends ValidRangeExpression
-case class InfiniteRangeExpression(rangeInit: Expression)
+case class InfiniteRangeExpression(rangeInit: Expression) extends ValidRangeExpression
 case class InfiniteRangeWithIncrementExpression(rangeInit: Expression, rangeIncrement: Expression)
 case class EmptyListExpresion() extends ValidRangeExpression
 
@@ -162,3 +196,19 @@ case class BodyGuardsExpresionAndWhere(guards: List[DefBodyGuardExpr], whereBloc
 
 
 case class TupleExpr(expressions: List[Expression]) extends Expression
+
+trait PartialOper extends Expression
+case class PartialAdd(args: List[Expression]) extends PartialOper
+case class PartialSub(args: List[Expression]) extends PartialOper
+case class PartialMul(args: List[Expression]) extends PartialOper
+case class PartialDiv(args: List[Expression]) extends PartialOper
+case class PartialMod(args: List[Expression]) extends PartialOper
+case class PartialEQ(args: List[Expression]) extends PartialOper
+case class PartialNE(args: List[Expression]) extends PartialOper
+case class PartialLT(args: List[Expression]) extends PartialOper
+case class PartialLE(args: List[Expression]) extends PartialOper
+case class PartialGT(args: List[Expression]) extends PartialOper
+case class PartialGE(args: List[Expression]) extends PartialOper
+case class PartialPow(args: List[Expression]) extends PartialOper
+case class PartialCons(args: List[Expression]) extends PartialOper
+case class PartialConcat(args: List[Expression]) extends PartialOper

@@ -37,7 +37,6 @@ case object REPEAT extends CONTROL
 case object THEN extends CONTROL
 case object UNTIL extends CONTROL
 case object VAR extends DECL
-case object VAL extends DECL
 case object WHEN extends CONTROL
 case object WHERE extends KEYWORD
 case object WHILE extends CONTROL
@@ -73,6 +72,7 @@ case object DIV_ASSIGN extends ASSIGN_OPER
 case object DOLLAR extends PIPE_OPER
 case object DOT extends OPER
 case object DOTDOT extends OPER
+case object DOTDOTDOT extends OPER
 case object DOTO extends PIPE_OPER
 case object DOTO_BACK extends PIPE_OPER
 case object EQUALS extends COMPARATIVE_BIN_OPER

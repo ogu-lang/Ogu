@@ -39,6 +39,6 @@ class ParserSpec extends FlatSpec with Matchers {
 
   "A parser" should "parse simple forward pipe" in {
     parseExpr("a |> b |> c") should be (Success(
-      ForwardPipeFuncCallExpression(List(Identifier("c"), Identifier("b"), Identifier("a")))))
+      ForwardPipeFuncCallExpression(List(Identifier("a"), Identifier("b"), Identifier("c")))))
   }
 }

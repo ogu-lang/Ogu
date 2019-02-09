@@ -15,6 +15,14 @@ case class TokenStream(var tokens: List[TOKEN]) {
     else
       tokens.drop(n-1).head == obj
 
+  def peek[T](n: Int, t: Class[T]) : Boolean =
+    if (tokens.isEmpty || tokens.length < n)
+      false
+    else {
+      val token = tokens.drop(n-1).head
+      t.isAssignableFrom(token.getClass)
+    }
+
   def peek[T](t: Class[T]) : Boolean = {
     if (tokens.isEmpty)
       false
@@ -23,8 +31,7 @@ case class TokenStream(var tokens: List[TOKEN]) {
         case lexererror: LEXER_ERROR => throw LexerError(lexererror)
         case _ =>
       }
-      val result = t.isAssignableFrom(tokens.head.getClass)
-      result
+      t.isAssignableFrom(tokens.head.getClass)
     }
   }
 

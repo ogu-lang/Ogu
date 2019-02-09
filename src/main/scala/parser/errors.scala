@@ -21,3 +21,5 @@ case class InvalidUntilAlreadyHasWhile() extends Throwable
 case class LexerError(error: LEXER_ERROR) extends Throwable
 
 case class InvalidDef() extends Throwable
+
+case class PartialOperNotSupported(oper:TOKEN) extends Throwable
