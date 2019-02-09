@@ -175,7 +175,7 @@ case class ModAssignExpr(left: Expression, right: Expression) extends Expression
 trait ValidRangeExpression extends Expression
 case class RangeExpression(rangeInit:Expression, rangeEnd:Expression) extends ValidRangeExpression
 case class RangeWithIncrementExpression(rangeInit:Expression, rangeIncrement: Expression, rangeEnd:Expression) extends ValidRangeExpression
-case class InfiniteRangeExpression(rangeInit: Expression)
+case class InfiniteRangeExpression(rangeInit: Expression) extends ValidRangeExpression
 case class InfiniteRangeWithIncrementExpression(rangeInit: Expression, rangeIncrement: Expression)
 case class EmptyListExpresion() extends ValidRangeExpression
 

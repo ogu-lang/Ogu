@@ -72,6 +72,7 @@ case object DIV_ASSIGN extends ASSIGN_OPER
 case object DOLLAR extends PIPE_OPER
 case object DOT extends OPER
 case object DOTDOT extends OPER
+case object DOTDOTDOT extends OPER
 case object DOTO extends PIPE_OPER
 case object DOTO_BACK extends PIPE_OPER
 case object EQUALS extends COMPARATIVE_BIN_OPER

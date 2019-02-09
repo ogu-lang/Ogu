@@ -248,6 +248,7 @@ class Lexer {
       case "$" => DOLLAR
       case "." => DOT
       case ".." => DOTDOT
+      case "..." => DOTDOTDOT
       case "!>" => DOTO
       case "<!" => DOTO_BACK
       case "==" => EQUALS
@@ -350,7 +351,6 @@ class Lexer {
       case Failure(e) =>
         Failure(CantScanFileException(filename, e))
       case Success(rdr) =>
-        println(s"stream = ${fileStream}")
         Success(scanLines(rdr.getLines))
     }
   }

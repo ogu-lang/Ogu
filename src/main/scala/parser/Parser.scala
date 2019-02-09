@@ -1098,7 +1098,11 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
           expr = RangeExpression(rangeInit, rangeEnd)
       }
     }
-    if (tokens.peek(GUARD)) {
+    if (tokens.peek(DOTDOTDOT)) {
+      tokens.consume(DOTDOTDOT)
+      expr = InfiniteRangeExpression(expr)
+    }
+    else if (tokens.peek(GUARD)) {
       tokens.consume(GUARD)
       var listOfGuards = List.empty[ListGuard]
       var guard = parseListGuard()

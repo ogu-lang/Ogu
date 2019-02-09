@@ -53,6 +53,18 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           strBuf ++= s"(-def-ogu-var- ${toClojure(decl._1)} ${toClojure(decl._2)})\n"
         }
 
+      case GreaterThanExpr(left, right) =>
+        strBuf ++= s"(> ${toClojure(left)} ${toClojure(right)})"
+
+      case GreaterOrEqualThanExpr(left, right) =>
+        strBuf ++= s"(> ${toClojure(left)} ${toClojure(right)})"
+
+      case LessThanExpr(left, right) =>
+        strBuf ++= s"(< ${toClojure(left)} ${toClojure(right)})"
+
+      case LessOrEqualThanExpr(left, right) =>
+        strBuf ++= s"(<= ${toClojure(left)} ${toClojure(right)})"
+
       case LambdaExpression(args, expr) =>
         strBuf ++= s"(fn [${args.map(toClojureLambdaArg).mkString(" ")}] ${toClojure(expr)})"
 
@@ -108,6 +120,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case ForwardPipeFirstArgFuncCallExpression(args) =>
         strBuf ++= s"(-> ${args.map(toClojure).mkString(" ")})\n"
 
+      case SimpleDefDecl(id, args, body, None) =>
+        strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}] ${toClojure(body)})\n"
+
       case md: MultiDefDecl =>
         if (!md.patternMatching()) {
           strBuf ++= s"\n(defn ${md.id}\n"
@@ -157,6 +172,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           strBuf ++= "\n)\n)\n"
         }
 
+      case InfiniteRangeExpression(init) =>
+        strBuf ++= s"(-range-to-inf ${toClojure(init)})"
+
       case _ =>
         strBuf ++= node.toString
     }
@@ -166,6 +184,13 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
   def toClojureLambdaArg(lambdaArg: LambdaArg): String = {
     lambdaArg match {
       case LambdaSimpleArg(id) => id
+      case _ => ???
+    }
+  }
+
+  def toClojureDefArg(defArg: DefArg): String = {
+    defArg match {
+      case DefArg(Identifier(id)) => id
       case _ => ???
     }
   }
