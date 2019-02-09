@@ -2,6 +2,8 @@ package parser
 
 import lexer._
 
+import scala.collection.mutable
+
 
 class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Option[SymbolTable]) {
 
@@ -26,7 +28,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     var result = List.empty[LangNode]
     while (tokens.nonEmpty) {
       if (tokens.peek(DEF))
-        result = parseDef() :: result
+        result = multiDef(parseDef()) :: result
       else if (tokens.peek(LET))
         result = parseLet() :: result
       else if (tokens.peek(VAR))
@@ -35,6 +37,48 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         result = parsePipedExpr() :: result
       while (tokens.peek(NL)) tokens.consume(NL)
       println(s"PARSED SO FAR: ${result.reverse}\n\n")
+    }
+    filter(result.reverse)
+  }
+
+  var defs = mutable.HashMap.empty[String, MultiDefDecl]
+
+  private[this] def multiDef(node: LangNode) : LangNode = {
+    val decl = node.asInstanceOf[SimpleDefDecl]
+    println(s"@multiDef(node = ${node}) ")
+    if (defs.contains(decl.id)) {
+      defs.get(decl.id).map { defDecl =>
+        val decls = decl :: defDecl.decls
+        val mDecl = MultiDefDecl(defDecl.id, decls)
+        defs.update(mDecl.id,  mDecl)
+        println(s"@defs=>${defs}")
+        mDecl
+      }.get
+    }
+    else {
+      val mDecl = MultiDefDecl(decl.id, List(decl))
+      defs.put(mDecl.id, mDecl)
+      println(s"@defs=>${defs}")
+      mDecl
+    }
+  }
+
+  private[this] def filter(nodes: List[LangNode]) : List[LangNode] = {
+    var result = List.empty[LangNode]
+    for (node <- nodes) {
+      node match {
+        case md: MultiDefDecl =>
+          defs.get(md.id).map { md =>
+            val multiDef = MultiDefDecl(md.id, md.decls.reverse)
+            if (multiDef.decls.length == 1)
+              result = multiDef.decls.head :: result
+            else
+              result = multiDef :: result
+            defs.remove(md.id)
+          }
+        case _ =>
+          result = node :: result
+      }
     }
     result.reverse
   }
@@ -48,10 +92,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val body = parseDefBodyGuards()
       body match {
         case bd: BodyGuardsExpresionAndWhere =>
-          DefDecl(defId.value, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
+          SimpleDefDecl(defId.value, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
         case _ =>
           val where = tryParseWhereBlock()
-          DefDecl(defId.value, args, body, where)
+          SimpleDefDecl(defId.value, args, body, where)
       }
     }
     else if (tokens.peek(ASSIGN)) {
@@ -65,7 +109,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       }
       val where = tryParseWhereBlock()
 
-      DefDecl(defId.value, args, body, where)
+      SimpleDefDecl(defId.value, args, body, where)
     } else {
       throw InvalidDef()
     }
