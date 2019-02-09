@@ -37,7 +37,6 @@ case object REPEAT extends CONTROL
 case object THEN extends CONTROL
 case object UNTIL extends CONTROL
 case object VAR extends DECL
-case object VAL extends DECL
 case object WHEN extends CONTROL
 case object WHERE extends KEYWORD
 case object WHILE extends CONTROL

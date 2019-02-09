@@ -16,6 +16,8 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         for (node <- decls) {
           strBuf ++= toClojure(node)
         }
+
+
       case AddExpression(left, right) =>
         strBuf ++= s"(+ ${toClojure(left)} ${toClojure(right)})"
 
@@ -44,11 +46,54 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case LetDecl(decls) =>
         strBuf ++= decls.map(decl => s"(def ${toClojure(decl._1)} ${toClojure(decl._2)})").mkString("\n")
+        strBuf ++= "\n"
 
       case VarDecl(decls) =>
         for (decl <- decls) {
           strBuf ++= s"(-def-ogu-var- ${toClojure(decl._1)} ${toClojure(decl._2)})\n"
         }
+
+      case LambdaExpression(args, expr) =>
+        strBuf ++= s"(fn [${args.map(toClojureLambdaArg).mkString(" ")}] ${toClojure(expr)})"
+
+      case PartialAdd(args) =>
+        if (args.isEmpty) strBuf ++= "+" else strBuf ++= s"(+ ${args.map(toClojure).mkString(" ")})"
+
+      case PartialSub(args) =>
+        if (args.isEmpty) strBuf ++= "-" else strBuf ++= s"(- ${args.map(toClojure).mkString(" ")})"
+
+      case PartialMul(args) =>
+        if (args.isEmpty) strBuf ++= "*" else strBuf ++= s"(* ${args.map(toClojure).mkString(" ")})"
+
+      case PartialDiv(args) =>
+        if (args.isEmpty) strBuf ++= "/" else strBuf ++= s"(/ ${args.map(toClojure).mkString(" ")})"
+
+      case PartialMod(args) =>
+        if (args.isEmpty) strBuf ++= "%" else strBuf ++= s"(/ ${args.map(toClojure).mkString(" ")})"
+
+      case PartialEQ(args) =>
+        if (args.isEmpty) strBuf ++= "=" else strBuf ++= s"(= ${args.map(toClojure).mkString(" ")})"
+
+      case PartialNE(args) =>
+        if (args.isEmpty) strBuf ++= "not=" else strBuf ++= s"(not= ${args.map(toClojure).mkString(" ")})"
+
+      case PartialLT(args) =>
+        if (args.isEmpty) strBuf ++= "<" else strBuf ++= s"(< ${args.map(toClojure).mkString(" ")})"
+
+      case PartialLE(args) =>
+        if (args.isEmpty) strBuf ++= "<=" else strBuf ++= s"(<= ${args.map(toClojure).mkString(" ")})"
+
+      case PartialGT(args) =>
+        if (args.isEmpty) strBuf ++= ">" else strBuf ++= s"(> ${args.map(toClojure).mkString(" ")})"
+
+      case PartialGE(args) =>
+        if (args.isEmpty) strBuf ++= ">=" else strBuf ++= s"(>= ${args.map(toClojure).mkString(" ")})"
+
+      case PartialCons(args) =>
+        if (args.isEmpty) strBuf ++= "cons" else strBuf ++= s"(cons ${args.map(toClojure).mkString(" ")})"
+
+      case PartialConcat(args) =>
+        if (args.isEmpty) strBuf ++= "concat" else strBuf ++= s"(concat ${args.map(toClojure).mkString(" ")})"
 
       case FunctionCallWithDollarExpression(Identifier(id), args) =>
         strBuf ++= s"(${id} ${args.map(toClojure).mkString(" ")})\n"
@@ -56,6 +101,12 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case FunctionCallExpression(Identifier(id), args) =>
         strBuf ++= s"(${id} ${args.map(toClojure).mkString} )"
+
+      case ForwardPipeFuncCallExpression(args) =>
+          strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})\n"
+
+      case ForwardPipeFirstArgFuncCallExpression(args) =>
+        strBuf ++= s"(-> ${args.map(toClojure).mkString(" ")})\n"
 
       case md: MultiDefDecl =>
         if (!md.patternMatching()) {
@@ -110,6 +161,13 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= node.toString
     }
     strBuf.toString()
+  }
+
+  def toClojureLambdaArg(lambdaArg: LambdaArg): String = {
+    lambdaArg match {
+      case LambdaSimpleArg(id) => id
+      case _ => ???
+    }
   }
 
 }

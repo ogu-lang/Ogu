@@ -36,7 +36,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       else
         result = parsePipedExpr() :: result
       while (tokens.peek(NL)) tokens.consume(NL)
-      println(s"PARSED SO FAR: ${result.reverse}\n\n")
+      //println(s"PARSED SO FAR: ${result.reverse}\n\n")
     }
     filter(result.reverse)
   }
@@ -428,7 +428,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         value = parseForwardPipeFirstArgExpr()
       }
       args = value :: args
-      expr = ForwardPipeFuncCallExpression(args)
+      expr = ForwardPipeFuncCallExpression(args.reverse)
     }
     expr
   }
@@ -444,7 +444,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         value = parseDollarExpr()
       }
       args = value :: args
-      expr = ForwardPipeFirstArgFuncCallExpression(args)
+      expr = ForwardPipeFirstArgFuncCallExpression(args.reverse)
     }
     expr
   }
@@ -460,7 +460,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         value = parseBackwardFirstArgPipeExpr()
       }
       args = value :: args
-      expr = BackwardPipeFuncCallExpression(args.reverse)
+      expr = BackwardPipeFuncCallExpression(args)
     }
     expr
   }
@@ -476,7 +476,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         value = parseDollarExpr()
       }
       args = value :: args
-      expr = BackwardPipeFirstArgFuncCallExpression(args.reverse)
+      expr = BackwardPipeFirstArgFuncCallExpression(args)
     }
     expr
   }
@@ -947,7 +947,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       var args = List.empty[Expression]
       val func = expr
       while (!funcCallEndToken()) {
-        expr = parsePipedExpr()
+        expr = parseDollarExpr()
         args = expr :: args
       }
       expr = FunctionCallExpression(func, args.reverse)
@@ -965,7 +965,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseAtomExpr() : Expression = {
     var expr : Expression = null
-    if (tokens.peek(LPAREN)) {
+    if (tokens.peek(LPAREN) && tokens.peek(2, classOf[OPER])) {
+      expr = parsePartialOper()
+    }
+    else if (tokens.peek(LPAREN)) {
       tokens.consume(LPAREN)
       expr = parsePipedExpr()
       if (tokens.peek(COMMA)) {
@@ -1028,6 +1031,38 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       throw UnexpectedTokenClassException()
     }
     expr
+  }
+
+  def parsePartialOper() : Expression = {
+    tokens.consume(LPAREN)
+    val parOp = tokens.consume(classOf[OPER])
+    var listOfArgs = List.empty[Expression]
+    while (!tokens.peek(RPAREN)) {
+      val expr = parseLogicalExpr()
+      listOfArgs = expr :: listOfArgs
+    }
+    tokens.consume(RPAREN)
+    classifyPartialOper(parOp, listOfArgs)
+  }
+  
+  def classifyPartialOper(parOp: OPER, args: List[Expression]) : Expression = {
+    parOp match {
+      case PLUS => PartialAdd(args)
+      case MINUS => PartialSub(args)
+      case MULT => PartialMul(args)
+      case DIV => PartialDiv(args)
+      case MOD => PartialMod(args)
+      case EQUALS => PartialEQ(args)
+      case NOT_EQUALS => PartialNE(args)
+      case LT => PartialLT(args)
+      case GT => PartialGT(args)
+      case LE => PartialLE(args)
+      case GE => PartialGE(args)
+      case POW => PartialPow(args)
+      case CONS => PartialCons(args)
+      case PLUS_PLUS => PartialConcat(args)
+      case _ => throw PartialOperNotSupported(parOp)
+    }
   }
 
   def parseRangeExpr() : Expression = {

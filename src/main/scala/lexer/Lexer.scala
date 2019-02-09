@@ -182,7 +182,9 @@ class Lexer {
       case "then" => THEN
       case "until" => UNTIL
       case "var" => VAR
-      case "val" => VAL
+      case "val" =>
+        println("deprecated keyword: val")
+        LET
       case "when" => WHEN
       case "where" => WHERE
       case "while" => WHILE

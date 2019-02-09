@@ -196,3 +196,19 @@ case class BodyGuardsExpresionAndWhere(guards: List[DefBodyGuardExpr], whereBloc
 
 
 case class TupleExpr(expressions: List[Expression]) extends Expression
+
+trait PartialOper extends Expression
+case class PartialAdd(args: List[Expression]) extends PartialOper
+case class PartialSub(args: List[Expression]) extends PartialOper
+case class PartialMul(args: List[Expression]) extends PartialOper
+case class PartialDiv(args: List[Expression]) extends PartialOper
+case class PartialMod(args: List[Expression]) extends PartialOper
+case class PartialEQ(args: List[Expression]) extends PartialOper
+case class PartialNE(args: List[Expression]) extends PartialOper
+case class PartialLT(args: List[Expression]) extends PartialOper
+case class PartialLE(args: List[Expression]) extends PartialOper
+case class PartialGT(args: List[Expression]) extends PartialOper
+case class PartialGE(args: List[Expression]) extends PartialOper
+case class PartialPow(args: List[Expression]) extends PartialOper
+case class PartialCons(args: List[Expression]) extends PartialOper
+case class PartialConcat(args: List[Expression]) extends PartialOper
