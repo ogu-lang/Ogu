@@ -22,7 +22,7 @@ sealed trait DeclVariable extends LangNode
 case class DeclIdVar(id: String) extends DeclVariable
 case class DeclTupledIdVars(ids: List[String]) extends DeclVariable
 
-class LoopDeclVariable extends DeclVariable
+trait LoopDeclVariable extends DeclVariable
 case class LoopVarDecl(id: String, initialValue: Expression) extends LoopDeclVariable
 case class ForVarDeclIn(id: String, initialValue: Expression) extends LoopDeclVariable
 

@@ -85,6 +85,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseDef() : LangNode = {
     tokens.consume(DEF)
+    createContext()
     val defId = tokens.consume(classOf[ID])
     val args = parseDefArgs()
     if (tokens.peek(NL)) {
@@ -92,9 +93,11 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val body = parseDefBodyGuards()
       body match {
         case bd: BodyGuardsExpresionAndWhere =>
+          destroyContext()
           SimpleDefDecl(defId.value, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
         case _ =>
           val where = tryParseWhereBlock()
+          destroyContext()
           SimpleDefDecl(defId.value, args, body, where)
       }
     }
@@ -108,7 +111,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         parseBlockExpr()
       }
       val where = tryParseWhereBlock()
-
+      destroyContext()
       SimpleDefDecl(defId.value, args, body, where)
     } else {
       throw InvalidDef()
@@ -335,6 +338,8 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     if (listOfIds.length != listOfValues.length) {
       throw InvalidLetDeclaration("ids and values doesn't matches")
     }
+    addSimpleVarList(listOfIds)
+
     VarDeclExpr(listOfIds.zip(listOfValues))
   }
 
@@ -349,6 +354,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     if (listOfIds.length != listOfValues.length) {
       throw InvalidLetDeclaration("ids and values doesn't matches")
     }
+    addSimpleVarList(listOfIds)
     LetDecl(listOfIds.zip(listOfValues))
   }
 
@@ -379,7 +385,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     if (tokens.peek(LPAREN))
       parseLetTupledVars()
     else {
-      var idToken = tokens.consume(classOf[ID])
+      val idToken = tokens.consume(classOf[ID])
       DeclIdVar(idToken.value)
     }
   }
@@ -535,7 +541,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     else if (tokens.peek(RECUR)) {
       return parseRecurExpr()
     }
-    println(s"ERROR PARSE CONTROL tokens= ${tokens}")
+    println(s"ERROR PARSE CONTROL tokens= $tokens")
     throw InvalidNodeException(tokens.nextToken())
   }
 
@@ -690,6 +696,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseBlockExpr() : Expression = {
     tokens.consume(INDENT)
+    createContext()
     var listOfExpressions = List.empty[Expression]
     var loop = 0
     while (!tokens.peek(DEDENT)) {
@@ -699,6 +706,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       listOfExpressions = expr :: listOfExpressions
     }
     tokens.consume(DEDENT)
+    destroyContext()
     BlockExpression(listOfExpressions.reverse)
   }
 
@@ -890,11 +898,11 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseMulExpr() : Expression = {
-    var expr = parsePrefixExpr()
+    var expr = parsePowExpr()
     while (tokens.peek(classOf[MUL_OPER])) {
       val oper = tokens.consume(classOf[MUL_OPER])
       while (tokens.peek(NL)) tokens.consume(NL)
-      expr = classifyMulExpr(oper, expr, parsePrefixExpr())
+      expr = classifyMulExpr(oper, expr, parsePowExpr())
     }
     expr
   }
@@ -907,9 +915,6 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
   }
 
-  def parsePrefixExpr() : Expression = {
-    parsePowExpr()
-  }
 
   def parsePowExpr() : Expression = {
     var expr = parsePostfixExpr()
@@ -921,7 +926,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parsePostfixExpr() : Expression = {
-    var expr = parseFuncCallExpr()
+    var expr = parsePrimExpr()
     if (tokens.peek(ARROBA)) {
       var array = expr
       tokens.consume(ARROBA)
@@ -931,23 +936,40 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     expr
   }
 
-  def parseFuncCallExpr() : Expression = {
-    var expr = parseAtomExpr()
-
-    if (tokens.peek(classOf[OPER]) || tokens.peek(RPAREN) || tokens.peek(RBRACKET) || tokens.peek(DO) || tokens.peek(THEN) || tokens.peek(NL)) {
-      return expr
+  def parsePrimExpr() : Expression = {
+    if (tokens.peek(LPAREN) && tokens.peek(2, classOf[OPER])) {
+      return parsePartialOper()
     }
-    if (expr.isInstanceOf[ValidRangeExpression])
-      return expr
-    if (expr.isInstanceOf[ListExpression])
-      return expr
-    if (expr.isInstanceOf[LiteralExpression])
-      return expr
+    else if (tokens.peek(LPAREN) || tokens.peek(LBRACKET)) {
+      return parseAtomExpr()
+    }
+    else if (tokens.peek(LCURLY)) {
+      return parseAtomExpr()
+    }
+    else if (tokens.peek(classOf[LITERAL])) {
+      return parseAtomExpr()
+    }
+    parseFuncCallExpr()
+  }
+
+  def parseFuncCallExpr() : Expression = {
+    var expr : Expression = null
+    println(s"@@parseFunCallExpr (tokens=${tokens})")
+    if (tokens.peek(classOf[ID])) {
+      val id = tokens.consume(classOf[ID])
+      expr = Identifier(id.value)
+    }
+
     if (!funcCallEndToken()) {
       var args = List.empty[Expression]
       val func = expr
       while (!funcCallEndToken()) {
-        expr = parseDollarExpr()
+        if (tokens.peek(classOf[ID])) {
+          val id = tokens.consume(classOf[ID])
+          expr = Identifier(id.value)
+        } else {
+          expr = parseDollarExpr()
+        }
         args = expr :: args
       }
       expr = FunctionCallExpression(func, args.reverse)
@@ -955,9 +977,57 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     expr
   }
 
+
+  var contextList = List.empty[mutable.HashMap[String, DeclVariable]]
+
+  def createContext() : Unit = {
+    contextList = mutable.HashMap.empty[String, DeclVariable] :: contextList
+  }
+
+  def destroyContext() : Unit = {
+    if (contextList.isEmpty)
+      throw CantFindContext()
+    contextList = contextList.tail
+  }
+
+  def addSimpleVar(variable: DeclVariable): Unit = {
+    if (contextList.isEmpty)
+      createContext()
+    val context = contextList.head
+    variable match {
+      case DeclIdVar(id) =>
+        context.put(id, variable)
+      case DeclTupledIdVars(tuple) =>
+        for (id <- tuple) {
+          context.put(id, variable)
+        }
+      case LoopVarDecl(id, _) =>
+        context.put(id, variable)
+      case ForVarDeclIn(id, _) =>
+        context.put(id, variable)
+      case _ =>
+        ???
+    }
+  }
+
+  def addSimpleVarList(variables: List[DeclVariable]): Unit = {
+    for (i <- variables) {
+      addSimpleVar(i)
+    }
+  }
+
+  def isSimpleVar(expression: Expression): Boolean = {
+    expression match {
+      case Identifier(id) =>
+        contextList.exists(context => context.contains(id))
+      case _ => ???
+    }
+  }
+
+
   def funcCallEndToken() : Boolean = {
     tokens.nextToken().exists { next =>
-      next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[DECL] || next == INDENT || next == DEDENT ||
+      next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] || next == INDENT || next == DEDENT ||
         next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN || next == ELSE ||
       next == RPAREN
     }
@@ -965,10 +1035,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseAtomExpr() : Expression = {
     var expr : Expression = null
-    if (tokens.peek(LPAREN) && tokens.peek(2, classOf[OPER])) {
-      expr = parsePartialOper()
-    }
-    else if (tokens.peek(LPAREN)) {
+    if (tokens.peek(LPAREN)) {
       tokens.consume(LPAREN)
       expr = parsePipedExpr()
       if (tokens.peek(COMMA)) {
@@ -994,10 +1061,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       expr = parsePipedExpr()
       tokens.consume(RCURLY)
     }
-    else if (tokens.peek(classOf[ID])) {
-      val id = tokens.consume(classOf[ID])
-      expr = Identifier(id.value)
-    }
+
     else if (tokens.peek(classOf[INT_LITERAL])) {
       val num = tokens.consume(classOf[INT_LITERAL])
       expr = IntLiteral(num.value)
