@@ -823,7 +823,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       case NOT_EQUALS => NotEqualsExpr(left, right)
       case MATCHES => MatchExpr(left, right)
       case NOT_MATCHES => NoMatchExpr(left, right)
-      case IN => InExpr(left, right)
+      case CONTAINS => ContainsExpr(left, right)
     }
   }
 
@@ -943,7 +943,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] ||
         next == INDENT || next == DEDENT ||
         next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN ||
-        next == ELSE || next == RPAREN
+        next == ELSE || next == RPAREN || next == IN
     }
   }
 

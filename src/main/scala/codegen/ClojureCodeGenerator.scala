@@ -35,6 +35,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case MultiplyExpression(left, right) =>
         strBuf ++= s"(* ${toClojure(left)} ${toClojure(right)})"
 
+      case DivideExpression(left, right) =>
+        strBuf ++= s"(/ ${toClojure(left)} ${toClojure(right)})"
+
       case Identifier(id) =>
         strBuf ++= id
 

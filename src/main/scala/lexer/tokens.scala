@@ -21,13 +21,14 @@ case class ID(value: String) extends TOKEN
 trait KEYWORD extends TOKEN
 trait CONTROL extends KEYWORD
 trait DECL extends KEYWORD
+case object CONTAINS extends COMPARATIVE_BIN_OPER
 case object DEF extends DECL
 case object DO extends KEYWORD
 case object ELIF extends KEYWORD
 case object ELSE extends KEYWORD
 case object FOR extends CONTROL
 case object IF extends CONTROL
-case object IN extends COMPARATIVE_BIN_OPER
+case object IN extends KEYWORD
 case object LET extends DECL
 case object LOOP extends CONTROL
 case object MODULE extends KEYWORD

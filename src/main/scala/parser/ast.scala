@@ -148,7 +148,7 @@ case class EqualsExpr(override val left: Expression, override val right: Express
 case class NotEqualsExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
 case class MatchExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
 case class NoMatchExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class InExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
+case class ContainsExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
 
 case class ConsExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
 
