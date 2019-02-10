@@ -18,6 +18,17 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         }
 
 
+      case LetDeclExpr(decls:List[LetVariable], Some(expression)) =>
+        strBuf ++= "(let ["
+        strBuf ++= decls.map(d => s"${d.id} ${toClojure(d.value)}").mkString(",\n")
+        strBuf ++= " ]\n"
+        strBuf ++= s" ${toClojure(expression)})\n"
+
+      case LetDeclExpr(decls:List[LetVariable], None) =>
+        for (decl <- decls) {
+          strBuf ++= s"(def ${decl.id} ${toClojure(decl.value)})\n"
+        }
+
       case AddExpression(left, right) =>
         strBuf ++= s"(+ ${toClojure(left)} ${toClojure(right)})"
 
@@ -40,18 +51,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           strBuf ++= s" ${toClojure(arg)}"
         }
         strBuf ++= ")"
-
-      case DeclIdVar(id) =>
-        strBuf ++= id
-
-      case LetDecl(decls) =>
-        strBuf ++= decls.map(decl => s"(def ${toClojure(decl._1)} ${toClojure(decl._2)})").mkString("\n")
-        strBuf ++= "\n"
-
-      case VarDecl(decls) =>
-        for (decl <- decls) {
-          strBuf ++= s"(-def-ogu-var- ${toClojure(decl._1)} ${toClojure(decl._2)})\n"
-        }
 
       case GreaterThanExpr(left, right) =>
         strBuf ++= s"(> ${toClojure(left)} ${toClojure(right)})"
@@ -110,9 +109,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case FunctionCallWithDollarExpression(Identifier(id), args) =>
         strBuf ++= s"(${id} ${args.map(toClojure).mkString(" ")})\n"
 
-
-      case FunctionCallExpression(Identifier(id), args) =>
-        strBuf ++= s"(${id} ${args.map(toClojure).mkString} )"
 
       case ForwardPipeFuncCallExpression(args) =>
           strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})\n"
@@ -194,5 +190,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case _ => ???
     }
   }
+
 
 }

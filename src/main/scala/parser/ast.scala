@@ -18,16 +18,21 @@ case class LambdaSimpleArg(name: String) extends Name(name) with LambdaArg
 case class Identifier(name: String) extends Name(name) with AssignableExpression
 case class LambdaTupleArg(names: List[String]) extends LambdaArg
 
-sealed trait DeclVariable extends LangNode
-case class DeclIdVar(id: String) extends DeclVariable
-case class DeclTupledIdVars(ids: List[String]) extends DeclVariable
+trait Variable
+case class LetVariable(id: String, value: Expression) extends Variable
+case class LetTupledVariable(ids: List[String], value: Expression) extends Variable
+case class VarVariable(id: String, initialValue: Expression) extends Variable
+case class VarTupledVariable(ids: List[String], initialValue : Expression) extends Variable
 
-trait LoopDeclVariable extends DeclVariable
+
+trait LetDeclExprTrait extends Expression
+case class LetDeclExpr(decls: List[Variable], inExpr: Option[Expression]) extends LetDeclExprTrait
+
+case class VarDeclExpr(decls: List[Variable]) extends Expression
+
+trait LoopDeclVariable extends Variable
 case class LoopVarDecl(id: String, initialValue: Expression) extends LoopDeclVariable
 case class ForVarDeclIn(id: String, initialValue: Expression) extends LoopDeclVariable
-
-case class LetDecl(decls: List[(DeclVariable, Expression)]) extends LangNode
-case class VarDecl(decls: List[(DeclVariable, Expression)]) extends LangNode
 
 
 case class WhereGuard(guarExpr: Option[Expression], body: Expression)
@@ -86,8 +91,8 @@ case class DoubleLiteral(value: Double) extends LiteralExpression
 case class BigIntLiteral(value: BigInt) extends LiteralExpression
 case class BigDecimalLiteral(value: BigDecimal) extends LiteralExpression
 
-case class LetDeclExpr(decls: List[(DeclVariable, Expression)]) extends Expression
-case class VarDeclExpr(decls: List[(DeclVariable, Expression)]) extends Expression
+
+
 
 trait LoopGuard extends Expression
 case class WhileGuardExpr(comp:Expression) extends LoopGuard
