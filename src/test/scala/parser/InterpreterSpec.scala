@@ -1,16 +1,18 @@
 package parser
 
 import backend.Backend
+import clojure.lang
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.io.Source
 
 class InterpreterSpec extends FlatSpec with Matchers {
 
-  def run(oguScript: String) = {
+  def run(oguScript: String): AnyRef = {
     val stream = getClass.getResourceAsStream(oguScript)
     Backend.compileStream(oguScript, stream)
   }
+
+  def bigInt(value: String): lang.BigInt = lang.BigInt.fromBigInteger(new java.math.BigInteger(value))
 
   "An Interpreter" should "run misc files" in {
     run("/misc/test0.ogu") should be (null)
@@ -21,5 +23,8 @@ class InterpreterSpec extends FlatSpec with Matchers {
     run("/misc/test5.ogu") should be (3999998000000L)
     run("/misc/test6.ogu") should be (8)
     run("/misc/test7.ogu") should be (2)
+    run("/misc/test8.ogu") should be (bigInt("620448401733239439360000"))
+    run("/misc/test9.ogu") should be (9900)
+    run("/misc/test10.ogu") should be (9900)
   }
 }

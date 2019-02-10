@@ -270,12 +270,14 @@ class Lexer {
       case "<" => LT
       case "=~" => MATCHES
       case "-" => MINUS
+      case "<->" => MINUS_BIG
       case "-=" => MINUS_ASSIGN
       case "%" => MOD
       case "%=" => MOD_ASSIGN
       case "*" => MULT
+      case "<*>" => MULT_BIG
       case "*=" => MULT_ASSIGN
-      case "!=" => NOT_EQUALS
+      case "=/=" => NOT_EQUALS
       case "!~" => NOT_MATCHES
       case "||" => OR
       case "<|" => PIPE_LEFT
@@ -283,6 +285,7 @@ class Lexer {
       case "|>" => PIPE_RIGHT
       case ">|" => PIPE_RIGHT_FIRST_ARG
       case "+" => PLUS
+      case "<+>" => PLUS_BIG
       case "+=" => PLUS_ASSIGN
       case "++" => PLUS_PLUS
       case "^" => POW
@@ -313,8 +316,8 @@ class Lexer {
     }
   }
 
-  val opChars: Set[Char] = Set('@', '~', '$', '+','-','*', '/', '%', '|', '&', '=', '<', '>', '(', ')', '[', ']', '!', '?', '.', ':',
-    ';', ',', '\\')
+  val opChars: Set[Char] = Set('@', '~', '$', '+','-','*', '/', '%', '^', '|', '&', '=', '<', '>', '(', ')', '[', ']',
+    '!', '?', '.', ':', ';', ',', '\\')
 
   val punctChars: Set[Char] = Set(',', '(', ')', '[', ']', '{', '}', '\\')
 

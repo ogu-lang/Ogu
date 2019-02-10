@@ -28,7 +28,9 @@ case class TokenStream(var tokens: List[TOKEN]) {
       false
     else {
       tokens.head match {
-        case lexererror: LEXER_ERROR => throw LexerError(lexererror)
+        case lexererror: LEXER_ERROR =>
+          println(s"@@@LEXER ERROR head= ${tokens.head}")
+          throw LexerError(lexererror)
         case _ =>
       }
       t.isAssignableFrom(tokens.head.getClass)

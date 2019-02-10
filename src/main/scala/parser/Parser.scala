@@ -85,7 +85,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val body = parseDefBodyGuards()
       body match {
         case bd: BodyGuardsExpresionAndWhere =>
-          SimpleDefDecl(defId.value, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
+          SimpleDefDecl(defId.value, args, BodyGuardsExpresion(bd.guards.reverse), Some(bd.whereBlock))
         case _ =>
           val where = tryParseWhereBlock()
           SimpleDefDecl(defId.value, args, body, where)
@@ -117,9 +117,9 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       listOfGuards = guard :: listOfGuards
     }
     val result = if (tokens.peek(WHERE)) {
-      BodyGuardsExpresionAndWhere(listOfGuards, parseUnindentedWhereBlock())
+      BodyGuardsExpresionAndWhere(listOfGuards.reverse, parseUnindentedWhereBlock())
     } else {
-      BodyGuardsExpresion(listOfGuards)
+      BodyGuardsExpresion(listOfGuards.reverse)
     }
     tokens.consume(DEDENT)
     result
@@ -870,6 +870,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       case MULT => MultiplyExpression(left, right)
       case DIV => DivideExpression(left, right)
       case MOD => ModExpression(left, right)
+      case MULT_BIG => MultiplyBigExpression(left, right)
     }
   }
 

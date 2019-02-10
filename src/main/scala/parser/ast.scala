@@ -160,6 +160,7 @@ case class ConcatExpression(override val left: Expression, override val right: E
 
 class MultExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
 case class MultiplyExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
+case class MultiplyBigExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
 case class DivideExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
 case class ModExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
 
@@ -194,7 +195,7 @@ case class ListExpression(expressions: List[Expression], guards: Option[List[Lis
 
 
 trait DefBodyGuardExpr
-case class DefBodyGuardExpression(expression: Expression, body: Expression) extends DefBodyGuardExpr
+case class DefBodyGuardExpression(comp: Expression, body: Expression) extends DefBodyGuardExpr
 case class DefBodyGuardOtherwiseExpression(body: Expression) extends DefBodyGuardExpr
 case class BodyGuardsExpresion(guards: List[DefBodyGuardExpr]) extends Expression
 case class BodyGuardsExpresionAndWhere(guards: List[DefBodyGuardExpr], whereBlock: WhereBlock) extends Expression
