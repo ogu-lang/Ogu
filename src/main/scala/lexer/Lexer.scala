@@ -174,6 +174,7 @@ class Lexer {
       case "for" => FOR
       case "if" => IF
       case "in" => IN
+      case "lazy" => LAZY
       case "let" => LET
       case "loop" => LOOP
       case "module" => MODULE
@@ -249,6 +250,7 @@ class Lexer {
       case "$" => DOLLAR
       case "." => DOT
       case ".." => DOTDOT
+      case "..<" => DOTDOTLESS
       case "..." => DOTDOTDOT
       case "!>" => DOTO
       case "<!" => DOTO_BACK

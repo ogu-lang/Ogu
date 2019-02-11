@@ -9,7 +9,6 @@ All notable changes to this project will be documented in this file. This change
 - new parser in scala, but runtime still is clojure
 - function definitions require def keyword
 - val is marked deprecated, in next release will be removed
-- ranges, now are simpler, and [0 . 100] is (0,1,2...99)
 
 ### Removed
 

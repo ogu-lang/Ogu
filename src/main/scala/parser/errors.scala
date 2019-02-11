@@ -4,6 +4,8 @@ import lexer.{LEXER_ERROR, TOKEN}
 
 case class InvalidNodeException(token: Option[TOKEN]) extends Throwable
 
+case class InvalidExpression() extends Throwable
+
 case class UnexpectedTokenClassException() extends Throwable
 case class UnexpectedTokenException(token: TOKEN, tokens: List[TOKEN]) extends Throwable
 case class UndefinedIdentifierException(id: String) extends Throwable

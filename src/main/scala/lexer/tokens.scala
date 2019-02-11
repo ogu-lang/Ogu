@@ -29,12 +29,14 @@ case object ELSE extends KEYWORD
 case object FOR extends CONTROL
 case object IF extends CONTROL
 case object IN extends KEYWORD
+case object LAZY extends KEYWORD
 case object LET extends DECL
 case object LOOP extends CONTROL
 case object MODULE extends KEYWORD
 case object OTHERWISE extends KEYWORD
 case object RECUR extends CONTROL
 case object REPEAT extends CONTROL
+case object SET extends CONTROL
 case object THEN extends CONTROL
 case object UNTIL extends CONTROL
 case object VAR extends DECL
@@ -73,6 +75,7 @@ case object DIV_ASSIGN extends ASSIGN_OPER
 case object DOLLAR extends PIPE_OPER
 case object DOT extends OPER
 case object DOTDOT extends OPER
+case object DOTDOTLESS extends OPER
 case object DOTDOTDOT extends OPER
 case object DOTO extends PIPE_OPER
 case object DOTO_BACK extends PIPE_OPER

@@ -130,6 +130,9 @@ case class RecurExpr(expression: Expression) extends ControlExpression
 case class ElifPart(comp: Expression, body: Expression)
 case class IfExpression(comp: Expression, thenPart: Expression, elifPart: List[ElifPart], elseParte: Expression) extends ControlExpression
 
+
+case class LazyExpression(expr: Expression) extends Expression
+
 class BinaryExpression(val left: Expression, val right: Expression) extends Expression
 
 
@@ -180,7 +183,9 @@ case class ModAssignExpr(left: Expression, right: Expression) extends Expression
 
 trait ValidRangeExpression extends Expression
 case class RangeExpression(rangeInit:Expression, rangeEnd:Expression) extends ValidRangeExpression
+case class RangeExpressionUntil(rangeInit:Expression, rangeEnd:Expression) extends ValidRangeExpression
 case class RangeWithIncrementExpression(rangeInit:Expression, rangeIncrement: Expression, rangeEnd:Expression) extends ValidRangeExpression
+case class RangeWithIncrementExpressionUntil(rangeInit:Expression, rangeIncrement: Expression, rangeEnd:Expression) extends ValidRangeExpression
 case class InfiniteRangeExpression(rangeInit: Expression) extends ValidRangeExpression
 case class InfiniteRangeWithIncrementExpression(rangeInit: Expression, rangeIncrement: Expression)
 case class EmptyListExpresion() extends ValidRangeExpression
