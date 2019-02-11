@@ -523,10 +523,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
   }
 
-  def parseRecurExpr() : Expression = {
-    tokens.consume(RECUR)
-    RecurExpr(parsePipedExpr())
-  }
+
 
   def parseRepeatExpr() : Expression = {
     tokens.consume(REPEAT)
@@ -640,7 +637,6 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       loopVarDecl = parseLoopVarDecl()
       listOfDecls = loopVarDecl :: listOfDecls
     }
-    listOfDecls = loopVarDecl :: listOfDecls
     listOfDecls.reverse
   }
 
@@ -919,9 +915,19 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
   }
 
+  def parseRecurExpr() : Expression = {
+    tokens.consume(RECUR)
+    var recurArgs = List.empty[Expression]
+    while (!funcCallEndToken()) {
+      val arg = parsePipedExpr()
+      recurArgs = arg :: recurArgs
+    }
+    RecurExpr(recurArgs.reverse)
+  }
+
   def parseFuncCallExpr() : Expression = {
     var expr : Expression = null
-    println(s"@@parseFunCallExpr (tokens=${tokens})")
+    //println(s"@@parseFunCallExpr (tokens=${tokens})")
     if (tokens.peek(classOf[ID])) {
       val id = tokens.consume(classOf[ID])
       expr = Identifier(id.value)
@@ -992,6 +998,14 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     else if (tokens.peek(classOf[INT_LITERAL])) {
       val num = tokens.consume(classOf[INT_LITERAL])
       expr = IntLiteral(num.value)
+    }
+    else if (tokens.peek(classOf[LONG_LITERAL])) {
+      val num = tokens.consume(classOf[LONG_LITERAL])
+      expr = LongLiteral(num.value)
+    }
+    else if (tokens.peek(classOf[BIGINT_LITERAL])) {
+      val num = tokens.consume(classOf[BIGINT_LITERAL])
+      expr = BigIntLiteral(num.value)
     }
     else if (tokens.peek(classOf[DOUBLE_LITERAL])) {
       val num = tokens.consume(classOf[DOUBLE_LITERAL])

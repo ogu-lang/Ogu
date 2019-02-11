@@ -209,8 +209,14 @@ class Lexer {
   def tryParseNum(str: String) : TOKEN = {
     try {
       val value = BigDecimal(str)
-      if (isIntegerValue(value))
-        return INT_LITERAL(value.toIntExact)
+      if (isIntegerValue(value)) {
+        if (value < Int.MaxValue)
+          return INT_LITERAL(value.toIntExact)
+        else if (value < Long.MaxValue)
+          return LONG_LITERAL(value.toLongExact)
+        else
+          return BIGINT_LITERAL(value.toBigInt())
+      }
       if (value.isExactDouble)
         return DOUBLE_LITERAL(value.toDouble)
       else if (value.isValidLong)
@@ -220,7 +226,8 @@ class Lexer {
       BIGDECIMAL_LITERAL(value)
     }
     catch {
-      case _: Throwable => LEXER_ERROR(currentLine, str)
+      case ex: Throwable =>
+        LEXER_ERROR(currentLine, str)
     }
   }
 

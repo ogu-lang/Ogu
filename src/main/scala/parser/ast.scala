@@ -86,6 +86,7 @@ case class StringLiteral(value: String) extends LiteralExpression
 case class CharLiteral(value: String) extends LiteralExpression
 
 case class IntLiteral(value: Int) extends LiteralExpression
+case class LongLiteral(value: Long) extends LiteralExpression
 case class FloatLiteral(value: Float) extends LiteralExpression
 case class DoubleLiteral(value: Double) extends LiteralExpression
 case class BigIntLiteral(value: BigInt) extends LiteralExpression
@@ -125,10 +126,10 @@ case class WhenExpression(comp: Expression, body: Expression) extends ControlExp
 
 case class RepeatNewVarValue(variable: String, value: Expression)
 case class RepeatExpr(newVariableValues: Option[List[RepeatNewVarValue]]) extends ControlExpression
-case class RecurExpr(expression: Expression) extends ControlExpression
+case class RecurExpr(args: List[Expression]) extends ControlExpression
 
 case class ElifPart(comp: Expression, body: Expression)
-case class IfExpression(comp: Expression, thenPart: Expression, elifPart: List[ElifPart], elseParte: Expression) extends ControlExpression
+case class IfExpression(comp: Expression, thenPart: Expression, elifPart: List[ElifPart], elsePart: Expression) extends ControlExpression
 
 
 case class LazyExpression(expr: Expression) extends Expression
