@@ -1,14 +1,14 @@
 
-gcd x y =
-    loop a = x, b = y in
+def gcd x y =
+    loop a = x, b = y do
         if zero? b then a
-        else repeat a' = b, b' = a % b
+        else repeat a = b, b = a % b
 
-lcm a b
+def lcm a b
    | (zero? a) = 0
    | (zero? b) = 0
    | otherwise = b * int (a / (gcd a b))
 
-def divisors n = reduce lcm 1 [2..n]
+def divisors n = reduce lcm 1 [2 .. n]
 
 divisors 20

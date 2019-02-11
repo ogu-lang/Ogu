@@ -363,7 +363,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     if (!tokens.peek(LPAREN)) {
       val idToken = tokens.consume(classOf[ID])
       tokens.consume(ASSIGN)
-      val expr = parsePipedOrBodyExpression
+      val expr = parsePipedOrBodyExpression()
       LetVariable(idToken.value, expr)
     } else {
       tokens.consume(LPAREN)
@@ -377,7 +377,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       }
       tokens.consume(RPAREN)
       tokens.consume(ASSIGN)
-      LetTupledVariable(ids, parsePipedOrBodyExpression)
+      LetTupledVariable(ids, parsePipedOrBodyExpression())
     }
   }
 
@@ -527,21 +527,18 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseRepeatExpr() : Expression = {
     tokens.consume(REPEAT)
-    if (!tokens.peek(WITH))
-      RepeatExpr(None)
-    else {
+    if (tokens.peek(WITH))
       tokens.consume(WITH)
-      var repeatVariables = List.empty[RepeatNewVarValue]
-      var repVar = parseRepeatAssign()
+    var repeatVariables = List.empty[RepeatNewVarValue]
+    var repVar = parseRepeatAssign()
+    repeatVariables = repVar :: repeatVariables
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      repVar = parseRepeatAssign()
       repeatVariables = repVar :: repeatVariables
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        repVar = parseRepeatAssign()
-        repeatVariables = repVar :: repeatVariables
-      }
-      if (tokens.peek(NL)) while (tokens.peek(NL)) tokens.consume(NL)
-      RepeatExpr(Some(repeatVariables.reverse))
     }
+    if (tokens.peek(NL)) while (tokens.peek(NL)) tokens.consume(NL)
+    RepeatExpr(Some(repeatVariables.reverse))
   }
 
   def parseRepeatAssign() : RepeatNewVarValue = {
@@ -586,7 +583,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     tokens.consume(WHILE)
     val comp = parseLogicalExpr()
     tokens.consume(DO)
-    WhileExpression(comp, parsePipedOrBodyExpression)
+    WhileExpression(comp, parsePipedOrBodyExpression())
   }
 
 
@@ -594,7 +591,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     tokens.consume(UNTIL)
     val comp = parseLogicalExpr()
     tokens.consume(DO)
-    UntilExpression(comp, parsePipedOrBodyExpression)
+    UntilExpression(comp, parsePipedOrBodyExpression())
   }
 
   def parseLoopExpr() : Expression = {
@@ -652,7 +649,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseForBody() : Expression = {
     tokens.consume(DO)
-    parsePipedOrBodyExpression
+    parsePipedOrBodyExpression()
   }
 
   def parseBlockExpr() : Expression = {
@@ -933,8 +930,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       expr = Identifier(id.value)
     }
 
-    val isEndToken = funcCallEndToken()
-    if (!isEndToken) {
+    if (!funcCallEndToken()) {
       var args = List.empty[Expression]
       val func = expr
       while (!funcCallEndToken()) {
@@ -948,8 +944,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       }
       FunctionCallExpression(func, args.reverse)
     } else {
-      if (expr == null)
+      if (expr == null) {
+        println(s"@@INVALID EXPRESSION TOKENS= $tokens")
         throw InvalidExpression()
+      }
       expr
     }
   }
@@ -962,7 +960,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] ||
         next == INDENT || next == DEDENT || next == ASSIGN || next == PLUS_ASSIGN ||
         next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN ||
-        next == ELSE || next == RPAREN || next == IN
+        next == ELSE || next == RPAREN || next == IN || next == RBRACKET || next == RPAREN
     }
   }
 
