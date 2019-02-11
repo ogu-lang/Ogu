@@ -177,6 +177,11 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case ForwardPipeFirstArgFuncCallExpression(args) =>
         strBuf ++= s"(-> ${args.map(toClojure).mkString(" ")})\n"
 
+
+      case BackwardPipeFuncCallExpression(args) =>
+        strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})\n"
+
+
       case SimpleDefDecl(id, args, BodyGuardsExpresion(guards), None) =>
         strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n"
         strBuf ++= s"  (cond\n${guards.map(toClojureDefBodyGuardExpr).mkString("\n")}"
