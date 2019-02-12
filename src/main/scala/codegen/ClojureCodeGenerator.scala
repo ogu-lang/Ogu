@@ -104,7 +104,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         }
 
       case ForExpression(variables, body) =>
-        strBuf ++= s"(for [${variables.map(toClojureForVarDeclIn).mkString("\n")}] \n${toClojure(body)})"
+        strBuf ++= s"(doall (for [${variables.map(toClojureForVarDeclIn).mkString("\n")}] \n${toClojure(body)}))"
 
       case LoopExpression(variables, None, body) =>
         strBuf ++= s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n ${toClojure(body)})"
