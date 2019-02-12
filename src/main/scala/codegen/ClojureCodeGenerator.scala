@@ -20,7 +20,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case LetDeclExpr(decls: List[LetVariable], Some(expression)) =>
         strBuf ++= "(let ["
-        strBuf ++= decls.map(d => s"${d.id} ${toClojure(d.value)}").mkString(",\n")
+        strBuf ++= decls.map(d => s"${d.id} ${toClojure(d.value)}").mkString(" ")
         strBuf ++= " ]\n"
         strBuf ++= s" ${toClojure(expression)})\n"
 
@@ -48,7 +48,17 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= s"(mod ${toClojure(left)} ${toClojure(right)})"
 
       case Identifier(id) =>
-        strBuf ++= id
+        val pos = id.lastIndexOf('.')
+        if (pos <= 1) {
+          strBuf ++= id
+        } else {
+          val sb = new StringBuilder(id)
+          sb.replace(pos, pos + 1, "/")
+          strBuf ++= sb.toString()
+        }
+
+      case BoolLiteral(value) =>
+        strBuf ++= value.toString
 
       case IntLiteral(i) =>
         strBuf ++= i.toString
@@ -58,6 +68,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case StringLiteral(str) =>
         strBuf ++= str
+
+      case ArrayAccessExpression(array, index) =>
+        strBuf ++= s"(aget ${toClojure(array)} ${toClojure(index)})"
 
       case RangeExpression(ini, end) =>
         strBuf ++= s"(range ${toClojure(ini)} (inc ${toClojure(end)}))"
@@ -78,6 +91,8 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= s"(for [${guards.map(toClojureListGuard).mkString(" ")}]"
         if (listOfExpr.size == 1) {
           strBuf ++= toClojure(listOfExpr.head)
+        } else {
+          ???
         }
         strBuf ++= ")\n"
 
@@ -88,11 +103,27 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           strBuf ++= s"(do ${expressions.map(toClojure).mkString("\n")})"
         }
 
+      case ForExpression(variables, body) =>
+        strBuf ++= s"(for [${variables.map(toClojureForVarDeclIn).mkString("\n")}] \n${toClojure(body)})"
+
       case LoopExpression(variables, None, body) =>
         strBuf ++= s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n ${toClojure(body)})"
 
+      case LoopExpression(variables, Some(guard), body) =>
+        strBuf ++= s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n" +
+          s"   (${toClojure(guard)} ${toClojure(body)}))"
+
+      case WhileGuardExpr(comp) =>
+        strBuf ++= s"when ${toClojure(comp)}"
+
+      case UntilGuardExpr(comp) =>
+        strBuf ++= s"when-not ${toClojure(comp)}"
+
       case RepeatExpr(Some(newValues)) =>
         strBuf ++= s"(recur ${newValues.map(toClojureNewVarValue).mkString(" ")})"
+
+      case WhenExpression(comp, body) =>
+        strBuf ++= s"(when ${toClojure(comp)}\n ${toClojure(body)})"
 
       case IfExpression(comp, thenPart, elifPart, elsePart) =>
         if (elifPart.nonEmpty) {
@@ -170,17 +201,17 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case FunctionCallWithDollarExpression(Identifier(id), args) =>
         strBuf ++= s"($id ${args.map(toClojure).mkString(" ")})\n"
 
-
       case ForwardPipeFuncCallExpression(args) =>
-        strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})\n"
+        strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})"
 
       case ForwardPipeFirstArgFuncCallExpression(args) =>
-        strBuf ++= s"(-> ${args.map(toClojure).mkString(" ")})\n"
-
+        strBuf ++= s"(-> ${args.map(toClojure).mkString(" ")})"
 
       case BackwardPipeFuncCallExpression(args) =>
-        strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})\n"
+        strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})"
 
+      case SimpleAssignExpr(ArrayAccessExpression(array, index), value) =>
+        strBuf ++= s"(aset ${toClojure(array)} ${toClojure(index)} ${toClojure(value)})"
 
       case SimpleDefDecl(id, args, BodyGuardsExpresion(guards), None) =>
         strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n"
@@ -189,7 +220,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         if (args.isEmpty) {
           strBuf ++= s"(def $id ($id))\n"
         }
-
 
       case SimpleDefDecl(id, args, body, None) =>
         strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n ${toClojure(body)})\n\n"
@@ -243,7 +273,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
               namedArgs = namedArgs.tail
             }
             if (andList.isEmpty) {
-              strBuf ++= s"  :else  ${toClojure(decl.body)}\n"
+              strBuf ++= s"  :else  ${toClojure(decl.body)}"
             }
             else if (andList.length == 1) {
               strBuf ++= s"${andList.mkString(" ")} ${toClojure(decl.body)}\n"
@@ -252,7 +282,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
               strBuf ++= s"  (and ${andList.mkString(" ")}) ${toClojure(decl.body)}\n"
             }
           }
-          strBuf ++= "\n)\n)\n"
+          strBuf ++= "))\n\n"
         }
 
       case LazyExpression(expr) =>
@@ -267,11 +297,18 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     strBuf.toString()
   }
 
-  def toClojureLoopVar(variable : LoopDeclVariable): String = {
+  def toClojureLoopVar(variable: LoopDeclVariable): String = {
     variable match {
       case LoopVarDecl(id, initialValue) => s"$id ${toClojure(initialValue)}"
       case _ => ???
     }
+  }
+
+  def toClojureForVarDeclIn(variable: ForVarDeclIn): String = {
+   variable match {
+     case ForVarDeclIn(id, initialValue) => s"$id ${toClojure(initialValue)}"
+     case _ => ???
+   }
   }
 
   def toClojureNewVarValue(variable: RepeatNewVarValue): String = {

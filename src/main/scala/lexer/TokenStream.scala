@@ -69,6 +69,18 @@ case class TokenStream(var tokens: List[TOKEN]) {
     throw UnexpectedTokenClassException()
   }
 
+  def consumeOptional(tok: TOKEN): Unit = {
+    if (peek(tok)) {
+      consume(tok)
+    }
+  }
+
+  def consumeOptionals(tok: TOKEN): Unit = {
+    while (peek(tok)) {
+      consume(tok)
+    }
+  }
+
   override def toString: String = {
     tokens.toString()
   }

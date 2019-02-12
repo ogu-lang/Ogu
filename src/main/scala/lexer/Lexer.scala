@@ -171,6 +171,7 @@ class Lexer {
       case "do" => DO
       case "elif" => ELIF
       case "else" => ELSE
+      case "false" => BOOL_LITERAL(false)
       case "for" => FOR
       case "if" => IF
       case "in" => IN
@@ -181,7 +182,9 @@ class Lexer {
       case "otherwise" => OTHERWISE
       case "recur" => RECUR
       case "repeat" => REPEAT
+      case "set" => SET
       case "then" => THEN
+      case "true" => BOOL_LITERAL(true)
       case "until" => UNTIL
       case "var" => VAR
       case "val" =>

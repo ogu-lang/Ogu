@@ -193,7 +193,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       while (!tokens.peek(DEDENT)) {
         val whereDef = parseWhereDef()
         listOfWhereDefs = whereDef :: listOfWhereDefs
-        if (tokens.peek(NL)) while (tokens.peek(NL)) tokens.consume(NL)
+        tokens.consumeOptionals(NL)
       }
       tokens.consume(DEDENT)
     }
@@ -307,6 +307,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseLetExpr() : Expression = {
     tokens.consume(LET)
+    tokens.consumeOptionals(NL)
+    var insideIndent = tokens.peek(INDENT)
+    if (insideIndent)
+      tokens.consume(INDENT)
     var letVar = parseLetVar()
     var listOfLetVars = List.empty[Variable]
     listOfLetVars = letVar :: listOfLetVars
@@ -323,6 +327,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         tokens.consume(NL)
         Some(parseBlockExpr())
       }
+    }
+    if (insideIndent) {
+      tokens.consumeOptionals(NL)
+      tokens.consume(DEDENT)
     }
 
     val body: Option[Expression] =
@@ -343,6 +351,8 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       } else {
         None
       }
+
+
     LetDeclExpr(listOfLetVars.reverse, body)
   }
 
@@ -360,12 +370,14 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseLetVar() : Variable = {
+    tokens.consumeOptionals(NL)
     if (!tokens.peek(LPAREN)) {
       val idToken = tokens.consume(classOf[ID])
       tokens.consume(ASSIGN)
       val expr = parsePipedOrBodyExpression()
       LetVariable(idToken.value, expr)
-    } else {
+    }
+    else {
       tokens.consume(LPAREN)
       var ids = List.empty[String]
       val idToken = tokens.consume(classOf[ID])
@@ -486,8 +498,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       parseLetExpr()
     else if (tokens.peek(VAR))
       parseVarExpr()
-    else if (tokens.peek(SET))
-      parseAssignExpr()
+
     else
       parseLambdaExpr()
   }
@@ -517,6 +528,9 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     else if (tokens.peek(RECUR)) {
       parseRecurExpr()
     }
+    else if (tokens.peek(SET)) {
+      parseAssignExpr()
+    }
     else {
       println(s"ERROR PARSE CONTROL tokens= $tokens")
       throw InvalidNodeException(tokens.nextToken())
@@ -537,7 +551,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       repVar = parseRepeatAssign()
       repeatVariables = repVar :: repeatVariables
     }
-    if (tokens.peek(NL)) while (tokens.peek(NL)) tokens.consume(NL)
+    tokens.consumeOptionals(NL)
     RepeatExpr(Some(repeatVariables.reverse))
   }
 
@@ -565,7 +579,6 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val forVarDecl = parseForVarDecl()
       listOfDecls = forVarDecl :: listOfDecls
     }
-    listOfDecls = forVarDecl :: listOfDecls
     listOfDecls.reverse
   }
 
@@ -600,7 +613,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     val loopDecls = parseLoopDecls()
 
     var guardExpr : Option[LoopGuard] = None
-    if (tokens.peek(NL)) while(tokens.peek(NL)) tokens.consume(NL)
+    tokens.consumeOptionals(NL)
 
     if (tokens.peek(WHILE)) {
       tokens.consume(WHILE)
@@ -659,7 +672,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     while (!tokens.peek(DEDENT)) {
       loop += 1
       val expr = parsePipedExpr()
-      if (tokens.peek(NL)) tokens.consume(NL)
+      tokens.consumeOptionals(NL)
       listOfExpressions = expr :: listOfExpressions
     }
     tokens.consume(DEDENT)
@@ -992,7 +1005,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       expr = parsePipedExpr()
       tokens.consume(RCURLY)
     }
-
+    else if (tokens.peek(classOf[BOOL_LITERAL])) {
+      val flag = tokens.consume(classOf[BOOL_LITERAL])
+      expr = BoolLiteral(flag.value)
+    }
     else if (tokens.peek(classOf[INT_LITERAL])) {
       val num = tokens.consume(classOf[INT_LITERAL])
       expr = IntLiteral(num.value)
@@ -1029,6 +1045,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val fs = tokens.consume(classOf[FSTRING_LITERAL])
       expr = FStringLiteral(fs.value)
     }
+
     if (expr == null) {
       println(s"!!! expr == null, tokens = $tokens")
       throw UnexpectedTokenClassException()

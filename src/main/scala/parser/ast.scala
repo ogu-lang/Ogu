@@ -85,6 +85,7 @@ trait LiteralExpression extends Expression
 case class StringLiteral(value: String) extends LiteralExpression
 case class CharLiteral(value: String) extends LiteralExpression
 
+case class BoolLiteral(value: Boolean) extends LiteralExpression
 case class IntLiteral(value: Int) extends LiteralExpression
 case class LongLiteral(value: Long) extends LiteralExpression
 case class FloatLiteral(value: Float) extends LiteralExpression

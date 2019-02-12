@@ -57,6 +57,8 @@ case class FLOAT_LITERAL(value: Float) extends LITERAL
 case class LONG_LITERAL(value: Long) extends LITERAL
 case class BIGINT_LITERAL(value: BigInt) extends LITERAL
 case class BIGDECIMAL_LITERAL(value: BigDecimal) extends LITERAL
+case class BOOL_LITERAL(value: Boolean) extends LITERAL
+
 trait DATETIME_LITERAL extends TOKEN
 case class ISODATETIME_LITERAL(value: DateTime) extends DATETIME_LITERAL
 
