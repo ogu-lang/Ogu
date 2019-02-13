@@ -19,6 +19,8 @@ class Lexer {
   var currentLine = 0
   var currentColumn = 0
   var parenLevel = 0
+  var currentString = ""
+  var parseMultiLineString = false
 
   def scanLine(line: String): List[TOKEN] = {
     currentLine += 1
@@ -31,13 +33,13 @@ class Lexer {
     if (currentColumn < len) {
       val str = text.substring(currentColumn)
       val rest = splitLine(str).map(strToToken)
-      tokens = tokens.reverse ++ rest
+      tokens = tokens.filter(t => t != SKIP).reverse ++ rest
     }
-    val result = if (len > 0 && tokens.nonEmpty && parenLevel == 0)
+    val result = if (len > 0 && tokens.nonEmpty && parenLevel == 0 && !parseMultiLineString)
       tokens ++ List(NL)
     else
       tokens
-    result
+    result.filter(t => t != SKIP)
   }
 
   def splitLine(str: String) : List[String] = {
@@ -125,8 +127,23 @@ class Lexer {
   }
 
   def strToToken(str: String) : TOKEN = {
-    if (str.head == '\"')
+    if (str.head == '\"') {
+      if (!str.endsWith("\"")) {
+        println(s"PARSE MULTILINE STR (${str})")
+        this.currentString = str
+        this.parseMultiLineString = true
+        return SKIP
+      }
       return STRING_LITERAL(str)
+    }
+    if (parseMultiLineString) {
+      this.currentString += str
+      if (str.endsWith("\"")) {
+        parseMultiLineString = false
+        return STRING_LITERAL(currentString)
+      }
+      return SKIP
+    }
     if (str.head == '\'')
       return CHAR_LITERAL(str)
     if (str.head == '#')

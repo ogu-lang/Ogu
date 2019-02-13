@@ -26,6 +26,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseModuleNodes() : List[LangNode] = {
     var result = List.empty[LangNode]
+    println(s"parseModuleNodes(tokens=${tokens})")
     while (tokens.nonEmpty) {
       if (tokens.peek(DEF))
         result = multiDef(parseDef()) :: result

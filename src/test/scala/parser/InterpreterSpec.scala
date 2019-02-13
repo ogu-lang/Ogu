@@ -35,5 +35,6 @@ class InterpreterSpec extends FlatSpec with Matchers {
     run("/alg/e5.ogu") should be(232792560)
     run("/alg/e6.ogu") should be(25164150)
     run("/alg/e7.ogu") should be(104743)
+    run("/alg/e8.ogu") should be(23514624000L)
   }
 }
