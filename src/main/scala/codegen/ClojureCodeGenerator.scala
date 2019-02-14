@@ -142,6 +142,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case FunctionCallExpression(func, args) =>
         strBuf ++= s"(${toClojure(func)} ${args.map(toClojure).mkString(" ")})"
 
+      case FunctionCallWithDollarExpression(func, args) =>
+        strBuf ++= s"(${toClojure(func)} ${args.map(toClojure).mkString(" ")})"
+
       case EqualsExpr(left, right) =>
         strBuf ++= s"(= ${toClojure(left)} ${toClojure(right)})"
 
