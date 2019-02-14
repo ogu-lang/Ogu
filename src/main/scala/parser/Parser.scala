@@ -135,7 +135,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       var expr: Expression = null
       if (!tokens.peek(NL)) {
         expr = parsePipedExpr()
-        tokens.consume(NL)
+        tokens.consumeOptionals(NL)
       }
       else {
         tokens.consume(NL)
@@ -185,7 +185,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     if (!tokens.peek(NL)) {
       val whereDef = parseWhereDef()
       listOfWhereDefs = whereDef :: listOfWhereDefs
-      tokens.consume(NL)
+      tokens.consumeOptionals(NL)
     } else {
       tokens.consume(NL)
     }
@@ -218,7 +218,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       tokens.consume(RPAREN)
     }
     var listOfArgs = List.empty[Expression]
-    while (!tokens.peek(ASSIGN) && !tokens.peek(GUARD)) {
+    while (!tokens.peek(ASSIGN) && !tokens.peek(GUARD) && !tokens.peek(NL)) {
       val expr = parseWhereArg()
       listOfArgs = expr :: listOfArgs
     }
@@ -234,7 +234,13 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         WhereDefSimple(listOfIds.head, if (listOfArgs.isEmpty) None else Some(listOfArgs.reverse), body)
       else
         WhereDefTupled(listOfIds, if (listOfArgs.isEmpty) None else Some(listOfArgs.reverse), body)
-    } else if (tokens.peek(GUARD)) {
+    } else if (tokens.peek(GUARD) || tokens.peek(NL)) {
+      var inIndent = false
+      tokens.consumeOptionals(NL)
+      if (tokens.peek(INDENT)) {
+        inIndent = true
+        tokens.consume(INDENT)
+      }
       var guards = List.empty[WhereGuard]
       while (tokens.peek(GUARD) || tokens.peek(INDENT)) {
         if (tokens.peek(INDENT)) {
@@ -268,6 +274,9 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
           guards = guard :: guards
           tokens.consume(NL)
         }
+      }
+      if (inIndent) {
+        tokens.consume(DEDENT)
       }
       if (listOfIds.size == 1)
         WhereDefWithGuards(listOfIds.head, if (listOfArgs.isEmpty) None else Some(listOfArgs), guards.reverse)
@@ -309,14 +318,19 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   def parseLetExpr() : Expression = {
     tokens.consume(LET)
     tokens.consumeOptionals(NL)
-    var insideIndent = tokens.peek(INDENT)
-    if (insideIndent)
+    var insideIndent = if (tokens.peek(INDENT)) 1 else 0
+    if (insideIndent == 1)
       tokens.consume(INDENT)
     var letVar = parseLetVar()
     var listOfLetVars = List.empty[Variable]
     listOfLetVars = letVar :: listOfLetVars
     while (tokens.peek(COMMA)) {
       tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      if (tokens.peek(INDENT)) {
+        tokens.consume(INDENT)
+        insideIndent += 1
+      }
       letVar = parseLetVar()
       listOfLetVars = letVar :: listOfLetVars
     }
@@ -329,9 +343,12 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         Some(parseBlockExpr())
       }
     }
-    if (insideIndent) {
+
+    while (insideIndent > 0) {
+      println(s"@@@ insideIndent = ${insideIndent},\n@@@ tokens=({$tokens})\n@@@ listOfLetVars=${listOfLetVars}")
       tokens.consumeOptionals(NL)
       tokens.consume(DEDENT)
+      insideIndent -= 1
     }
 
     val body: Option[Expression] =
@@ -976,7 +993,8 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] ||
         next == INDENT || next == DEDENT || next == ASSIGN || next == PLUS_ASSIGN ||
         next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN ||
-        next == ELSE || next == RPAREN || next == IN || next == RBRACKET || next == RPAREN
+        next == ELSE || next == RPAREN || next == IN || next == RBRACKET || next == RPAREN ||
+      next == WHERE
     }
   }
 

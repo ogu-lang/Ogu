@@ -17,8 +17,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           strBuf ++= toClojure(node)
         }
 
-
-
       case LetDeclExpr(decls, Some(expression)) =>
         strBuf ++= "(let ["
         strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
@@ -69,6 +67,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case LongLiteral(i) =>
         strBuf ++= i.toString
+
+      case DoubleLiteral(d) =>
+        strBuf ++= d.toString
 
       case StringLiteral(str) =>
         strBuf ++= str
@@ -163,6 +164,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case LessOrEqualThanExpr(left, right) =>
         strBuf ++= s"(<= ${toClojure(left)} ${toClojure(right)})"
 
+      case ConcatExpression(left, right) =>
+        strBuf ++= s"(concat ${toClojure(left)} ${toClojure(right)})"
+
       case ConsExpression(left, right) =>
         strBuf ++= s"(cons ${toClojure(left)} ${toClojure(right)})"
 
@@ -182,7 +186,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         if (args.isEmpty) strBuf ++= "*'" else strBuf ++= s"(* ${args.map(toClojure).mkString(" ")})"
 
       case PartialDiv(args) =>
-        if (args.isEmpty) strBuf ++= "/'" else strBuf ++= s"(/ ${args.map(toClojure).mkString(" ")})"
+        if (args.isEmpty) strBuf ++= "/" else strBuf ++= s"(/ ${args.map(toClojure).mkString(" ")})"
 
       case PartialMod(args) =>
         if (args.isEmpty) strBuf ++= "%'" else strBuf ++= s"(% ${args.map(toClojure).mkString(" ")})"
@@ -372,9 +376,18 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case WhereDefSimple(id, None, body) => s"(def $id ${toClojure(body)})"
       case WhereDefSimple(id, Some(args), body) =>
         s"(def $id (fn [${args.map(toClojure).mkString(" ")}] ${toClojure(body)}))"
+      case WhereDefWithGuards(id, Some(args), guards) =>
+        s"(def $id (fn [${args.map(toClojure).mkString(" ")}] \n" +
+        s"(cond ${guards.map(toClojureWhereGuard).mkString("\n")})))"
+
       case _ => ???
     }
   }
 
-
+  def toClojureWhereGuard(guard: WhereGuard) : String = {
+    guard match  {
+      case WhereGuard(Some(comp), expr) => s"${toClojure(comp)} ${toClojure(expr)}"
+      case WhereGuard(None, expr) => s":else ${toClojure(expr)}"
+    }
+  }
 }
