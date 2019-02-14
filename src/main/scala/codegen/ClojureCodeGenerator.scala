@@ -91,6 +91,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case EmptyListExpresion() =>
         strBuf ++= "[]"
 
+      case ListExpression(listOfExpr, None) =>
+        strBuf ++= s"[${listOfExpr.map(toClojure).mkString(" ")}]"
+
       case ListExpression(listOfExpr, Some(guards)) =>
         strBuf ++= s"(for [${guards.map(toClojureListGuard).mkString(" ")}]"
         if (listOfExpr.size == 1) {

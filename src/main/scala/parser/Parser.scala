@@ -1151,9 +1151,11 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         guard = parseListGuard()
         listOfGuards = guard :: listOfGuards
       }
-      expr = ListExpression(List(expr), if (listOfGuards.isEmpty) None else Some(listOfGuards.reverse))
+      expr = ListExpression(List(expr), Some(listOfGuards.reverse))
     }
     tokens.consume(RBRACKET)
+    if (!expr.isInstanceOf[ValidRangeExpression])
+      expr = ListExpression(List(expr), None)
     expr
   }
 
