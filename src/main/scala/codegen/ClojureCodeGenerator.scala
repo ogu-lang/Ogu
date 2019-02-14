@@ -18,15 +18,16 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         }
 
 
+
       case LetDeclExpr(decls, Some(expression)) =>
         strBuf ++= "(let ["
-        strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${d.id} ${toClojure(d.value)}").mkString(" ")
+        strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
         strBuf ++= " ]\n"
         strBuf ++= s" ${toClojure(expression)})\n"
 
       case LetDeclExpr(decls: List[LetVariable], None) =>
         for (decl <- decls.asInstanceOf[List[LetVariable]]) {
-          strBuf ++= s"(def ${decl.id} ${toClojure(decl.value)})\n"
+          strBuf ++= s"(def ${toClojureLetId(decl.id)} ${toClojure(decl.value)})\n"
         }
 
       case AddExpression(left, right) =>
@@ -162,11 +163,14 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case LambdaExpression(args, expr) =>
         strBuf ++= s"(fn [${args.map(toClojureLambdaArg).mkString(" ")}] ${toClojure(expr)})"
 
+      case LogicalAndExpression(left, right) =>
+        strBuf ++= s"(and ${toClojure(left)} ${toClojure(right)})"
+
       case PartialAdd(args) =>
         if (args.isEmpty) strBuf ++= "+" else strBuf ++= s"(+ ${args.map(toClojure).mkString(" ")})"
 
       case PartialSub(args) =>
-        if (args.isEmpty) strBuf ++= "-'" else strBuf ++= s"(- ${args.map(toClojure).mkString(" ")})"
+        if (args.isEmpty) strBuf ++= "-" else strBuf ++= s"(- ${args.map(toClojure).mkString(" ")})"
 
       case PartialMul(args) =>
         if (args.isEmpty) strBuf ++= "*'" else strBuf ++= s"(* ${args.map(toClojure).mkString(" ")})"
@@ -237,6 +241,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           strBuf ++= s"(def $id ($id))\n\n"
         }
 
+      case TupleExpr(exprs) =>
+        strBuf ++= s"[${exprs.map(toClojure).mkString(" ")}]"
+
       case WhereBlock(defs) =>
         strBuf ++= defs.map(toCloureWhereDef).mkString("\n")
 
@@ -300,6 +307,13 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     strBuf.toString()
   }
 
+  def toClojureLetId(id: LetId) : String = {
+    id match {
+      case LetSimpleId(id) => id
+      case LetTupledId(ids) => s"[${ids.map(toClojureLetId).mkString(" ")}]"
+    }
+  }
+
   def toClojureLoopVar(variable: LoopDeclVariable): String = {
     variable match {
       case LoopVarDecl(id, initialValue) => s"$id ${toClojure(initialValue)}"
@@ -321,7 +335,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
   def toClojureListGuard(guard: ListGuard): String = {
     guard match {
       case ListGuardDecl(id, value) => s"$id ${toClojure(value)}"
-      case _ => ???
+      case ListGuardExpr(expr) => s":when ${toClojure(expr)}"
     }
   }
 

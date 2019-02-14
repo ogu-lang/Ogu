@@ -372,28 +372,30 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseLetVar() : Variable = {
     tokens.consumeOptionals(NL)
-    if (!tokens.peek(LPAREN)) {
-      val idToken = tokens.consume(classOf[ID])
-      tokens.consume(ASSIGN)
-      val expr = parsePipedOrBodyExpression()
-      LetVariable(idToken.value, expr)
-    }
-    else {
-      tokens.consume(LPAREN)
-      var ids = List.empty[String]
-      val idToken = tokens.consume(classOf[ID])
-      ids = idToken.value :: ids
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        val idToken = tokens.consume(classOf[ID])
-        ids = idToken.value :: ids
-      }
-      tokens.consume(RPAREN)
-      tokens.consume(ASSIGN)
-      LetTupledVariable(ids, parsePipedOrBodyExpression())
-    }
+    val id = parseLetId()
+    tokens.consume(ASSIGN)
+    val expr = parsePipedOrBodyExpression()
+    LetVariable(id, expr)
   }
 
+  def parseLetId() : LetId = {
+    if (!tokens.peek(LPAREN)) {
+      val idToken = tokens.consume(classOf[ID])
+      LetSimpleId(idToken.value)
+    } else {
+      tokens.consume(LPAREN)
+      var ids = List.empty[LetId]
+      val id = parseLetId()
+      ids =id :: ids
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        val id = parseLetId()
+        ids = id :: ids
+      }
+      tokens.consume(RPAREN)
+      LetTupledId(ids)
+    }
+  }
 
   private def parsePipedOrBodyExpression(): Expression = {
     if (!tokens.peek(NL))
@@ -992,7 +994,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
           tupleElem = parsePipedExpr()
           tupleElements = tupleElem :: tupleElements
         }
-        expr = TupleExpr(tupleElements)
+        expr = TupleExpr(tupleElements.reverse)
       }
       tokens.consume(RPAREN)
     }

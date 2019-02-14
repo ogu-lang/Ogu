@@ -18,9 +18,12 @@ case class LambdaSimpleArg(name: String) extends Name(name) with LambdaArg
 case class Identifier(name: String) extends Name(name) with AssignableExpression
 case class LambdaTupleArg(names: List[String]) extends LambdaArg
 
+trait LetId
+case class LetSimpleId(id:String) extends LetId
+case class LetTupledId(ids:List[LetId]) extends LetId
+
 trait Variable
-case class LetVariable(id: String, value: Expression) extends Variable
-case class LetTupledVariable(ids: List[String], value: Expression) extends Variable
+case class LetVariable(id: LetId, value: Expression) extends Variable
 case class VarVariable(id: String, initialValue: Expression) extends Variable
 case class VarTupledVariable(ids: List[String], initialValue : Expression) extends Variable
 
