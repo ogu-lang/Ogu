@@ -149,6 +149,8 @@ class Lexer {
       return CHAR_LITERAL(str)
     if (str.head == '#')
       return tryParseHashTag(str)
+    if (str.head == ':' && str != "::")
+      return ATOM(str)
     var token = tryParseId(str)
     if (token.isInstanceOf[LEXER_ERROR])
       token = tryParseNum(str)
@@ -348,7 +350,7 @@ class Lexer {
   }
 
   val opChars: Set[Char] = Set('@', '~', '$', '+','-','*', '/', '%', '^', '|', '&', '=', '<', '>', '(', ')', '[', ']',
-    '!', '?', '.', ':', ';', ',', '\\')
+    '{', '}', '!', '?', '.', ':', ';', ',', '\\')
 
   val punctChars: Set[Char] = Set(',', '(', ')', '[', ']', '{', '}', '\\')
 

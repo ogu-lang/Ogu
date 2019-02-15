@@ -931,20 +931,19 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       parsePartialOper()
     }
     else if (tokens.peek(LPAREN) || tokens.peek(LBRACKET)) {
-      parseAtomExpr()
+      parseAtomicExpr()
     }
     else if (tokens.peek(LCURLY)) {
-      parseAtomExpr()
+      parseAtomicExpr()
     }
-    else if (tokens.peek(classOf[LITERAL])) {
-      parseAtomExpr()
+    else if (tokens.peek(classOf[LITERAL]) || tokens.peek(classOf[ATOM])) {
+      parseAtomicExpr()
     }
     else if (tokens.peek(LAZY)) {
       tokens.consume(LAZY)
       LazyExpression(parsePipedExpr())
     } else {
       parseFuncCallExpr()
-
     }
   }
 
@@ -996,13 +995,12 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] ||
         next == INDENT || next == DEDENT || next == ASSIGN || next == PLUS_ASSIGN ||
         next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN ||
-        next == ELSE || next == RPAREN || next == IN || next == RBRACKET || next == RPAREN ||
-      next == WHERE
+        next == ELSE || next == RPAREN || next == IN || next == RBRACKET || next == RCURLY || next == WHERE
     }
   }
 
-  def parseAtomExpr() : Expression = {
-    var expr : Expression = null
+  def parseAtomicExpr() : Expression = {
+    var expr: Expression = null
     if (tokens.peek(LPAREN)) {
       tokens.consume(LPAREN)
       expr = parsePipedExpr()
@@ -1024,57 +1022,72 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
     }
     else if (tokens.peek(LCURLY)) {
-      // TODO implements sets
-      tokens.consume(LCURLY)
-      expr = parsePipedExpr()
-      tokens.consume(RCURLY)
+      expr = parseDictionaryExpr()
     }
-    else if (tokens.peek(classOf[BOOL_LITERAL])) {
-      val flag = tokens.consume(classOf[BOOL_LITERAL])
-      expr = BoolLiteral(flag.value)
+    else if (tokens.peek(classOf[ATOM])) {
+      expr = parseAtom()
     }
-    else if (tokens.peek(classOf[INT_LITERAL])) {
-      val num = tokens.consume(classOf[INT_LITERAL])
-      expr = IntLiteral(num.value)
+    else {
+      expr = parseLiteral()
     }
-    else if (tokens.peek(classOf[LONG_LITERAL])) {
-      val num = tokens.consume(classOf[LONG_LITERAL])
-      expr = LongLiteral(num.value)
-    }
-    else if (tokens.peek(classOf[BIGINT_LITERAL])) {
-      val num = tokens.consume(classOf[BIGINT_LITERAL])
-      expr = BigIntLiteral(num.value)
-    }
-    else if (tokens.peek(classOf[DOUBLE_LITERAL])) {
-      val num = tokens.consume(classOf[DOUBLE_LITERAL])
-      expr = DoubleLiteral(num.value)
-    }
-    else if (tokens.peek(classOf[STRING_LITERAL])) {
-      val str = tokens.consume(classOf[STRING_LITERAL])
-      expr = StringLiteral(str.value)
-    }
-    else if (tokens.peek(classOf[ISODATETIME_LITERAL])) {
-      val date = tokens.consume(classOf[ISODATETIME_LITERAL])
-      expr = DateTimeLiteral(date.value)
-    }
-    else if (tokens.peek(classOf[CHAR_LITERAL])) {
-      val chr = tokens.consume(classOf[CHAR_LITERAL])
-      expr = CharLiteral(chr.chr)
-    }
-    else if (tokens.peek(classOf[REGEXP_LITERAL])) {
-      val re = tokens.consume(classOf[REGEXP_LITERAL])
-      expr = RegexpLiteral(re.re)
-    }
-    else if (tokens.peek(classOf[FSTRING_LITERAL])) {
-      val fs = tokens.consume(classOf[FSTRING_LITERAL])
-      expr = FStringLiteral(fs.value)
-    }
+
 
     if (expr == null) {
       println(s"!!! expr == null, tokens = $tokens")
       throw UnexpectedTokenClassException()
     }
     expr
+  }
+
+  def parseAtom() : Expression = {
+    val atom = tokens.consume(classOf[ATOM])
+    Atom(atom.value)
+  }
+
+  def parseLiteral() : Expression = {
+    if (tokens.peek(classOf[BOOL_LITERAL])) {
+      val flag = tokens.consume(classOf[BOOL_LITERAL])
+      BoolLiteral(flag.value)
+    }
+    else if (tokens.peek(classOf[INT_LITERAL])) {
+      val num = tokens.consume(classOf[INT_LITERAL])
+      IntLiteral(num.value)
+    }
+    else if (tokens.peek(classOf[LONG_LITERAL])) {
+      val num = tokens.consume(classOf[LONG_LITERAL])
+      LongLiteral(num.value)
+    }
+    else if (tokens.peek(classOf[BIGINT_LITERAL])) {
+      val num = tokens.consume(classOf[BIGINT_LITERAL])
+      BigIntLiteral(num.value)
+    }
+    else if (tokens.peek(classOf[DOUBLE_LITERAL])) {
+      val num = tokens.consume(classOf[DOUBLE_LITERAL])
+      DoubleLiteral(num.value)
+    }
+    else if (tokens.peek(classOf[STRING_LITERAL])) {
+      val str = tokens.consume(classOf[STRING_LITERAL])
+      StringLiteral(str.value)
+    }
+    else if (tokens.peek(classOf[ISODATETIME_LITERAL])) {
+      val date = tokens.consume(classOf[ISODATETIME_LITERAL])
+      DateTimeLiteral(date.value)
+    }
+    else if (tokens.peek(classOf[CHAR_LITERAL])) {
+      val chr = tokens.consume(classOf[CHAR_LITERAL])
+      CharLiteral(chr.chr)
+    }
+    else if (tokens.peek(classOf[REGEXP_LITERAL])) {
+      val re = tokens.consume(classOf[REGEXP_LITERAL])
+      RegexpLiteral(re.re)
+    }
+    else if (tokens.peek(classOf[FSTRING_LITERAL])) {
+      val fs = tokens.consume(classOf[FSTRING_LITERAL])
+      FStringLiteral(fs.value)
+    }
+    else  {
+      null
+    }
   }
 
   def parsePartialOper() : Expression = {
@@ -1204,6 +1217,31 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     } else {
       ListGuardExpr(parsePipedExpr())
     }
+  }
+
+  def parseDictionaryExpr() : Expression = {
+    println(s"@@Dictionary{${tokens})")
+    tokens.consume(LCURLY)
+    var listOfPairs = List.empty[(Expression, Expression)]
+    val key = parseKeyExpr()
+    val value = parseExpr()
+    listOfPairs = (key, value) :: listOfPairs
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      val key = parseKeyExpr()
+      val value = parseExpr()
+      listOfPairs = (key, value) :: listOfPairs
+    }
+    tokens.consume(RCURLY)
+    DictionaryExpression(listOfPairs.reverse)
+  }
+
+  def parseKeyExpr() : Expression = {
+    if (tokens.peek(classOf[ATOM]))
+      parseAtom()
+    else
+      parseLiteral()
   }
 
 }

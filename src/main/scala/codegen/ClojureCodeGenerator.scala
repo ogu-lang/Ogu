@@ -77,6 +77,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case StringLiteral(str) =>
         strBuf ++= str
 
+      case Atom(value) =>
+        strBuf ++= value
+
       case ArrayAccessExpression(array, index) =>
         strBuf ++= s"(aget ${toClojure(array)} ${toClojure(index)})"
 
@@ -106,6 +109,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           ???
         }
         strBuf ++= ")"
+
+      case DictionaryExpression(pairs) =>
+        strBuf ++= s"{${pairs.map(toClojureDictPair).mkString(" ")}}"
 
       case BlockExpression(expressions) =>
         if (expressions.size == 1) {
@@ -352,6 +358,10 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case LoopVarDecl(id, initialValue) => s"$id ${toClojure(initialValue)}"
       case _ => ???
     }
+  }
+
+  def toClojureDictPair(pair: (Expression, Expression)): String = {
+    s"${toClojure(pair._1)} ${toClojure(pair._2)}"
   }
 
   def toClojureForVarDeclIn(variable: ForVarDeclIn): String = {

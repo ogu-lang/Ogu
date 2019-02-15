@@ -19,6 +19,7 @@ case class LEXER_ERROR(line:Int, text:String) extends TOKEN
 case object INDENT extends TOKEN
 case object DEDENT extends TOKEN
 case object NL extends TOKEN
+case class ATOM(value: String) extends TOKEN
 case class ID(value: String) extends TOKEN
 trait KEYWORD extends TOKEN
 trait CONTROL extends KEYWORD

@@ -118,6 +118,7 @@ case class BackwardPipeFirstArgFuncCallExpression(args: List[Expression]) extend
 
 case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Expression
 
+case class Atom(value: String) extends Expression
 
 case class BlockExpression(expressions: List[Expression]) extends Expression
 
@@ -229,3 +230,5 @@ case class PartialGE(args: List[Expression]) extends PartialOper
 case class PartialPow(args: List[Expression]) extends PartialOper
 case class PartialCons(args: List[Expression]) extends PartialOper
 case class PartialConcat(args: List[Expression]) extends PartialOper
+
+case class DictionaryExpression(items: List[(Expression, Expression)]) extends Expression
