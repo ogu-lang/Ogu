@@ -36,6 +36,7 @@ case object LET extends DECL
 case object LOOP extends CONTROL
 case object MODULE extends KEYWORD
 case object OTHERWISE extends KEYWORD
+case object PRIVATE extends DECL
 case object RECUR extends CONTROL
 case object REPEAT extends CONTROL
 case object SET extends CONTROL

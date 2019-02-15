@@ -236,23 +236,37 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case SimpleAssignExpr(ArrayAccessExpression(array, index), value) =>
         strBuf ++= s"(aset ${toClojure(array)} ${toClojure(index)} ${toClojure(value)})"
 
-      case SimpleDefDecl(id, args, BodyGuardsExpresion(guards), None) =>
-        strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n"
+      case SimpleDefDecl(inner, id, args, BodyGuardsExpresion(guards), None) =>
+        if (inner) {
+          strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n"
+        } else {
+          strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n"
+        }
         strBuf ++= s"  (cond\n${guards.map(toClojureDefBodyGuardExpr).mkString("\n")}"
         strBuf ++= "))\n\n"
         if (args.isEmpty) {
           strBuf ++= s"(def $id ($id))\n\n"
         }
 
-      case SimpleDefDecl(id, args, body, None) =>
-        strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n ${toClojure(body)})\n\n"
+      case SimpleDefDecl(inner, id, args, body, None) =>
+        if (inner) {
+          strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n ${toClojure(body)})\n\n"
+        } else {
+          strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n ${toClojure(body)})\n\n"
+        }
         if (args.isEmpty) {
           strBuf ++= s"(def $id ($id))\n\n"
         }
 
-      case SimpleDefDecl(id, args, body, Some(whereBlock)) =>
-        strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n" +
-                   s"  ${toClojure(whereBlock)}\n    ${toClojure(body)})\n\n"
+      case SimpleDefDecl(inner, id, args, body, Some(whereBlock)) =>
+        if (inner) {
+          strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n" +
+            s"  ${toClojure(whereBlock)}\n    ${toClojure(body)})\n\n"
+        } else {
+          strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n" +
+            s"  ${toClojure(whereBlock)}\n    ${toClojure(body)})\n\n"
+        }
+
         if (args.isEmpty) {
           strBuf ++= s"(def $id ($id))\n\n"
         }

@@ -50,7 +50,7 @@ case class WhereBlock(whereDefs: List[WhereDef]) extends LangNode
 case class DefArg(expression: Expression)
 
 class DefDecl(val id: String) extends LangNode
-case class SimpleDefDecl(override val id: String, args: List[DefArg], body: Expression, whereBlock: Option[WhereBlock])
+case class SimpleDefDecl(inner: Boolean, override val id: String, args: List[DefArg], body: Expression, whereBlock: Option[WhereBlock])
   extends DefDecl(id) {
   def patterMatching(): Boolean =
     args.exists {

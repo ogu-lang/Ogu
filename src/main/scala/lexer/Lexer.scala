@@ -198,6 +198,7 @@ class Lexer {
       case "loop" => LOOP
       case "module" => MODULE
       case "otherwise" => OTHERWISE
+      case "priv" => PRIVATE
       case "recur" => RECUR
       case "repeat" => REPEAT
       case "set" => SET

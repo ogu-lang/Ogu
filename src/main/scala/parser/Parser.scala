@@ -28,12 +28,16 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     var result = List.empty[LangNode]
     println(s"parseModuleNodes(tokens=${tokens})")
     while (tokens.nonEmpty) {
-      if (tokens.peek(DEF))
-        result = multiDef(parseDef()) :: result
+      if (tokens.peek(PRIVATE)) {
+        tokens.consume(PRIVATE)
+        result = multiDef(parseDef(true)) :: result
+      }
+      else if (tokens.peek(DEF))
+        result = multiDef(parseDef(false)) :: result
       else{
         result = parsePipedExpr() :: result
       }
-      while (tokens.peek(NL)) tokens.consume(NL)
+      tokens.consumeOptionals(NL)
       //println(s"PARSED SO FAR: ${result.reverse}\n\n")
     }
     filter(result.reverse)
@@ -78,7 +82,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     result.reverse
   }
 
-  def parseDef() : LangNode = {
+  def parseDef(inner: Boolean) : LangNode = {
     tokens.consume(DEF)
     val defId = tokens.consume(classOf[ID])
     val args = parseDefArgs()
@@ -87,10 +91,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val body = parseDefBodyGuards()
       body match {
         case bd: BodyGuardsExpresionAndWhere =>
-          SimpleDefDecl(defId.value, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
+          SimpleDefDecl(inner, defId.value, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
         case _ =>
           val where = tryParseWhereBlock()
-          SimpleDefDecl(defId.value, args, body, where)
+          SimpleDefDecl(inner, defId.value, args, body, where)
       }
     }
     else if (tokens.peek(ASSIGN)) {
@@ -103,7 +107,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         parseBlockExpr()
       }
       val where = tryParseWhereBlock()
-      SimpleDefDecl(defId.value, args, body, where)
+      SimpleDefDecl(inner, defId.value, args, body, where)
     } else {
       throw InvalidDef()
     }
@@ -345,7 +349,6 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
 
     while (insideIndent > 0) {
-      println(s"@@@ insideIndent = ${insideIndent},\n@@@ tokens=({$tokens})\n@@@ listOfLetVars=${listOfLetVars}")
       tokens.consumeOptionals(NL)
       tokens.consume(DEDENT)
       insideIndent -= 1
