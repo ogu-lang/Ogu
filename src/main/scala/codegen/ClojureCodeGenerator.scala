@@ -6,9 +6,11 @@ import parser._
 
 class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
-  def mkString(): String = genCode(node)
+  private[this] var varDecls : Set[String] = Set.empty[String]
 
-  def genCode(node: LangNode): String = {
+  def mkString(): String = toClojure(node)
+
+  def toClojure(node: LangNode): String = {
     val strBuf = new StringBuilder()
     node match {
       case Module(name, decls) =>
@@ -27,6 +29,14 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         for (decl <- decls.asInstanceOf[List[LetVariable]]) {
           strBuf ++= s"(def ${toClojureLetId(decl.id)} ${toClojure(decl.value)})\n"
         }
+
+      case VarDeclExpr(decls, Some(expression)) =>
+        strBuf ++= "(with-local-vars ["
+        strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
+        strBuf ++= "]\n"
+        addVariables(decls)
+        strBuf ++= s"${toClojure(expression)})\n"
+        removeVariables(decls)
 
       case AddExpression(left, right) =>
         strBuf ++= s"(+ ${toClojure(left)} ${toClojure(right)})"
@@ -50,8 +60,12 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= s"(pow ${toClojure(left)} ${toClojure(right)})"
 
       case Identifier(id) =>
+        if (isVariable(id)) {
+          strBuf ++= "@"
+        }
         val pos = id.lastIndexOf('.')
         if (pos <= 1) {
+
           strBuf ++= id
         } else {
           val sb = new StringBuilder(id)
@@ -138,6 +152,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case RepeatExpr(Some(newValues)) =>
         strBuf ++= s"(recur ${newValues.map(toClojureNewVarValue).mkString(" ")})"
+
+      case WhileExpression(comp, body) =>
+        strBuf ++= s"(while ${toClojure(comp)} ${toClojure(body)})"
 
       case WhenExpression(comp, body) =>
         strBuf ++= s"(when ${toClojure(comp)}\n ${toClojure(body)})"
@@ -241,6 +258,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case SimpleAssignExpr(ArrayAccessExpression(array, index), value) =>
         strBuf ++= s"(aset ${toClojure(array)} ${toClojure(index)} ${toClojure(value)})"
+
+      case SimpleAssignExpr(Identifier(variable), value) =>
+        strBuf ++= s"(var-set $variable ${toClojure(value)})"
 
       case SimpleDefDecl(inner, id, args, BodyGuardsExpresion(guards), None) =>
         if (inner) {
@@ -427,5 +447,39 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case WhereGuard(Some(comp), expr) => s"${toClojure(comp)} ${toClojure(expr)}"
       case WhereGuard(None, expr) => s":else ${toClojure(expr)}"
     }
+  }
+
+
+  def isVariable(id: String): Boolean = {
+    println(s"@isVariable?($id), variables= ${this.varDecls}")
+    this.varDecls.contains(id)
+  }
+
+  def addVariables(decls: List[Variable]): Unit = {
+    println(s"antes de agregar  variables: ${this.varDecls}")
+
+    for (v <- decls) {
+      v match {
+        case LetVariable(LetSimpleId(id), _) => this.varDecls = this.varDecls + id
+        case VarVariable(id, _) => this.varDecls = this.varDecls + id
+        case VarTupledVariable(ids, _) => this.varDecls = this.varDecls  ++ ids
+      }
+    }
+    println(s"despues de agregar  variables: ${this.varDecls}")
+
+  }
+
+  def removeVariables(decls: List[Variable]): Unit = {
+    println(s"antes de remover  variables: ${this.varDecls}")
+
+    for (v <- decls) {
+      v match {
+        case LetVariable(LetSimpleId(id), _) => this.varDecls = this.varDecls - id
+        case VarVariable(id, _) => this.varDecls = this.varDecls - id
+        case VarTupledVariable(ids, _) => this.varDecls = this.varDecls -- ids
+      }
+    }
+    println(s"despues de remover  variables: ${this.varDecls}")
+
   }
 }

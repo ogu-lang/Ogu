@@ -30,8 +30,7 @@ case class VarTupledVariable(ids: List[String], initialValue : Expression) exten
 
 trait LetDeclExprTrait extends Expression
 case class LetDeclExpr(decls: List[Variable], inExpr: Option[Expression]) extends LetDeclExprTrait
-
-case class VarDeclExpr(decls: List[Variable]) extends Expression
+case class VarDeclExpr(decls: List[Variable], inExpr: Option[Expression]) extends Expression
 
 trait LoopDeclVariable extends Variable
 case class LoopVarDecl(id: String, initialValue: Expression) extends LoopDeclVariable
