@@ -634,8 +634,8 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     ForExpression(forDecls, forBody)
   }
 
-  def parseForDecls() : List[ForVarDeclIn] = {
-    var listOfDecls = List.empty[ForVarDeclIn]
+  def parseForDecls() : List[LoopDeclVariable] = {
+    var listOfDecls = List.empty[LoopDeclVariable]
     val forVarDecl = parseForVarDecl()
     listOfDecls = forVarDecl :: listOfDecls
 
@@ -647,13 +647,25 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     listOfDecls.reverse
   }
 
-  def parseForVarDecl() : ForVarDeclIn = {
-    val id = tokens.consume(classOf[ID])
-    if (tokens.peek(IN)) {
+  def parseForVarDecl() : LoopDeclVariable = {
+    if (!tokens.peek(LPAREN)) {
+      val id = tokens.consume(classOf[ID])
       tokens.consume(IN)
       ForVarDeclIn(id.value, parsePipedExpr())
-    } else {
-      throw UnexpectedTokenClassException()
+    }
+    else {
+      tokens.consume(LPAREN)
+      var ids = List.empty[String]
+      val id = tokens.consume(classOf[ID])
+      ids = id.value :: ids
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        val id = tokens.consume(classOf[ID])
+        ids = id.value :: ids
+      }
+      tokens.consume(RPAREN)
+      tokens.consume(IN)
+      ForVarDeclTupledIn(ids, parsePipedExpr())
     }
   }
 

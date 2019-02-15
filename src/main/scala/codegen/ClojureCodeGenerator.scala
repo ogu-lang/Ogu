@@ -378,10 +378,10 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     s"${toClojure(pair._1)} ${toClojure(pair._2)}"
   }
 
-  def toClojureForVarDeclIn(variable: ForVarDeclIn): String = {
+  def toClojureForVarDeclIn(variable: LoopDeclVariable): String = {
    variable match {
      case ForVarDeclIn(id, initialValue) => s"$id ${toClojure(initialValue)}"
-     case _ => ???
+     case ForVarDeclTupledIn(ids, initialValue) => s"[${ids.mkString(" ")}] ${toClojure(initialValue)}"
    }
   }
 

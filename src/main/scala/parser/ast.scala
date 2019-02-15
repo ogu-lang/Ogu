@@ -35,6 +35,7 @@ case class VarDeclExpr(decls: List[Variable], inExpr: Option[Expression]) extend
 trait LoopDeclVariable extends Variable
 case class LoopVarDecl(id: String, initialValue: Expression) extends LoopDeclVariable
 case class ForVarDeclIn(id: String, initialValue: Expression) extends LoopDeclVariable
+case class ForVarDeclTupledIn(ids: List[String], initialValue: Expression) extends LoopDeclVariable
 
 
 case class WhereGuard(guarExpr: Option[Expression], body: Expression)
@@ -122,7 +123,7 @@ case class Atom(value: String) extends Expression
 case class BlockExpression(expressions: List[Expression]) extends Expression
 
 class ControlExpression extends Expression
-case class ForExpression(variables: List[ForVarDeclIn], body: Expression) extends ControlExpression
+case class ForExpression(variables: List[LoopDeclVariable], body: Expression) extends ControlExpression
 case class LoopExpression(variables: List[LoopVarDecl], guard: Option[LoopGuard], body: Expression) extends ControlExpression
 case class WhileExpression(comp: Expression, body: Expression) extends ControlExpression
 case class UntilExpression(comp: Expression, body: Expression) extends ControlExpression
