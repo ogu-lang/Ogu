@@ -9,6 +9,7 @@ import scala.io.Source
 object Interpreter {
 
   def load(ast:LangNode): AnyRef = {
+    println(s"@@AST = ${ast}")
     val clojureStr = toClojure(ast)
     println(clojureStr)
 

@@ -5,9 +5,9 @@ def publica b = interna 24
 
 priv def inner = 100
 
-def public = inner + 100
+def public = (inner) + 100
 
 priv def check a b = (publica a) * (interna b)
 
 
-check inner public
+check (inner) (public)

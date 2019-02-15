@@ -1015,6 +1015,9 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         }
         expr = TupleExpr(tupleElements.reverse)
       }
+      if (expr.isInstanceOf[Identifier]) {
+        expr = FunctionCallExpression(expr, List.empty[Expression])
+      }
       tokens.consume(RPAREN)
     }
     else if (tokens.peek(LBRACKET)) {
@@ -1220,7 +1223,6 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseDictionaryExpr() : Expression = {
-    println(s"@@Dictionary{${tokens})")
     tokens.consume(LCURLY)
     var listOfPairs = List.empty[(Expression, Expression)]
     val key = parseKeyExpr()

@@ -260,9 +260,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         } else {
           strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n ${toClojure(body)})\n\n"
         }
-        if (args.isEmpty) {
-          strBuf ++= s"(def $id ($id))\n\n"
-        }
 
       case SimpleDefDecl(inner, id, args, body, Some(whereBlock)) =>
         if (inner) {
@@ -273,9 +270,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
             s"  ${toClojure(whereBlock)}\n    ${toClojure(body)})\n\n"
         }
 
-        if (args.isEmpty) {
-          strBuf ++= s"(def $id ($id))\n\n"
-        }
 
       case BodyGuardsExpresion(guards) =>
         strBuf ++= s"(cond\n ${guards.map(toClojureDefBodyGuardExpr).mkString("\n")})"
