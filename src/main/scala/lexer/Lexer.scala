@@ -112,9 +112,10 @@ class Lexer {
         parseQuoted('\"')
       }
       else if (str(pos) == '\'') {
-        if (pos > ini)
-          result = str.substring(ini, pos) :: result
-        parseQuoted('\'')
+        if (pos == ini)
+          parseQuoted('\'')
+        else
+          pos += 1
       }
       else {
         pos += 1

@@ -46,6 +46,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case ModExpression(left, right) =>
         strBuf ++= s"(mod ${toClojure(left)} ${toClojure(right)})"
 
+      case PowerExpression(left, right) =>
+        strBuf ++= s"(pow ${toClojure(left)} ${toClojure(right)})"
+
       case Identifier(id) =>
         val pos = id.lastIndexOf('.')
         if (pos <= 1) {
@@ -176,6 +179,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case LogicalAndExpression(left, right) =>
         strBuf ++= s"(and ${toClojure(left)} ${toClojure(right)})"
 
+      case LogicalOrExpression(left, right) =>
+        strBuf ++= s"(or ${toClojure(left)} ${toClojure(right)})"
+
       case PartialAdd(args) =>
         if (args.isEmpty) strBuf ++= "+" else strBuf ++= s"(+ ${args.map(toClojure).mkString(" ")})"
 
@@ -250,6 +256,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         if (args.isEmpty) {
           strBuf ++= s"(def $id ($id))\n\n"
         }
+
+      case BodyGuardsExpresion(guards) =>
+        strBuf ++= s"(cond\n ${guards.map(toClojureDefBodyGuardExpr).mkString("\n")})"
 
       case TupleExpr(exprs) =>
         strBuf ++= s"[${exprs.map(toClojure).mkString(" ")}]"
@@ -346,6 +355,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     guard match {
       case ListGuardDecl(id, value) => s"$id ${toClojure(value)}"
       case ListGuardExpr(expr) => s":when ${toClojure(expr)}"
+      case ListGuardDeclTupled(ids, value) => s"[${ids.mkString(" ")}] ${toClojure(value)}"
     }
   }
 
@@ -378,9 +388,19 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         s"(def $id (fn [${args.map(toClojure).mkString(" ")}] ${toClojure(body)}))"
       case WhereDefWithGuards(id, Some(args), guards) =>
         s"(def $id (fn [${args.map(toClojure).mkString(" ")}] \n" +
-        s"(cond ${guards.map(toClojureWhereGuard).mkString("\n")})))"
-
-      case _ => ???
+          s"(cond ${guards.map(toClojureWhereGuard).mkString("\n")})))"
+      case WhereDefTupled(idList, None, body) =>
+        var strBuf = new StringBuilder()
+        strBuf ++= s"(def _*temp*_ ${toClojure(body)})\n"
+        var i = 0
+        for (id <- idList) {
+          strBuf ++= s"(def ${id} (nth _*temp*_ $i))\n"
+          i += 1
+        }
+        strBuf.toString()
+      case w =>
+        println(w)
+        ???
     }
   }
 

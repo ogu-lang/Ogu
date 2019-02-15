@@ -16,6 +16,8 @@ class InterpreterSpec extends FlatSpec with Matchers {
     anyRef match {
       case l:lang.LazySeq =>
         l.toArray().toList
+      case null =>
+        List()
     }
   }
 
@@ -33,6 +35,9 @@ class InterpreterSpec extends FlatSpec with Matchers {
     run("/misc/test7.ogu") should be (2)
     run("/misc/test8.ogu") should be (bigInt("620448401733239439360000"))
     run("/misc/test9.ogu") should be (10100)
+    toList(run("/misc/test10.ogu")) should be (List(40.0, 20.0))
+    run("/misc/test11.ogu") should equal(true)
+    run("/misc/test12.ogu") should be(1884.9555921538758)
   }
 
   "An Interpeter" should "run alg files" in {

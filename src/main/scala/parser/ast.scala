@@ -199,6 +199,7 @@ case class EmptyListExpresion() extends ValidRangeExpression
 trait ListGuard
 case class ListGuardDecl(id: String, value: Expression) extends ListGuard
 case class ListGuardExpr(value: Expression) extends ListGuard
+case class ListGuardDeclTupled(ids: List[String], value: Expression) extends ListGuard
 
 
 case class ListExpression(expressions: List[Expression], guards: Option[List[ListGuard]]) extends ValidRangeExpression

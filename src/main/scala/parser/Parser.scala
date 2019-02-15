@@ -87,7 +87,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val body = parseDefBodyGuards()
       body match {
         case bd: BodyGuardsExpresionAndWhere =>
-          SimpleDefDecl(defId.value, args, BodyGuardsExpresion(bd.guards.reverse), Some(bd.whereBlock))
+          SimpleDefDecl(defId.value, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
         case _ =>
           val where = tryParseWhereBlock()
           SimpleDefDecl(defId.value, args, body, where)
@@ -1178,7 +1178,22 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseListGuard() : ListGuard = {
-    if (tokens.peek(classOf[ID]) && tokens.peek(2, BACK_ARROW)) {
+    if (tokens.peek(LPAREN) && tokens.peek(2, classOf[ID]) && tokens.peek(3, COMMA)) {
+      tokens.consume(LPAREN)
+      var listOfIds = List.empty[String]
+      val id = tokens.consume(classOf[ID])
+      listOfIds = id.value :: listOfIds
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        val id = tokens.consume(classOf[ID])
+        listOfIds = id.value :: listOfIds
+      }
+      tokens.consume(RPAREN)
+      tokens.consume(BACK_ARROW)
+      val expr = parsePipedExpr()
+      ListGuardDeclTupled(listOfIds.reverse, expr)
+    }
+    else if (tokens.peek(classOf[ID]) && tokens.peek(2, BACK_ARROW)) {
       val id = tokens.consume(classOf[ID])
       tokens.consume(BACK_ARROW)
       val expr = parsePipedExpr()
