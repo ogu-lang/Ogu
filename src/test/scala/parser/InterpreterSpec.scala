@@ -71,7 +71,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
     }
     expected = expected.reverse
     toList(run("/misc/test20.ogu")) should be(expected)
-
+    run("/misc/test21.ogu") should equal(false)
   }
 
   "An Interpeter" should "run alg files" in {

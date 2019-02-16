@@ -4,7 +4,7 @@ def baraja = shuffle [(valor, palo) | palo <- ['C', 'D', 'T', 'P'], valor <- ['A
 
 
 let
-    b1 = (baraja)
+    b1 = (baraja),
     b2 = (baraja)
 in
     b1 == b2
