@@ -244,8 +244,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case PartialConcat(args) =>
         if (args.isEmpty) strBuf ++= "concat" else strBuf ++= s"(concat ${args.map(toClojure).mkString(" ")})"
 
-      case FunctionCallWithDollarExpression(Identifier(id), args) =>
-        strBuf ++= s"($id ${args.map(toClojure).mkString(" ")})"
 
       case ForwardPipeFuncCallExpression(args) =>
         strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})"
@@ -451,13 +449,10 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
 
   def isVariable(id: String): Boolean = {
-    println(s"@isVariable?($id), variables= ${this.varDecls}")
     this.varDecls.contains(id)
   }
 
   def addVariables(decls: List[Variable]): Unit = {
-    println(s"antes de agregar  variables: ${this.varDecls}")
-
     for (v <- decls) {
       v match {
         case LetVariable(LetSimpleId(id), _) => this.varDecls = this.varDecls + id
@@ -465,13 +460,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         case VarTupledVariable(ids, _) => this.varDecls = this.varDecls  ++ ids
       }
     }
-    println(s"despues de agregar  variables: ${this.varDecls}")
-
   }
 
   def removeVariables(decls: List[Variable]): Unit = {
-    println(s"antes de remover  variables: ${this.varDecls}")
-
     for (v <- decls) {
       v match {
         case LetVariable(LetSimpleId(id), _) => this.varDecls = this.varDecls - id
@@ -479,7 +470,5 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         case VarTupledVariable(ids, _) => this.varDecls = this.varDecls -- ids
       }
     }
-    println(s"despues de remover  variables: ${this.varDecls}")
-
   }
 }

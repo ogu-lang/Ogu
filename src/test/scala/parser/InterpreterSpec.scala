@@ -1,5 +1,7 @@
 package parser
 
+import java.math.BigInteger
+
 import backend.Backend
 import clojure.lang
 import org.scalatest.{FlatSpec, Matchers}
@@ -15,9 +17,21 @@ class InterpreterSpec extends FlatSpec with Matchers {
   def toList(anyRef: AnyRef) = {
     anyRef match {
       case l:lang.LazySeq =>
-        l.toArray().toList
+        l.toArray().toList.map(toNative)
       case null =>
         List()
+    }
+  }
+
+
+
+  def toNative(anyRef: AnyRef): Any = {
+    anyRef match {
+      case l:lang.LazySeq =>
+        l.toArray().toList
+      case v:lang.PersistentVector =>
+        v.toArray.toList
+      case x => x
     }
   }
 
@@ -45,6 +59,19 @@ class InterpreterSpec extends FlatSpec with Matchers {
     run("/misc/test17.ogu") should be(10)
     run("/misc/test18.ogu") should be(5040)
     toList(run("/misc/test19.ogu")) should be(List(1, 4, 9))
+
+    val palo = List(new java.lang.Character('C'), new java.lang.Character('D'),
+      new java.lang.Character('T'), new java.lang.Character('P'))
+    val valor = List(new java.lang.Character('A'), 2, 3, 4, 5, 6, 7, 8, 9, 10, new java.lang.Character('J'),
+      new java.lang.Character('Q'), new java.lang.Character('K'))
+    var expected = List.empty[List[_]]
+    for (p <- palo) {
+      for (v <- valor)
+        expected = List(v, p) :: expected
+    }
+    expected = expected.reverse
+    toList(run("/misc/test20.ogu")) should be(expected)
+
   }
 
   "An Interpeter" should "run alg files" in {
