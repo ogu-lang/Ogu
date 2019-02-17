@@ -4,7 +4,7 @@ from [:clj] clojure.string import upper-case
 
 from [:jvm] java.util import Date, GregorianCalendar
 
-println! $ new Date
+println! $ new Date()
 
 
 

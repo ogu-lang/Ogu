@@ -20,9 +20,9 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseModule() : Module = {
     tokens.consume(MODULE)
-    val moduleName = tokens.consume(classOf[ID])
+    val moduleName = if (tokens.peek(classOf[TID])) tokens.consume(classOf[TID]).value else tokens.consume(classOf[ID]).value
     tokens.consumeOptionals(NL)
-    Module(moduleName.value, parseImports(), parseModuleNodes())
+    Module(moduleName, parseImports(), parseModuleNodes())
   }
 
   def parseImports(): Option[List[ImportClause]] = {
@@ -98,7 +98,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseImportAlias() : ImportAlias = {
-    val id = tokens.consume(classOf[ID]).value
+    val id = if (tokens.peek(classOf[TID])) tokens.consume(classOf[TID]).value else  tokens.consume(classOf[ID]).value
     val alias = if (!tokens.peek(AS)) {
       None
     } else {
@@ -111,6 +111,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
 
   def parseModuleNodes() : List[LangNode] = {
+    println(s"@@@ parse module nodes (tokens=${tokens})")
     var result = List.empty[LangNode]
     while (tokens.nonEmpty) {
       if (tokens.peek(PRIVATE)) {
@@ -1081,9 +1082,32 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     else if (tokens.peek(LAZY)) {
       tokens.consume(LAZY)
       LazyExpression(parsePipedExpr())
-    } else {
+    }
+    else if (tokens.peek(NEW)) {
+      parseNewCtorExpression()
+    }
+    else {
       parseFuncCallExpr()
     }
+  }
+
+  def parseNewCtorExpression() : Expression = {
+    tokens.consume(NEW)
+    val cls = tokens.consume(classOf[TID]).value
+    tokens.consume(LPAREN)
+    var args = List.empty[Expression]
+    if (!tokens.peek(RPAREN)) {
+      val expr = parseExpr()
+      args = expr :: args
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        tokens.consumeOptionals(NL)
+        val expr = parseExpr()
+        args = expr :: args
+      }
+    }
+    tokens.consume(RPAREN)
+    NewCallExpression(cls, args.reverse)
   }
 
   def parseRecurExpr() : Expression = {

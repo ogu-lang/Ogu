@@ -203,6 +203,7 @@ class Lexer {
       case "let" => LET
       case "loop" => LOOP
       case "module" => MODULE
+      case "new" => NEW
       case "otherwise" => OTHERWISE
       case "priv" => PRIVATE
       case "recur" => RECUR
@@ -228,6 +229,8 @@ class Lexer {
           pos += 1
         }
         if (isValidId) {
+          if (str.head.isUpper && !str.contains('.'))
+            return TID(str)
           return ID(str)
         }
         LEXER_ERROR(currentLine, str)

@@ -21,6 +21,7 @@ case object DEDENT extends TOKEN
 case object NL extends TOKEN
 case class ATOM(value: String) extends TOKEN
 case class ID(value: String) extends TOKEN
+case class TID(value: String) extends TOKEN
 trait KEYWORD extends TOKEN
 trait CONTROL extends KEYWORD
 case object AS extends KEYWORD
@@ -40,6 +41,7 @@ case object LAZY extends KEYWORD
 case object LET extends DECL
 case object LOOP extends CONTROL
 case object MODULE extends KEYWORD
+case object NEW extends KEYWORD
 case object OTHERWISE extends KEYWORD
 case object PRIVATE extends DECL
 case object RECUR extends CONTROL

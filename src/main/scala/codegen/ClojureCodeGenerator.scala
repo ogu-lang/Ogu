@@ -174,6 +174,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case RecurExpr(args) =>
         strBuf ++= s"(recur ${args.map(toClojure).mkString(" ")})"
 
+      case NewCallExpression(cls, args) if args.isEmpty =>
+        strBuf ++= s"($cls.)"
+
       case FunctionCallExpression(func, args) =>
         strBuf ++= s"(${toClojure(func)} ${args.map(toClojure).mkString(" ")})"
 
@@ -461,10 +464,10 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         case _ => false
       })
     if (cljImp.nonEmpty) {
-      strBuf ++= s"(:require [${cljImp.map(toClojureImportClause).mkString(" ")}])"
+      strBuf ++= s"(:require [${cljImp.map(toClojureImportClause).mkString(" ")}]) "
     }
     if (jvmImp.nonEmpty) {
-      strBuf ++= s"(:import ${jvmImp.map(toClojureJvmImportClause).mkString(" ")})"
+      strBuf ++= s"(:import ${jvmImp.map(toClojureJvmImportClause).mkString(" ")}) "
     }
     strBuf.toString
   }

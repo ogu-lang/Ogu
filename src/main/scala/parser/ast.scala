@@ -103,9 +103,6 @@ case class DoubleLiteral(value: Double) extends LiteralExpression
 case class BigIntLiteral(value: BigInt) extends LiteralExpression
 case class BigDecimalLiteral(value: BigDecimal) extends LiteralExpression
 
-
-
-
 trait LoopGuard extends Expression
 case class WhileGuardExpr(comp:Expression) extends LoopGuard
 case class UntilGuardExpr(comp:Expression) extends LoopGuard
@@ -122,6 +119,7 @@ case class ForwardPipeFuncCallExpression(args: List[Expression]) extends CallExp
 case class ForwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends CallExpression
 case class BackwardPipeFuncCallExpression(args: List[Expression]) extends CallExpression
 case class BackwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends CallExpression
+case class NewCallExpression(cls: String, args: List[Expression]) extends CallExpression
 
 case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Expression
 
