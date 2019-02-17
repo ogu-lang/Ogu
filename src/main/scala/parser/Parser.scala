@@ -13,20 +13,105 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       parseModule()
     }
     else {
-      Module(filename.substring(filename.lastIndexOf('/')+1, filename.lastIndexOf('.')), parseModuleNodes())
+      val nameOfModule = filename.substring(filename.lastIndexOf('/')+1, filename.lastIndexOf('.'))
+      Module(nameOfModule, parseImports(), parseModuleNodes())
     }
   }
 
   def parseModule() : Module = {
     tokens.consume(MODULE)
     val moduleName = tokens.consume(classOf[ID])
-    tokens.consume(NL)
-    Module(moduleName.value, parseModuleNodes())
+    tokens.consumeOptionals(NL)
+    Module(moduleName.value, parseImports(), parseModuleNodes())
   }
+
+  def parseImports(): Option[List[ImportClause]] = {
+    tokens.consumeOptionals(NL)
+    var listOfImports = List.empty[ImportClause]
+    while (tokens.peek(IMPORT) || tokens.peek(FROM)) {
+      if (tokens.peek(IMPORT)) {
+        listOfImports = parseImport() :: listOfImports
+      }
+      else if (tokens.peek(FROM)) {
+        listOfImports = parseFromImport() :: listOfImports
+      }
+      tokens.consumeOptionals(NL)
+    }
+    if (listOfImports.isEmpty) {
+      None
+    }
+    else {
+      Some(listOfImports.reverse)
+    }
+  }
+
+  def parseImport() : ImportClause = {
+    tokens.consume(IMPORT)
+    var tag : String = ""
+    if (tokens.peek(LBRACKET)) {
+      tokens.consume(LBRACKET)
+      tag = tokens.consume(classOf[ATOM]).value
+      tokens.consume(RBRACKET)
+    }
+    var listOfAlias = List.empty[ImportAlias]
+    val impAlias = parseImportAlias()
+    listOfAlias = impAlias :: listOfAlias
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      val impAlias = parseImportAlias()
+      listOfAlias = impAlias :: listOfAlias
+    }
+    if (tag == ":jvm") {
+      JvmImport(listOfAlias.reverse)
+    }
+    else {
+      CljImport(listOfAlias.reverse)
+    }
+  }
+
+  def parseFromImport() : ImportClause = {
+    tokens.consume(FROM)
+    var tag : String = ""
+    if (tokens.peek(LBRACKET)) {
+      tokens.consume(LBRACKET)
+      tag = tokens.consume(classOf[ATOM]).value
+      tokens.consume(RBRACKET)
+    }
+    val name = tokens.consume(classOf[ID]).value
+    tokens.consume(IMPORT)
+    var listOfAlias = List.empty[ImportAlias]
+    val impAlias = parseImportAlias()
+    listOfAlias = impAlias :: listOfAlias
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      val impAlias = parseImportAlias()
+      listOfAlias = impAlias :: listOfAlias
+    }
+    if (tag == ":jvm") {
+      FromJvmRequire(name, listOfAlias.reverse)
+    }
+    else {
+      FromCljRequire(name, listOfAlias.reverse)
+    }
+  }
+
+  def parseImportAlias() : ImportAlias = {
+    val id = tokens.consume(classOf[ID]).value
+    val alias = if (!tokens.peek(AS)) {
+      None
+    } else {
+      tokens.consume(AS)
+      Some(tokens.consume(classOf[ID]).value)
+    }
+    ImportAlias(id, alias)
+  }
+
+
 
   def parseModuleNodes() : List[LangNode] = {
     var result = List.empty[LangNode]
-    println(s"parseModuleNodes(tokens=${tokens})")
     while (tokens.nonEmpty) {
       if (tokens.peek(PRIVATE)) {
         tokens.consume(PRIVATE)

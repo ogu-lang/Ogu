@@ -4,7 +4,14 @@ import org.joda.time.DateTime
 
 sealed trait LangNode
 
-case class Module(name: String, decls: List[LangNode]) extends LangNode
+sealed trait ImportClause
+case class ImportAlias(name:String, alias:Option[String])
+case class FromCljRequire(from: String, names: List[ImportAlias]) extends ImportClause
+case class FromJvmRequire(from: String, names: List[ImportAlias]) extends ImportClause
+case class CljImport(name:List[ImportAlias]) extends ImportClause
+case class JvmImport(name:List[ImportAlias]) extends ImportClause
+
+case class Module(name: String, imports: Option[List[ImportClause]],decls: List[LangNode]) extends LangNode
 
 trait AssignableExpression
 

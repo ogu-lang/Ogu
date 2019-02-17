@@ -185,7 +185,8 @@ class Lexer {
 
 
   def tryParseId(str: String) : TOKEN = {
-    str match  {
+    str match {
+      case "as" => AS
       case "contains" => CONTAINS
       case "def" => DEF
       case "do" => DO
@@ -193,8 +194,11 @@ class Lexer {
       case "else" => ELSE
       case "false" => BOOL_LITERAL(false)
       case "for" => FOR
+      case "from" => FROM
       case "if" => IF
+      case "import" => IMPORT
       case "in" => IN
+      case "is" => IS
       case "lazy" => LAZY
       case "let" => LET
       case "loop" => LOOP

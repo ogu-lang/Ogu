@@ -23,6 +23,7 @@ case class ATOM(value: String) extends TOKEN
 case class ID(value: String) extends TOKEN
 trait KEYWORD extends TOKEN
 trait CONTROL extends KEYWORD
+case object AS extends KEYWORD
 trait DECL extends KEYWORD
 case object CONTAINS extends COMPARATIVE_BIN_OPER
 case object DEF extends DECL
@@ -30,8 +31,11 @@ case object DO extends KEYWORD
 case object ELIF extends KEYWORD
 case object ELSE extends KEYWORD
 case object FOR extends CONTROL
+case object FROM extends KEYWORD
 case object IF extends CONTROL
+case object IMPORT extends KEYWORD
 case object IN extends KEYWORD
+case object IS extends KEYWORD
 case object LAZY extends KEYWORD
 case object LET extends DECL
 case object LOOP extends CONTROL
@@ -39,6 +43,7 @@ case object MODULE extends KEYWORD
 case object OTHERWISE extends KEYWORD
 case object PRIVATE extends DECL
 case object RECUR extends CONTROL
+case object REFER extends KEYWORD
 case object REPEAT extends CONTROL
 case object SET extends CONTROL
 case object THEN extends CONTROL
