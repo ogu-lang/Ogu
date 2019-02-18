@@ -30,7 +30,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= " ]\n"
         strBuf ++= s" ${toClojure(expression)})\n"
 
-      case LetDeclExpr(decls: List[LetVariable], None) =>
+      case LetDeclExpr(decls: List[_], None) =>
         for (decl <- decls.asInstanceOf[List[LetVariable]]) {
           strBuf ++= s"(def ${toClojureLetId(decl.id)} ${toClojure(decl.value)})\n"
         }
@@ -70,7 +70,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         }
         val pos = id.lastIndexOf('.')
         if (pos <= 1) {
-
           strBuf ++= id
         } else {
           val sb = new StringBuilder(id)
@@ -161,6 +160,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case WhileExpression(comp, body) =>
         strBuf ++= s"(while ${toClojure(comp)} ${toClojure(body)})"
+
+      case CondExpression(guards) =>
+        strBuf ++= s"(cond\n\t${guards.map(toClojureCondGuard).mkString("\n\t")})"
 
       case WhenExpression(comp, body) =>
         strBuf ++= s"(when ${toClojure(comp)}\n ${toClojure(body)})"
@@ -458,6 +460,16 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         val rest = exprs.last
         val args = exprs.dropRight(1)
         s"[${args.map(toClojure).mkString(" ")} & ${toClojure(rest)}]"
+      case DefArg(_) => ???
+    }
+  }
+
+  def toClojureCondGuard(condGuard: CondGuard) : String = {
+    if (condGuard.comp.isDefined) {
+      s"${toClojure(condGuard.comp.get)} ${toClojure(condGuard.value)}"
+    }
+    else {
+      s":else ${toClojure(condGuard.value)}"
     }
   }
 

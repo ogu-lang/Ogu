@@ -111,15 +111,20 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
 
   def parseModuleNodes() : List[LangNode] = {
-    println(s"@@@ parse module nodes (tokens=${tokens})")
+    println(s"@@@ parse module nodes (tokens=$tokens)")
     var result = List.empty[LangNode]
     while (tokens.nonEmpty) {
+      var inner = false
       if (tokens.peek(PRIVATE)) {
         tokens.consume(PRIVATE)
-        result = multiDef(parseDef(true)) :: result
+        inner = true
       }
-      else if (tokens.peek(DEF))
-        result = multiDef(parseDef(false)) :: result
+      if (tokens.peek(DEF)) {
+        result = multiDef(parseDef(inner)) :: result
+      }
+      else if (tokens.peek(TRAIT)) {
+        result = parseTrait(inner) :: result
+      }
       else{
         result = parsePipedExpr() :: result
       }
@@ -127,6 +132,32 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       //println(s"PARSED SO FAR: ${result.reverse}\n\n")
     }
     filter(result.reverse)
+  }
+
+  def parseTrait(inner: Boolean): LangNode = {
+    tokens.consume(TRAIT)
+    val id = tokens.consume(classOf[TID]).value
+    tokens.consume(NL)
+    tokens.consumeOptionals(NL)
+    var decls = List.empty[TraitMethodDecl]
+    if (tokens.peek(INDENT)) {
+      tokens.consume(INDENT)
+      val decl = parseTraitMethodDecl()
+      decls = decl :: decls
+      tokens.consume(DEDENT)
+    }
+    TraitDecl(inner, id, decls)
+  }
+
+  def parseTraitMethodDecl(): TraitMethodDecl = {
+    tokens.consume(DEF)
+    val id = tokens.consume(classOf[ID]).value
+    var args = List.empty[String]
+    while (tokens.peek(classOf[ID])) {
+      val arg = tokens.consume(classOf[ID]).value
+      args = arg :: args
+    }
+    TraitMethodDecl(id, args.reverse)
   }
 
   var defs = mutable.HashMap.empty[String, MultiDefDecl]
@@ -682,6 +713,9 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     else if (tokens.peek(SET)) {
       parseAssignExpr()
     }
+    else if (tokens.peek(COND)) {
+      parseCondExpr()
+    }
     else {
       println(s"ERROR PARSE CONTROL tokens= $tokens")
       throw InvalidNodeException(tokens.nextToken())
@@ -689,8 +723,28 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
 
+  def parseCondExpr(): Expression = {
+    tokens.consume(COND)
+    tokens.consume(NL)
+    tokens.consume(INDENT)
+    var guards = List.empty[CondGuard]
+    while (!tokens.peek(DEDENT)) {
+      val comp = if (tokens.peek(OTHERWISE)) {
+        tokens.consume(OTHERWISE)
+        None
+      } else {
+        Some(parseLogicalExpr())
+      }
+      tokens.consume(ARROW)
+      val value = parsePipedExpr()
+      tokens.consumeOptionals(NL)
+      guards = CondGuard(comp, value) :: guards
+    }
+    tokens.consume(DEDENT)
+    CondExpression(guards.reverse)
+  }
 
-  def parseRepeatExpr() : Expression = {
+  def parseRepeatExpr(): Expression = {
     tokens.consume(REPEAT)
     if (tokens.peek(WITH))
       tokens.consume(WITH)

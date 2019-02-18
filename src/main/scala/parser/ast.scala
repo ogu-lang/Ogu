@@ -13,9 +13,10 @@ case class JvmImport(name:List[ImportAlias]) extends ImportClause
 
 case class Module(name: String, imports: Option[List[ImportClause]],decls: List[LangNode]) extends LangNode
 
+case class TraitMethodDecl(name: String, args: List[String])
+case class TraitDecl(inner: Boolean, name: String, decls: List[TraitMethodDecl]) extends LangNode
+
 trait AssignableExpression
-
-
 
 sealed trait Expression extends LangNode
 
@@ -136,6 +137,8 @@ case class RecurExpr(args: List[Expression]) extends ControlExpression
 case class ElifPart(comp: Expression, body: Expression)
 case class IfExpression(comp: Expression, thenPart: Expression, elifPart: List[ElifPart], elsePart: Expression) extends ControlExpression
 
+case class CondGuard(comp: Option[Expression], value: Expression)
+case class CondExpression(guards: List[CondGuard]) extends ControlExpression
 
 case class LazyExpression(expr: Expression) extends Expression
 
