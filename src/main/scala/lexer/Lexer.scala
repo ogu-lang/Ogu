@@ -229,9 +229,21 @@ class Lexer {
           pos += 1
         }
         if (isValidId) {
-          if (str.head.isUpper && !str.contains('.'))
-            return TID(str)
-          return ID(str)
+          var id = str
+          if (id.endsWith("...")) {
+            currentColumn -= 3
+            id = id.substring(0, str.length-3)
+          }
+          if (id.contains('.')) {
+            val parts = id.split('.')
+            if (parts.last.head.isUpper) {
+              return TID(id)
+            }
+          }
+          if (id.head.isUpper) {
+            return TID(id)
+          }
+          return ID(id)
         }
         LEXER_ERROR(currentLine, str)
     }

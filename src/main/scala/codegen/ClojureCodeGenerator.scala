@@ -421,7 +421,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
   def toClojureDefArg(defArg: DefArg): String = {
     defArg match {
       case DefArg(Identifier(id)) => id
-      case _ => ???
+      case DefArg(TupleExpr(exprs)) => s"[${exprs.map(toClojure).mkString(" ")}]"
     }
   }
 
