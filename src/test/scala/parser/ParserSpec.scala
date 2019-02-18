@@ -18,7 +18,7 @@ class ParserSpec extends FlatSpec with Matchers {
         val parser = new Parser("test.ogu", tokens, None)
         val result = Try(parser.parse())
         result match {
-          case Success(Module(_, List(expr))) => Success(expr)
+          case Success(Module(_, _, List(expr))) => Success(expr)
           case _ => Failure(ParserException(code))
         }
     }

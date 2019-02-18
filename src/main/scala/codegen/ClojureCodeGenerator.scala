@@ -345,6 +345,11 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
                   andList = s"\t\t(empty? ${namedArgs.head})" :: andList
                 case DefArg(ConsExpression(Identifier(head), Identifier(tail))) =>
                   letDecls = s"[$head & $tail] ${namedArgs.head}" :: letDecls
+                case DefArg(ConsExpression(Identifier(head), ConsExpression(Identifier(second), Identifier(tail)))) =>
+                  letDecls = s"[$head $second & $tail] ${namedArgs.head}" :: letDecls
+                case DefArg(ListExpression(args, None)) =>
+                  letDecls = s"[${args.map(toClojure).mkString(" ")}] ${namedArgs.head}]" :: letDecls
+
                 case DefArg(exp: Expression) =>
                   andList = s"\t\t(= ${namedArgs.head} ${toClojure(exp)})" :: andList
 
