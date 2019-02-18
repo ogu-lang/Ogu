@@ -695,22 +695,30 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     if (tokens.peek(WITH))
       tokens.consume(WITH)
     var repeatVariables = List.empty[RepeatNewVarValue]
-    var repVar = parseRepeatAssign()
+    var repVar = parseRepeatNewValue()
     repeatVariables = repVar :: repeatVariables
     while (tokens.peek(COMMA)) {
       tokens.consume(COMMA)
-      repVar = parseRepeatAssign()
+      repVar = parseRepeatNewValue()
       repeatVariables = repVar :: repeatVariables
     }
     tokens.consumeOptionals(NL)
     RepeatExpr(Some(repeatVariables.reverse))
   }
 
-  def parseRepeatAssign() : RepeatNewVarValue = {
-    val id = tokens.consume(classOf[ID])
-    tokens.consume(ASSIGN)
-    val expr = parsePipedExpr()
-    RepeatNewVarValue(id.value, expr)
+  def parseRepeatNewValue() : RepeatNewVarValue = {
+    if (tokens.peek(classOf[ID]) && tokens.peek(2, ASSIGN)) {
+      val id = tokens.consume(classOf[ID])
+      tokens.consume(ASSIGN)
+      val expr = parsePipedExpr()
+      RepeatNewVarValue(id.value, expr)
+    } else {
+      RepeatNewVarValue(genId(), parseExpr())
+    }
+  }
+
+  def genId() : String = {
+    s"id_${java.util.UUID.randomUUID.toString}"
   }
 
   def parseForExpr() : Expression = {

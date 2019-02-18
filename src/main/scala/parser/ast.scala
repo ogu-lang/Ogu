@@ -129,6 +129,7 @@ case class UntilExpression(comp: Expression, body: Expression) extends ControlEx
 case class WhenExpression(comp: Expression, body: Expression) extends ControlExpression
 
 case class RepeatNewVarValue(variable: String, value: Expression)
+
 case class RepeatExpr(newVariableValues: Option[List[RepeatNewVarValue]]) extends ControlExpression
 case class RecurExpr(args: List[Expression]) extends ControlExpression
 

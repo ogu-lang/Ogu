@@ -156,7 +156,8 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= s"when-not ${toClojure(comp)}"
 
       case RepeatExpr(Some(newValues)) =>
-        strBuf ++= s"(recur ${newValues.map(toClojureNewVarValue).mkString(" ")})"
+        strBuf ++= s"(let [${newValues.map(toClojureNewVarValue).mkString(" ")}]"
+        strBuf ++= s"(recur ${newValues.map(nv => nv.variable).mkString(" ")}))"
 
       case WhileExpression(comp, body) =>
         strBuf ++= s"(while ${toClojure(comp)} ${toClojure(body)})"
@@ -418,7 +419,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
   }
 
   def toClojureNewVarValue(variable: RepeatNewVarValue): String = {
-    toClojure(variable.value)
+    s"${variable.variable} ${toClojure(variable.value)}"
   }
 
   def toClojureListGuard(guard: ListGuard): String = {

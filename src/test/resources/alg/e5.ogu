@@ -2,7 +2,7 @@
 def gcd x y =
     loop a = x, b = y do
         if zero? b then a
-        else repeat a = b, b = a % b
+        else repeat a' = b, b = a % b
 
 def lcm a b
    | (zero? a) = 0
