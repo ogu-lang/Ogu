@@ -14,7 +14,7 @@ class Lexer {
 
   val encoding = "UTF-8" // files must be encoded in UTF-8
   val bufferSize = 4096
-  var indentStack: mutable.Stack[Int] = Stack[Int](0)
+  var indentStack : List[Int] = List(0)
 
   var currentLine = 0
   var currentColumn = 0
@@ -71,6 +71,30 @@ class Lexer {
         while (pos < len && isBlank(str(pos)))
           pos += 1
         ini = pos
+      }
+      else if (str(pos) == '.' && pos+1 < len && str(pos+1) == '.' && pos+2 < len && str(pos+2) == '.') {
+        if (pos > ini) {
+          result = str.substring(ini, pos) :: result
+        }
+        result = str.substring(pos, pos+3) :: result
+        ini = pos + 3
+        pos += 3
+      }
+      else if (str(pos) == '.' && pos+1 < len && str(pos+1) == '.' && pos+2 < len && str(pos+2) == '<') {
+        if (pos > ini) {
+          result = str.substring(ini, pos) :: result
+        }
+        result = str.substring(pos, pos+3) :: result
+        ini = pos + 3
+        pos += 3
+      }
+      else if (str(pos) == '.' && pos+1 < len && str(pos+1) == '.') {
+        if (pos > ini) {
+          result = str.substring(ini, pos) :: result
+        }
+        result = str.substring(pos, pos+2) :: result
+        ini = pos + 2
+        pos += 2
       }
       else if (isPunct(str(pos))) {
         if (pos > ini)
@@ -130,7 +154,7 @@ class Lexer {
   def strToToken(str: String) : TOKEN = {
     if (str.head == '\"') {
       if (!str.endsWith("\"")) {
-        println(s"PARSE MULTILINE STR (${str})")
+        println(s"PARSE MULTILINE STR ($str)")
         this.currentString = str
         this.parseMultiLineString = true
         return SKIP
@@ -166,17 +190,17 @@ class Lexer {
     }
     while (currentColumn < len && isBlank(text(currentColumn)))
       currentColumn += 1
-    if (currentColumn == indentStack.top)
+    if (currentColumn == indentStack.head)
       tokens
-    else if (currentColumn > indentStack.top) {
-      indentStack.push(currentColumn)
+    else if (currentColumn > indentStack.head) {
+      indentStack = currentColumn :: indentStack
       INDENT :: tokens
     }
     else {
-      indentStack.pop()
+      indentStack = indentStack.tail
       var result = DEDENT :: tokens
-      while (currentColumn < indentStack.top && indentStack.top > 0) {
-        indentStack.pop()
+      while (currentColumn < indentStack.head && indentStack.head > 0) {
+        indentStack = indentStack.tail
         result = DEDENT :: result
       }
       result
@@ -240,7 +264,7 @@ class Lexer {
               return TID(id)
             }
           }
-          if (id.head.isUpper) {
+          else if (id.head.isUpper) {
             return TID(id)
           }
           return ID(id)
@@ -269,7 +293,7 @@ class Lexer {
       BIGDECIMAL_LITERAL(value)
     }
     catch {
-      case ex: Throwable =>
+      case _: Throwable =>
         LEXER_ERROR(currentLine, str)
     }
   }
@@ -298,10 +322,10 @@ class Lexer {
       case "/" => DIV
       case "/=" => DIV_ASSIGN
       case "$" => DOLLAR
-      case "." => DOT
-      case ".." => DOTDOT
-      case "..<" => DOTDOTLESS
       case "..." => DOTDOTDOT
+      case "..<" => DOTDOTLESS
+      case ".." => DOTDOT
+      case "." => DOT
       case "!>" => DOTO
       case "<!" => DOTO_BACK
       case "==" => EQUALS
@@ -390,12 +414,12 @@ class Lexer {
         scanLine(text)
     }.toList.reverse
     if (indentStack.nonEmpty) {
-      while (indentStack.nonEmpty && indentStack.top > 0) {
+      while (indentStack.nonEmpty && indentStack.head > 0) {
         result = DEDENT :: result
-        indentStack.pop()
+        indentStack = indentStack.tail
       }
     }
-    new TokenStream(result.reverse)
+    TokenStream(result.reverse)
   }
 
   def scanFromResources(filename: String) : Try[TokenStream] = {

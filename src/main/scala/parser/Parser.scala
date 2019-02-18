@@ -1176,7 +1176,13 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
           tupleElem = parsePipedExpr()
           tupleElements = tupleElem :: tupleElements
         }
-        expr = TupleExpr(tupleElements.reverse)
+        if (tokens.peek(DOTDOTDOT)) {
+          tokens.consume(DOTDOTDOT)
+          expr = InfiniteTupleExpr(tupleElements.reverse)
+
+        } else {
+          expr = TupleExpr(tupleElements.reverse)
+        }
       }
       if (expr.isInstanceOf[Identifier]) {
         expr = FunctionCallExpression(expr, List.empty[Expression])

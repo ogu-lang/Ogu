@@ -219,6 +219,7 @@ case class BodyGuardsExpresionAndWhere(guards: List[DefBodyGuardExpr], whereBloc
 
 
 case class TupleExpr(expressions: List[Expression]) extends Expression
+case class InfiniteTupleExpr(expressions: List[Expression]) extends Expression
 
 trait PartialOper extends Expression
 case class PartialAdd(args: List[Expression]) extends PartialOper
