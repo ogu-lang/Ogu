@@ -121,11 +121,11 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= s"[${listOfExpr.map(toClojure).mkString(" ")}]"
 
       case ListExpression(listOfExpr, Some(guards)) =>
-        strBuf ++= s"(for [${guards.map(toClojureListGuard).mkString(" ")}]"
+        strBuf ++= s"(for [${guards.map(toClojureListGuard).mkString(" ")}] "
         if (listOfExpr.size == 1) {
           strBuf ++= toClojure(listOfExpr.head)
         } else {
-          ???
+          strBuf ++= s"(do ${listOfExpr.map(toClojure).mkString("\n")})"
         }
         strBuf ++= ")"
 
@@ -304,51 +304,77 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= s"[${exprs.map(toClojure).mkString(" ")}]"
 
       case WhereBlock(defs) =>
-        strBuf ++= defs.map(toCloureWhereDef).mkString("\n")
+        strBuf ++= defs.map(toClojureWhereDef).mkString("\n")
 
       case md: MultiDefDecl =>
         if (!md.patternMatching()) {
           strBuf ++= s"\n(defn ${md.id}\n"
           for (decl <- md.decls) {
             strBuf ++= "([" + decl.args.map(arg => s"${toClojure(arg.expression)}").mkString(" ") + "] "
-            // TODO WHERE
-            if (decl.whereBlock.isEmpty)
-              strBuf ++= s"${toClojure(decl.body)})\n"
-            else {
-              ???
+            if (decl.whereBlock.nonEmpty) {
+              val whereDefs = decl.whereBlock.get.whereDefs
+              strBuf ++= s"${whereDefs.map(toClojureWhereDef).mkString("\n")}"
             }
+            strBuf ++= s"${toClojure(decl.body)})\n"
           }
           strBuf ++= ")\n\n"
         }
         else {
           strBuf ++= s"\n(defn ${md.id} [" + md.args.mkString(" ") + "]\n"
-          strBuf ++= " (cond\n"
+          strBuf ++= "\t(cond\n"
           val args: List[String] = md.args
           for (decl <- md.decls) {
             var andList = List.empty[String]
+            var letDecls = List.empty[String]
             var argDecls = decl.args
             var namedArgs = args
+            if (decl.whereBlock.nonEmpty) {
+              val whereDefs = decl.whereBlock.get.whereDefs
+              for (wd <- whereDefs) {
+                letDecls = s"${toClojureWhereDefAsLet(wd)}" :: letDecls
+              }
+              letDecls = letDecls.reverse
+            }
             while (argDecls.nonEmpty) {
               val arg = argDecls.head
               arg match {
                 case DefArg(Identifier(id)) if args.contains(id) =>
                 // nothing
+                case DefArg(_:EmptyListExpresion) =>
+                  andList = s"\t\t(empty? ${namedArgs.head})" :: andList
+                case DefArg(ConsExpression(Identifier(head), Identifier(tail))) =>
+                  letDecls = s"[$head & $tail] ${namedArgs.head}" :: letDecls
                 case DefArg(exp: Expression) =>
-                  val nameArg = namedArgs.head
-                  andList = s"  (= $nameArg ${toClojure(exp)}) " :: andList
+                  andList = s"\t\t(= ${namedArgs.head} ${toClojure(exp)})" :: andList
 
               }
               argDecls = argDecls.tail
               namedArgs = namedArgs.tail
             }
             if (andList.isEmpty) {
-              strBuf ++= s"  :else  ${toClojure(decl.body)}"
+              if (letDecls.isEmpty) {
+                strBuf ++= s"\t\t:else  ${toClojure(decl.body)}"
+              }
+              else {
+                strBuf ++= s"\t\t:else (let [${letDecls.mkString("\n\t\t\t")}]\n\t\t${toClojure(decl.body)})"
+              }
             }
             else if (andList.length == 1) {
-              strBuf ++= s"${andList.mkString(" ")} ${toClojure(decl.body)}\n"
+              if (letDecls.isEmpty) {
+                strBuf ++= s"${andList.mkString(" ")} ${toClojure(decl.body)}\n"
+              }
+              else {
+                strBuf ++= s"${andList.mkString(" ")} (let [${letDecls.mkString(" ")}]\n\t\t${toClojure(decl.body)})\n"
+              }
             }
             else {
-              strBuf ++= s"  (and ${andList.mkString(" ")}) ${toClojure(decl.body)}\n"
+              if (letDecls.isEmpty) {
+                strBuf ++= s"  (and ${andList.mkString(" ")}) ${toClojure(decl.body)}\n"
+              }
+              else {
+                strBuf ++= s"  (and ${andList.mkString(" ")}) (let [${letDecls.mkString(" ")}]\n\t\t${toClojure(decl.body)})\n"
+
+              }
             }
           }
           strBuf ++= "))\n\n"
@@ -429,7 +455,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     }
   }
 
-  def toCloureWhereDef(whereDef: WhereDef): String = {
+  def toClojureWhereDef(whereDef: WhereDef): String = {
     whereDef match {
       case WhereDefSimple(id, None, body) => s"(def $id ${toClojure(body)})"
       case WhereDefSimple(id, Some(args), body) =>
@@ -443,6 +469,29 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         var i = 0
         for (id <- idList) {
           strBuf ++= s"(def ${id} (nth _*temp*_ $i))\n"
+          i += 1
+        }
+        strBuf.toString()
+      case w =>
+        println(w)
+        ???
+    }
+  }
+
+  def toClojureWhereDefAsLet(whereDef: WhereDef): String = {
+    whereDef match {
+      case WhereDefSimple(id, None, body) => s"$id ${toClojure(body)}"
+      case WhereDefSimple(id, Some(args), body) =>
+        s"$id (fn [${args.map(toClojure).mkString(" ")}] ${toClojure(body)})"
+      case WhereDefWithGuards(id, Some(args), guards) =>
+        s"$id (fn [${args.map(toClojure).mkString(" ")}] \n" +
+          s"(cond ${guards.map(toClojureWhereGuard).mkString("\n")}))"
+      case WhereDefTupled(idList, None, body) =>
+        var strBuf = new StringBuilder()
+        strBuf ++= s"_*temp*_ ${toClojure(body)}\n"
+        var i = 0
+        for (id <- idList) {
+          strBuf ++= s"${id} (nth _*temp*_ $i)\n"
           i += 1
         }
         strBuf.toString()

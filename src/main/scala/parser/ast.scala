@@ -70,24 +70,18 @@ case class MultiDefDecl(override val id: String, decls: List[SimpleDefDecl]) ext
   def patternMatching(): Boolean = decls.exists(_.patterMatching())
 
   def args : List[String] = {
-    var count = decls.map(_.args.size).max
+    val count = decls.map(_.args.size).max
     var ids = List.empty[String]
-    for (decl <- decls) {
-      for (arg <- decl.args) {
-        arg match {
-          case DefArg(Identifier(id)) =>
-            if (!ids.contains(id))
-              ids = id :: ids
-          case _ =>
-        }
-      }
+    decls.foreach(decl => decl.args.foreach {
+      case DefArg(Identifier(id)) if !ids.contains(id) => ids = id :: ids
+      case _ =>
+    })
+    var i = 0
+    while (ids.size < count) {
+      ids = s"arg_$i" :: ids
+      i += 1
     }
-    if (ids.size == count) {
-      ids.reverse
-    }
-    else {
-      throw InvalidDef()
-    }
+    ids.reverse
   }
 }
 
