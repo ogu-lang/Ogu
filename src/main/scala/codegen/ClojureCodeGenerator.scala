@@ -117,6 +117,12 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case Atom(value) =>
         strBuf ++= value
 
+      case RegexpLiteral(re) =>
+        strBuf ++= "#\"" + re.stripPrefix("/").stripSuffix("/") + "\""
+
+      case MatchExpr(expr, re) =>
+        strBuf ++= s"(re-matches ${toClojure(re)} ${toClojure(expr)})"
+
       case ArrayAccessExpression(array, index) =>
         strBuf ++= s"(aget ${toClojure(array)} ${toClojure(index)})"
 
