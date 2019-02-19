@@ -236,3 +236,4 @@ case class PartialCons(args: List[Expression]) extends PartialOper
 case class PartialConcat(args: List[Expression]) extends PartialOper
 
 case class DictionaryExpression(items: List[(Expression, Expression)]) extends Expression
+case class SetExpression(values: List[Expression]) extends Expression

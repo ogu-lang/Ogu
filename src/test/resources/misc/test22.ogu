@@ -6,6 +6,4 @@ from [:jvm] java.util import Date, GregorianCalendar
 
 println! $ new Date()
 
-
-
 (upper "hola") == (upper-case "hola")

@@ -1132,13 +1132,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     if (tokens.peek(LPAREN) && tokens.peek(2, classOf[OPER])) {
       parsePartialOper()
     }
-    else if (tokens.peek(LPAREN) || tokens.peek(LBRACKET)) {
+    else if (tokens.peek(LPAREN) || tokens.peek(LBRACKET) || tokens.peek(LCURLY) || tokens.peek(HASHLCURLY)) {
       parseAtomicExpr()
     }
-    else if (tokens.peek(LCURLY)) {
-      parseAtomicExpr()
-    }
-    else if (tokens.peek(classOf[LITERAL]) || tokens.peek(classOf[ATOM])) {
+    else if (tokens.peek(classOf[LITERAL])) {
       parseAtomicExpr()
     }
     else if (tokens.peek(LAZY)) {
@@ -1189,7 +1186,9 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val id = tokens.consume(classOf[ID])
       expr = Identifier(id.value)
     }
-
+    else if (tokens.peek(classOf[ATOM])) {
+      expr = parseAtom()
+    }
     if (!funcCallEndToken()) {
       var args = List.empty[Expression]
       val func = expr
@@ -1212,16 +1211,18 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
   }
 
-
-
-
   def funcCallEndToken() : Boolean = {
-    tokens.nextToken().exists { next =>
-      next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] ||
-        next == INDENT || next == DEDENT || next == ASSIGN || next == PLUS_ASSIGN ||
-        next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN ||
-        next == ELSE || next == RPAREN || next == IN || next == RBRACKET || next == RCURLY || next == WHERE
+    if (tokens.isEmpty) {
+      true
+    } else {
+      tokens.nextToken().exists { next =>
+        next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] ||
+          next == INDENT || next == DEDENT || next == ASSIGN || next == PLUS_ASSIGN ||
+          next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN ||
+          next == ELSE || next == RPAREN || next == IN || next == RBRACKET || next == RCURLY || next == WHERE
+      }
     }
+
   }
 
   def parseAtomicExpr() : Expression = {
@@ -1253,13 +1254,12 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
     else if (tokens.peek(LBRACKET)) {
       expr = parseRangeExpr()
-
     }
     else if (tokens.peek(LCURLY)) {
       expr = parseDictionaryExpr()
     }
-    else if (tokens.peek(classOf[ATOM])) {
-      expr = parseAtom()
+    else if (tokens.peek(HASHLCURLY)) {
+      expr = parseSetExpr()
     }
     else {
       expr = parseLiteral()
@@ -1335,7 +1335,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     tokens.consume(RPAREN)
     classifyPartialOper(parOp, listOfArgs)
   }
-  
+
   def classifyPartialOper(parOp: OPER, args: List[Expression]) : Expression = {
     parOp match {
       case PLUS => PartialAdd(args)
@@ -1451,6 +1451,21 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     } else {
       ListGuardExpr(parsePipedExpr())
     }
+  }
+
+  def parseSetExpr(): Expression = {
+    tokens.consume(HASHLCURLY)
+    var listOfValues = List.empty[Expression]
+    val value = parseExpr()
+    listOfValues = value :: listOfValues
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      val value = parseExpr()
+      listOfValues = value :: listOfValues
+    }
+    tokens.consume(RCURLY)
+    SetExpression(listOfValues.reverse)
   }
 
   def parseDictionaryExpr() : Expression = {

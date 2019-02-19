@@ -7,6 +7,8 @@ case class TokenStream(var tokens: List[TOKEN]) {
 
   def nonEmpty : Boolean = tokens.nonEmpty
 
+  def isEmpty : Boolean = tokens.isEmpty
+
   def peek(obj: TOKEN) : Boolean = if (tokens.isEmpty) false else tokens.head == obj
 
   def peek(n: Int, obj: TOKEN) : Boolean =

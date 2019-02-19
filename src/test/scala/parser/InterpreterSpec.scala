@@ -18,6 +18,8 @@ class InterpreterSpec extends FlatSpec with Matchers {
     anyRef match {
       case l:lang.LazySeq =>
         l.toArray().toList.map(toNative)
+      case l:lang.PersistentVector =>
+        l.toArray().toList.map(toNative)
       case null =>
         List()
     }
@@ -31,7 +33,12 @@ class InterpreterSpec extends FlatSpec with Matchers {
         l.toArray().toList
       case v:lang.PersistentVector =>
         v.toArray.toList
-      case x => x
+      case k:lang.Keyword =>
+        k.toString
+      case x => {
+        println(s"@@@ ${x} ${x.getClass}")
+        x
+      }
     }
   }
 
@@ -77,6 +84,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
     toList(run("/misc/test24.ogu")) should be(List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
     run("/misc/test25.ogu") should be(20)
     run("/misc/test27.ogu") should be("estas obeso, cuidado!")
+    toList(run("/misc/test29.ogu")) should be(List(117, ":a", 100, ":a"))
   }
 
   "An Interpeter" should "run alg files" in {

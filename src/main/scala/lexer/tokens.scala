@@ -74,8 +74,7 @@ case class BIGINT_LITERAL(value: BigInt) extends LITERAL
 case class BIGDECIMAL_LITERAL(value: BigDecimal) extends LITERAL
 case class BOOL_LITERAL(value: Boolean) extends LITERAL
 
-trait DATETIME_LITERAL extends TOKEN
-case class ISODATETIME_LITERAL(value: DateTime) extends DATETIME_LITERAL
+case class ISODATETIME_LITERAL(value: DateTime) extends LITERAL
 
 
 case object AND extends LOGICAL_BIN_OPER
@@ -103,6 +102,7 @@ case object GT extends COMPARATIVE_BIN_OPER
 case object LAMBDA extends TOKEN
 case object LBRACKET extends PAREN
 case object LCURLY extends PAREN
+case object HASHLCURLY extends PAREN
 case object LPAREN extends PAREN
 case object LE extends COMPARATIVE_BIN_OPER
 case object LT extends COMPARATIVE_BIN_OPER

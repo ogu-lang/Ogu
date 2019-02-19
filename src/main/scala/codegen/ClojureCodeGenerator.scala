@@ -95,6 +95,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case StringLiteral(str) =>
         strBuf ++= str
 
+      case DateTimeLiteral(date) =>
+        strBuf ++= "#inst  \"" + s"$date" + "\""
+
       case Atom(value) =>
         strBuf ++= value
 
@@ -112,6 +115,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case RangeWithIncrementExpressionUntil(ini,inc, end) =>
         strBuf ++= s"(range ${toClojure(ini)} ${toClojure(end)} ${toClojure(inc)})"
+
+      case SetExpression(elements) =>
+        strBuf ++= s"#{${elements.map(toClojure).mkString(" ")}}"
 
       case EmptyListExpresion() =>
         strBuf ++= "[]"

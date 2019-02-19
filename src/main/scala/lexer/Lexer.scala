@@ -109,20 +109,26 @@ class Lexer {
           result = str.substring(ini, pos) :: result
         if (pos + 1 < len && str(pos+1) == '\"') {
           ini = pos
-          pos = pos + 1
+          pos +=  1
           parseQuoted('\"')
         }
         else if (pos + 1 < len && str(pos+1) == '/') {
           ini = pos
-          pos = pos + 1
+          pos += 1
           parseQuoted('/')
         }
         else if (pos + 1 < len && isTimeValidChar(str(pos+1))) {
           ini = pos
-          pos = pos + 1
+          pos += 1
           while (pos < len && isTimeValidChar(str(pos))) {
             pos += 1
           }
+          result = str.substring(ini, pos) :: result
+          ini = pos
+        }
+        else if (pos + 1 < len && str(pos+1) == '{') {
+          ini = pos
+          pos += 2
           result = str.substring(ini, pos) :: result
           ini = pos
         }
@@ -345,6 +351,9 @@ class Lexer {
       case "{" =>
         parenLevel += 1
         LCURLY
+      case "#{" =>
+        parenLevel += 1
+        HASHLCURLY
       case "(" =>
         parenLevel += 1
         LPAREN
@@ -384,6 +393,10 @@ class Lexer {
   }
 
   def tryParseHashTag(str: String) : TOKEN = {
+    if (str == "#{") {
+      parenLevel += 1
+      return HASHLCURLY
+    }
     val len = str.length
     if (len > 1 && str(1) == '\"')
       return FSTRING_LITERAL(str.substring(1))
