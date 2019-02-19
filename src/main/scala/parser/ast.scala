@@ -119,6 +119,7 @@ case class ForwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends
 case class BackwardPipeFuncCallExpression(args: List[Expression]) extends CallExpression
 case class BackwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends CallExpression
 case class NewCallExpression(cls: String, args: List[Expression]) extends CallExpression
+case class ConstructorExpression(cls: String, args: List[Expression]) extends CallExpression
 
 case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Expression
 

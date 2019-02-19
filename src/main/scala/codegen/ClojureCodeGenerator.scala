@@ -29,6 +29,12 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case TopLevelExpression(expression) =>
         strBuf ++= toClojure(expression) + "\n"
 
+      case AdtDecl(name, adts) =>
+        strBuf ++= s"(defprotocol $name)\n"
+        for (adt <- adts) {
+          strBuf ++=  s"(deftype ${adt.name} [${adt.args.mkString(" ")}] $name)\n"
+        }
+
       case BindDeclExpr(decls, expression) =>
         strBuf ++= s"(binding ["
         strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
@@ -211,6 +217,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case RecurExpr(args) =>
         strBuf ++= s"(recur ${args.map(toClojure).mkString(" ")})"
 
+      case ConstructorExpression(cls, args) =>
+        strBuf ++= s"(->$cls ${args.map(toClojure).mkString(" ")})"
+
       case NewCallExpression(cls, args) if args.isEmpty =>
         strBuf ++= s"($cls.)"
 
@@ -390,7 +399,15 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
                   letDecls = s"[$head $second & $tail] ${namedArgs.head}" :: letDecls
                 case DefArg(ListExpression(args, None)) =>
                   letDecls = s"[${args.map(toClojure).mkString(" ")}] ${namedArgs.head}]" :: letDecls
-
+                case DefArg(ConstructorExpression(cls, args)) =>
+                  andList = s"(instance? $cls ${namedArgs.head})" :: andList
+                  var argDecls = List.empty[String]
+                  for (arg <- args) {
+                    arg match {
+                      case Identifier(id) => argDecls = s"${id} (.${id} ${namedArgs.head})" :: argDecls
+                    }
+                  }
+                  letDecls = argDecls.reverse ++ letDecls
                 case DefArg(exp: Expression) =>
                   andList = s"\t\t(= ${namedArgs.head} ${toClojure(exp)})" :: andList
 
@@ -438,6 +455,8 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     }
     strBuf.toString()
   }
+
+
 
   def toClojureLetId(id: LetId) : String = {
     id match {

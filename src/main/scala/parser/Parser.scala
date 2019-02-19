@@ -122,6 +122,9 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       if (tokens.peek(DEF)) {
         result = multiDef(parseDef(inner)) :: result
       }
+      else if (tokens.peek(DATA)) {
+        result = parseData(inner) :: result
+      }
       else if (tokens.peek(TRAIT)) {
         result = parseTrait(inner) :: result
       }
@@ -132,6 +135,54 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       //println(s"PARSED SO FAR: ${result.reverse}\n\n")
     }
     filter(result.reverse)
+  }
+
+  def parseData(inner:Boolean): LangNode = {
+    tokens.consume(DATA)
+    val id = tokens.consume(classOf[TID]).value
+    tokens.consume(ASSIGN)
+    var indents = 0
+    if (tokens.peek(NL)) {
+      tokens.consumeOptionals(NL)
+      tokens.consume(INDENT)
+      indents += 1
+    }
+    var adts = List.empty[ADT]
+    val adt = parseADT()
+    adts = adt :: adts
+    while (tokens.peek(GUARD)) {
+      tokens.consume(GUARD)
+      tokens.consumeOptionals(NL)
+      if (tokens.peek(INDENT)) {
+        tokens.consume(INDENT)
+        indents += 1
+      }
+      val adt = parseADT()
+      adts = adt :: adts
+    }
+    while (indents > 0) {
+      tokens.consume(DEDENT)
+      indents -= 1
+    }
+    AdtDecl(id, adts.reverse)
+  }
+
+  def parseADT(): ADT = {
+    val id = tokens.consume(classOf[TID]).value
+    var args = List.empty[String]
+    if (tokens.peek(LPAREN)) {
+      tokens.consume(LPAREN)
+      val arg = tokens.consume(classOf[ID]).value
+      args = arg :: args
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        tokens.consumeOptionals(NL)
+        val arg = tokens.consume(classOf[ID]).value
+        args = arg :: args
+      }
+      tokens.consume(RPAREN)
+    }
+    ADT(id, args.reverse)
   }
 
   def parseTrait(inner: Boolean): LangNode = {
@@ -1172,9 +1223,30 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     else if (tokens.peek(NEW)) {
       parseNewCtorExpression()
     }
+    else if (tokens.peek(classOf[TID])) {
+      parseCtorExpression()
+    }
     else {
       parseFuncCallExpr()
     }
+  }
+
+  def parseCtorExpression() : Expression = {
+    val cls = tokens.consume(classOf[TID]).value
+    tokens.consume(LPAREN)
+    var args = List.empty[Expression]
+    if (!tokens.peek(RPAREN)) {
+      val expr = parseExpr()
+      args = expr :: args
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        tokens.consumeOptionals(NL)
+        val expr = parseExpr()
+        args = expr :: args
+      }
+    }
+    tokens.consume(RPAREN)
+    ConstructorExpression(cls, args.reverse)
   }
 
   def parseNewCtorExpression() : Expression = {

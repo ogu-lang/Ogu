@@ -221,6 +221,7 @@ class Lexer {
       case "class" => CLASS
       case "cond" => COND
       case "contains" => CONTAINS
+      case "data" => DATA
       case "def" => DEF
       case "do" => DO
       case "elif" => ELIF
