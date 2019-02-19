@@ -126,7 +126,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         result = parseTrait(inner) :: result
       }
       else{
-        result = parsePipedExpr() :: result
+        result = TopLevelExpression(parsePipedExpr()) :: result
       }
       tokens.consumeOptionals(NL)
       //println(s"PARSED SO FAR: ${result.reverse}\n\n")
@@ -456,15 +456,6 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       listOfLetVars = letVar :: listOfLetVars
     }
 
-    def parseInBodyExpr(): Option[Expression] = {
-      if (!tokens.peek(NL)) {
-        Some(parsePipedExpr())
-      } else {
-        tokens.consume(NL)
-        Some(parseBlockExpr())
-      }
-    }
-
     while (insideIndent > 0) {
       tokens.consumeOptionals(NL)
       tokens.consume(DEDENT)
@@ -473,16 +464,13 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
     val body: Option[Expression] =
       if (tokens.peek(IN)) {
-        tokens.consume(IN)
         parseInBodyExpr()
       } else if (tokens.peek(NL) && tokens.peek(2, IN)) {
         tokens.consume(NL)
-        tokens.consume(IN)
         parseInBodyExpr()
       } else if (tokens.peek(NL) && tokens.peek(2, INDENT) && tokens.peek(3, IN)) {
         tokens.consume(NL)
         tokens.consume(INDENT)
-        tokens.consume(IN)
         val result = parseInBodyExpr()
         tokens.consume(DEDENT)
         result
@@ -494,7 +482,63 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     LetDeclExpr(listOfLetVars.reverse, body)
   }
 
-  def parseVarExpr() : Expression = {
+  def parseBindExpr(): Expression = {
+    tokens.consume(BIND)
+    tokens.consumeOptionals(NL)
+    var insideIndent = if (tokens.peek(INDENT)) 1 else 0
+    if (insideIndent == 1)
+      tokens.consume(INDENT)
+    var letVar = parseLetVar()
+    var listOfLetVars = List.empty[Variable]
+    listOfLetVars = letVar :: listOfLetVars
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      if (tokens.peek(INDENT)) {
+        tokens.consume(INDENT)
+        insideIndent += 1
+      }
+      letVar = parseLetVar()
+      listOfLetVars = letVar :: listOfLetVars
+    }
+    while (insideIndent > 0) {
+      tokens.consumeOptionals(NL)
+      tokens.consume(DEDENT)
+      insideIndent -= 1
+    }
+    val body: Option[Expression] =
+      if (tokens.peek(IN)) {
+        parseInBodyExpr()
+      }
+      else if (tokens.peek(NL) && tokens.peek(2, IN)) {
+        tokens.consume(NL)
+        parseInBodyExpr()
+      } else if (tokens.peek(NL) && tokens.peek(2, INDENT) && tokens.peek(3, IN)) {
+        tokens.consume(NL)
+        tokens.consume(INDENT)
+        val result = parseInBodyExpr()
+        tokens.consume(DEDENT)
+        result
+      } else {
+        None
+      }
+    if (body.isEmpty) {
+      throw InvalidExpression()
+    }
+    BindDeclExpr(listOfLetVars.reverse, body.get)
+  }
+
+  def parseInBodyExpr(): Option[Expression] = {
+    tokens.consume(IN)
+    if (!tokens.peek(NL)) {
+      Some(parsePipedExpr())
+    } else {
+      tokens.consume(NL)
+      Some(parseBlockExpr())
+    }
+  }
+
+  def parseVarExpr(): Expression = {
     tokens.consume(VAR)
     tokens.consumeOptionals(NL)
     var insideIndent = if (tokens.peek(INDENT)) 1 else 0
@@ -514,15 +558,6 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       listOfLetVars = letVar :: listOfLetVars
     }
 
-    def parseInBodyExpr(): Option[Expression] = {
-      if (!tokens.peek(NL)) {
-        Some(parsePipedExpr())
-      } else {
-        tokens.consume(NL)
-        Some(parseBlockExpr())
-      }
-    }
-
     while (insideIndent > 0) {
       tokens.consumeOptionals(NL)
       tokens.consume(DEDENT)
@@ -530,16 +565,13 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
     val body: Option[Expression] =
       if (tokens.peek(IN)) {
-        tokens.consume(IN)
         parseInBodyExpr()
       } else if (tokens.peek(NL) && tokens.peek(2, IN)) {
         tokens.consume(NL)
-        tokens.consume(IN)
         parseInBodyExpr()
       } else if (tokens.peek(NL) && tokens.peek(2, INDENT) && tokens.peek(3, IN)) {
         tokens.consume(NL)
         tokens.consume(INDENT)
-        tokens.consume(IN)
         val result = parseInBodyExpr()
         tokens.consume(DEDENT)
         result
@@ -680,7 +712,8 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       parseLetExpr()
     else if (tokens.peek(VAR))
       parseVarExpr()
-
+    else if (tokens.peek(BIND))
+      parseBindExpr()
     else
       parseLambdaExpr()
   }

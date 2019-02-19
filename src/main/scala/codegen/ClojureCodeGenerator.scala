@@ -1,5 +1,6 @@
 package codegen
 
+import com.sun.deploy.config.VerboseDefaultConfig
 import interpreter.Interpreter.toClojure
 import parser._
 
@@ -24,15 +25,30 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         for (node <- decls) {
           strBuf ++= toClojure(node)
         }
+
+      case TopLevelExpression(expression) =>
+        strBuf ++= toClojure(expression) + "\n"
+
+      case BindDeclExpr(decls, expression) =>
+        strBuf ++= s"(binding ["
+        strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
+        strBuf ++= "]\n"
+        strBuf ++= s"\t${toClojure(expression)})\n"
+
       case LetDeclExpr(decls, Some(expression)) =>
         strBuf ++= "(let ["
         strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
         strBuf ++= " ]\n"
-        strBuf ++= s" ${toClojure(expression)})\n"
+        strBuf ++= s"\t${toClojure(expression)})\n"
 
       case LetDeclExpr(decls: List[_], None) =>
         for (decl <- decls.asInstanceOf[List[LetVariable]]) {
           strBuf ++= s"(def ${toClojureLetId(decl.id)} ${toClojure(decl.value)})\n"
+        }
+
+      case VarDeclExpr(decls, None) =>
+        for (d <- decls) {
+          strBuf ++= toClojureOguVariable(d)
         }
 
       case VarDeclExpr(decls, Some(expression)) =>
@@ -275,7 +291,12 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= s"(aset ${toClojure(array)} ${toClojure(index)} ${toClojure(value)})"
 
       case SimpleAssignExpr(Identifier(variable), value) =>
-        strBuf ++= s"(var-set $variable ${toClojure(value)})"
+        if (isVariable(variable)) {
+          strBuf ++= s"(var-set $variable ${toClojure(value)})"
+        }
+        else {
+          strBuf ++= s"(alter-var-root (var $variable) (constantly ${toClojure(value)}))"
+        }
 
       case SimpleDefDecl(inner, id, args, BodyGuardsExpresion(guards), None) =>
         if (inner) {
@@ -532,6 +553,12 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     }
   }
 
+  def toClojureOguVariable(variable: Variable) : String = {
+    variable match {
+      case LetVariable(id, expr) => s"(-def-ogu-var- ${toClojureLetId(id)} ${toClojure(expr)})\n"
+    }
+  }
+
   def toClojureImportClauses(importClauses: List[ImportClause]): String = {
     val strBuf = new StringBuilder()
     val (cljImp, jvmImp) = importClauses.span(p =>
@@ -596,8 +623,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     for (v <- decls) {
       v match {
         case LetVariable(LetSimpleId(id), _) => this.varDecls = this.varDecls + id
-        case VarVariable(id, _) => this.varDecls = this.varDecls + id
-        case VarTupledVariable(ids, _) => this.varDecls = this.varDecls  ++ ids
       }
     }
   }
@@ -606,8 +631,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     for (v <- decls) {
       v match {
         case LetVariable(LetSimpleId(id), _) => this.varDecls = this.varDecls - id
-        case VarVariable(id, _) => this.varDecls = this.varDecls - id
-        case VarTupledVariable(ids, _) => this.varDecls = this.varDecls -- ids
       }
     }
   }

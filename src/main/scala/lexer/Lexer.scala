@@ -217,6 +217,7 @@ class Lexer {
   def tryParseId(str: String) : TOKEN = {
     str match {
       case "as" => AS
+      case "bind" => BIND
       case "class" => CLASS
       case "cond" => COND
       case "contains" => CONTAINS

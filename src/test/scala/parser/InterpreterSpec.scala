@@ -36,7 +36,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
       case k:lang.Keyword =>
         k.toString
       case x => {
-        println(s"@@@ ${x} ${x.getClass}")
+        //println(s"@@@ ${x} ${x.getClass}")
         x
       }
     }
@@ -85,6 +85,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
     run("/misc/test25.ogu") should be(20)
     run("/misc/test27.ogu") should be("estas obeso, cuidado!")
     toList(run("/misc/test29.ogu")) should be(List(117, ":a", 100, ":a"))
+    run("/misc/test30.ogu") should be(90)
   }
 
   "An Interpeter" should "run alg files" in {

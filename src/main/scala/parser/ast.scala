@@ -18,7 +18,10 @@ case class TraitDecl(inner: Boolean, name: String, decls: List[TraitMethodDecl])
 
 trait AssignableExpression
 
+
 sealed trait Expression extends LangNode
+
+case class TopLevelExpression(expression: Expression) extends LangNode
 
 class Name(name: String) extends Expression
 trait LambdaArg
@@ -32,13 +35,12 @@ case class LetTupledId(ids:List[LetId]) extends LetId
 
 trait Variable
 case class LetVariable(id: LetId, value: Expression) extends Variable
-case class VarVariable(id: String, initialValue: Expression) extends Variable
-case class VarTupledVariable(ids: List[String], initialValue : Expression) extends Variable
 
 
 trait LetDeclExprTrait extends Expression
 case class LetDeclExpr(decls: List[Variable], inExpr: Option[Expression]) extends LetDeclExprTrait
 case class VarDeclExpr(decls: List[Variable], inExpr: Option[Expression]) extends Expression
+case class BindDeclExpr(decls: List[Variable], inExpr: Expression) extends Expression
 
 trait LoopDeclVariable extends Variable
 case class LoopVarDecl(id: String, initialValue: Expression) extends LoopDeclVariable

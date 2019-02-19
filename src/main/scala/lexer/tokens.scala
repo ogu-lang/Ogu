@@ -25,6 +25,7 @@ case class TID(value: String) extends TOKEN
 trait KEYWORD extends TOKEN
 trait CONTROL extends KEYWORD
 case object AS extends KEYWORD
+case object BIND extends KEYWORD
 trait DECL extends KEYWORD
 case object CLASS extends KEYWORD
 case object COND extends CONTROL
