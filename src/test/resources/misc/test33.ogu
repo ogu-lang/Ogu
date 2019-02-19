@@ -1,3 +1,7 @@
 -- regexp
 
-"abcxyz" =~ #/abc(.*)/
+println! "abcxyz" =~ #/abc(.*)/
+
+println! "abcxyz" !~ #/abc(.*)/
+
+"abcxyz" ~ #/abc(.*)/

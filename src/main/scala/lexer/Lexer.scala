@@ -358,6 +358,7 @@ class Lexer {
         parenLevel += 1
         LPAREN
       case "<" => LT
+      case "~" => MATCH
       case "=~" => MATCHES
       case "-" => MINUS
       case "<->" => MINUS_BIG

@@ -1080,6 +1080,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       case GE => GreaterOrEqualThanExpr(left, right)
       case EQUALS => EqualsExpr(left, right)
       case NOT_EQUALS => NotEqualsExpr(left, right)
+      case MATCH => ReMatchExpr(left, right)
       case MATCHES => MatchExpr(left, right)
       case NOT_MATCHES => NoMatchExpr(left, right)
       case CONTAINS => ContainsExpr(left, right)

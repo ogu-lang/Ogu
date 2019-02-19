@@ -106,6 +106,7 @@ case object HASHLCURLY extends PAREN
 case object LPAREN extends PAREN
 case object LE extends COMPARATIVE_BIN_OPER
 case object LT extends COMPARATIVE_BIN_OPER
+case object MATCH extends COMPARATIVE_BIN_OPER
 case object MATCHES extends COMPARATIVE_BIN_OPER
 case object MINUS extends SUM_OPER
 case object MINUS_BIG extends SUM_OPER

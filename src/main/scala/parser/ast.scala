@@ -16,6 +16,8 @@ case class Module(name: String, imports: Option[List[ImportClause]],decls: List[
 case class TraitMethodDecl(name: String, args: List[String])
 case class TraitDecl(inner: Boolean, name: String, decls: List[TraitMethodDecl]) extends LangNode
 
+case class ADT(name: String, args: List[String])
+case class AdtDecl(name: String, defs: List[ADT]) extends LangNode
 trait AssignableExpression
 
 
@@ -146,12 +148,9 @@ case class LazyExpression(expr: Expression) extends Expression
 
 class BinaryExpression(val left: Expression, val right: Expression) extends Expression
 
-
-
 class LogicalExpression(l1: Expression, r1: Expression)  extends BinaryExpression(l1, r1)
 case class LogicalAndExpression(override val left: Expression, override val right: Expression) extends LogicalExpression(left, right)
 case class LogicalOrExpression(override val left: Expression, override val right: Expression) extends LogicalExpression(left, right)
-
 
 class ComparativeExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
 case class LessThanExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
@@ -161,6 +160,7 @@ case class GreaterOrEqualThanExpr(override val left: Expression, override val ri
 case class EqualsExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
 case class NotEqualsExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
 case class MatchExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
+case class ReMatchExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
 case class NoMatchExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
 case class ContainsExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
 

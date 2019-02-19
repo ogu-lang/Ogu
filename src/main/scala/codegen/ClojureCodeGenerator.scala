@@ -121,7 +121,13 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= "#\"" + re.stripPrefix("/").stripSuffix("/") + "\""
 
       case MatchExpr(expr, re) =>
+        strBuf ++= s"(some? (re-matches ${toClojure(re)} ${toClojure(expr)}))"
+
+      case ReMatchExpr(expr, re) =>
         strBuf ++= s"(re-matches ${toClojure(re)} ${toClojure(expr)})"
+
+      case NoMatchExpr(expr, re) =>
+        strBuf ++= s"(nil? (re-matches ${toClojure(re)} ${toClojure(expr)}))"
 
       case ArrayAccessExpression(array, index) =>
         strBuf ++= s"(aget ${toClojure(array)} ${toClojure(index)})"
