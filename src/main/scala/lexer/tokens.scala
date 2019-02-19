@@ -87,7 +87,6 @@ case object BACK_ARROW extends OPER
 case object COMMA extends OPER
 case object CONS extends OPER
 case object DIV extends MUL_OPER
-case object DIV_ASSIGN extends ASSIGN_OPER
 case object DOLLAR extends PIPE_OPER
 case object DOT extends OPER
 case object DOTDOT extends OPER
@@ -109,12 +108,9 @@ case object LT extends COMPARATIVE_BIN_OPER
 case object MATCHES extends COMPARATIVE_BIN_OPER
 case object MINUS extends SUM_OPER
 case object MINUS_BIG extends SUM_OPER
-case object MINUS_ASSIGN extends ASSIGN_OPER
 case object MOD extends MUL_OPER
-case object MOD_ASSIGN extends ASSIGN_OPER
 case object MULT extends MUL_OPER
 case object MULT_BIG extends MUL_OPER
-case object MULT_ASSIGN extends ASSIGN_OPER
 case object NOT_EQUALS extends COMPARATIVE_BIN_OPER
 case object NOT_MATCHES extends COMPARATIVE_BIN_OPER
 case object OR extends LOGICAL_BIN_OPER
@@ -126,7 +122,6 @@ case object PIPE_RIGHT_FIRST_ARG extends FORWARD_PIPE
 
 case object PLUS extends SUM_OPER
 case object PLUS_BIG extends SUM_OPER
-case object PLUS_ASSIGN extends ASSIGN_OPER
 case object PLUS_PLUS extends SUM_OPER
 case object POW extends OPER
 case object RBRACKET extends PAREN

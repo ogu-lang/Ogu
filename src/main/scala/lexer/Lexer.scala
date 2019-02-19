@@ -331,7 +331,6 @@ class Lexer {
       case "," => COMMA
       case "::" => CONS
       case "/" => DIV
-      case "/=" => DIV_ASSIGN
       case "$" => DOLLAR
       case "..." => DOTDOTDOT
       case "..<" => DOTDOTLESS
@@ -361,13 +360,10 @@ class Lexer {
       case "=~" => MATCHES
       case "-" => MINUS
       case "<->" => MINUS_BIG
-      case "-=" => MINUS_ASSIGN
       case "%" => MOD
-      case "%=" => MOD_ASSIGN
       case "*" => MULT
       case "<*>" => MULT_BIG
-      case "*=" => MULT_ASSIGN
-      case "=/=" => NOT_EQUALS
+      case "/=" => NOT_EQUALS
       case "!~" => NOT_MATCHES
       case "||" => OR
       case "<|" => PIPE_LEFT
@@ -376,7 +372,6 @@ class Lexer {
       case ">|" => PIPE_RIGHT_FIRST_ARG
       case "+" => PLUS
       case "<+>" => PLUS_BIG
-      case "+=" => PLUS_ASSIGN
       case "++" => PLUS_PLUS
       case "^" => POW
       case "]" =>

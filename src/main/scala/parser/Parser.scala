@@ -964,14 +964,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       throw CantAssignToExpression()
     val oper = tokens.consume(classOf[ASSIGN_OPER])
     val right = parsePipedExpr()
-    oper match {
-      case ASSIGN => SimpleAssignExpr(expr, right)
-      case PLUS_ASSIGN => PlusAssignExpr(expr, right)
-      case MINUS_ASSIGN => MinusAssignExpr(expr, right)
-      case MULT_ASSIGN => MultAssignExpr(expr, right)
-      case DIV_ASSIGN => DivAssignExpr(expr, right)
-      case MOD_ASSIGN => ModAssignExpr(expr, right)
-    }
+    SimpleAssignExpr(expr, right)
   }
 
   def parseLambdaExpr() : Expression = {
@@ -1217,7 +1210,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     } else {
       tokens.nextToken().exists { next =>
         next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] ||
-          next == INDENT || next == DEDENT || next == ASSIGN || next == PLUS_ASSIGN ||
+          next == INDENT || next == DEDENT || next == ASSIGN  ||
           next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN ||
           next == ELSE || next == RPAREN || next == IN || next == RBRACKET || next == RCURLY || next == WHERE
       }
