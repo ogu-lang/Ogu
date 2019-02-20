@@ -88,6 +88,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
     toList(run("/misc/test29.ogu")) should be(List(117, ":a", 100, ":a"))
     run("/misc/test30.ogu") should be(90)
     toList(run("/misc/test33.ogu")) should be(List("abcxyz", "xyz"))
+    run("/misc/test34.ogu") should be(80)
     toList(run("/misc/test35.ogu")) should be(List(89, 463))
     run("/misc/test36.ogu") should be (null)
   }

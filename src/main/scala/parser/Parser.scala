@@ -1277,19 +1277,21 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseCtorExpression() : Expression = {
     val cls = tokens.consume(classOf[TID]).value
-    tokens.consume(LPAREN)
     var args = List.empty[Expression]
-    if (!tokens.peek(RPAREN)) {
-      val expr = parseExpr()
-      args = expr :: args
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        tokens.consumeOptionals(NL)
+    if (tokens.peek(LPAREN)) {
+      tokens.consume(LPAREN)
+      if (!tokens.peek(RPAREN)) {
         val expr = parseExpr()
         args = expr :: args
+        while (tokens.peek(COMMA)) {
+          tokens.consume(COMMA)
+          tokens.consumeOptionals(NL)
+          val expr = parseExpr()
+          args = expr :: args
+        }
       }
+      tokens.consume(RPAREN)
     }
-    tokens.consume(RPAREN)
     ConstructorExpression(cls, args.reverse)
   }
 

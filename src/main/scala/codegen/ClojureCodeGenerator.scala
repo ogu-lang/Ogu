@@ -101,9 +101,24 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         if (pos <= 1) {
           strBuf ++= id
         } else {
-          val sb = new StringBuilder(id)
-          sb.replace(pos, pos + 1, "/")
-          strBuf ++= sb.toString()
+          var containsClass = false
+          val parts = id.split('.')
+          for (p <- parts) {
+            if (p.head.isUpper) {
+              containsClass = true
+            }
+          }
+          if (containsClass) {
+            val sb = new StringBuilder(id)
+            sb.replace(pos, pos + 1, "/")
+            strBuf ++= sb.toString()
+          }
+          else if (parts.length == 2) {
+            strBuf ++= s"(.${parts.last} ${parts.head})"
+          }
+          else {
+            strBuf ++= id
+          }
         }
 
       case BoolLiteral(value) =>
@@ -329,13 +344,13 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         }
 
       case MultiMethod(_, id, matches, args, BodyGuardsExpresion(guards), None) =>
-        strBuf ++= s"(defmethod $id ${matches.map(toClojureDefArg).mkString(" ")} "
+        strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
         strBuf ++= s"[${args.map(toClojureDefArg).mkString(" ")}]\n"
         strBuf ++= s"  (cond\n${guards.map(toClojureDefBodyGuardExpr).mkString("\n")}"
         strBuf ++= "))\n\n"
 
       case MultiMethod(_, id, matches, args, body, None) =>
-        strBuf ++= s"(defmethod $id ${matches.map(toClojureDefArg).mkString(" ")} "
+        strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
         strBuf ++= s"[${args.map(toClojureDefArg).mkString(" ")}]\n\t${toClojure(body)})\n\n"
 
       case SimpleDefDecl(inner, id, args, BodyGuardsExpresion(guards), None) =>
@@ -535,6 +550,20 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         val rest = exprs.last
         val args = exprs.dropRight(1)
         s"[${args.map(toClojure).mkString(" ")} & ${toClojure(rest)}]"
+      case DefArg(expression) => s"${toClojure(expression)}"
+    }
+  }
+
+  def toClojureDefMatchArg(defArg: DefArg): String = {
+    defArg match {
+      case DefOtherwiseArg => ":default"
+      case DefArg(Identifier(id)) => id
+      case DefArg(TupleExpr(exprs)) => s"[${exprs.map(toClojure).mkString(" ")}]"
+      case DefArg(InfiniteTupleExpr(exprs)) =>
+        val rest = exprs.last
+        val args = exprs.dropRight(1)
+        s"[${args.map(toClojure).mkString(" ")} & ${toClojure(rest)}]"
+      case DefArg(ConstructorExpression(cls, _)) => s"$cls"
       case DefArg(expression) => s"${toClojure(expression)}"
     }
   }
