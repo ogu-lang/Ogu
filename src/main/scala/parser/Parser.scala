@@ -1231,10 +1231,22 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
 
   def parsePowExpr() : Expression = {
-    var expr = parsePostfixExpr()
+    var expr = parseComposeExpr()
     while (tokens.peek(POW)) {
       tokens.consume(POW)
       expr = PowerExpression(expr, parsePowExpr())
+    }
+    expr
+  }
+
+  def parseComposeExpr() : Expression = {
+    var expr = parsePostfixExpr()
+    while (tokens.peek(classOf[COMPOSE_OPER])) {
+      val op = tokens.consume(classOf[COMPOSE_OPER])
+      expr = op match {
+        case COMPOSE_FORWARD => ComposeExpressionForward(expr, parseComposeExpr())
+        case COMPOSE_BACKWARD => ComposeExpressionBackward(expr, parseComposeExpr())
+      }
     }
     expr
   }

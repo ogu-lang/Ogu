@@ -190,6 +190,8 @@ case class MultiplyBigExpression(override val left: Expression, override val rig
 case class DivideExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
 case class ModExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
 
+case class ComposeExpressionForward(left: Expression, right: Expression) extends Expression
+case class ComposeExpressionBackward(left: Expression, right: Expression) extends Expression
 
 case class PowerExpression(base: Expression, exponent: Expression) extends Expression
 

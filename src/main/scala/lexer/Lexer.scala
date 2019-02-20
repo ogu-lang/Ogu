@@ -227,7 +227,7 @@ class Lexer {
       case "do" => DO
       case "elif" => ELIF
       case "else" => ELSE
-      case "extend" => EXTEND
+      case "extends" => EXTENDS
       case "false" => BOOL_LITERAL(false)
       case "for" => FOR
       case "from" => FROM
@@ -332,6 +332,8 @@ class Lexer {
       case "=" => ASSIGN
       case "<-" => BACK_ARROW
       case "," => COMMA
+      case ">>" => COMPOSE_FORWARD
+      case "<<" => COMPOSE_BACKWARD
       case "::" => CONS
       case "/" => DIV
       case "$" => DOLLAR

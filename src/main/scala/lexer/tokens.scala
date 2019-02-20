@@ -36,7 +36,7 @@ case object DISPATCH extends DECL
 case object DO extends KEYWORD
 case object ELIF extends KEYWORD
 case object ELSE extends KEYWORD
-case object EXTEND extends KEYWORD
+case object EXTENDS extends KEYWORD
 case object FOR extends CONTROL
 case object FROM extends KEYWORD
 case object IF extends CONTROL
@@ -88,6 +88,9 @@ case object ASSIGN extends OPER
 case object BACK_ARROW extends OPER
 case object COMMA extends OPER
 case object CONS extends OPER
+class COMPOSE_OPER extends OPER
+case object COMPOSE_FORWARD extends COMPOSE_OPER
+case object COMPOSE_BACKWARD extends COMPOSE_OPER
 case object DIV extends MUL_OPER
 case object DOLLAR extends PIPE_OPER
 case object DOT extends OPER

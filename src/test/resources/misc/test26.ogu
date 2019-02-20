@@ -3,7 +3,7 @@ trait Shape
     def area self
 
 
-class Circle(x,  y, radius) as Shape
+class Circle(x,  y, radius) extends Shape
 
    def area self = pi * (radius ^ 2)
 
@@ -11,14 +11,15 @@ class Circle(x,  y, radius) as Shape
 class Rectangle(x, y, width, height)
 
 
-extend Rectangle as Shape
+extends Rectangle with Shape
 
     def area self = (.width self) * (.height self)
 
 
-class Triangle(b, h) as Shape
+class Triangle(b, h) extends Shape
 
     def area self = self.b * self.h
+
 
 def test-area shape : Rectangle = str "area of rectangle: " (area shape)
 

@@ -93,6 +93,12 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case PowerExpression(left, right) =>
         strBuf ++= s"(pow ${toClojure(left)} ${toClojure(right)})"
 
+      case ComposeExpressionForward(left, right) =>
+        strBuf ++= s"(comp ${toClojure(right)} ${toClojure(left)})"
+
+      case ComposeExpressionBackward(left, right) =>
+        strBuf ++= s"(comp ${toClojure(left)} ${toClojure(right)})"
+
       case Identifier(id) =>
         if (isVariable(id)) {
           strBuf ++= "@"
