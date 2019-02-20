@@ -35,6 +35,13 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           strBuf ++=  s"(deftype ${adt.name} [${adt.args.mkString(" ")}] $name)\n"
         }
 
+      case DispatchDecl(id, dispatcher) =>
+        strBuf ++= s"(defmulti $id "
+        dispatcher match {
+          case ClassDispatcher => strBuf ++= "class)\n"
+          case ExpressionDispatcher(expr) => strBuf ++= s"${toClojure(expr)})\n"
+        }
+
       case BindDeclExpr(decls, expression) =>
         strBuf ++= s"(binding ["
         strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
@@ -298,7 +305,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case PartialConcat(args) =>
         if (args.isEmpty) strBuf ++= "concat" else strBuf ++= s"(concat ${args.map(toClojure).mkString(" ")})"
 
-
       case ForwardPipeFuncCallExpression(args) =>
         strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})"
 
@@ -319,6 +325,16 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           strBuf ++= s"(alter-var-root (var $variable) (constantly ${toClojure(value)}))"
         }
 
+      case MultiMethod(_, id, matches, args, BodyGuardsExpresion(guards), None) =>
+        strBuf ++= s"(defmethod $id ${matches.map(toClojureDefArg).mkString(" ")} "
+        strBuf ++= s"[${args.map(toClojureDefArg).mkString(" ")}]\n"
+        strBuf ++= s"  (cond\n${guards.map(toClojureDefBodyGuardExpr).mkString("\n")}"
+        strBuf ++= "))\n\n"
+
+      case MultiMethod(_, id, matches, args, body, None) =>
+        strBuf ++= s"(defmethod $id ${matches.map(toClojureDefArg).mkString(" ")} "
+        strBuf ++= s"[${args.map(toClojureDefArg).mkString(" ")}]\n\t${toClojure(body)})\n\n"
+
       case SimpleDefDecl(inner, id, args, BodyGuardsExpresion(guards), None) =>
         if (inner) {
           strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n"
@@ -327,15 +343,12 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         }
         strBuf ++= s"  (cond\n${guards.map(toClojureDefBodyGuardExpr).mkString("\n")}"
         strBuf ++= "))\n\n"
-        if (args.isEmpty) {
-          strBuf ++= s"(def $id ($id))\n\n"
-        }
 
       case SimpleDefDecl(inner, id, args, body, None) =>
         if (inner) {
-          strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n ${toClojure(body)})\n\n"
+          strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n\t${toClojure(body)})\n\n"
         } else {
-          strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n ${toClojure(body)})\n\n"
+          strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n\t${toClojure(body)})\n\n"
         }
 
       case SimpleDefDecl(inner, id, args, body, Some(whereBlock)) =>
@@ -512,13 +525,14 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
   def toClojureDefArg(defArg: DefArg): String = {
     defArg match {
+      case DefOtherwiseArg => ":default"
       case DefArg(Identifier(id)) => id
       case DefArg(TupleExpr(exprs)) => s"[${exprs.map(toClojure).mkString(" ")}]"
       case DefArg(InfiniteTupleExpr(exprs)) =>
         val rest = exprs.last
         val args = exprs.dropRight(1)
         s"[${args.map(toClojure).mkString(" ")} & ${toClojure(rest)}]"
-      case DefArg(_) => ???
+      case DefArg(expression) => s"${toClojure(expression)}"
     }
   }
 

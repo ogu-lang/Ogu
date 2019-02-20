@@ -60,9 +60,19 @@ case class WhereDefTupledWithGuards(idList: List[String], args: Option[List[Expr
 case class WhereBlock(whereDefs: List[WhereDef]) extends LangNode
 
 case class DefArg(expression: Expression)
+object DefOtherwiseArg extends DefArg(null)
 
-class DefDecl(val id: String) extends LangNode
-case class SimpleDefDecl(inner: Boolean, override val id: String, args: List[DefArg], body: Expression, whereBlock: Option[WhereBlock])
+class DefDecl(id: String) extends LangNode
+
+sealed trait DispatcherTrait
+object ClassDispatcher extends DispatcherTrait
+case class ExpressionDispatcher(expr:Expression) extends DispatcherTrait
+case class DispatchDecl(val id:String, dispatcher: DispatcherTrait) extends LangNode
+
+case class MultiMethod(inner: Boolean, id: String, matches: List[DefArg], args: List[DefArg], body: Expression, whereBlock: Option[WhereBlock])
+  extends DefDecl(id)
+
+case class SimpleDefDecl(inner: Boolean, id: String, args: List[DefArg], body: Expression, whereBlock: Option[WhereBlock])
   extends DefDecl(id) {
   def patterMatching(): Boolean =
     args.exists {
@@ -71,7 +81,8 @@ case class SimpleDefDecl(inner: Boolean, override val id: String, args: List[Def
     }
 }
 
-case class MultiDefDecl(override val id: String, decls: List[SimpleDefDecl]) extends DefDecl(id) {
+
+case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(id) {
   def patternMatching(): Boolean = decls.exists(_.patterMatching())
 
   def args : List[String] = {

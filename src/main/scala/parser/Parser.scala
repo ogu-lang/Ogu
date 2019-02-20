@@ -122,6 +122,9 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       if (tokens.peek(DEF)) {
         result = multiDef(parseDef(inner)) :: result
       }
+      else if (tokens.peek(DISPATCH)) {
+        result = parseDispatch(inner) :: result
+      }
       else if (tokens.peek(DATA)) {
         result = parseData(inner) :: result
       }
@@ -135,6 +138,19 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       //println(s"PARSED SO FAR: ${result.reverse}\n\n")
     }
     filter(result.reverse)
+  }
+
+  def parseDispatch(inner: Boolean): LangNode = {
+    tokens.consume(DISPATCH)
+    val id = tokens.consume(classOf[ID]).value
+    tokens.consume(WITH)
+    if (tokens.peek(CLASS)) {
+      tokens.consume(CLASS)
+      DispatchDecl(id, ClassDispatcher)
+    } else {
+      val expr = parsePipedExpr()
+      DispatchDecl(id, ExpressionDispatcher(expr))
+    }
   }
 
   def parseData(inner:Boolean): LangNode = {
@@ -214,19 +230,22 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   var defs = mutable.HashMap.empty[String, MultiDefDecl]
 
   private[this] def multiDef(node: LangNode) : LangNode = {
-    val decl = node.asInstanceOf[SimpleDefDecl]
-    if (defs.contains(decl.id)) {
-      defs.get(decl.id).map { defDecl =>
-        val decls = decl :: defDecl.decls
-        val mDecl = MultiDefDecl(defDecl.id, decls)
-        defs.update(mDecl.id,  mDecl)
-        mDecl
-      }.get
-    }
-    else {
-      val mDecl = MultiDefDecl(decl.id, List(decl))
-      defs.put(mDecl.id, mDecl)
-      mDecl
+    node match {
+      case decl:SimpleDefDecl =>
+        if (defs.contains(decl.id)) {
+          defs.get(decl.id).map { defDecl =>
+            val decls = decl :: defDecl.decls
+            val mDecl = MultiDefDecl(defDecl.id, decls)
+            defs.update(mDecl.id,  mDecl)
+            mDecl
+          }.get
+        }
+        else {
+          val mDecl = MultiDefDecl(decl.id, List(decl))
+          defs.put(mDecl.id, mDecl)
+          mDecl
+        }
+      case d => d
     }
   }
 
@@ -252,17 +271,27 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseDef(inner: Boolean) : LangNode = {
     tokens.consume(DEF)
-    val defId = tokens.consume(classOf[ID])
-    val args = parseDefArgs()
+    val defId = tokens.consume(classOf[ID]).value
+    val (matches, args) = parseDefArgs()
     if (tokens.peek(NL)) {
       tokens.consume(NL)
       val body = parseDefBodyGuards()
       body match {
         case bd: BodyGuardsExpresionAndWhere =>
-          SimpleDefDecl(inner, defId.value, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
+          if (matches.isEmpty) {
+            SimpleDefDecl(inner, defId, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
+          }
+          else {
+            MultiMethod(inner, defId, matches.get, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
+          }
         case _ =>
           val where = tryParseWhereBlock()
-          SimpleDefDecl(inner, defId.value, args, body, where)
+          if (matches.isEmpty) {
+            SimpleDefDecl(inner, defId, args, body, where)
+          }
+          else {
+            MultiMethod(inner, defId, matches.get, args, body, where)
+          }
       }
     }
     else if (tokens.peek(ASSIGN)) {
@@ -275,7 +304,11 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         parseBlockExpr()
       }
       val where = tryParseWhereBlock()
-      SimpleDefDecl(inner, defId.value, args, body, where)
+      if (matches.isEmpty) {
+        SimpleDefDecl(inner, defId, args, body, where)
+      } else {
+        MultiMethod(inner, defId, matches.get, args, body, where)
+      }
     } else {
       throw InvalidDef()
     }
@@ -469,20 +502,33 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
   }
 
-  def parseDefArgs() : List[DefArg] = {
+  def parseDefArgs() : (Option[List[DefArg]], List[DefArg]) = {
     var result = List.empty[DefArg]
+    var beforeQuestion = List.empty[DefArg]
     while (!tokens.peek(ASSIGN) && !tokens.peek(NL)) {
-      val expr = parseDefArg()
-      result = DefArg(expr) :: result
+      if (tokens.peek(QUESTION)) {
+        tokens.consume(QUESTION)
+        beforeQuestion = result ++ beforeQuestion
+        result = List.empty[DefArg]
+      }
+      if (tokens.peek(OTHERWISE)) {
+        tokens.consume(OTHERWISE)
+        result = DefOtherwiseArg :: result
+      } else {
+        val expr = parseDefArg()
+        result = DefArg(expr) :: result
+      }
+
     }
-    result.reverse
+    (if (beforeQuestion.isEmpty) None else Some(beforeQuestion.reverse), result.reverse)
   }
 
   def parseDefArg() : Expression = {
     if (tokens.peek(classOf[ID])) {
       val id = tokens.consume(classOf[ID])
       Identifier(id.value)
-    } else {
+    }
+    else {
       parseLogicalExpr()
     }
   }
@@ -1046,7 +1092,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     val expr = parsePipedOrBodyExpression()
     if (!expr.isInstanceOf[AssignableExpression])
       throw CantAssignToExpression()
-    val oper = tokens.consume(classOf[ASSIGN_OPER])
+    tokens.consume(ASSIGN)
     val right = parsePipedExpr()
     SimpleAssignExpr(expr, right)
   }
@@ -1379,44 +1425,34 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseLiteral() : Expression = {
     if (tokens.peek(classOf[BOOL_LITERAL])) {
-      val flag = tokens.consume(classOf[BOOL_LITERAL])
-      BoolLiteral(flag.value)
+      BoolLiteral(tokens.consume(classOf[BOOL_LITERAL]).value)
     }
     else if (tokens.peek(classOf[INT_LITERAL])) {
-      val num = tokens.consume(classOf[INT_LITERAL])
-      IntLiteral(num.value)
+      IntLiteral(tokens.consume(classOf[INT_LITERAL]).value)
     }
     else if (tokens.peek(classOf[LONG_LITERAL])) {
-      val num = tokens.consume(classOf[LONG_LITERAL])
-      LongLiteral(num.value)
+      LongLiteral(tokens.consume(classOf[LONG_LITERAL]).value)
     }
     else if (tokens.peek(classOf[BIGINT_LITERAL])) {
-      val num = tokens.consume(classOf[BIGINT_LITERAL])
-      BigIntLiteral(num.value)
+      BigIntLiteral(tokens.consume(classOf[BIGINT_LITERAL]).value)
     }
     else if (tokens.peek(classOf[DOUBLE_LITERAL])) {
-      val num = tokens.consume(classOf[DOUBLE_LITERAL])
-      DoubleLiteral(num.value)
+      DoubleLiteral(tokens.consume(classOf[DOUBLE_LITERAL]).value)
     }
     else if (tokens.peek(classOf[STRING_LITERAL])) {
-      val str = tokens.consume(classOf[STRING_LITERAL])
-      StringLiteral(str.value)
+      StringLiteral(tokens.consume(classOf[STRING_LITERAL]).value)
     }
     else if (tokens.peek(classOf[ISODATETIME_LITERAL])) {
-      val date = tokens.consume(classOf[ISODATETIME_LITERAL])
-      DateTimeLiteral(date.value)
+      DateTimeLiteral(tokens.consume(classOf[ISODATETIME_LITERAL]).value)
     }
     else if (tokens.peek(classOf[CHAR_LITERAL])) {
-      val chr = tokens.consume(classOf[CHAR_LITERAL])
-      CharLiteral(chr.chr)
+      CharLiteral(tokens.consume(classOf[CHAR_LITERAL]).chr)
     }
     else if (tokens.peek(classOf[REGEXP_LITERAL])) {
-      val re = tokens.consume(classOf[REGEXP_LITERAL])
-      RegexpLiteral(re.re)
+      RegexpLiteral(tokens.consume(classOf[REGEXP_LITERAL]).re)
     }
     else if (tokens.peek(classOf[FSTRING_LITERAL])) {
-      val fs = tokens.consume(classOf[FSTRING_LITERAL])
-      FStringLiteral(fs.value)
+      FStringLiteral(tokens.consume(classOf[FSTRING_LITERAL]).value)
     }
     else  {
       null

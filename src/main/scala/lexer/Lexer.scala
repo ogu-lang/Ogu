@@ -223,6 +223,7 @@ class Lexer {
       case "contains" => CONTAINS
       case "data" => DATA
       case "def" => DEF
+      case "dispatch" => DISPATCH
       case "do" => DO
       case "elif" => ELIF
       case "else" => ELSE
@@ -377,6 +378,7 @@ class Lexer {
       case "<+>" => PLUS_BIG
       case "++" => PLUS_PLUS
       case "^" => POW
+      case "?" => QUESTION
       case "]" =>
         parenLevel -= 1
         RBRACKET

@@ -32,6 +32,7 @@ case object COND extends CONTROL
 case object CONTAINS extends COMPARATIVE_BIN_OPER
 case object DATA extends DECL
 case object DEF extends DECL
+case object DISPATCH extends DECL
 case object DO extends KEYWORD
 case object ELIF extends KEYWORD
 case object ELSE extends KEYWORD
@@ -83,8 +84,7 @@ case object AND extends LOGICAL_BIN_OPER
 case object ANDB extends OPER
 case object ARROBA extends OPER
 case object ARROW extends OPER
-trait ASSIGN_OPER extends OPER
-case object ASSIGN extends ASSIGN_OPER
+case object ASSIGN extends OPER
 case object BACK_ARROW extends OPER
 case object COMMA extends OPER
 case object CONS extends OPER
@@ -127,6 +127,7 @@ case object PLUS extends SUM_OPER
 case object PLUS_BIG extends SUM_OPER
 case object PLUS_PLUS extends SUM_OPER
 case object POW extends OPER
+case object QUESTION extends OPER
 case object RBRACKET extends PAREN
 case object RCURLY extends PAREN
 case object RPAREN extends PAREN
