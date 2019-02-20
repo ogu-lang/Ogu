@@ -124,6 +124,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case StringLiteral(str) =>
         strBuf ++= str
 
+      case FStringLiteral(str) =>
+        strBuf ++= s"(fmt ${str})"
+
       case DateTimeLiteral(date) =>
         strBuf ++= "#inst  \"" + s"$date" + "\""
 

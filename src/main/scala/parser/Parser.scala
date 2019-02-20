@@ -108,8 +108,6 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     ImportAlias(id, alias)
   }
 
-
-
   def parseModuleNodes() : List[LangNode] = {
     println(s"@@@ parse module nodes (tokens=$tokens)")
     var result = List.empty[LangNode]

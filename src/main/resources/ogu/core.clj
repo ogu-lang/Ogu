@@ -215,7 +215,7 @@ Returns an exact number if the base is an exact number and the power is an integ
        (cons (subs s 0 2) (interpolate (subs s 2))))))
   ([^String s]
    (if-let [start (->> ["${"]
-                       (map #(.indexOf s ^String %))
+                       (map #(.indexOf s %))
                        (remove #(== -1 %))
                        sort
                        first)]
@@ -227,7 +227,7 @@ Returns an exact number if the base is an exact number and the power is an integ
 (defmacro fmt
   "Limited string interpolation, just ${var}"
   [& strings]
-  `(str ~@(interpolate (clojure.string/join strings))))
+  `(str ~@(interpolate (apply str strings))))
 
 (defn func-fmt [s]
   (println "func-fmt " s)
