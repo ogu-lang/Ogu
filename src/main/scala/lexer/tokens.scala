@@ -142,3 +142,67 @@ case object RBRACKET extends PAREN
 case object RCURLY extends PAREN
 case object RPAREN extends PAREN
 case object SEMI extends OPER
+
+
+object OPER_MAP {
+
+  def apply(str: String) : Option[TOKEN] = {
+    table.get(str)
+  }
+
+  val table =
+    Map(
+      ("&&", AND),
+      ("&", ANDB),
+      ("@", ARROBA),
+      ("@", ARROBA),
+      ("->", ARROW),
+      ("=", ASSIGN),
+      ("<-", BACK_ARROW),
+      (":", COLON),
+      (",", COMMA),
+      (">>", COMPOSE_FORWARD),
+      ("<<", COMPOSE_BACKWARD),
+      ("::", CONS),
+      ("/", DIV),
+      ("$", DOLLAR),
+      ("...", DOTDOTDOT),
+      ("..<", DOTDOTLESS),
+      ("..", DOTDOT),
+      (".", DOT),
+      ("!>", DOTO),
+      ("<!", DOTO_BACK),
+      ("==", EQUALS),
+      (">=", GE),
+      (">", GT),
+      ("|", GUARD),
+      ("\\", LAMBDA),
+      ("<=", LE),
+      ("[", LBRACKET),
+      ("{", LCURLY),
+      ("#{", HASHLCURLY),
+      ("(", LPAREN),
+      ("<", LT),
+      ("~", MATCH),
+      ("=~", MATCHES),
+      ("-", MINUS),
+      ("<->", MINUS_BIG),
+      ("%", MOD),
+      ("*", MULT),
+      ("<*>", MULT_BIG),
+      ("/=", NOT_EQUALS),
+      ("!~", NOT_MATCHES),
+      ("||", OR),
+      ("<|", PIPE_LEFT),
+      ("|<", PIPE_LEFT_FIRST_ARG),
+      ("|>", PIPE_RIGHT),
+      (">|", PIPE_RIGHT_FIRST_ARG),
+      ("+", PLUS),
+      ("<+>", PLUS_BIG),
+      ("++", PLUS_PLUS),
+      ("^", POW),
+      ("?", QUESTION),
+      ("]", RBRACKET),
+      ("}", RCURLY),
+      (")", RPAREN))
+}

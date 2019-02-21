@@ -4,8 +4,6 @@ import java.io.{File, FileInputStream, InputStream}
 
 import org.joda.time.DateTime
 
-import scala.collection.mutable
-import scala.collection.mutable.Stack
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
@@ -19,7 +17,7 @@ class Lexer {
   var currentLine = 0
   var currentColumn = 0
   var parenLevel = 0
-  var currentString = ""
+  val currentString = new StringBuilder()
   var parseMultiLineString = false
 
   def scanLine(line: String): List[TOKEN] = {
@@ -50,7 +48,6 @@ class Lexer {
     var pos = 0
 
     def parseQuoted(quot:Char) : Unit = {
-
       pos += 1
       while (pos < len && str(pos) != quot) {
         if (str(pos) == '\\')
@@ -72,15 +69,7 @@ class Lexer {
           pos += 1
         ini = pos
       }
-      else if (str(pos) == '.' && pos+1 < len && str(pos+1) == '.' && pos+2 < len && str(pos+2) == '.') {
-        if (pos > ini) {
-          result = str.substring(ini, pos) :: result
-        }
-        result = str.substring(pos, pos+3) :: result
-        ini = pos + 3
-        pos += 3
-      }
-      else if (str(pos) == '.' && pos+1 < len && str(pos+1) == '.' && pos+2 < len && str(pos+2) == '<') {
+      else if (str(pos) == '.' && pos+1 < len && str(pos+1) == '.' && pos+2 < len && (str(pos+2) == '.' || str(pos+2) == '<')) {
         if (pos > ini) {
           result = str.substring(ini, pos) :: result
         }
@@ -158,35 +147,36 @@ class Lexer {
   }
 
   def strToToken(str: String) : TOKEN = {
-    if (str.head == '\"') {
-      if (!str.endsWith("\"")) {
-        println(s"PARSE MULTILINE STR ($str)")
-        this.currentString = str
-        this.parseMultiLineString = true
-        return SKIP
-      }
-      return STRING_LITERAL(str)
-    }
     if (parseMultiLineString) {
-      this.currentString += str
-      if (str.endsWith("\"")) {
-        parseMultiLineString = false
-        return STRING_LITERAL(currentString)
+      currentString ++= str
+      if (!str.endsWith("\"")) {
+        SKIP
       }
-      return SKIP
+      else {
+        parseMultiLineString = false
+        STRING_LITERAL(currentString.mkString)
+      }
     }
-    if (str.head == '\'')
-      return CHAR_LITERAL(str)
-    if (str.head == '#')
-      return tryParseHashTag(str)
-    if (str.head == ':' && str.length > 1 && str != "::")
-      return ATOM(str)
-    var token = tryParseId(str)
-    if (token.isInstanceOf[LEXER_ERROR])
-      token = tryParseNum(str)
-    if (token.isInstanceOf[LEXER_ERROR])
-        token = tryParseOp(str)
-    token
+    else {
+      str.head match {
+        case '\"'if !str.endsWith("\"")  =>
+          currentString.clear()
+          currentString ++= str
+          this.parseMultiLineString = true
+          SKIP
+        case '\"' => STRING_LITERAL(str)
+        case '\'' => CHAR_LITERAL(str)
+        case '#' => tryParseHashTag(str)
+        case ':' if str.length > 1 && str != "::" => ATOM(str)
+        case _ =>
+          var token = tryParseId(str)
+          if (token.isInstanceOf[LEXER_ERROR])
+            token = tryParseNum(str)
+          if (token.isInstanceOf[LEXER_ERROR])
+            token = tryParseOp(str)
+          token
+      }
+    }
   }
 
 
@@ -293,111 +283,50 @@ class Lexer {
     }
   }
 
-  def tryParseNum(str: String) : TOKEN = {
-    try {
-      val value = BigDecimal(str)
-      if (isIntegerValue(value)) {
-        if (value < Int.MaxValue)
-          return INT_LITERAL(value.toIntExact)
-        else if (value < Long.MaxValue)
-          return LONG_LITERAL(value.toLongExact)
-        else
-          return BIGINT_LITERAL(value.toBigInt())
-      }
+  def tryParseNum(str: String) : TOKEN = try {
+    val value = BigDecimal(str)
+    if (isIntegerValue(value)) {
+      if (value < Int.MaxValue)
+        INT_LITERAL(value.toIntExact)
+      else if (value < Long.MaxValue)
+        LONG_LITERAL(value.toLongExact)
+      else
+        BIGINT_LITERAL(value.toBigInt())
+    }
+    else {
       if (value.isExactDouble)
-        return DOUBLE_LITERAL(value.toDouble)
+        DOUBLE_LITERAL(value.toDouble)
       else if (value.isValidLong)
-        return LONG_LITERAL(value.toLongExact)
+        LONG_LITERAL(value.toLongExact)
       else if (value.isBinaryFloat)
-        return FLOAT_LITERAL(value.toFloat)
-      BIGDECIMAL_LITERAL(value)
+        FLOAT_LITERAL(value.toFloat)
+      else
+        BIGDECIMAL_LITERAL(value)
     }
-    catch {
-      case _: Throwable =>
-        LEXER_ERROR(currentLine, str)
-    }
+  }
+  catch {
+    case _: Throwable =>
+      LEXER_ERROR(currentLine, str)
   }
 
   private def isIntegerValue(bd: BigDecimal) = (bd.signum == 0) || bd.scale <= 0
 
   def tryParseOp(str: String) : TOKEN = {
-    var pos = 0
-    var oper = ""
-    val len = str.length
-    while (pos < len && isOpChar(str(pos))) {
-      oper += str(pos)
-      pos += 1
-    }
-    if (pos < len)
-      return LEXER_ERROR(currentLine, str)
-    oper match {
-      case "&&" => AND
-      case "&" => ANDB
-      case "@" => ARROBA
-      case "->" => ARROW
-      case "=" => ASSIGN
-      case "<-" => BACK_ARROW
-      case ":" => COLON
-      case "," => COMMA
-      case ">>" => COMPOSE_FORWARD
-      case "<<" => COMPOSE_BACKWARD
-      case "::" => CONS
-      case "/" => DIV
-      case "$" => DOLLAR
-      case "..." => DOTDOTDOT
-      case "..<" => DOTDOTLESS
-      case ".." => DOTDOT
-      case "." => DOT
-      case "!>" => DOTO
-      case "<!" => DOTO_BACK
-      case "==" => EQUALS
-      case ">=" => GE
-      case ">" => GT
-      case "|" => GUARD
-      case "\\" => LAMBDA
-      case "<=" => LE
-      case "[" =>
-        parenLevel += 1
-        LBRACKET
-      case "{" =>
-        parenLevel += 1
-        LCURLY
-      case "#{" =>
-        parenLevel += 1
-        HASHLCURLY
-      case "(" =>
-        parenLevel += 1
-        LPAREN
-      case "<" => LT
-      case "~" => MATCH
-      case "=~" => MATCHES
-      case "-" => MINUS
-      case "<->" => MINUS_BIG
-      case "%" => MOD
-      case "*" => MULT
-      case "<*>" => MULT_BIG
-      case "/=" => NOT_EQUALS
-      case "!~" => NOT_MATCHES
-      case "||" => OR
-      case "<|" => PIPE_LEFT
-      case "|<" => PIPE_LEFT_FIRST_ARG
-      case "|>" => PIPE_RIGHT
-      case ">|" => PIPE_RIGHT_FIRST_ARG
-      case "+" => PLUS
-      case "<+>" => PLUS_BIG
-      case "++" => PLUS_PLUS
-      case "^" => POW
-      case "?" => QUESTION
-      case "]" =>
-        parenLevel -= 1
-        RBRACKET
-      case "}" =>
-        parenLevel -= 1
-        RCURLY
-      case ")" =>
-        parenLevel -= 1
-        RPAREN
-      case _ => LEXER_ERROR(currentLine, str)
+    OPER_MAP.table.get(str) match {
+      case Some(token) =>
+        token match {
+          case LPAREN => parenLevel += 1
+          case LBRACKET => parenLevel += 1
+          case LCURLY => parenLevel += 1
+          case HASHLCURLY => parenLevel += 1
+          case RPAREN => parenLevel -= 1
+          case RBRACKET => parenLevel -= 1
+          case RCURLY => parenLevel -= 1
+          case _ => // nothing
+        }
+        token
+      case None =>
+        LEXER_ERROR(currentLine, str)
     }
   }
 
