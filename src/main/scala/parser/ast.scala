@@ -16,6 +16,12 @@ case class Module(name: String, imports: Option[List[ImportClause]],decls: List[
 case class TraitMethodDecl(name: String, args: List[String])
 case class TraitDecl(inner: Boolean, name: String, decls: List[TraitMethodDecl]) extends LangNode
 
+case class ClassMethodDecl(definition: DefDecl)
+case class TraitDef(traitName: String, methods: List[ClassMethodDecl]) extends LangNode
+case class ClassDecl(inner: Boolean, name: String, args: Option[List[String]], traits: List[TraitDef]) extends LangNode
+
+case class ExtendsDecl(cls: String, traitClass: String, decls: Option[List[ClassMethodDecl]]) extends LangNode
+
 case class ADT(name: String, args: List[String])
 case class AdtDecl(name: String, defs: List[ADT]) extends LangNode
 trait AssignableExpression
@@ -30,6 +36,8 @@ trait LambdaArg
 case class LambdaSimpleArg(name: String) extends Name(name) with LambdaArg
 case class Identifier(name: String) extends Name(name) with AssignableExpression
 case class LambdaTupleArg(names: List[String]) extends LambdaArg
+
+case class IdIsType(id: String, cl: String) extends Expression
 
 trait LetId
 case class LetSimpleId(id:String) extends LetId
@@ -62,13 +70,13 @@ case class WhereBlock(whereDefs: List[WhereDef]) extends LangNode
 case class DefArg(expression: Expression)
 object DefOtherwiseArg extends DefArg(null)
 
-class DefDecl(id: String) extends LangNode
 
 sealed trait DispatcherTrait
 object ClassDispatcher extends DispatcherTrait
 case class ExpressionDispatcher(expr:Expression) extends DispatcherTrait
 case class DispatchDecl(val id:String, dispatcher: DispatcherTrait) extends LangNode
 
+class DefDecl(id: String) extends LangNode
 case class MultiMethod(inner: Boolean, id: String, matches: List[DefArg], args: List[DefArg], body: Expression, whereBlock: Option[WhereBlock])
   extends DefDecl(id)
 
@@ -90,6 +98,7 @@ case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(
     var ids = List.empty[String]
     decls.foreach(decl => decl.args.foreach {
       case DefArg(Identifier(id)) if !ids.contains(id) => ids = id :: ids
+      case DefArg(IdIsType(id, _)) if !ids.contains(id) => ids = id :: ids
       case _ =>
     })
     var i = 0

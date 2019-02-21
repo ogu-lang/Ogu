@@ -83,6 +83,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
     run("/misc/test23.ogu") should be(2000)
     toList(run("/misc/test24.ogu")) should be(List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
     run("/misc/test25.ogu") should be(20)
+    toList(run("/misc/test26.ogu")) should be(List("area of shape: 314.1592653589793", "area of rectangle: 5000", "area of shape: 200"))
     run("/misc/test27.ogu") should be("estas obeso, cuidado!")
     run("/misc/test28.ogu") should be("Hola Pedro")
     toList(run("/misc/test29.ogu")) should be(List(117, ":a", 100, ":a"))

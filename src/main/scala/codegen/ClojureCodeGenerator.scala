@@ -29,6 +29,29 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case TopLevelExpression(expression) =>
         strBuf ++= toClojure(expression) + "\n"
 
+      case ClassDecl(_, name, args, traits) =>
+        strBuf ++= s"(deftype $name [${args.getOrElse(List.empty[String]).mkString(" ")}]\n"
+        if (traits.nonEmpty) {
+          strBuf ++= s"\t${traits.map(toClojure).mkString("\n\t")}"
+        }
+
+        strBuf ++= ")\n\n"
+
+      case TraitDef(traitName, methods) =>
+        strBuf ++= s"$traitName\n"
+        for (method <- methods) {
+          val s = toClojure(method.definition).replaceFirst("\\(defn\\s+", "\t(")
+          strBuf ++= s
+        }
+
+      case ExtendsDecl(cls, traitClass, methods) =>
+        strBuf ++= s"(extend-type $cls $traitClass"
+        for (method <- methods.getOrElse(List.empty)) {
+          val s = toClojure(method.definition).replaceFirst("\\(defn\\s+", "\t(")
+          strBuf ++= s
+        }
+        strBuf ++= ")\n\n"
+
       case AdtDecl(name, adts) =>
         strBuf ++= s"(defprotocol $name)\n"
         for (adt <- adts) {
@@ -370,18 +393,18 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case SimpleDefDecl(inner, id, args, body, None) =>
         if (inner) {
-          strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n\t${toClojure(body)})\n\n"
+          strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n\t\t${toClojure(body)})\n\n"
         } else {
-          strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n\t${toClojure(body)})\n\n"
+          strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n\t\t${toClojure(body)})\n\n"
         }
 
       case SimpleDefDecl(inner, id, args, body, Some(whereBlock)) =>
         if (inner) {
           strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n" +
-            s"  ${toClojure(whereBlock)}\n    ${toClojure(body)})\n\n"
+            s"\t\t${toClojure(whereBlock)}\n    ${toClojure(body)})\n\n"
         } else {
           strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n" +
-            s"  ${toClojure(whereBlock)}\n    ${toClojure(body)})\n\n"
+            s"\t\t${toClojure(whereBlock)}\n    ${toClojure(body)})\n\n"
         }
 
       case BodyGuardsExpresion(guards) =>
@@ -444,6 +467,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
                     }
                   }
                   letDecls = argDecls.reverse ++ letDecls
+                case DefArg(IdIsType(_, cls)) =>
+                  andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
+
                 case DefArg(exp: Expression) =>
                   andList = s"\t\t(= ${namedArgs.head} ${toClojure(exp)})" :: andList
 
@@ -499,6 +525,13 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case ThrowExpression(ctor) =>
         strBuf ++= s"(throw ${toClojure(ctor)})"
+
+      case TraitDecl(_, name, decls) =>
+        strBuf ++= s"(defprotocol $name\n"
+        for (decl <- decls) {
+          strBuf ++= s"\t(${decl.name} [${decl.args.mkString(" ")}])\n"
+        }
+        strBuf ++= ")\n\n"
 
       case _ =>
         strBuf ++= node.toString

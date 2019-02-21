@@ -117,25 +117,89 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         tokens.consume(PRIVATE)
         inner = true
       }
-      if (tokens.peek(DEF)) {
+      if (tokens.peek(CLASS)) {
+        result = parseClass(inner) :: result
+      }
+      else if (tokens.peek(DATA)) {
+        result = parseData(inner) :: result
+      }
+      else if (tokens.peek(DEF)) {
         result = multiDef(parseDef(inner)) :: result
       }
       else if (tokens.peek(DISPATCH)) {
         result = parseDispatch(inner) :: result
       }
-      else if (tokens.peek(DATA)) {
-        result = parseData(inner) :: result
+      else if (tokens.peek(EXTENDS)) {
+        result = parseExtends(inner) :: result
       }
       else if (tokens.peek(TRAIT)) {
         result = parseTrait(inner) :: result
       }
-      else{
+      else {
         result = TopLevelExpression(parsePipedExpr()) :: result
       }
       tokens.consumeOptionals(NL)
       //println(s"PARSED SO FAR: ${result.reverse}\n\n")
     }
     filter(result.reverse)
+  }
+
+  def parseExtends(inner: Boolean): LangNode = {
+    tokens.consume(EXTENDS)
+    val cls = tokens.consume(classOf[TID]).value
+    tokens.consume(WITH)
+    val trt = tokens.consume(classOf[TID]).value
+    tokens.consumeOptionals(NL)
+    val defs = if (!tokens.peek(INDENT)) None else {
+      tokens.consume(INDENT)
+      var defs = List.empty[ClassMethodDecl]
+      while (tokens.peek(DEF)) {
+        val defDecl = parseDef(false)
+        defs = ClassMethodDecl(defDecl) :: defs
+        tokens.consumeOptionals(NL)
+      }
+      tokens.consume(DEDENT)
+      Some(defs.reverse)
+    }
+    ExtendsDecl(cls, trt, defs)
+  }
+
+  def parseClass(inner: Boolean): LangNode = {
+    tokens.consume(CLASS)
+    val name = tokens.consume(classOf[TID]).value
+    val args = if (!tokens.peek(LPAREN)) None else {
+      tokens.consume(LPAREN)
+      val arg = tokens.consume(classOf[ID]).value
+      var args = List(arg)
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        val arg = tokens.consume(classOf[ID]).value
+        args = arg :: args
+      }
+      tokens.consume(RPAREN)
+      Some(args.reverse)
+    }
+    tokens.consume(NL)
+    var traits = List.empty[TraitDef]
+    if (tokens.peek(INDENT)) {
+      tokens.consume(INDENT)
+      while (!tokens.peek(DEDENT)) {
+        tokens.consume(EXTENDS)
+        val traitName = tokens.consume(classOf[TID]).value
+        tokens.consumeOptionals(NL)
+        tokens.consume(INDENT)
+        var traitMethods = List.empty[ClassMethodDecl]
+        while (tokens.peek(DEF)) {
+          val defDecl = parseDef(false)
+          traitMethods = ClassMethodDecl(defDecl) :: traitMethods
+          tokens.consumeOptionals(NL)
+        }
+        traits = TraitDef(traitName, traitMethods.reverse) :: traits
+        tokens.consume(DEDENT)
+      }
+      tokens.consume(DEDENT)
+    }
+    ClassDecl(inner, name, args, traits)
   }
 
   def parseDispatch(inner: Boolean): LangNode = {
@@ -202,13 +266,15 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   def parseTrait(inner: Boolean): LangNode = {
     tokens.consume(TRAIT)
     val id = tokens.consume(classOf[TID]).value
-    tokens.consume(NL)
     tokens.consumeOptionals(NL)
     var decls = List.empty[TraitMethodDecl]
     if (tokens.peek(INDENT)) {
       tokens.consume(INDENT)
-      val decl = parseTraitMethodDecl()
-      decls = decl :: decls
+      while (tokens.peek(DEF)) {
+        val decl = parseTraitMethodDecl()
+        tokens.consumeOptionals(NL)
+        decls = decl :: decls
+      }
       tokens.consume(DEDENT)
     }
     TraitDecl(inner, id, decls)
@@ -222,6 +288,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val arg = tokens.consume(classOf[ID]).value
       args = arg :: args
     }
+    tokens.consume(NL)
     TraitMethodDecl(id, args.reverse)
   }
 
@@ -267,7 +334,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     result.reverse
   }
 
-  def parseDef(inner: Boolean) : LangNode = {
+  def parseDef(inner: Boolean) : DefDecl = {
     tokens.consume(DEF)
     val defId = tokens.consume(classOf[ID]).value
     val (matches, args) = parseDefArgs()
@@ -524,7 +591,12 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   def parseDefArg() : Expression = {
     if (tokens.peek(classOf[ID])) {
       val id = tokens.consume(classOf[ID])
-      Identifier(id.value)
+      if (!tokens.peek(COLON)) {
+        Identifier(id.value)
+      } else {
+        tokens.consume(COLON)
+        IdIsType(id.value, tokens.consume(classOf[TID]).value)
+      }
     }
     else {
       parseLogicalExpr()

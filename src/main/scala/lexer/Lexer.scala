@@ -456,7 +456,7 @@ class Lexer {
       case Failure(e) =>
         Failure(CantScanFileException(filename, e))
       case Success(rdr) =>
-        Success(scanLines(rdr.getLines))
+        Success(scanLines(rdr.getLines.filter(_.length>0)))
     }
   }
 
@@ -466,7 +466,7 @@ class Lexer {
 
   def scanString(code:String) : Try[TokenStream] = {
     Try {
-      scanLines(code.split('\n').toIterator)
+      scanLines(code.split('\n').filter(_.length>0).toIterator)
     }
   }
 
