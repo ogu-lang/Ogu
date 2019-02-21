@@ -1,6 +1,5 @@
 # ogu-lang-compiler
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cf005c7ae37145a2b076c52a647a7957)](https://app.codacy.com/app/ediaz/Ogu?utm_source=github.com&utm_medium=referral&utm_content=ogu-lang/Ogu&utm_campaign=Badge_Grade_Dashboard)
 
 Ogú is a dynamic programming language.
 
