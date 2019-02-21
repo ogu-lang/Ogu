@@ -249,7 +249,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= s"(recur ${args.map(toClojure).mkString(" ")})"
 
       case ConstructorExpression(cls, args) =>
-        strBuf ++= s"(->$cls ${args.map(toClojure).mkString(" ")})"
+        strBuf ++= s"($cls. ${args.map(toClojure).mkString(" ")})"
 
       case NewCallExpression(cls, args) if args.isEmpty =>
         strBuf ++= s"($cls.)"
@@ -486,6 +486,17 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case InfiniteRangeExpression(init) =>
         strBuf ++= s"(-range-to-inf ${toClojure(init)})"
+
+      case TryExpression(body, catches, finExpr) =>
+        strBuf ++= s"(try ${toClojure(body)}\n"
+        strBuf ++= s"\t${catches.map(toClojure).mkString("\n\t")}"
+        if (finExpr.isDefined) {
+          strBuf ++= s"\t(finally ${toClojure(finExpr.get)})\n"
+        }
+        strBuf ++= ")\n"
+
+      case CatchExpression(id, ex, body) =>
+        strBuf ++= s"(catch $ex ${id.getOrElse("_")} ${toClojure(body)})"
 
       case _ =>
         strBuf ++= node.toString

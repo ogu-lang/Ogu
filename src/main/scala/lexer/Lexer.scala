@@ -179,7 +179,7 @@ class Lexer {
       return CHAR_LITERAL(str)
     if (str.head == '#')
       return tryParseHashTag(str)
-    if (str.head == ':' && str != "::")
+    if (str.head == ':' && str.length > 1 && str != "::")
       return ATOM(str)
     var token = tryParseId(str)
     if (token.isInstanceOf[LEXER_ERROR])
@@ -218,6 +218,7 @@ class Lexer {
     str match {
       case "as" => AS
       case "bind" => BIND
+      case "catch" => CATCH
       case "class" => CLASS
       case "cond" => COND
       case "contains" => CONTAINS
@@ -229,6 +230,7 @@ class Lexer {
       case "else" => ELSE
       case "extends" => EXTENDS
       case "false" => BOOL_LITERAL(false)
+      case "finally" => FINALLY
       case "for" => FOR
       case "from" => FROM
       case "if" => IF
@@ -249,6 +251,7 @@ class Lexer {
       case "then" => THEN
       case "trait" => TRAIT
       case "true" => BOOL_LITERAL(true)
+      case "try" => TRY
       case "until" => UNTIL
       case "var" => VAR
       case "val" =>
@@ -331,6 +334,7 @@ class Lexer {
       case "->" => ARROW
       case "=" => ASSIGN
       case "<-" => BACK_ARROW
+      case ":" => COLON
       case "," => COMMA
       case ">>" => COMPOSE_FORWARD
       case "<<" => COMPOSE_BACKWARD

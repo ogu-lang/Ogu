@@ -27,6 +27,7 @@ trait CONTROL extends KEYWORD
 case object AS extends KEYWORD
 case object BIND extends KEYWORD
 trait DECL extends KEYWORD
+case object CATCH extends CONTROL
 case object CLASS extends DECL
 case object COND extends CONTROL
 case object CONTAINS extends COMPARATIVE_BIN_OPER
@@ -39,6 +40,7 @@ case object ELSE extends KEYWORD
 case object EXTENDS extends KEYWORD
 case object FOR extends CONTROL
 case object FROM extends KEYWORD
+case object FINALLY extends KEYWORD
 case object IF extends CONTROL
 case object IMPORT extends KEYWORD
 case object IN extends KEYWORD
@@ -55,7 +57,9 @@ case object REFER extends KEYWORD
 case object REPEAT extends CONTROL
 case object SET extends CONTROL
 case object THEN extends CONTROL
+case object THROW extends KEYWORD
 case object TRAIT extends DECL
+case object TRY extends CONTROL
 case object UNTIL extends CONTROL
 case object VAR extends DECL
 case object WHEN extends CONTROL
@@ -91,6 +95,7 @@ case object CONS extends OPER
 class COMPOSE_OPER extends OPER
 case object COMPOSE_FORWARD extends COMPOSE_OPER
 case object COMPOSE_BACKWARD extends COMPOSE_OPER
+case object COLON extends OPER
 case object DIV extends MUL_OPER
 case object DOLLAR extends PIPE_OPER
 case object DOT extends OPER

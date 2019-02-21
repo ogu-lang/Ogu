@@ -197,6 +197,9 @@ case class PowerExpression(base: Expression, exponent: Expression) extends Expre
 
 case class ArrayAccessExpression(array: Expression, index: Expression) extends Expression with AssignableExpression
 
+case class CatchExpression(id: Option[String], ex: String, body: Expression) extends Expression
+case class TryExpression(body: Expression, catches: List[CatchExpression], finExpr: Option[Expression]) extends Expression
+
 
 case class SimpleAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
 case class PlusAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression

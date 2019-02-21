@@ -814,7 +814,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseControlExpr() : Expression = {
-    if (tokens.peek(FOR)) {
+    if (tokens.peek(COND)) {
+      parseCondExpr()
+    }
+    else if (tokens.peek(FOR)) {
       parseForExpr()
     }
     else if (tokens.peek(IF)) {
@@ -841,8 +844,8 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     else if (tokens.peek(SET)) {
       parseAssignExpr()
     }
-    else if (tokens.peek(COND)) {
-      parseCondExpr()
+    else if (tokens.peek(TRY)) {
+      parseTryExpr()
     }
     else {
       println(s"ERROR PARSE CONTROL tokens= $tokens")
@@ -850,6 +853,58 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
   }
 
+
+  def parseTryExpr() : Expression = {
+    tokens.consume(TRY)
+    val body = parsePipedOrBodyExpression()
+    tokens.consumeOptionals(NL)
+    var catches = List.empty[CatchExpression]
+    var indents = 0
+    if (tokens.peek(INDENT)) {
+      tokens.consume(INDENT)
+      indents += 1
+    }
+    while (tokens.peek(CATCH)) {
+      val catchExpr = parseCatchExpr()
+      catches = catchExpr :: catches
+      tokens.consumeOptionals(NL)
+      if (tokens.peek(INDENT)) {
+        tokens.consume(INDENT)
+        indents += 1
+      }
+    }
+    val finallyExpr = if (tokens.peek(FINALLY)) {
+      Some(parseFinallyExpr())
+    } else {
+      None
+    }
+    while (indents > 0) {
+      tokens.consume(DEDENT)
+      indents -= 1
+    }
+    TryExpression(body, catches.reverse, finallyExpr)
+  }
+
+  def parseCatchExpr(): CatchExpression = {
+    tokens.consume(CATCH)
+    if (tokens.peek(classOf[ID])) {
+      val id = tokens.consume(classOf[ID]).value
+      tokens.consume(COLON)
+      val ex = tokens.consume(classOf[TID]).value
+      tokens.consume(ARROW)
+      CatchExpression(Some(id), ex, parsePipedOrBodyExpression())
+    } else {
+      val ex = tokens.consume(classOf[TID]).value
+      tokens.consume(ARROW)
+      CatchExpression(None, ex, parsePipedOrBodyExpression())
+    }
+  }
+
+  def parseFinallyExpr() : Expression = {
+    tokens.consume(FINALLY)
+    tokens.consume(ARROW)
+    parsePipedOrBodyExpression()
+  }
 
   def parseCondExpr(): Expression = {
     tokens.consume(COND)
