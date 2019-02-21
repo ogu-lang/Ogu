@@ -219,7 +219,7 @@ class Lexer {
       case "elif" => ELIF
       case "else" => ELSE
       case "extends" => EXTENDS
-      case "false" => BOOL_LITERAL(false)
+      case "false" => FALSE
       case "finally" => FINALLY
       case "for" => FOR
       case "from" => FROM
@@ -243,13 +243,11 @@ class Lexer {
       case "then" => THEN
       case "throw" => THROW
       case "trait" => TRAIT
-      case "true" => BOOL_LITERAL(true)
+      case "true" => TRUE
       case "try" => TRY
       case "until" => UNTIL
       case "var" => VAR
-      case "val" =>
-        println("deprecated keyword: val")
-        LET
+      case "val" => LET
       case "when" => WHEN
       case "where" => WHERE
       case "while" => WHILE

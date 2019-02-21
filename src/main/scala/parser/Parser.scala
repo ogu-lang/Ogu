@@ -1626,8 +1626,13 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseLiteral() : Expression = {
-    if (tokens.peek(classOf[BOOL_LITERAL])) {
-      BoolLiteral(tokens.consume(classOf[BOOL_LITERAL]).value)
+    if (tokens.peek(TRUE)) {
+      tokens.consume(TRUE)
+      BoolLiteral(true)
+    }
+    else if (tokens.peek(FALSE)) {
+      tokens.consume(FALSE)
+      BoolLiteral(false)
     }
     else if (tokens.peek(classOf[INT_LITERAL])) {
       IntLiteral(tokens.consume(classOf[INT_LITERAL]).value)
