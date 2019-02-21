@@ -249,6 +249,7 @@ class Lexer {
       case "repeat" => REPEAT
       case "set" => SET
       case "then" => THEN
+      case "throw" => THROW
       case "trait" => TRAIT
       case "true" => BOOL_LITERAL(true)
       case "try" => TRY

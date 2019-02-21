@@ -57,7 +57,7 @@ case object REFER extends KEYWORD
 case object REPEAT extends CONTROL
 case object SET extends CONTROL
 case object THEN extends CONTROL
-case object THROW extends KEYWORD
+case object THROW extends CONTROL
 case object TRAIT extends DECL
 case object TRY extends CONTROL
 case object UNTIL extends CONTROL

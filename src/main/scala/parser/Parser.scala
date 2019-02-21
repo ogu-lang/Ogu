@@ -847,12 +847,21 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     else if (tokens.peek(TRY)) {
       parseTryExpr()
     }
+    else if (tokens.peek(THROW)) {
+      parseThrowExpr()
+    }
     else {
       println(s"ERROR PARSE CONTROL tokens= $tokens")
       throw InvalidNodeException(tokens.nextToken())
     }
   }
 
+  def parseThrowExpr() : Expression = {
+    tokens.consume(THROW)
+    val ctor = parseConstructorExpr()
+    tokens.consumeOptionals(NL)
+    ThrowExpression(ctor)
+  }
 
   def parseTryExpr() : Expression = {
     tokens.consume(TRY)
@@ -1335,14 +1344,14 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       parseNewCtorExpression()
     }
     else if (tokens.peek(classOf[TID])) {
-      parseCtorExpression()
+      parseConstructorExpr()
     }
     else {
       parseFuncCallExpr()
     }
   }
 
-  def parseCtorExpression() : Expression = {
+  def parseConstructorExpr() : ConstructorExpression = {
     val cls = tokens.consume(classOf[TID]).value
     var args = List.empty[Expression]
     if (tokens.peek(LPAREN)) {

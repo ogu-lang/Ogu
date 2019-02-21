@@ -199,7 +199,7 @@ case class ArrayAccessExpression(array: Expression, index: Expression) extends E
 
 case class CatchExpression(id: Option[String], ex: String, body: Expression) extends Expression
 case class TryExpression(body: Expression, catches: List[CatchExpression], finExpr: Option[Expression]) extends Expression
-
+case class ThrowExpression(ctor: ConstructorExpression) extends Expression
 
 case class SimpleAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
 case class PlusAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression

@@ -384,7 +384,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
             s"  ${toClojure(whereBlock)}\n    ${toClojure(body)})\n\n"
         }
 
-
       case BodyGuardsExpresion(guards) =>
         strBuf ++= s"(cond\n ${guards.map(toClojureDefBodyGuardExpr).mkString("\n")})"
 
@@ -497,6 +496,9 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
       case CatchExpression(id, ex, body) =>
         strBuf ++= s"(catch $ex ${id.getOrElse("_")} ${toClojure(body)})"
+
+      case ThrowExpression(ctor) =>
+        strBuf ++= s"(throw ${toClojure(ctor)})"
 
       case _ =>
         strBuf ++= node.toString
