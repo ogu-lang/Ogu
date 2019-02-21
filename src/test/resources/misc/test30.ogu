@@ -1,5 +1,3 @@
-
-
 var n = 10
 
 println "n is = " n
@@ -39,15 +37,10 @@ println "n is = " n
 
 var log = \x -> nothing
 
-def p x = begin
-    bind log = \ x -> println! "log :" x in
-    log x
-end
+def p x = bind log = \ x -> println! "log :" x in log x
 
-
-def q x = begin
+def q x =
     log x
-end
 
 p 123
 

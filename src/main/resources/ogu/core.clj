@@ -215,7 +215,7 @@ Returns an exact number if the base is an exact number and the power is an integ
        (cons (subs s 0 2) (interpolate (subs s 2))))))
   ([^String s]
    (if-let [start (->> ["${"]
-                       (map #(.indexOf s ^String %))
+                       (map #(.indexOf s %))
                        (remove #(== -1 %))
                        sort
                        first)]
@@ -227,35 +227,8 @@ Returns an exact number if the base is an exact number and the power is an integ
 (defmacro fmt
   "Limited string interpolation, just ${var}"
   [& strings]
-  `(str ~@(interpolate (clojure.string/join strings))))
+  `(str ~@(interpolate (apply str strings))))
 
 (defn func-fmt [s]
   (println "func-fmt " s)
   (interpolate s))
-
-(defn adt-name
-  [obj]
-  (-> obj meta :adt))
-
-;; based on https://github.com/andrewberls/clojure-adt/tree/master/src/clojure_adt
-
-(defmacro data
-  "Declare a sum type with a set of constructors
-   (data Tree
-     (Branch left right)
-     (Leaf data))
-   Automatically generates classes for each variant using `deftype` with the same field names, as
-   well as providing an implementation of `IMatchLookup` for use with core.match."
-  [ty & variants]
-  (let [defns
-        (for [variant variants]
-          (let [[ctor & fields] variant
-                field-kvs (mapcat (fn [f] [(keyword (name f)) f]) fields)]
-            `(deftype ~ctor [~@fields]
-               clojure.core.match.protocols/IMatchLookup
-               (clojure.core.match.protocols/val-at [this# k# not-found#]
-                 (case k#
-                   ~@field-kvs
-                   :type (type this#)
-                   not-found#)))))]
-    `(do ~@defns)))

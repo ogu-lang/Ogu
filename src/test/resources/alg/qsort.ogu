@@ -1,10 +1,11 @@
 
 
-quicksort a
-    | (empty? a) = []
-    | otherwise = let x = head a, xs = tail a
-                      smallerSorted = quicksort [a | a <- xs where a <= x],
-                      biggerSorted = quicksort [a | a <- xs where a > x]
-                  in smallerSorted ++ [x] ++ biggerSorted
+def quicksort a
+    | empty? a = []
+    | otherwise = let x = head a, xs = tail a,
+                      smallerSorted = quicksort [a | a <- xs, a <= x],
+                      biggerSorted = quicksort [a | a <- xs, a > x]
+                  in
+                    smallerSorted ++ [x] ++ biggerSorted
 
 quicksort [3, 5, 8, 2, 6, 4, 1, 9, 7]

@@ -1,7 +1,8 @@
 module Demo
- require clojure.stacktrace, clojure.java.io as io, clojure.zip refer all, clojure.string refer [upper-case]
- import java.util Date GregorianCalendar
 
+from [:clj] clojure.string import upper-case
+
+from [:jvm] java.util import Date, GregorianCalendar
 
 println! $ new Date()
 

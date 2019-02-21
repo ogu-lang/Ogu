@@ -1,6 +1,6 @@
 -- problem 2 of project Euler
 
-fib-seq = fib 0 1
+def fib-seq = fib 0 1
     where fib a b = lazy a :: fib b (a + b)
 
 (fib-seq) |> take-while \x -> x < 4000000 |> filter even? |> sum

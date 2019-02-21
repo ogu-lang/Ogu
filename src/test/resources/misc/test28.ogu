@@ -1,10 +1,10 @@
-dispatch greeting on \x -> (x "language")
+dispatch greeting with \x -> (x "language")
 
-def greeting "French" ? person = str "Bonjour " (person "name")
+def greeting "French" ?  person = str "Bonjour " (person "name")
 
-def greeting "English" ? person = str "Hello " (person "name")
+def greeting "English" ?  person = str "Hello " (person "name")
 
-def greeting "Spanish" ? person = str "Hola " (person "name")
+def greeting "Spanish" ?  person = str "Hola " (person "name")
 
 def greeting otherwise ?  _ = str "?????"
 

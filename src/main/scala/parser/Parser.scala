@@ -13,53 +13,322 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       parseModule()
     }
     else {
-      Module(filename.substring(filename.lastIndexOf('/')+1, filename.lastIndexOf('.')), parseModuleNodes())
+      val nameOfModule = filename.substring(filename.lastIndexOf('/')+1, filename.lastIndexOf('.'))
+      Module(nameOfModule, parseImports(), parseModuleNodes())
     }
   }
 
   def parseModule() : Module = {
     tokens.consume(MODULE)
-    val moduleName = tokens.consume(classOf[ID])
-    tokens.consume(NL)
-    Module(moduleName.value, parseModuleNodes())
+    val moduleName = if (tokens.peek(classOf[TID])) tokens.consume(classOf[TID]).value else tokens.consume(classOf[ID]).value
+    tokens.consumeOptionals(NL)
+    Module(moduleName, parseImports(), parseModuleNodes())
+  }
+
+  def parseImports(): Option[List[ImportClause]] = {
+    tokens.consumeOptionals(NL)
+    var listOfImports = List.empty[ImportClause]
+    while (tokens.peek(IMPORT) || tokens.peek(FROM)) {
+      if (tokens.peek(IMPORT)) {
+        listOfImports = parseImport() :: listOfImports
+      }
+      else if (tokens.peek(FROM)) {
+        listOfImports = parseFromImport() :: listOfImports
+      }
+      tokens.consumeOptionals(NL)
+    }
+    if (listOfImports.isEmpty) {
+      None
+    }
+    else {
+      Some(listOfImports.reverse)
+    }
+  }
+
+  def parseImport() : ImportClause = {
+    tokens.consume(IMPORT)
+    var tag : String = ""
+    if (tokens.peek(LBRACKET)) {
+      tokens.consume(LBRACKET)
+      tag = tokens.consume(classOf[ATOM]).value
+      tokens.consume(RBRACKET)
+    }
+    var listOfAlias = List.empty[ImportAlias]
+    val impAlias = parseImportAlias()
+    listOfAlias = impAlias :: listOfAlias
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      val impAlias = parseImportAlias()
+      listOfAlias = impAlias :: listOfAlias
+    }
+    if (tag == ":jvm") {
+      JvmImport(listOfAlias.reverse)
+    }
+    else {
+      CljImport(listOfAlias.reverse)
+    }
+  }
+
+  def parseFromImport() : ImportClause = {
+    tokens.consume(FROM)
+    var tag : String = ""
+    if (tokens.peek(LBRACKET)) {
+      tokens.consume(LBRACKET)
+      tag = tokens.consume(classOf[ATOM]).value
+      tokens.consume(RBRACKET)
+    }
+    val name = tokens.consume(classOf[ID]).value
+    tokens.consume(IMPORT)
+    var listOfAlias = List.empty[ImportAlias]
+    val impAlias = parseImportAlias()
+    listOfAlias = impAlias :: listOfAlias
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      val impAlias = parseImportAlias()
+      listOfAlias = impAlias :: listOfAlias
+    }
+    if (tag == ":jvm") {
+      FromJvmRequire(name, listOfAlias.reverse)
+    }
+    else {
+      FromCljRequire(name, listOfAlias.reverse)
+    }
+  }
+
+  def parseImportAlias() : ImportAlias = {
+    val id = if (tokens.peek(classOf[TID])) tokens.consume(classOf[TID]).value else  tokens.consume(classOf[ID]).value
+    val alias = if (!tokens.peek(AS)) {
+      None
+    } else {
+      tokens.consume(AS)
+      Some(tokens.consume(classOf[ID]).value)
+    }
+    ImportAlias(id, alias)
   }
 
   def parseModuleNodes() : List[LangNode] = {
+    println(s"@@@ parse module nodes (tokens=$tokens)")
     var result = List.empty[LangNode]
     while (tokens.nonEmpty) {
-      if (tokens.peek(DEF))
-        result = multiDef(parseDef()) :: result
-      else if (tokens.peek(LET))
-        result = parseLet() :: result
-      else if (tokens.peek(VAR))
-        result = parseVar() :: result
-      else
-        result = parsePipedExpr() :: result
-      while (tokens.peek(NL)) tokens.consume(NL)
+      var inner = false
+      if (tokens.peek(PRIVATE)) {
+        tokens.consume(PRIVATE)
+        inner = true
+      }
+      if (tokens.peek(CLASS)) {
+        result = parseClass(inner) :: result
+      }
+      else if (tokens.peek(DATA)) {
+        result = parseData(inner) :: result
+      }
+      else if (tokens.peek(DEF)) {
+        result = multiDef(parseDef(inner)) :: result
+      }
+      else if (tokens.peek(DISPATCH)) {
+        result = parseDispatch(inner) :: result
+      }
+      else if (tokens.peek(EXTENDS)) {
+        result = parseExtends(inner) :: result
+      }
+      else if (tokens.peek(RECORD)) {
+        result = parseRecord(inner) :: result
+      }
+      else if (tokens.peek(TRAIT)) {
+        result = parseTrait(inner) :: result
+      }
+      else {
+        result = TopLevelExpression(parsePipedExpr()) :: result
+      }
+      tokens.consumeOptionals(NL)
       //println(s"PARSED SO FAR: ${result.reverse}\n\n")
     }
     filter(result.reverse)
   }
 
+  def parseRecord(inner: Boolean): LangNode = {
+    tokens.consume(RECORD)
+    val name = tokens.consume(classOf[TID]).value
+    tokens.consume(LCURLY)
+    val arg = tokens.consume(classOf[ID]).value
+    var args = List(arg)
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      val arg = tokens.consume(classOf[ID]).value
+      args = arg :: args
+    }
+    tokens.consume(RCURLY)
+    RecordDecl(name, args.reverse)
+  }
+
+  def parseExtends(inner: Boolean): LangNode = {
+    tokens.consume(EXTENDS)
+    val cls = tokens.consume(classOf[TID]).value
+    tokens.consume(WITH)
+    val trt = tokens.consume(classOf[TID]).value
+    tokens.consumeOptionals(NL)
+    val defs = if (!tokens.peek(INDENT)) None else {
+      tokens.consume(INDENT)
+      var defs = List.empty[ClassMethodDecl]
+      while (tokens.peek(DEF)) {
+        val defDecl = parseDef(false)
+        defs = ClassMethodDecl(defDecl) :: defs
+        tokens.consumeOptionals(NL)
+      }
+      tokens.consume(DEDENT)
+      Some(defs.reverse)
+    }
+    ExtendsDecl(cls, trt, defs)
+  }
+
+  def parseClass(inner: Boolean): LangNode = {
+    tokens.consume(CLASS)
+    val name = tokens.consume(classOf[TID]).value
+    val args = if (!tokens.peek(LPAREN)) None else {
+      tokens.consume(LPAREN)
+      val arg = tokens.consume(classOf[ID]).value
+      var args = List(arg)
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        val arg = tokens.consume(classOf[ID]).value
+        args = arg :: args
+      }
+      tokens.consume(RPAREN)
+      Some(args.reverse)
+    }
+    tokens.consume(NL)
+    var traits = List.empty[TraitDef]
+    if (tokens.peek(INDENT)) {
+      tokens.consume(INDENT)
+      while (!tokens.peek(DEDENT)) {
+        tokens.consume(EXTENDS)
+        val traitName = tokens.consume(classOf[TID]).value
+        tokens.consumeOptionals(NL)
+        tokens.consume(INDENT)
+        var traitMethods = List.empty[ClassMethodDecl]
+        while (tokens.peek(DEF)) {
+          val defDecl = parseDef(false)
+          traitMethods = ClassMethodDecl(defDecl) :: traitMethods
+          tokens.consumeOptionals(NL)
+        }
+        traits = TraitDef(traitName, traitMethods.reverse) :: traits
+        tokens.consume(DEDENT)
+      }
+      tokens.consume(DEDENT)
+    }
+    ClassDecl(inner, name, args, traits)
+  }
+
+  def parseDispatch(inner: Boolean): LangNode = {
+    tokens.consume(DISPATCH)
+    val id = tokens.consume(classOf[ID]).value
+    tokens.consume(WITH)
+    if (tokens.peek(CLASS)) {
+      tokens.consume(CLASS)
+      DispatchDecl(id, ClassDispatcher)
+    } else {
+      val expr = parsePipedExpr()
+      DispatchDecl(id, ExpressionDispatcher(expr))
+    }
+  }
+
+  def parseData(inner:Boolean): LangNode = {
+    tokens.consume(DATA)
+    val id = tokens.consume(classOf[TID]).value
+    tokens.consume(ASSIGN)
+    var indents = 0
+    if (tokens.peek(NL)) {
+      tokens.consumeOptionals(NL)
+      tokens.consume(INDENT)
+      indents += 1
+    }
+    var adts = List.empty[ADT]
+    val adt = parseADT()
+    adts = adt :: adts
+    while (tokens.peek(GUARD)) {
+      tokens.consume(GUARD)
+      tokens.consumeOptionals(NL)
+      if (tokens.peek(INDENT)) {
+        tokens.consume(INDENT)
+        indents += 1
+      }
+      val adt = parseADT()
+      adts = adt :: adts
+    }
+    while (indents > 0) {
+      tokens.consume(DEDENT)
+      indents -= 1
+    }
+    AdtDecl(id, adts.reverse)
+  }
+
+  def parseADT(): ADT = {
+    val id = tokens.consume(classOf[TID]).value
+    var args = List.empty[String]
+    if (tokens.peek(LPAREN)) {
+      tokens.consume(LPAREN)
+      val arg = tokens.consume(classOf[ID]).value
+      args = arg :: args
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        tokens.consumeOptionals(NL)
+        val arg = tokens.consume(classOf[ID]).value
+        args = arg :: args
+      }
+      tokens.consume(RPAREN)
+    }
+    ADT(id, args.reverse)
+  }
+
+  def parseTrait(inner: Boolean): LangNode = {
+    tokens.consume(TRAIT)
+    val id = tokens.consume(classOf[TID]).value
+    tokens.consumeOptionals(NL)
+    var decls = List.empty[TraitMethodDecl]
+    if (tokens.peek(INDENT)) {
+      tokens.consume(INDENT)
+      while (tokens.peek(DEF)) {
+        val decl = parseTraitMethodDecl()
+        tokens.consumeOptionals(NL)
+        decls = decl :: decls
+      }
+      tokens.consume(DEDENT)
+    }
+    TraitDecl(inner, id, decls)
+  }
+
+  def parseTraitMethodDecl(): TraitMethodDecl = {
+    tokens.consume(DEF)
+    val id = tokens.consume(classOf[ID]).value
+    var args = List.empty[String]
+    while (tokens.peek(classOf[ID])) {
+      val arg = tokens.consume(classOf[ID]).value
+      args = arg :: args
+    }
+    tokens.consume(NL)
+    TraitMethodDecl(id, args.reverse)
+  }
+
   var defs = mutable.HashMap.empty[String, MultiDefDecl]
 
   private[this] def multiDef(node: LangNode) : LangNode = {
-    val decl = node.asInstanceOf[SimpleDefDecl]
-    println(s"@multiDef(node = ${node}) ")
-    if (defs.contains(decl.id)) {
-      defs.get(decl.id).map { defDecl =>
-        val decls = decl :: defDecl.decls
-        val mDecl = MultiDefDecl(defDecl.id, decls)
-        defs.update(mDecl.id,  mDecl)
-        println(s"@defs=>${defs}")
-        mDecl
-      }.get
-    }
-    else {
-      val mDecl = MultiDefDecl(decl.id, List(decl))
-      defs.put(mDecl.id, mDecl)
-      println(s"@defs=>${defs}")
-      mDecl
+    node match {
+      case decl:SimpleDefDecl =>
+        if (defs.contains(decl.id)) {
+          defs.get(decl.id).map { defDecl =>
+            val decls = decl :: defDecl.decls
+            val mDecl = MultiDefDecl(defDecl.id, decls)
+            defs.update(mDecl.id,  mDecl)
+            mDecl
+          }.get
+        }
+        else {
+          val mDecl = MultiDefDecl(decl.id, List(decl))
+          defs.put(mDecl.id, mDecl)
+          mDecl
+        }
+      case d => d
     }
   }
 
@@ -83,22 +352,29 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     result.reverse
   }
 
-  def parseDef() : LangNode = {
+  def parseDef(inner: Boolean) : DefDecl = {
     tokens.consume(DEF)
-    createContext()
-    val defId = tokens.consume(classOf[ID])
-    val args = parseDefArgs()
+    val defId = tokens.consume(classOf[ID]).value
+    val (matches, args) = parseDefArgs()
     if (tokens.peek(NL)) {
       tokens.consume(NL)
       val body = parseDefBodyGuards()
       body match {
         case bd: BodyGuardsExpresionAndWhere =>
-          destroyContext()
-          SimpleDefDecl(defId.value, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
+          if (matches.isEmpty) {
+            SimpleDefDecl(inner, defId, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
+          }
+          else {
+            MultiMethod(inner, defId, matches.get, args, BodyGuardsExpresion(bd.guards), Some(bd.whereBlock))
+          }
         case _ =>
           val where = tryParseWhereBlock()
-          destroyContext()
-          SimpleDefDecl(defId.value, args, body, where)
+          if (matches.isEmpty) {
+            SimpleDefDecl(inner, defId, args, body, where)
+          }
+          else {
+            MultiMethod(inner, defId, matches.get, args, body, where)
+          }
       }
     }
     else if (tokens.peek(ASSIGN)) {
@@ -111,8 +387,11 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         parseBlockExpr()
       }
       val where = tryParseWhereBlock()
-      destroyContext()
-      SimpleDefDecl(defId.value, args, body, where)
+      if (matches.isEmpty) {
+        SimpleDefDecl(inner, defId, args, body, where)
+      } else {
+        MultiMethod(inner, defId, matches.get, args, body, where)
+      }
     } else {
       throw InvalidDef()
     }
@@ -127,10 +406,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       guard = parseBodyGuard()
       listOfGuards = guard :: listOfGuards
     }
-    var result = if (tokens.peek(WHERE)) {
-      BodyGuardsExpresionAndWhere(listOfGuards, parseUnindentedWhereBlock())
+    val result = if (tokens.peek(WHERE)) {
+      BodyGuardsExpresionAndWhere(listOfGuards.reverse, parseUnindentedWhereBlock())
     } else {
-      BodyGuardsExpresion(listOfGuards)
+      BodyGuardsExpresion(listOfGuards.reverse)
     }
     tokens.consume(DEDENT)
     result
@@ -144,7 +423,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       var expr: Expression = null
       if (!tokens.peek(NL)) {
         expr = parsePipedExpr()
-        tokens.consume(NL)
+        tokens.consumeOptionals(NL)
       }
       else {
         tokens.consume(NL)
@@ -183,7 +462,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseWhereBlock(): WhereBlock = {
     tokens.consume(INDENT)
-    var whereBlock = parseUnindentedWhereBlock()
+    val whereBlock = parseUnindentedWhereBlock()
     tokens.consume(DEDENT)
     whereBlock
   }
@@ -194,7 +473,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     if (!tokens.peek(NL)) {
       val whereDef = parseWhereDef()
       listOfWhereDefs = whereDef :: listOfWhereDefs
-      tokens.consume(NL)
+      tokens.consumeOptionals(NL)
     } else {
       tokens.consume(NL)
     }
@@ -203,7 +482,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       while (!tokens.peek(DEDENT)) {
         val whereDef = parseWhereDef()
         listOfWhereDefs = whereDef :: listOfWhereDefs
-        if (tokens.peek(NL)) while (tokens.peek(NL)) tokens.consume(NL)
+        tokens.consumeOptionals(NL)
       }
       tokens.consume(DEDENT)
     }
@@ -227,7 +506,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       tokens.consume(RPAREN)
     }
     var listOfArgs = List.empty[Expression]
-    while (!tokens.peek(ASSIGN) && !tokens.peek(GUARD)) {
+    while (!tokens.peek(ASSIGN) && !tokens.peek(GUARD) && !tokens.peek(NL)) {
       val expr = parseWhereArg()
       listOfArgs = expr :: listOfArgs
     }
@@ -240,10 +519,16 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         parseBlockExpr()
       }
       if (listOfIds.size == 1)
-        WhereDefSimple(listOfIds.head, if (listOfArgs.isEmpty) None else Some(listOfArgs), body)
+        WhereDefSimple(listOfIds.head, if (listOfArgs.isEmpty) None else Some(listOfArgs.reverse), body)
       else
-        WhereDefTupled(listOfIds, if (listOfArgs.isEmpty) None else Some(listOfArgs), body)
-    } else if (tokens.peek(GUARD)) {
+        WhereDefTupled(listOfIds, if (listOfArgs.isEmpty) None else Some(listOfArgs.reverse), body)
+    } else if (tokens.peek(GUARD) || tokens.peek(NL)) {
+      var inIndent = false
+      tokens.consumeOptionals(NL)
+      if (tokens.peek(INDENT)) {
+        inIndent = true
+        tokens.consume(INDENT)
+      }
       var guards = List.empty[WhereGuard]
       while (tokens.peek(GUARD) || tokens.peek(INDENT)) {
         if (tokens.peek(INDENT)) {
@@ -278,6 +563,9 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
           tokens.consume(NL)
         }
       }
+      if (inIndent) {
+        tokens.consume(DEDENT)
+      }
       if (listOfIds.size == 1)
         WhereDefWithGuards(listOfIds.head, if (listOfArgs.isEmpty) None else Some(listOfArgs), guards.reverse)
       else
@@ -297,124 +585,221 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
   }
 
-  def parseDefArgs() : List[DefArg] = {
+  def parseDefArgs() : (Option[List[DefArg]], List[DefArg]) = {
     var result = List.empty[DefArg]
+    var beforeQuestion = List.empty[DefArg]
     while (!tokens.peek(ASSIGN) && !tokens.peek(NL)) {
-      val expr = parseDefArg()
-      result = DefArg(expr) :: result
+      if (tokens.peek(QUESTION)) {
+        tokens.consume(QUESTION)
+        beforeQuestion = result ++ beforeQuestion
+        result = List.empty[DefArg]
+      }
+      if (tokens.peek(OTHERWISE)) {
+        tokens.consume(OTHERWISE)
+        result = DefOtherwiseArg :: result
+      } else {
+        val expr = parseDefArg()
+        result = DefArg(expr) :: result
+      }
+
     }
-    result.reverse
+    (if (beforeQuestion.isEmpty) None else Some(beforeQuestion.reverse), result.reverse)
   }
 
   def parseDefArg() : Expression = {
     if (tokens.peek(classOf[ID])) {
       val id = tokens.consume(classOf[ID])
-      Identifier(id.value)
-    } else {
+      if (!tokens.peek(COLON)) {
+        Identifier(id.value)
+      } else {
+        tokens.consume(COLON)
+        IdIsType(id.value, tokens.consume(classOf[TID]).value)
+      }
+    }
+    else {
       parseLogicalExpr()
     }
   }
 
-  def parseVar() : LangNode = {
-    tokens.consume(VAR)
-    val listOfIds = parseLetVarList()
-    tokens.consume(ASSIGN)
-    val listOfValues = parseLetValueList()
-    if (tokens.peek(NL))
-      tokens.consume(NL)
-    if (listOfIds.length != listOfValues.length) {
-      throw InvalidLetDeclaration("ids and values doesn't matches")
-    }
-    VarDecl(listOfIds.zip(listOfValues))
-  }
-
-  def parseVarExpr() : Expression = {
-    tokens.consume(VAR)
-    val listOfIds = parseLetVarList()
-    tokens.consume(ASSIGN)
-    val listOfValues = parseLetValueList()
-    if (tokens.peek(NL))
-      tokens.consume(NL)
-    if (listOfIds.length != listOfValues.length) {
-      throw InvalidLetDeclaration("ids and values doesn't matches")
-    }
-    addSimpleVarList(listOfIds)
-
-    VarDeclExpr(listOfIds.zip(listOfValues))
-  }
-
-
-  def parseLet() : LangNode = {
-    tokens.consume(LET)
-    var listOfIds = parseLetVarList()
-    tokens.consume(ASSIGN)
-    var listOfValues = parseLetValueList()
-    if (tokens.peek(NL))
-      tokens.consume(NL)
-    if (listOfIds.length != listOfValues.length) {
-      throw InvalidLetDeclaration("ids and values doesn't matches")
-    }
-    addSimpleVarList(listOfIds)
-    LetDecl(listOfIds.zip(listOfValues))
-  }
-
   def parseLetExpr() : Expression = {
     tokens.consume(LET)
-    val listOfIds = parseLetVarList()
-    tokens.consume(ASSIGN)
-    val listOfValues = parseLetValueList()
-    if (listOfIds.length != listOfValues.length) {
-      throw InvalidLetDeclaration("ids and values doesn't matches")
-    }
-    LetDeclExpr(listOfIds.zip(listOfValues))
-  }
-
-  def parseLetVarList() : List[DeclVariable] = {
-    var listOfVar = List.empty[DeclVariable]
+    tokens.consumeOptionals(NL)
+    var insideIndent = if (tokens.peek(INDENT)) 1 else 0
+    if (insideIndent == 1)
+      tokens.consume(INDENT)
     var letVar = parseLetVar()
+    var listOfLetVars = List.empty[Variable]
+    listOfLetVars = letVar :: listOfLetVars
     while (tokens.peek(COMMA)) {
       tokens.consume(COMMA)
-      listOfVar = letVar :: listOfVar
+      tokens.consumeOptionals(NL)
+      if (tokens.peek(INDENT)) {
+        tokens.consume(INDENT)
+        insideIndent += 1
+      }
       letVar = parseLetVar()
+      listOfLetVars = letVar :: listOfLetVars
     }
-    listOfVar = letVar :: listOfVar
-    listOfVar.reverse
+
+    while (insideIndent > 0) {
+      tokens.consumeOptionals(NL)
+      tokens.consume(DEDENT)
+      insideIndent -= 1
+    }
+
+    val body: Option[Expression] =
+      if (tokens.peek(IN)) {
+        parseInBodyExpr()
+      } else if (tokens.peek(NL) && tokens.peek(2, IN)) {
+        tokens.consume(NL)
+        parseInBodyExpr()
+      } else if (tokens.peek(NL) && tokens.peek(2, INDENT) && tokens.peek(3, IN)) {
+        tokens.consume(NL)
+        tokens.consume(INDENT)
+        val result = parseInBodyExpr()
+        tokens.consume(DEDENT)
+        result
+      } else {
+        None
+      }
+
+
+    LetDeclExpr(listOfLetVars.reverse, body)
   }
 
-  def parseLetVar() : DeclVariable = {
-    if (tokens.peek(LPAREN))
-      parseLetTupledVars()
-    else {
+  def parseBindExpr(): Expression = {
+    tokens.consume(BIND)
+    tokens.consumeOptionals(NL)
+    var insideIndent = if (tokens.peek(INDENT)) 1 else 0
+    if (insideIndent == 1)
+      tokens.consume(INDENT)
+    var letVar = parseLetVar()
+    var listOfLetVars = List.empty[Variable]
+    listOfLetVars = letVar :: listOfLetVars
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      if (tokens.peek(INDENT)) {
+        tokens.consume(INDENT)
+        insideIndent += 1
+      }
+      letVar = parseLetVar()
+      listOfLetVars = letVar :: listOfLetVars
+    }
+    while (insideIndent > 0) {
+      tokens.consumeOptionals(NL)
+      tokens.consume(DEDENT)
+      insideIndent -= 1
+    }
+    val body: Option[Expression] =
+      if (tokens.peek(IN)) {
+        parseInBodyExpr()
+      }
+      else if (tokens.peek(NL) && tokens.peek(2, IN)) {
+        tokens.consume(NL)
+        parseInBodyExpr()
+      } else if (tokens.peek(NL) && tokens.peek(2, INDENT) && tokens.peek(3, IN)) {
+        tokens.consume(NL)
+        tokens.consume(INDENT)
+        val result = parseInBodyExpr()
+        tokens.consume(DEDENT)
+        result
+      } else {
+        None
+      }
+    if (body.isEmpty) {
+      throw InvalidExpression()
+    }
+    BindDeclExpr(listOfLetVars.reverse, body.get)
+  }
+
+  def parseInBodyExpr(): Option[Expression] = {
+    tokens.consume(IN)
+    if (!tokens.peek(NL)) {
+      Some(parsePipedExpr())
+    } else {
+      tokens.consume(NL)
+      Some(parseBlockExpr())
+    }
+  }
+
+  def parseVarExpr(): Expression = {
+    tokens.consume(VAR)
+    tokens.consumeOptionals(NL)
+    var insideIndent = if (tokens.peek(INDENT)) 1 else 0
+    if (insideIndent == 1)
+      tokens.consume(INDENT)
+    var letVar = parseLetVar()
+    var listOfLetVars = List.empty[Variable]
+    listOfLetVars = letVar :: listOfLetVars
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      if (tokens.peek(INDENT)) {
+        tokens.consume(INDENT)
+        insideIndent += 1
+      }
+      letVar = parseLetVar()
+      listOfLetVars = letVar :: listOfLetVars
+    }
+
+    while (insideIndent > 0) {
+      tokens.consumeOptionals(NL)
+      tokens.consume(DEDENT)
+      insideIndent -= 1
+    }
+    val body: Option[Expression] =
+      if (tokens.peek(IN)) {
+        parseInBodyExpr()
+      } else if (tokens.peek(NL) && tokens.peek(2, IN)) {
+        tokens.consume(NL)
+        parseInBodyExpr()
+      } else if (tokens.peek(NL) && tokens.peek(2, INDENT) && tokens.peek(3, IN)) {
+        tokens.consume(NL)
+        tokens.consume(INDENT)
+        val result = parseInBodyExpr()
+        tokens.consume(DEDENT)
+        result
+      } else {
+        None
+      }
+    VarDeclExpr(listOfLetVars.reverse, body)
+  }
+
+  def parseLetVar() : Variable = {
+    tokens.consumeOptionals(NL)
+    val id = parseLetId()
+    tokens.consume(ASSIGN)
+    val expr = parsePipedOrBodyExpression()
+    LetVariable(id, expr)
+  }
+
+  def parseLetId() : LetId = {
+    if (!tokens.peek(LPAREN)) {
       val idToken = tokens.consume(classOf[ID])
-      DeclIdVar(idToken.value)
+      LetSimpleId(idToken.value)
+    } else {
+      tokens.consume(LPAREN)
+      var ids = List.empty[LetId]
+      val id = parseLetId()
+      ids =id :: ids
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        val id = parseLetId()
+        ids = id :: ids
+      }
+      tokens.consume(RPAREN)
+      LetTupledId(ids)
     }
   }
 
-  def parseLetTupledVars() : DeclTupledIdVars = {
-    tokens.consume(LPAREN)
-    var listOfIds = List.empty[String]
-    var id = tokens.consume(classOf[ID])
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      listOfIds = id.value :: listOfIds
-      id = tokens.consume(classOf[ID])
+  private def parsePipedOrBodyExpression(): Expression = {
+    if (!tokens.peek(NL))
+      parsePipedExpr()
+    else {
+      tokens.consume(NL)
+      parseBlockExpr()
     }
-    listOfIds = id.value :: listOfIds
-    tokens.consume(RPAREN)
-    DeclTupledIdVars(listOfIds.reverse)
-  }
-
-  def parseLetValueList() : List[Expression] = {
-    var listOfValues = List.empty[Expression]
-    var expr = parsePipedExpr()
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      while (tokens.peek(NL)) tokens.consume(NL)
-      listOfValues = expr :: listOfValues
-      expr = parsePipedExpr()
-    }
-    listOfValues = expr :: listOfValues
-    listOfValues.reverse
   }
 
   // pipedExpr = expr (PIPE_OPER pipedExpr)*
@@ -512,68 +897,182 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       parseLetExpr()
     else if (tokens.peek(VAR))
       parseVarExpr()
+    else if (tokens.peek(BIND))
+      parseBindExpr()
     else
-      parseAssignExpr()
+      parseLambdaExpr()
   }
 
   def parseControlExpr() : Expression = {
-    if (tokens.peek(FOR)) {
-      return parseForExpr()
+    if (tokens.peek(COND)) {
+      parseCondExpr()
+    }
+    else if (tokens.peek(FOR)) {
+      parseForExpr()
     }
     else if (tokens.peek(IF)) {
-      return parseIfExpr()
+      parseIfExpr()
     }
     else if (tokens.peek(WHEN)) {
-      return parseWhenExpr()
+      parseWhenExpr()
     }
     else if (tokens.peek(LOOP)) {
-      return parseLoopExpr()
+      parseLoopExpr()
     }
     else if (tokens.peek(UNTIL)) {
-      return parseWhileExpr()
+      parseWhileExpr()
     }
     else if (tokens.peek(WHILE)) {
-      return parseWhileExpr()
-    }
-    else if (tokens.peek(REPEAT)) {
-      return parseRepeatExpr()
+      parseWhileExpr()
     }
     else if (tokens.peek(RECUR)) {
-      return parseRecurExpr()
+      parseRecurExpr()
     }
-    println(s"ERROR PARSE CONTROL tokens= $tokens")
-    throw InvalidNodeException(tokens.nextToken())
-  }
-
-  def parseRecurExpr() : Expression = {
-    tokens.consume(RECUR)
-    RecurExpr(parsePipedExpr())
-  }
-
-  def parseRepeatExpr() : Expression = {
-    tokens.consume(REPEAT)
-    if (!tokens.peek(WITH))
-      RepeatExpr(None)
+    else if (tokens.peek(REIFY)) {
+      parseReifyExpr()
+    }
+    else if (tokens.peek(REPEAT)) {
+      parseRepeatExpr()
+    }
+    else if (tokens.peek(SET)) {
+      parseAssignExpr()
+    }
+    else if (tokens.peek(TRY)) {
+      parseTryExpr()
+    }
+    else if (tokens.peek(THROW)) {
+      parseThrowExpr()
+    }
     else {
-      tokens.consume(WITH)
-      var repeatVariables = List.empty[RepeatNewVarValue]
-      var repVar = parseRepeatAssign()
-      repeatVariables = repVar :: repeatVariables
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        repVar = parseRepeatAssign()
-        repeatVariables = repVar :: repeatVariables
-      }
-      if (tokens.peek(NL)) while (tokens.peek(NL)) tokens.consume(NL)
-      RepeatExpr(Some(repeatVariables.reverse))
+      println(s"ERROR PARSE CONTROL tokens= $tokens")
+      throw InvalidNodeException(tokens.nextToken())
     }
   }
 
-  def parseRepeatAssign() : RepeatNewVarValue = {
-    val id = tokens.consume(classOf[ID])
-    tokens.consume(ASSIGN)
-    val expr = parsePipedExpr()
-    RepeatNewVarValue(id.value, expr)
+  def parseReifyExpr() : Expression = {
+    tokens.consume(REIFY)
+    val name = tokens.consume(classOf[TID]).value
+    tokens.consume(NL)
+    tokens.consume(INDENT)
+    var methods = List.empty[ClassMethodDecl]
+    while (tokens.peek(DEF)) {
+      val defDecl = parseDef(false)
+      methods = ClassMethodDecl(defDecl) :: methods
+      tokens.consumeOptionals(NL)
+    }
+    tokens.consume(DEDENT)
+    ReifyExpression(name, methods.reverse)
+  }
+
+  def parseThrowExpr() : Expression = {
+    tokens.consume(THROW)
+    val ctor = parseConstructorExpr()
+    tokens.consumeOptionals(NL)
+    ThrowExpression(ctor)
+  }
+
+  def parseTryExpr() : Expression = {
+    tokens.consume(TRY)
+    val body = parsePipedOrBodyExpression()
+    tokens.consumeOptionals(NL)
+    var catches = List.empty[CatchExpression]
+    var indents = 0
+    if (tokens.peek(INDENT)) {
+      tokens.consume(INDENT)
+      indents += 1
+    }
+    while (tokens.peek(CATCH)) {
+      val catchExpr = parseCatchExpr()
+      catches = catchExpr :: catches
+      tokens.consumeOptionals(NL)
+      if (tokens.peek(INDENT)) {
+        tokens.consume(INDENT)
+        indents += 1
+      }
+    }
+    val finallyExpr = if (tokens.peek(FINALLY)) {
+      Some(parseFinallyExpr())
+    } else {
+      None
+    }
+    while (indents > 0) {
+      tokens.consume(DEDENT)
+      indents -= 1
+    }
+    TryExpression(body, catches.reverse, finallyExpr)
+  }
+
+  def parseCatchExpr(): CatchExpression = {
+    tokens.consume(CATCH)
+    if (tokens.peek(classOf[ID])) {
+      val id = tokens.consume(classOf[ID]).value
+      tokens.consume(COLON)
+      val ex = tokens.consume(classOf[TID]).value
+      tokens.consume(ARROW)
+      CatchExpression(Some(id), ex, parsePipedOrBodyExpression())
+    } else {
+      val ex = tokens.consume(classOf[TID]).value
+      tokens.consume(ARROW)
+      CatchExpression(None, ex, parsePipedOrBodyExpression())
+    }
+  }
+
+  def parseFinallyExpr() : Expression = {
+    tokens.consume(FINALLY)
+    tokens.consume(ARROW)
+    parsePipedOrBodyExpression()
+  }
+
+  def parseCondExpr(): Expression = {
+    tokens.consume(COND)
+    tokens.consume(NL)
+    tokens.consume(INDENT)
+    var guards = List.empty[CondGuard]
+    while (!tokens.peek(DEDENT)) {
+      val comp = if (tokens.peek(OTHERWISE)) {
+        tokens.consume(OTHERWISE)
+        None
+      } else {
+        Some(parseLogicalExpr())
+      }
+      tokens.consume(ARROW)
+      val value = parsePipedExpr()
+      tokens.consumeOptionals(NL)
+      guards = CondGuard(comp, value) :: guards
+    }
+    tokens.consume(DEDENT)
+    CondExpression(guards.reverse)
+  }
+
+  def parseRepeatExpr(): Expression = {
+    tokens.consume(REPEAT)
+    if (tokens.peek(WITH))
+      tokens.consume(WITH)
+    var repeatVariables = List.empty[RepeatNewVarValue]
+    var repVar = parseRepeatNewValue()
+    repeatVariables = repVar :: repeatVariables
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      repVar = parseRepeatNewValue()
+      repeatVariables = repVar :: repeatVariables
+    }
+    tokens.consumeOptionals(NL)
+    RepeatExpr(Some(repeatVariables.reverse))
+  }
+
+  def parseRepeatNewValue() : RepeatNewVarValue = {
+    if (tokens.peek(classOf[ID]) && tokens.peek(2, ASSIGN)) {
+      val id = tokens.consume(classOf[ID])
+      tokens.consume(ASSIGN)
+      val expr = parsePipedExpr()
+      RepeatNewVarValue(id.value, expr)
+    } else {
+      RepeatNewVarValue(genId(), parseExpr())
+    }
+  }
+
+  def genId() : String = {
+    s"id_${java.util.UUID.randomUUID.toString}"
   }
 
   def parseForExpr() : Expression = {
@@ -583,37 +1082,46 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     ForExpression(forDecls, forBody)
   }
 
-  def parseForDecls() : List[ForVarDeclIn] = {
-    var listOfDecls = List.empty[ForVarDeclIn]
-    var forVarDecl = parseForVarDecl()
+  def parseForDecls() : List[LoopDeclVariable] = {
+    var listOfDecls = List.empty[LoopDeclVariable]
+    val forVarDecl = parseForVarDecl()
+    listOfDecls = forVarDecl :: listOfDecls
+
     while (tokens.peek(COMMA)) {
       tokens.consume(COMMA)
+      val forVarDecl = parseForVarDecl()
       listOfDecls = forVarDecl :: listOfDecls
     }
-    listOfDecls = forVarDecl :: listOfDecls
     listOfDecls.reverse
   }
 
-  def parseForVarDecl() : ForVarDeclIn = {
-    var id = tokens.consume(classOf[ID])
-    if (tokens.peek(IN)) {
+  def parseForVarDecl() : LoopDeclVariable = {
+    if (!tokens.peek(LPAREN)) {
+      val id = tokens.consume(classOf[ID])
       tokens.consume(IN)
-      return ForVarDeclIn(id.value, parsePipedExpr())
+      ForVarDeclIn(id.value, parsePipedExpr())
     }
-    throw UnexpectedTokenClassException()
+    else {
+      tokens.consume(LPAREN)
+      var ids = List.empty[String]
+      val id = tokens.consume(classOf[ID])
+      ids = id.value :: ids
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        val id = tokens.consume(classOf[ID])
+        ids = id.value :: ids
+      }
+      tokens.consume(RPAREN)
+      tokens.consume(IN)
+      ForVarDeclTupledIn(ids, parsePipedExpr())
+    }
   }
 
   def parseWhileExpr() : Expression = {
     tokens.consume(WHILE)
     val comp = parseLogicalExpr()
     tokens.consume(DO)
-    val body = if (!tokens.peek(NL)) {
-      parsePipedExpr()
-    } else {
-      tokens.consume(NL)
-      parseBlockExpr()
-    }
-    WhileExpression(comp, body)
+    WhileExpression(comp, parsePipedOrBodyExpression())
   }
 
 
@@ -621,13 +1129,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     tokens.consume(UNTIL)
     val comp = parseLogicalExpr()
     tokens.consume(DO)
-    val body = if (!tokens.peek(NL)) {
-      parsePipedExpr()
-    } else {
-      tokens.consume(NL)
-      parseBlockExpr()
-    }
-    UntilExpression(comp, body)
+    UntilExpression(comp, parsePipedOrBodyExpression())
   }
 
   def parseLoopExpr() : Expression = {
@@ -636,7 +1138,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     val loopDecls = parseLoopDecls()
 
     var guardExpr : Option[LoopGuard] = None
-    if (tokens.peek(NL)) while(tokens.peek(NL)) tokens.consume(NL)
+    tokens.consumeOptionals(NL)
 
     if (tokens.peek(WHILE)) {
       tokens.consume(WHILE)
@@ -670,51 +1172,43 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       loopVarDecl = parseLoopVarDecl()
       listOfDecls = loopVarDecl :: listOfDecls
     }
-    listOfDecls = loopVarDecl :: listOfDecls
     listOfDecls.reverse
   }
 
   def parseLoopVarDecl() : LoopVarDecl = {
-    var id = tokens.consume(classOf[ID])
+    val id = tokens.consume(classOf[ID])
     if (tokens.peek(ASSIGN)) {
       tokens.consume(ASSIGN)
-      return LoopVarDecl(id.value, parsePipedExpr())
+      LoopVarDecl(id.value, parsePipedExpr())
+    } else {
+      throw UnexpectedTokenClassException()
     }
-    throw UnexpectedTokenClassException()
   }
 
   def parseForBody() : Expression = {
     tokens.consume(DO)
-    if (!tokens.peek(NL))
-      parsePipedExpr()
-    else
-    {
-      tokens.consume(NL)
-      parseBlockExpr()
-    }
+    parsePipedOrBodyExpression()
   }
 
   def parseBlockExpr() : Expression = {
     tokens.consume(INDENT)
-    createContext()
     var listOfExpressions = List.empty[Expression]
     var loop = 0
     while (!tokens.peek(DEDENT)) {
       loop += 1
-      var expr = parsePipedExpr()
-      if (tokens.peek(NL)) tokens.consume(NL)
+      val expr = parsePipedExpr()
+      tokens.consumeOptionals(NL)
       listOfExpressions = expr :: listOfExpressions
     }
     tokens.consume(DEDENT)
-    destroyContext()
     BlockExpression(listOfExpressions.reverse)
   }
 
   def parseIfExpr() : Expression = {
     tokens.consume(IF)
-    var comp = parseLogicalExpr()
+    val comp = parseLogicalExpr()
     tokens.consume(THEN)
-    var thenPart = if (!tokens.peek(NL)) {
+    val thenPart = if (!tokens.peek(NL)) {
       parsePipedExpr()
     }
     else {
@@ -752,7 +1246,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseWhenExpr() : Expression = {
     tokens.consume(WHEN)
-    var comp = parseLogicalExpr()
+    val comp = parseLogicalExpr()
     tokens.consume(THEN)
     if (!tokens.peek(NL)) {
       WhenExpression(comp, parsePipedExpr())
@@ -764,28 +1258,18 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseAssignExpr() : Expression = {
-    var expr = parseLambdaExpr()
-    if (tokens.peek(classOf[ASSIGN_OPER])) {
-      if (!expr.isInstanceOf[AssignableExpression])
-        throw CantAssignToExpression()
-      val oper = tokens.consume(classOf[ASSIGN_OPER])
-      val right = parsePipedExpr()
-      expr = oper match {
-        case ASSIGN => SimpleAssignExpr(expr, right)
-        case PLUS_ASSIGN => PlusAssignExpr(expr, right)
-        case MINUS_ASSIGN => MinusAssignExpr(expr, right)
-        case MULT_ASSIGN => MultAssignExpr(expr, right)
-        case DIV_ASSIGN => DivAssignExpr(expr, right)
-        case MOD_ASSIGN => ModAssignExpr(expr, right)
-      }
-    }
-    expr
+    tokens.consume(SET)
+    val expr = parsePipedOrBodyExpression()
+    if (!expr.isInstanceOf[AssignableExpression])
+      throw CantAssignToExpression()
+    tokens.consume(ASSIGN)
+    val right = parsePipedExpr()
+    SimpleAssignExpr(expr, right)
   }
 
   def parseLambdaExpr() : Expression = {
-    var expr : Expression = null
     if (!tokens.peek(LAMBDA)) {
-      expr = parseLogicalExpr()
+      parseLogicalExpr()
     }
     else {
       tokens.consume(LAMBDA)
@@ -794,16 +1278,16 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       args = arg :: args
       while (tokens.peek(COMMA)) {
         tokens.consume(COMMA)
-        val id = tokens.consume(classOf[ID])
-        args = LambdaSimpleArg(id.value) :: args
+        val arg = parseLambdaArg()
+        args = arg :: args
       }
       if (!tokens.peek(ARROW)) {
         throw InvalidLambdaExpression(tokens.nextToken())
       }
       tokens.consume(ARROW)
-      expr = LambdaExpression(args.reverse, parseExpr())
+      val expr = LambdaExpression(args.reverse, parseExpr())
+      expr
     }
-    expr
   }
 
   def parseLambdaArg() : LambdaArg = {
@@ -814,11 +1298,11 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     else if (tokens.peek(LPAREN)) {
       tokens.consume(LPAREN)
       var ids = List.empty[String]
-      var id = tokens.consume(classOf[ID]).value
+      val id = tokens.consume(classOf[ID]).value
       ids = id :: ids
       while (tokens.peek(COMMA)) {
         tokens.consume(COMMA)
-        var id = tokens.consume(classOf[ID]).value
+        val id = tokens.consume(classOf[ID]).value
         ids = id :: ids
       }
       tokens.consume(RPAREN)
@@ -863,9 +1347,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       case GE => GreaterOrEqualThanExpr(left, right)
       case EQUALS => EqualsExpr(left, right)
       case NOT_EQUALS => NotEqualsExpr(left, right)
+      case MATCH => ReMatchExpr(left, right)
       case MATCHES => MatchExpr(left, right)
       case NOT_MATCHES => NoMatchExpr(left, right)
-      case IN => InExpr(left, right)
+      case CONTAINS => ContainsExpr(left, right)
     }
   }
 
@@ -912,12 +1397,13 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       case MULT => MultiplyExpression(left, right)
       case DIV => DivideExpression(left, right)
       case MOD => ModExpression(left, right)
+      case MULT_BIG => MultiplyBigExpression(left, right)
     }
   }
 
 
   def parsePowExpr() : Expression = {
-    var expr = parsePostfixExpr()
+    var expr = parseComposeExpr()
     while (tokens.peek(POW)) {
       tokens.consume(POW)
       expr = PowerExpression(expr, parsePowExpr())
@@ -925,10 +1411,22 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     expr
   }
 
+  def parseComposeExpr() : Expression = {
+    var expr = parsePostfixExpr()
+    while (tokens.peek(classOf[COMPOSE_OPER])) {
+      val op = tokens.consume(classOf[COMPOSE_OPER])
+      expr = op match {
+        case COMPOSE_FORWARD => ComposeExpressionForward(expr, parseComposeExpr())
+        case COMPOSE_BACKWARD => ComposeExpressionBackward(expr, parseComposeExpr())
+      }
+    }
+    expr
+  }
+
   def parsePostfixExpr() : Expression = {
     var expr = parsePrimExpr()
     if (tokens.peek(ARROBA)) {
-      var array = expr
+      val array = expr
       tokens.consume(ARROBA)
       val arg = parseLogicalExpr()
       expr = ArrayAccessExpression(array, arg)
@@ -938,28 +1436,106 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parsePrimExpr() : Expression = {
     if (tokens.peek(LPAREN) && tokens.peek(2, classOf[OPER])) {
-      return parsePartialOper()
+      parsePartialOper()
     }
-    else if (tokens.peek(LPAREN) || tokens.peek(LBRACKET)) {
-      return parseAtomExpr()
-    }
-    else if (tokens.peek(LCURLY)) {
-      return parseAtomExpr()
+    else if (tokens.peek(LPAREN) || tokens.peek(LBRACKET) || tokens.peek(LCURLY) || tokens.peek(HASHLCURLY)) {
+      parseAtomicExpr()
     }
     else if (tokens.peek(classOf[LITERAL])) {
-      return parseAtomExpr()
+      parseAtomicExpr()
     }
-    parseFuncCallExpr()
+    else if (tokens.peek(LAZY)) {
+      tokens.consume(LAZY)
+      LazyExpression(parsePipedExpr())
+    }
+    else if (tokens.peek(NEW)) {
+      parseNewCtorExpression()
+    }
+    else if (tokens.peek(classOf[TID])) {
+      parseConstructorExpr()
+    }
+    else {
+      parseFuncCallExpr()
+    }
+  }
+
+  def parseConstructorExpr() : ConstructorExpression = {
+    val cls = tokens.consume(classOf[TID]).value
+    var args = List.empty[Expression]
+    if (tokens.peek(LPAREN)) {
+      tokens.consume(LPAREN)
+      if (!tokens.peek(RPAREN)) {
+        val expr = parseExpr()
+        args = expr :: args
+        while (tokens.peek(COMMA)) {
+          tokens.consume(COMMA)
+          tokens.consumeOptionals(NL)
+          val expr = parseExpr()
+          args = expr :: args
+        }
+      }
+      tokens.consume(RPAREN)
+      ConstructorExpression(false, cls, args.reverse)
+    }
+    else if (tokens.peek(LCURLY)) {
+      tokens.consume(LCURLY)
+      if (!tokens.peek(RPAREN)) {
+        val expr = parseExpr()
+        args = expr :: args
+        while (tokens.peek(COMMA)) {
+          tokens.consume(COMMA)
+          tokens.consumeOptionals(NL)
+          val expr = parseExpr()
+          args = expr :: args
+        }
+      }
+      tokens.consume(RCURLY)
+      ConstructorExpression(true, cls, args.reverse)
+    }
+    else {
+      ConstructorExpression(true, cls, args)
+    }
+  }
+
+  def parseNewCtorExpression() : Expression = {
+    tokens.consume(NEW)
+    val cls = tokens.consume(classOf[TID]).value
+    tokens.consume(LPAREN)
+    var args = List.empty[Expression]
+    if (!tokens.peek(RPAREN)) {
+      val expr = parseExpr()
+      args = expr :: args
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        tokens.consumeOptionals(NL)
+        val expr = parseExpr()
+        args = expr :: args
+      }
+    }
+    tokens.consume(RPAREN)
+    NewCallExpression(cls, args.reverse)
+  }
+
+  def parseRecurExpr() : Expression = {
+    tokens.consume(RECUR)
+    var recurArgs = List.empty[Expression]
+    while (!funcCallEndToken()) {
+      val arg = parsePipedExpr()
+      recurArgs = arg :: recurArgs
+    }
+    RecurExpr(recurArgs.reverse)
   }
 
   def parseFuncCallExpr() : Expression = {
     var expr : Expression = null
-    println(s"@@parseFunCallExpr (tokens=${tokens})")
+    //println(s"@@parseFunCallExpr (tokens=${tokens})")
     if (tokens.peek(classOf[ID])) {
       val id = tokens.consume(classOf[ID])
       expr = Identifier(id.value)
     }
-
+    else if (tokens.peek(classOf[ATOM])) {
+      expr = parseAtom()
+    }
     if (!funcCallEndToken()) {
       var args = List.empty[Expression]
       val func = expr
@@ -972,69 +1548,32 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         }
         args = expr :: args
       }
-      expr = FunctionCallExpression(func, args.reverse)
-    }
-    expr
-  }
-
-
-  var contextList = List.empty[mutable.HashMap[String, DeclVariable]]
-
-  def createContext() : Unit = {
-    contextList = mutable.HashMap.empty[String, DeclVariable] :: contextList
-  }
-
-  def destroyContext() : Unit = {
-    if (contextList.isEmpty)
-      throw CantFindContext()
-    contextList = contextList.tail
-  }
-
-  def addSimpleVar(variable: DeclVariable): Unit = {
-    if (contextList.isEmpty)
-      createContext()
-    val context = contextList.head
-    variable match {
-      case DeclIdVar(id) =>
-        context.put(id, variable)
-      case DeclTupledIdVars(tuple) =>
-        for (id <- tuple) {
-          context.put(id, variable)
-        }
-      case LoopVarDecl(id, _) =>
-        context.put(id, variable)
-      case ForVarDeclIn(id, _) =>
-        context.put(id, variable)
-      case _ =>
-        ???
+      FunctionCallExpression(func, args.reverse)
+    } else {
+      if (expr == null) {
+        println(s"@@INVALID EXPRESSION TOKENS= $tokens")
+        throw InvalidExpression()
+      }
+      expr
     }
   }
-
-  def addSimpleVarList(variables: List[DeclVariable]): Unit = {
-    for (i <- variables) {
-      addSimpleVar(i)
-    }
-  }
-
-  def isSimpleVar(expression: Expression): Boolean = {
-    expression match {
-      case Identifier(id) =>
-        contextList.exists(context => context.contains(id))
-      case _ => ???
-    }
-  }
-
 
   def funcCallEndToken() : Boolean = {
-    tokens.nextToken().exists { next =>
-      next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] || next == INDENT || next == DEDENT ||
-        next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN || next == ELSE ||
-      next == RPAREN
+    if (tokens.isEmpty) {
+      true
+    } else {
+      tokens.nextToken().exists { next =>
+        next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] ||
+          next == INDENT || next == DEDENT || next == ASSIGN  ||
+          next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN ||
+          next == ELSE || next == RPAREN || next == IN || next == RBRACKET || next == RCURLY || next == WHERE
+      }
     }
+
   }
 
-  def parseAtomExpr() : Expression = {
-    var expr : Expression = null
+  def parseAtomicExpr() : Expression = {
+    var expr: Expression = null
     if (tokens.peek(LPAREN)) {
       tokens.consume(LPAREN)
       expr = parsePipedExpr()
@@ -1047,60 +1586,85 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
           tupleElem = parsePipedExpr()
           tupleElements = tupleElem :: tupleElements
         }
-        expr = TupleExpr(tupleElements)
+        if (tokens.peek(DOTDOTDOT)) {
+          tokens.consume(DOTDOTDOT)
+          expr = InfiniteTupleExpr(tupleElements.reverse)
+
+        } else {
+          expr = TupleExpr(tupleElements.reverse)
+        }
+      }
+      if (expr.isInstanceOf[Identifier]) {
+        expr = FunctionCallExpression(expr, List.empty[Expression])
       }
       tokens.consume(RPAREN)
     }
     else if (tokens.peek(LBRACKET)) {
       expr = parseRangeExpr()
-
     }
     else if (tokens.peek(LCURLY)) {
-      // TODO implements sets
-      tokens.consume(LCURLY)
-      expr = parsePipedExpr()
-      tokens.consume(RCURLY)
+      expr = parseDictionaryExpr()
+    }
+    else if (tokens.peek(HASHLCURLY)) {
+      expr = parseSetExpr()
+    }
+    else {
+      expr = parseLiteral()
     }
 
-    else if (tokens.peek(classOf[INT_LITERAL])) {
-      val num = tokens.consume(classOf[INT_LITERAL])
-      expr = IntLiteral(num.value)
-    }
-    else if (tokens.peek(classOf[DOUBLE_LITERAL])) {
-      val num = tokens.consume(classOf[DOUBLE_LITERAL])
-      expr = DoubleLiteral(num.value)
-    }
-    else if (tokens.peek(classOf[STRING_LITERAL])) {
-      val str = tokens.consume(classOf[STRING_LITERAL])
-      expr = StringLiteral(str.value)
-    }
-    else if (tokens.peek(classOf[ISODATETIME_LITERAL])) {
-      val date = tokens.consume(classOf[ISODATETIME_LITERAL])
-      expr = DateTimeLiteral(date.value)
-    }
-    else if (tokens.peek(classOf[CHAR_LITERAL])) {
-      val chr = tokens.consume(classOf[CHAR_LITERAL])
-      expr = CharLiteral(chr.chr)
-    }
-    else if (tokens.peek(classOf[REGEXP_LITERAL])) {
-      val re = tokens.consume(classOf[REGEXP_LITERAL])
-      expr = RegexpLiteral(re.re)
-    }
-    else if (tokens.peek(classOf[FSTRING_LITERAL])) {
-      val fs = tokens.consume(classOf[FSTRING_LITERAL])
-      expr = FStringLiteral(fs.value)
-    }
+
     if (expr == null) {
-      println(s"!!! expr == null, tokens = ${tokens}")
+      println(s"!!! expr == null, tokens = $tokens")
       throw UnexpectedTokenClassException()
     }
     expr
   }
 
+  def parseAtom() : Expression = {
+    val atom = tokens.consume(classOf[ATOM])
+    Atom(atom.value)
+  }
+
+  def parseLiteral() : Expression = {
+    if (tokens.peek(classOf[BOOL_LITERAL])) {
+      BoolLiteral(tokens.consume(classOf[BOOL_LITERAL]).value)
+    }
+    else if (tokens.peek(classOf[INT_LITERAL])) {
+      IntLiteral(tokens.consume(classOf[INT_LITERAL]).value)
+    }
+    else if (tokens.peek(classOf[LONG_LITERAL])) {
+      LongLiteral(tokens.consume(classOf[LONG_LITERAL]).value)
+    }
+    else if (tokens.peek(classOf[BIGINT_LITERAL])) {
+      BigIntLiteral(tokens.consume(classOf[BIGINT_LITERAL]).value)
+    }
+    else if (tokens.peek(classOf[DOUBLE_LITERAL])) {
+      DoubleLiteral(tokens.consume(classOf[DOUBLE_LITERAL]).value)
+    }
+    else if (tokens.peek(classOf[STRING_LITERAL])) {
+      StringLiteral(tokens.consume(classOf[STRING_LITERAL]).value)
+    }
+    else if (tokens.peek(classOf[ISODATETIME_LITERAL])) {
+      DateTimeLiteral(tokens.consume(classOf[ISODATETIME_LITERAL]).value)
+    }
+    else if (tokens.peek(classOf[CHAR_LITERAL])) {
+      CharLiteral(tokens.consume(classOf[CHAR_LITERAL]).chr)
+    }
+    else if (tokens.peek(classOf[REGEXP_LITERAL])) {
+      RegexpLiteral(tokens.consume(classOf[REGEXP_LITERAL]).re)
+    }
+    else if (tokens.peek(classOf[FSTRING_LITERAL])) {
+      FStringLiteral(tokens.consume(classOf[FSTRING_LITERAL]).value)
+    }
+    else  {
+      null
+    }
+  }
+
   def parsePartialOper() : Expression = {
     tokens.consume(LPAREN)
     val parOp = tokens.consume(classOf[OPER])
-    var listOfArgs = List.empty[Expression]
+    var listOfArgs: List[Expression] = List.empty[Expression]
     while (!tokens.peek(RPAREN)) {
       val expr = parseLogicalExpr()
       listOfArgs = expr :: listOfArgs
@@ -1108,7 +1672,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     tokens.consume(RPAREN)
     classifyPartialOper(parOp, listOfArgs)
   }
-  
+
   def classifyPartialOper(parOp: OPER, args: List[Expression]) : Expression = {
     parOp match {
       case PLUS => PartialAdd(args)
@@ -1162,6 +1726,22 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
           expr = RangeExpression(rangeInit, rangeEnd)
       }
     }
+    if (tokens.peek(DOTDOTLESS)) {
+      tokens.consume(DOTDOTLESS)
+      expr match {
+        case expression: ListExpression if expression.expressions.size == 2 =>
+          val lexpr = expression.expressions
+          val rangeInit = lexpr.head
+          val rangeIncrement = SubstractExpression(lexpr.tail.head, lexpr.head)
+          val rangeEnd = parseLogicalExpr()
+          expr = RangeWithIncrementExpressionUntil(rangeInit, rangeIncrement, rangeEnd)
+
+        case _ =>
+          val rangeInit = expr
+          val rangeEnd = parseLogicalExpr()
+          expr = RangeExpressionUntil(rangeInit, rangeEnd)
+      }
+    }
     if (tokens.peek(DOTDOTDOT)) {
       tokens.consume(DOTDOTDOT)
       expr = InfiniteRangeExpression(expr)
@@ -1176,21 +1756,77 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         guard = parseListGuard()
         listOfGuards = guard :: listOfGuards
       }
-      expr = ListExpression(List(expr), if (listOfGuards.isEmpty) None else Some(listOfGuards.reverse))
+      expr = ListExpression(List(expr), Some(listOfGuards.reverse))
     }
     tokens.consume(RBRACKET)
+    if (!expr.isInstanceOf[ValidRangeExpression])
+      expr = ListExpression(List(expr), None)
     expr
   }
 
   def parseListGuard() : ListGuard = {
-    if (tokens.peek(classOf[ID]) && tokens.peek(2, BACK_ARROW)) {
+    if (tokens.peek(LPAREN) && tokens.peek(2, classOf[ID]) && tokens.peek(3, COMMA)) {
+      tokens.consume(LPAREN)
+      var listOfIds = List.empty[String]
+      val id = tokens.consume(classOf[ID])
+      listOfIds = id.value :: listOfIds
+      while (tokens.peek(COMMA)) {
+        tokens.consume(COMMA)
+        val id = tokens.consume(classOf[ID])
+        listOfIds = id.value :: listOfIds
+      }
+      tokens.consume(RPAREN)
+      tokens.consume(BACK_ARROW)
+      val expr = parsePipedExpr()
+      ListGuardDeclTupled(listOfIds.reverse, expr)
+    }
+    else if (tokens.peek(classOf[ID]) && tokens.peek(2, BACK_ARROW)) {
       val id = tokens.consume(classOf[ID])
       tokens.consume(BACK_ARROW)
       val expr = parsePipedExpr()
-      return ListGuardDecl(id.value, expr)
+      ListGuardDecl(id.value, expr)
     } else {
-      return ListGuardExpr(parsePipedExpr())
+      ListGuardExpr(parsePipedExpr())
     }
+  }
+
+  def parseSetExpr(): Expression = {
+    tokens.consume(HASHLCURLY)
+    var listOfValues = List.empty[Expression]
+    val value = parseExpr()
+    listOfValues = value :: listOfValues
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      val value = parseExpr()
+      listOfValues = value :: listOfValues
+    }
+    tokens.consume(RCURLY)
+    SetExpression(listOfValues.reverse)
+  }
+
+  def parseDictionaryExpr() : Expression = {
+    tokens.consume(LCURLY)
+    var listOfPairs = List.empty[(Expression, Expression)]
+    val key = parseKeyExpr()
+    val value = parseExpr()
+    listOfPairs = (key, value) :: listOfPairs
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      val key = parseKeyExpr()
+      val value = parseExpr()
+      listOfPairs = (key, value) :: listOfPairs
+    }
+    tokens.consume(RCURLY)
+    DictionaryExpression(listOfPairs.reverse)
+  }
+
+  def parseKeyExpr() : Expression = {
+    if (tokens.peek(classOf[ATOM]))
+      parseAtom()
+    else
+      parseLiteral()
   }
 
 }

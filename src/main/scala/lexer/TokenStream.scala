@@ -7,6 +7,8 @@ case class TokenStream(var tokens: List[TOKEN]) {
 
   def nonEmpty : Boolean = tokens.nonEmpty
 
+  def isEmpty : Boolean = tokens.isEmpty
+
   def peek(obj: TOKEN) : Boolean = if (tokens.isEmpty) false else tokens.head == obj
 
   def peek(n: Int, obj: TOKEN) : Boolean =
@@ -28,7 +30,9 @@ case class TokenStream(var tokens: List[TOKEN]) {
       false
     else {
       tokens.head match {
-        case lexererror: LEXER_ERROR => throw LexerError(lexererror)
+        case lexererror: LEXER_ERROR =>
+          println(s"@@@LEXER ERROR head= ${tokens.head}")
+          throw LexerError(lexererror)
         case _ =>
       }
       t.isAssignableFrom(tokens.head.getClass)
@@ -65,6 +69,18 @@ case class TokenStream(var tokens: List[TOKEN]) {
     }
     println(s"can't consume classof ${t}, tokens=${tokens}")
     throw UnexpectedTokenClassException()
+  }
+
+  def consumeOptional(tok: TOKEN): Unit = {
+    if (peek(tok)) {
+      consume(tok)
+    }
+  }
+
+  def consumeOptionals(tok: TOKEN): Unit = {
+    while (peek(tok)) {
+      consume(tok)
+    }
   }
 
   override def toString: String = {

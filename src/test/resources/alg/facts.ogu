@@ -1,14 +1,13 @@
 
-def lazy-fact =
-    go 1 1
+def lazy-fact = go 1 1
     where go f i = lazy f :: go (f * i) (i + 1)
 
 def sum-fact n = sum $ take n (lazy-fact)
 
 def sum-fact-2 n = go 0 1 1
     where go acc fact i
-        | i <= n = go (acc + fact) (fact * i) (i + 1)
-        | otherwise = acc
+          | i <= n = go (acc + fact) (fact * i) (i + 1)
+          | otherwise = acc
 
 
 (sum-fact 10) == (sum-fact-2 10)

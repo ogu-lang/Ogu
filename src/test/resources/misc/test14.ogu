@@ -1,6 +1,6 @@
 
 
-val d = [{:problem "euler1", :value 233168},
+let d = [{:problem "euler1", :value 233168},
             {:problem "euler2", :value 4613732},
               {:problem "euler3", :value 6857},
               {:problem "euler4", :value 906609},

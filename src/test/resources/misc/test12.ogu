@@ -1,6 +1,6 @@
 
 
-areaCilindro r h =
+def areaCilindro r h =
    let areaLateral = 2 * pi * r * h,
        areaBase = pi * r ^ 2
    in areaLateral + 2 * areaBase

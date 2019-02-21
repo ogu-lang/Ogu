@@ -1,26 +1,23 @@
 
 
 println "i\t j"
-loop i = 1, j = i + 1 in
-    when i < 10 do begin
+loop i = 1, j = i + 1 do
+    when i < 10 then
         println i "\t" j
-        repeat i' = inc i, j' = i' + 1
-    end
+        repeat with i' = inc i, j' = i' + 1
 
 println "i\t j"
-loop i = 1, j = i + 1 in
-    when i < 10 do begin
+loop i = 1, j = i + 1 do
+    when i < 10 then
         println i "\t" j
         repeat inc i, inc j
-    end
 
 
-loop i = 1, j = i + 1 in
-    when i < 10 do begin
+loop i = 1, j = i + 1 do
+    when i < 10 then
         println i "\t"  j
-        repeat i' = inc i, i' + 1
-    end
+        repeat with  i' = inc i, i' + 1
 
-loop i = 1, salida = 0 in
+loop i = 1, salida = 0 do
         if i == 10 then salida
-        else repeat i' = inc i, salida = i' * 2
+        else repeat with i' = inc i, salida = i' * 2
