@@ -1,4 +1,4 @@
-module recursives
+module Recursives
 
 def ackermann m n
   | m == 0 = n + 1

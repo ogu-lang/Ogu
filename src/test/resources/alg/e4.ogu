@@ -1,0 +1,11 @@
+
+def rev num =
+    loop  reversed = 0, n = num do
+        if zero? n then
+            reversed
+        else
+            repeat with reversed = reversed * 10 + n % 10, n = int (n / 10)
+
+def palindrome? n = n == rev n
+
+[x * y | x <- [100 ..< 1000], y <- [100 ..< 1000] ] |> filter palindrome? |> apply max

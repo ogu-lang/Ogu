@@ -1,0 +1,27 @@
+record Banana {quantity}
+record Grape  {quantity}
+record Orange {quantity}
+
+trait Fruit
+
+    def subtotal item
+
+
+extends Banana with Fruit
+
+    def subtotal item = 158 * (.quantity item)
+
+extends Grape with Fruit
+
+    def subtotal item = 178 * (.quantity item)
+
+
+extends Orange with Fruit
+
+    def subtotal item = 98 * (.quantity item)
+
+
+def coupon item = reify Fruit
+                     def subtotal _ = 0.75 * (subtotal item)
+
+[Orange{10}, Banana{15}, coupon Grape{10}]  |> map subtotal |> sum
