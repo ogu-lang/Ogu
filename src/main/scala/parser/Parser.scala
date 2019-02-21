@@ -132,6 +132,9 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       else if (tokens.peek(EXTENDS)) {
         result = parseExtends(inner) :: result
       }
+      else if (tokens.peek(RECORD)) {
+        result = parseRecord(inner) :: result
+      }
       else if (tokens.peek(TRAIT)) {
         result = parseTrait(inner) :: result
       }
@@ -142,6 +145,21 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       //println(s"PARSED SO FAR: ${result.reverse}\n\n")
     }
     filter(result.reverse)
+  }
+
+  def parseRecord(inner: Boolean): LangNode = {
+    tokens.consume(RECORD)
+    val name = tokens.consume(classOf[TID]).value
+    tokens.consume(LCURLY)
+    val arg = tokens.consume(classOf[ID]).value
+    var args = List(arg)
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      val arg = tokens.consume(classOf[ID]).value
+      args = arg :: args
+    }
+    tokens.consume(RCURLY)
+    RecordDecl(name, args.reverse)
   }
 
   def parseExtends(inner: Boolean): LangNode = {
@@ -907,11 +925,14 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     else if (tokens.peek(WHILE)) {
       parseWhileExpr()
     }
-    else if (tokens.peek(REPEAT)) {
-      parseRepeatExpr()
-    }
     else if (tokens.peek(RECUR)) {
       parseRecurExpr()
+    }
+    else if (tokens.peek(REIFY)) {
+      parseReifyExpr()
+    }
+    else if (tokens.peek(REPEAT)) {
+      parseRepeatExpr()
     }
     else if (tokens.peek(SET)) {
       parseAssignExpr()
@@ -926,6 +947,21 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       println(s"ERROR PARSE CONTROL tokens= $tokens")
       throw InvalidNodeException(tokens.nextToken())
     }
+  }
+
+  def parseReifyExpr() : Expression = {
+    tokens.consume(REIFY)
+    val name = tokens.consume(classOf[TID]).value
+    tokens.consume(NL)
+    tokens.consume(INDENT)
+    var methods = List.empty[ClassMethodDecl]
+    while (tokens.peek(DEF)) {
+      val defDecl = parseDef(false)
+      methods = ClassMethodDecl(defDecl) :: methods
+      tokens.consumeOptionals(NL)
+    }
+    tokens.consume(DEDENT)
+    ReifyExpression(name, methods.reverse)
   }
 
   def parseThrowExpr() : Expression = {
@@ -1439,8 +1475,26 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         }
       }
       tokens.consume(RPAREN)
+      ConstructorExpression(false, cls, args.reverse)
     }
-    ConstructorExpression(cls, args.reverse)
+    else if (tokens.peek(LCURLY)) {
+      tokens.consume(LCURLY)
+      if (!tokens.peek(RPAREN)) {
+        val expr = parseExpr()
+        args = expr :: args
+        while (tokens.peek(COMMA)) {
+          tokens.consume(COMMA)
+          tokens.consumeOptionals(NL)
+          val expr = parseExpr()
+          args = expr :: args
+        }
+      }
+      tokens.consume(RCURLY)
+      ConstructorExpression(true, cls, args.reverse)
+    }
+    else {
+      ConstructorExpression(true, cls, args)
+    }
   }
 
   def parseNewCtorExpression() : Expression = {

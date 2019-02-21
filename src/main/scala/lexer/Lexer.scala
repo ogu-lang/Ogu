@@ -245,7 +245,9 @@ class Lexer {
       case "otherwise" => OTHERWISE
       case "priv" => PRIVATE
       case "private" => PRIVATE
+      case "record" => RECORD
       case "recur" => RECUR
+      case "reify" => REIFY
       case "repeat" => REPEAT
       case "set" => SET
       case "then" => THEN

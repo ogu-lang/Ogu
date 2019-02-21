@@ -20,7 +20,11 @@ case class ClassMethodDecl(definition: DefDecl)
 case class TraitDef(traitName: String, methods: List[ClassMethodDecl]) extends LangNode
 case class ClassDecl(inner: Boolean, name: String, args: Option[List[String]], traits: List[TraitDef]) extends LangNode
 
+
+case class RecordDecl(name: String, args: List[String]) extends LangNode
+
 case class ExtendsDecl(cls: String, traitClass: String, decls: Option[List[ClassMethodDecl]]) extends LangNode
+
 
 case class ADT(name: String, args: List[String])
 case class AdtDecl(name: String, defs: List[ADT]) extends LangNode
@@ -28,6 +32,9 @@ trait AssignableExpression
 
 
 sealed trait Expression extends LangNode
+
+case class ReifyExpression(traitName: String, methods: List[ClassMethodDecl]) extends Expression
+
 
 case class TopLevelExpression(expression: Expression) extends LangNode
 
@@ -139,11 +146,11 @@ case class ForwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends
 case class BackwardPipeFuncCallExpression(args: List[Expression]) extends CallExpression
 case class BackwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends CallExpression
 case class NewCallExpression(cls: String, args: List[Expression]) extends CallExpression
-case class ConstructorExpression(cls: String, args: List[Expression]) extends CallExpression
-
+case class ConstructorExpression(isRecord: Boolean, cls: String, args: List[Expression]) extends CallExpression
 case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Expression
 
 case class Atom(value: String) extends Expression
+
 
 case class BlockExpression(expressions: List[Expression]) extends Expression
 

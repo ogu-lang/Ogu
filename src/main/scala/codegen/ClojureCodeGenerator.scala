@@ -29,12 +29,14 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case TopLevelExpression(expression) =>
         strBuf ++= toClojure(expression) + "\n"
 
+      case RecordDecl(name, args) =>
+        strBuf ++= s"(defrecord $name [${args.mkString(" ")}])\n"
+
       case ClassDecl(_, name, args, traits) =>
         strBuf ++= s"(deftype $name [${args.getOrElse(List.empty[String]).mkString(" ")}]\n"
         if (traits.nonEmpty) {
           strBuf ++= s"\t${traits.map(toClojure).mkString("\n\t")}"
         }
-
         strBuf ++= ")\n\n"
 
       case TraitDef(traitName, methods) =>
@@ -51,6 +53,14 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           strBuf ++= s
         }
         strBuf ++= ")\n\n"
+
+      case ReifyExpression(name, methods) =>
+        strBuf ++= s"(reify $name\n"
+        for (method <- methods) {
+          val s = toClojure(method.definition).replaceFirst("\\(defn\\s+", "\t(")
+          strBuf ++= s
+        }
+        strBuf ++= ")\n"
 
       case AdtDecl(name, adts) =>
         strBuf ++= s"(defprotocol $name)\n"
@@ -271,8 +281,11 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case RecurExpr(args) =>
         strBuf ++= s"(recur ${args.map(toClojure).mkString(" ")})"
 
-      case ConstructorExpression(cls, args) =>
+      case ConstructorExpression(false, cls, args) =>
         strBuf ++= s"($cls. ${args.map(toClojure).mkString(" ")})"
+
+      case ConstructorExpression(true, cls, args) =>
+        strBuf ++= s"(->$cls ${args.map(toClojure).mkString(" ")})"
 
       case NewCallExpression(cls, args) if args.isEmpty =>
         strBuf ++= s"($cls.)"
@@ -458,8 +471,8 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
                   letDecls = s"[$head $second & $tail] ${namedArgs.head}" :: letDecls
                 case DefArg(ListExpression(args, None)) =>
                   letDecls = s"[${args.map(toClojure).mkString(" ")}] ${namedArgs.head}]" :: letDecls
-                case DefArg(ConstructorExpression(cls, args)) =>
-                  andList = s"(instance? $cls ${namedArgs.head})" :: andList
+                case DefArg(ConstructorExpression(_, cls, args)) =>
+                  andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
                   var argDecls = List.empty[String]
                   for (arg <- args) {
                     arg match {
@@ -615,7 +628,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         val rest = exprs.last
         val args = exprs.dropRight(1)
         s"[${args.map(toClojure).mkString(" ")} & ${toClojure(rest)}]"
-      case DefArg(ConstructorExpression(cls, _)) => s"$cls"
+      case DefArg(ConstructorExpression(_, cls, _)) => s"$cls"
       case DefArg(expression) => s"${toClojure(expression)}"
     }
   }

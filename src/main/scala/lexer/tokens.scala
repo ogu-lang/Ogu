@@ -52,7 +52,9 @@ case object MODULE extends KEYWORD
 case object NEW extends KEYWORD
 case object OTHERWISE extends KEYWORD
 case object PRIVATE extends DECL
+case object RECORD extends DECL
 case object RECUR extends CONTROL
+case object REIFY extends CONTROL
 case object REFER extends KEYWORD
 case object REPEAT extends CONTROL
 case object SET extends CONTROL
