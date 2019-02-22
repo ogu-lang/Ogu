@@ -47,12 +47,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseImport() : ImportClause = {
     tokens.consume(IMPORT)
-    var tag : String = ""
-    if (tokens.peek(LBRACKET)) {
-      tokens.consume(LBRACKET)
-      tag = tokens.consume(classOf[ATOM]).value
-      tokens.consume(RBRACKET)
-    }
+    val tag  = parseTag()
     var listOfAlias = List.empty[ImportAlias]
     val impAlias = parseImportAlias()
     listOfAlias = impAlias :: listOfAlias
@@ -70,14 +65,20 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
   }
 
-  def parseFromImport() : ImportClause = {
-    tokens.consume(FROM)
-    var tag : String = ""
+  def parseTag() : String = {
     if (tokens.peek(LBRACKET)) {
       tokens.consume(LBRACKET)
-      tag = tokens.consume(classOf[ATOM]).value
+      val tag = tokens.consume(classOf[ATOM]).value
       tokens.consume(RBRACKET)
+      tag
+    } else {
+      ""
     }
+  }
+
+  def parseFromImport() : ImportClause = {
+    tokens.consume(FROM)
+    val tag = parseTag()
     val name = tokens.consume(classOf[ID]).value
     tokens.consume(IMPORT)
     var listOfAlias = List.empty[ImportAlias]
