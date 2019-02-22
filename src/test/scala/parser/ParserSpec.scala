@@ -9,7 +9,7 @@ class ParserSpec extends FlatSpec with Matchers {
 
   case class ParserException(code:String) extends Throwable
 
-  def parseExpr(code:String) = {
+  private[this] def parseExpr(code:String) = {
     val lexer = new Lexer()
     val lexResult = lexer.scanString(code)
     lexResult match {

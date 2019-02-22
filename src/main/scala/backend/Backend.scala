@@ -13,7 +13,7 @@ object Backend {
 
   def compile(fileNames: List[String]): Unit = {
     for (fileName <- fileNames) {
-      println(s"scanning ${fileName}...")
+      println(s"scanning $fileName...")
       compileFile(fileName)
     }
   }
@@ -52,7 +52,7 @@ object Backend {
     val table = SymbolTable(None)
     table.add(FunctionSymbol("println!"))
     table.add(FunctionSymbol("input!"))
-    return Some(table)
+    Some(table)
   }
 
 

@@ -179,7 +179,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= str
 
       case FStringLiteral(str) =>
-        strBuf ++= s"(fmt ${str})"
+        strBuf ++= s"(fmt $str)"
 
       case DateTimeLiteral(date) =>
         strBuf ++= "#inst  \"" + s"$date" + "\""
@@ -469,14 +469,15 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
                   letDecls = s"[$head & $tail] ${namedArgs.head}" :: letDecls
                 case DefArg(ConsExpression(Identifier(head), ConsExpression(Identifier(second), Identifier(tail)))) =>
                   letDecls = s"[$head $second & $tail] ${namedArgs.head}" :: letDecls
-                case DefArg(ListExpression(args, None)) =>
-                  letDecls = s"[${args.map(toClojure).mkString(" ")}] ${namedArgs.head}]" :: letDecls
-                case DefArg(ConstructorExpression(_, cls, args)) =>
+                case DefArg(ListExpression(defArgs, None)) =>
+                  letDecls = s"[${defArgs.map(toClojure).mkString(" ")}] ${namedArgs.head}]" :: letDecls
+
+                case DefArg(ConstructorExpression(_, cls, ctorArgs)) =>
                   andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
                   var argDecls = List.empty[String]
-                  for (arg <- args) {
+                  for (arg <- ctorArgs) {
                     arg match {
-                      case Identifier(id) => argDecls = s"${id} (.${id} ${namedArgs.head})" :: argDecls
+                      case Identifier(id) => argDecls = s"$id (.$id ${namedArgs.head})" :: argDecls
                     }
                   }
                   letDecls = argDecls.reverse ++ letDecls
@@ -556,7 +557,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
   def toClojureLetId(id: LetId) : String = {
     id match {
-      case LetSimpleId(id) => id
+      case LetSimpleId(name) => name
       case LetTupledId(ids) => s"[${ids.map(toClojureLetId).mkString(" ")}]"
     }
   }
@@ -622,7 +623,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
   def toClojureDefMatchArg(defArg: DefArg): String = {
     defArg match {
       case DefArg(ConstructorExpression(_, cls, _)) => s"$cls"
-      case defArg => toClojureDefArg(defArg)
+      case d => toClojureDefArg(d)
     }
   }
 
@@ -696,12 +697,11 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
   def toClojureImportClauses(importClauses: List[ImportClause]): String = {
     val strBuf = new StringBuilder()
-    val (cljImp, jvmImp) = importClauses.span(p =>
-      p match {
-        case CljImport(_) => true
-        case FromCljRequire(_, _) => true
-        case _ => false
-      })
+    val (cljImp, jvmImp) = importClauses.span {
+      case CljImport(_) => true
+      case FromCljRequire(_, _) => true
+      case _ => false
+    }
     if (cljImp.nonEmpty) {
       strBuf ++= s"(:require [${cljImp.map(toClojureImportClause).mkString(" ")}]) "
     }
@@ -730,7 +730,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     importClause match {
       case JvmImport(name) => name.map(toClojureImportAlias).mkString(" ")
       case FromJvmRequire(from, names) =>
-        val renames = names.filter(p => p.alias.nonEmpty)
         s"($from ${names.map(n => n.name).mkString(" ")}) "
       case _ => ""
     }
@@ -745,7 +744,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
   def toClojureImporteRename(importAlias: ImportAlias) : String = {
     importAlias match {
-      case ImportAlias(name, None) => ""
+      case ImportAlias(_, None) => ""
       case ImportAlias(name, Some(alias)) => s"$name $alias"
     }
   }

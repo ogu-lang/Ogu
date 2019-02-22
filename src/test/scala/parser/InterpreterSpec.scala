@@ -14,7 +14,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
     Backend.compileStream(oguScript, stream)
   }
 
-  def toList(anyRef: AnyRef) = {
+  private[this] def toList(anyRef: AnyRef) = {
     anyRef match {
       case l:lang.LazySeq =>
         l.toArray().toList.map(toNative)
@@ -35,10 +35,9 @@ class InterpreterSpec extends FlatSpec with Matchers {
         v.toArray.toList
       case k:lang.Keyword =>
         k.toString
-      case x => {
+      case x =>
         //println(s"@@@ ${x} ${x.getClass}")
         x
-      }
     }
   }
 

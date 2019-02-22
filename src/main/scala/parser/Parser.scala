@@ -310,7 +310,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     TraitMethodDecl(id, args.reverse)
   }
 
-  var defs = mutable.HashMap.empty[String, MultiDefDecl]
+  val defs = mutable.HashMap.empty[String, MultiDefDecl]
 
   private[this] def multiDef(node: LangNode) : LangNode = {
     node match {
@@ -1475,7 +1475,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         }
       }
       tokens.consume(RPAREN)
-      ConstructorExpression(false, cls, args.reverse)
+      ConstructorExpression(isRecord = false, cls, args.reverse)
     }
     else if (tokens.peek(LCURLY)) {
       tokens.consume(LCURLY)
@@ -1490,10 +1490,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
         }
       }
       tokens.consume(RCURLY)
-      ConstructorExpression(true, cls, args.reverse)
+      ConstructorExpression(isRecord = true, cls, args.reverse)
     }
     else {
-      ConstructorExpression(true, cls, args)
+      ConstructorExpression(isRecord = true, cls, args)
     }
   }
 

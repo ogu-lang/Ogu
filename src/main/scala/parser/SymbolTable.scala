@@ -4,7 +4,7 @@ import scala.collection.mutable
 
 case class SymbolTable(parent: Option[SymbolTable]) {
 
-  var symbols = mutable.HashMap[String, Symbol]()
+  private[this] val symbols = mutable.HashMap[String, Symbol]()
 
   def add(key: String, sym: Symbol) : Unit = {
     symbols.put(key, sym)
@@ -17,7 +17,7 @@ case class SymbolTable(parent: Option[SymbolTable]) {
   }
 
   def find(key: String) : Option[Symbol] = {
-      return symbols.get(key)
+    symbols.get(key)
   }
 
   def findDeep(key: String) : Option[Symbol] =
