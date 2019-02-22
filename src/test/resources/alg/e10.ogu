@@ -11,4 +11,4 @@ def primes n =
                      repeat with j = j + i
         filter (\i -> sieve @ i) [2 ..< n]
 
-reduce $ (+) primes $ dec 2000000
+reduce $ (+) primes $ dec 1000

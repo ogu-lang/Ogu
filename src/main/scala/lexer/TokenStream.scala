@@ -67,7 +67,7 @@ case class TokenStream(var tokens: List[TOKEN]) {
       tokens = tokens.tail
       return result.asInstanceOf[T]
     }
-    println(s"can't consume classof ${t}, tokens=${tokens}")
+    println(s"can't consume classof $t, tokens=$tokens")
     throw UnexpectedTokenClassException()
   }
 
