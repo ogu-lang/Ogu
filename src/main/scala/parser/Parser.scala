@@ -603,7 +603,23 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseLetExpr() : Expression = {
-    tokens.consume(LET)
+    LetDeclExpr(parseListOfLetVars(LET), parseInBodyOptExpr())
+  }
+
+  def parseVarExpr(): Expression = {
+    VarDeclExpr(parseListOfLetVars(VAR), parseInBodyOptExpr())
+  }
+
+  def parseBindExpr(): Expression = {
+    val listOfLetVars = parseListOfLetVars(BIND)
+    parseInBodyOptExpr() match {
+      case None => throw InvalidExpression()
+      case Some(body) =>  BindDeclExpr(listOfLetVars.reverse, body)
+    }
+  }
+
+  def parseListOfLetVars(token: TOKEN) : List[Variable] = {
+    tokens.consume(token)
     tokens.consumeOptionals(NL)
     var insideIndent = if (tokens.peek(INDENT)) 1 else 0
     if (insideIndent == 1)
@@ -627,9 +643,8 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       tokens.consume(DEDENT)
       insideIndent -= 1
     }
-    LetDeclExpr(listOfLetVars.reverse, parseInBodyOptExpr())
+    listOfLetVars.reverse
   }
-
 
   def parseInBodyExpr(): Option[Expression] = {
     tokens.consume(IN)
@@ -658,63 +673,10 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
   }
 
-  def parseBindExpr(): Expression = {
-    tokens.consume(BIND)
-    tokens.consumeOptionals(NL)
-    var insideIndent = if (tokens.peek(INDENT)) 1 else 0
-    if (insideIndent == 1)
-      tokens.consume(INDENT)
-    var letVar = parseLetVar()
-    var listOfLetVars = List.empty[Variable]
-    listOfLetVars = letVar :: listOfLetVars
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      if (tokens.peek(INDENT)) {
-        tokens.consume(INDENT)
-        insideIndent += 1
-      }
-      letVar = parseLetVar()
-      listOfLetVars = letVar :: listOfLetVars
-    }
-    while (insideIndent > 0) {
-      tokens.consumeOptionals(NL)
-      tokens.consume(DEDENT)
-      insideIndent -= 1
-    }
-    parseInBodyOptExpr() match {
-      case None => throw InvalidExpression()
-      case Some(body) =>  BindDeclExpr(listOfLetVars.reverse, body)
-    }
-  }
 
 
-  def parseVarExpr(): Expression = {
-    tokens.consume(VAR)
-    tokens.consumeOptionals(NL)
-    var insideIndent = if (tokens.peek(INDENT)) 1 else 0
-    if (insideIndent == 1)
-      tokens.consume(INDENT)
-    var letVar = parseLetVar()
-    var listOfLetVars = List.empty[Variable]
-    listOfLetVars = letVar :: listOfLetVars
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      if (tokens.peek(INDENT)) {
-        tokens.consume(INDENT)
-        insideIndent += 1
-      }
-      letVar = parseLetVar()
-      listOfLetVars = letVar :: listOfLetVars
-    }
-    while (insideIndent > 0) {
-      tokens.consumeOptionals(NL)
-      tokens.consume(DEDENT)
-      insideIndent -= 1
-    }
-    VarDeclExpr(listOfLetVars.reverse, parseInBodyOptExpr())
-  }
+
+
 
   def parseLetVar() : Variable = {
     tokens.consumeOptionals(NL)
