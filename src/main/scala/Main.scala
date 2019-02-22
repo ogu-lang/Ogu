@@ -7,7 +7,7 @@ object Main {
   case class FileArgs(fileNames:List[String]) extends Args
 
   def checkArgs(args: Array[String]) : Args = {
-    if (args.size == 0)
+    if (args.isEmpty)
       NoArgs
     else
       FileArgs(args.toList)

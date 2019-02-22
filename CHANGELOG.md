@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [0.2.1] - 2019-2-22
+
+### Fixed
+
+- Refactor Parser
+- Refactor Lexer
+- remove duplicated code
+
 ## [0.2.0] - 2019-2-21
 
 ### Changed

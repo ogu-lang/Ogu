@@ -17,17 +17,17 @@ object Interpreter {
     require.invoke(Clojure.read("clojure.set"))
     loadStr.invoke(readOguRuntime())
     val result = loadStr.invoke(clojureStr)
-    println(s"@@RESULT = ${result}")
+    println(s"@@RESULT = $result")
     result
   }
 
   def toClojure(node: LangNode): String = {
     val codeGenerator = new ClojureCodeGenerator(node)
-    codeGenerator.mkString
+    codeGenerator.mkString()
   }
 
   def readOguRuntime() : String = {
-    val classLoader = this.getClass().getClassLoader()
+    val classLoader = this.getClass.getClassLoader
     Source.fromInputStream(classLoader.getResourceAsStream("ogu/core.clj")).mkString
   }
 

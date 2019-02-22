@@ -47,12 +47,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseImport() : ImportClause = {
     tokens.consume(IMPORT)
-    var tag : String = ""
-    if (tokens.peek(LBRACKET)) {
-      tokens.consume(LBRACKET)
-      tag = tokens.consume(classOf[ATOM]).value
-      tokens.consume(RBRACKET)
-    }
+    val tag  = parseTag()
     var listOfAlias = List.empty[ImportAlias]
     val impAlias = parseImportAlias()
     listOfAlias = impAlias :: listOfAlias
@@ -70,14 +65,20 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
   }
 
-  def parseFromImport() : ImportClause = {
-    tokens.consume(FROM)
-    var tag : String = ""
+  def parseTag() : String = {
     if (tokens.peek(LBRACKET)) {
       tokens.consume(LBRACKET)
-      tag = tokens.consume(classOf[ATOM]).value
+      val tag = tokens.consume(classOf[ATOM]).value
       tokens.consume(RBRACKET)
+      tag
+    } else {
+      ""
     }
+  }
+
+  def parseFromImport() : ImportClause = {
+    tokens.consume(FROM)
+    val tag = parseTag()
     val name = tokens.consume(classOf[ID]).value
     tokens.consume(IMPORT)
     var listOfAlias = List.empty[ImportAlias]
@@ -151,6 +152,12 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     tokens.consume(RECORD)
     val name = tokens.consume(classOf[TID]).value
     tokens.consume(LCURLY)
+    var args = parseListOfIds()
+    tokens.consume(RCURLY)
+    RecordDecl(name, args)
+  }
+
+  def parseListOfIds() : List[String] = {
     val arg = tokens.consume(classOf[ID]).value
     var args = List(arg)
     while (tokens.peek(COMMA)) {
@@ -158,8 +165,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val arg = tokens.consume(classOf[ID]).value
       args = arg :: args
     }
-    tokens.consume(RCURLY)
-    RecordDecl(name, args.reverse)
+    args.reverse
   }
 
   def parseExtends(inner: Boolean): LangNode = {
@@ -185,17 +191,11 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   def parseClass(inner: Boolean): LangNode = {
     tokens.consume(CLASS)
     val name = tokens.consume(classOf[TID]).value
-    val args = if (!tokens.peek(LPAREN)) None else {
+    val argsOpt = if (!tokens.peek(LPAREN)) None else {
       tokens.consume(LPAREN)
-      val arg = tokens.consume(classOf[ID]).value
-      var args = List(arg)
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        val arg = tokens.consume(classOf[ID]).value
-        args = arg :: args
-      }
+      val args = parseListOfIds()
       tokens.consume(RPAREN)
-      Some(args.reverse)
+      Some(args)
     }
     tokens.consume(NL)
     var traits = List.empty[TraitDef]
@@ -217,7 +217,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       }
       tokens.consume(DEDENT)
     }
-    ClassDecl(inner, name, args, traits)
+    ClassDecl(inner, name, argsOpt, traits)
   }
 
   def parseDispatch(inner: Boolean): LangNode = {
@@ -310,7 +310,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     TraitMethodDecl(id, args.reverse)
   }
 
-  var defs = mutable.HashMap.empty[String, MultiDefDecl]
+  val defs = mutable.HashMap.empty[String, MultiDefDecl]
 
   private[this] def multiDef(node: LangNode) : LangNode = {
     node match {
@@ -490,20 +490,13 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseWhereDef() : WhereDef = {
-    var listOfIds = List.empty[String]
-    if (!tokens.peek(LPAREN)) {
-      val id = tokens.consume(classOf[ID])
-      listOfIds = id.value :: listOfIds
+    val listOfIds = if (!tokens.peek(LPAREN)) {
+      List(tokens.consume(classOf[ID]).value)
     } else {
       tokens.consume(LPAREN)
-      val id = tokens.consume(classOf[ID])
-      listOfIds = id.value :: listOfIds
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        val id = tokens.consume(classOf[ID])
-        listOfIds = id.value :: listOfIds
-      }
+      val l = parseListOfIds()
       tokens.consume(RPAREN)
+      l
     }
     var listOfArgs = List.empty[Expression]
     while (!tokens.peek(ASSIGN) && !tokens.peek(GUARD) && !tokens.peek(NL)) {
@@ -1461,39 +1454,20 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseConstructorExpr() : ConstructorExpression = {
     val cls = tokens.consume(classOf[TID]).value
-    var args = List.empty[Expression]
     if (tokens.peek(LPAREN)) {
       tokens.consume(LPAREN)
-      if (!tokens.peek(RPAREN)) {
-        val expr = parseExpr()
-        args = expr :: args
-        while (tokens.peek(COMMA)) {
-          tokens.consume(COMMA)
-          tokens.consumeOptionals(NL)
-          val expr = parseExpr()
-          args = expr :: args
-        }
-      }
+      val args = if (tokens.peek(RPAREN)) List.empty else parseListOfExpressions()
       tokens.consume(RPAREN)
-      ConstructorExpression(false, cls, args.reverse)
+      ConstructorExpression(isRecord = false, cls, args)
     }
     else if (tokens.peek(LCURLY)) {
       tokens.consume(LCURLY)
-      if (!tokens.peek(RPAREN)) {
-        val expr = parseExpr()
-        args = expr :: args
-        while (tokens.peek(COMMA)) {
-          tokens.consume(COMMA)
-          tokens.consumeOptionals(NL)
-          val expr = parseExpr()
-          args = expr :: args
-        }
-      }
+      val args = if (tokens.peek(RCURLY)) List.empty else parseListOfExpressions()
       tokens.consume(RCURLY)
-      ConstructorExpression(true, cls, args.reverse)
+      ConstructorExpression(isRecord = true, cls, args)
     }
     else {
-      ConstructorExpression(true, cls, args)
+      ConstructorExpression(isRecord = true, cls, List.empty)
     }
   }
 
@@ -1501,20 +1475,23 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     tokens.consume(NEW)
     val cls = tokens.consume(classOf[TID]).value
     tokens.consume(LPAREN)
-    var args = List.empty[Expression]
-    if (!tokens.peek(RPAREN)) {
-      val expr = parseExpr()
-      args = expr :: args
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        tokens.consumeOptionals(NL)
-        val expr = parseExpr()
-        args = expr :: args
-      }
-    }
+    val args = if (tokens.peek(RPAREN)) List.empty[Expression] else parseListOfExpressions()
     tokens.consume(RPAREN)
-    NewCallExpression(cls, args.reverse)
+    NewCallExpression(cls, args)
   }
+
+  def parseListOfExpressions() : List[Expression] = {
+    val expr = parseExpr()
+    var exprs = List(expr)
+    while (tokens.peek(COMMA)) {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      val expr = parseExpr()
+      exprs = expr :: exprs
+    }
+    exprs.reverse
+  }
+
 
   def parseRecurExpr() : Expression = {
     tokens.consume(RECUR)
@@ -1626,8 +1603,13 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
   }
 
   def parseLiteral() : Expression = {
-    if (tokens.peek(classOf[BOOL_LITERAL])) {
-      BoolLiteral(tokens.consume(classOf[BOOL_LITERAL]).value)
+    if (tokens.peek(TRUE)) {
+      tokens.consume(TRUE)
+      BoolLiteral(true)
+    }
+    else if (tokens.peek(FALSE)) {
+      tokens.consume(FALSE)
+      BoolLiteral(false)
     }
     else if (tokens.peek(classOf[INT_LITERAL])) {
       IntLiteral(tokens.consume(classOf[INT_LITERAL]).value)
@@ -1712,35 +1694,11 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
     if (tokens.peek(DOTDOT)) {
       tokens.consume(DOTDOT)
-      expr match {
-        case expression: ListExpression if expression.expressions.size == 2 =>
-          val lexpr = expression.expressions
-          val rangeInit = lexpr.head
-          val rangeIncrement = SubstractExpression(lexpr.tail.head, lexpr.head)
-          val rangeEnd = parseLogicalExpr()
-          expr = RangeWithIncrementExpression(rangeInit, rangeIncrement, rangeEnd)
-
-        case _ =>
-          val rangeInit = expr
-          val rangeEnd = parseLogicalExpr()
-          expr = RangeExpression(rangeInit, rangeEnd)
-      }
+      expr = parseEndRange(expr, include=true)
     }
     if (tokens.peek(DOTDOTLESS)) {
       tokens.consume(DOTDOTLESS)
-      expr match {
-        case expression: ListExpression if expression.expressions.size == 2 =>
-          val lexpr = expression.expressions
-          val rangeInit = lexpr.head
-          val rangeIncrement = SubstractExpression(lexpr.tail.head, lexpr.head)
-          val rangeEnd = parseLogicalExpr()
-          expr = RangeWithIncrementExpressionUntil(rangeInit, rangeIncrement, rangeEnd)
-
-        case _ =>
-          val rangeInit = expr
-          val rangeEnd = parseLogicalExpr()
-          expr = RangeExpressionUntil(rangeInit, rangeEnd)
-      }
+      expr = parseEndRange(expr, include = false)
     }
     if (tokens.peek(DOTDOTDOT)) {
       tokens.consume(DOTDOTDOT)
@@ -1762,6 +1720,24 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     if (!expr.isInstanceOf[ValidRangeExpression])
       expr = ListExpression(List(expr), None)
     expr
+  }
+
+  private[this] def parseEndRange(expr: Expression, include: Boolean) : Expression = {
+    expr match {
+      case expression: ListExpression if expression.expressions.size == 2 =>
+        val lexpr = expression.expressions
+        val rangeInit = lexpr.head
+        val rangeIncrement = SubstractExpression(lexpr.tail.head, lexpr.head)
+        if (include)
+          RangeWithIncrementExpression(rangeInit, rangeIncrement, parseLogicalExpr())
+        else
+          RangeWithIncrementExpressionUntil(rangeInit, rangeIncrement, parseLogicalExpr())
+      case rangeInit =>
+        if (include)
+          RangeExpression(rangeInit, parseLogicalExpr())
+        else
+          RangeExpressionUntil(rangeInit, parseLogicalExpr())
+    }
   }
 
   def parseListGuard() : ListGuard = {

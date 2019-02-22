@@ -81,7 +81,7 @@ object DefOtherwiseArg extends DefArg(null)
 sealed trait DispatcherTrait
 object ClassDispatcher extends DispatcherTrait
 case class ExpressionDispatcher(expr:Expression) extends DispatcherTrait
-case class DispatchDecl(val id:String, dispatcher: DispatcherTrait) extends LangNode
+case class DispatchDecl(id:String, dispatcher: DispatcherTrait) extends LangNode
 
 class DefDecl(id: String) extends LangNode
 case class MultiMethod(inner: Boolean, id: String, matches: List[DefArg], args: List[DefArg], body: Expression, whereBlock: Option[WhereBlock])
@@ -104,8 +104,8 @@ case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(
     val count = decls.map(_.args.size).max
     var ids = List.empty[String]
     decls.foreach(decl => decl.args.foreach {
-      case DefArg(Identifier(id)) if !ids.contains(id) => ids = id :: ids
-      case DefArg(IdIsType(id, _)) if !ids.contains(id) => ids = id :: ids
+      case DefArg(Identifier(name)) if !ids.contains(name) => ids = name :: ids
+      case DefArg(IdIsType(name, _)) if !ids.contains(name) => ids = name :: ids
       case _ =>
     })
     var i = 0

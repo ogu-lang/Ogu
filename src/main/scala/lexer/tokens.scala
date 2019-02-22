@@ -2,7 +2,6 @@ package lexer
 
 import org.joda.time.DateTime
 
-
 sealed trait TOKEN
 case object SKIP extends TOKEN
 
@@ -81,10 +80,11 @@ case class FLOAT_LITERAL(value: Float) extends LITERAL
 case class LONG_LITERAL(value: Long) extends LITERAL
 case class BIGINT_LITERAL(value: BigInt) extends LITERAL
 case class BIGDECIMAL_LITERAL(value: BigDecimal) extends LITERAL
-case class BOOL_LITERAL(value: Boolean) extends LITERAL
+class BOOL_LITERAL(value: Boolean) extends LITERAL
+case object TRUE extends BOOL_LITERAL(true)
+case object FALSE extends BOOL_LITERAL(false)
 
 case class ISODATETIME_LITERAL(value: DateTime) extends LITERAL
-
 
 case object AND extends LOGICAL_BIN_OPER
 case object ANDB extends OPER
@@ -142,3 +142,120 @@ case object RBRACKET extends PAREN
 case object RCURLY extends PAREN
 case object RPAREN extends PAREN
 case object SEMI extends OPER
+
+object KEYWORD_MAP {
+
+  def apply(str: String) : Option[TOKEN] = {
+    table.get(str)
+  }
+
+  private[this] val table = Map(
+    ("as", AS),
+    ("bind", BIND),
+    ("catch", CATCH),
+    ("class", CLASS),
+    ("cond", COND),
+    ("contains", CONTAINS),
+    ("data", DATA),
+    ("def", DEF),
+    ("dispatch", DISPATCH),
+    ("do", DO),
+    ("elif", ELIF),
+    ("else", ELSE),
+    ("extends", EXTENDS),
+    ("false", FALSE),
+    ("finally", FINALLY),
+    ("for", FOR),
+    ("from", FROM),
+    ("if", IF),
+    ("import", IMPORT),
+    ("in", IN),
+    ("is", IS),
+    ("lazy", LAZY),
+    ("let", LET),
+    ("loop", LOOP),
+    ("module", MODULE),
+    ("new", NEW),
+    ("otherwise", OTHERWISE),
+    ("priv", PRIVATE),
+    ("private", PRIVATE),
+    ("record", RECORD),
+    ("recur", RECUR),
+    ("reify", REIFY),
+    ("repeat", REPEAT),
+    ("set", SET),
+    ("then", THEN),
+    ("throw", THROW),
+    ("trait", TRAIT),
+    ("true", TRUE),
+    ("try", TRY),
+    ("until", UNTIL),
+    ("var", VAR),
+    ("val", LET),
+    ("when", WHEN),
+    ("where", WHERE),
+    ("while", WHILE),
+    ("with", WITH))
+}
+
+object OPER_MAP {
+
+  def apply(str: String) : Option[TOKEN] = {
+    table.get(str)
+  }
+
+  private[this] val table = Map(
+      ("&&", AND),
+      ("&", ANDB),
+      ("@", ARROBA),
+      ("@", ARROBA),
+      ("->", ARROW),
+      ("=", ASSIGN),
+      ("<-", BACK_ARROW),
+      (":", COLON),
+      (",", COMMA),
+      (">>", COMPOSE_FORWARD),
+      ("<<", COMPOSE_BACKWARD),
+      ("::", CONS),
+      ("/", DIV),
+      ("$", DOLLAR),
+      ("...", DOTDOTDOT),
+      ("..<", DOTDOTLESS),
+      ("..", DOTDOT),
+      (".", DOT),
+      ("!>", DOTO),
+      ("<!", DOTO_BACK),
+      ("==", EQUALS),
+      (">=", GE),
+      (">", GT),
+      ("|", GUARD),
+      ("\\", LAMBDA),
+      ("<=", LE),
+      ("[", LBRACKET),
+      ("{", LCURLY),
+      ("#{", HASHLCURLY),
+      ("(", LPAREN),
+      ("<", LT),
+      ("~", MATCH),
+      ("=~", MATCHES),
+      ("-", MINUS),
+      ("<->", MINUS_BIG),
+      ("%", MOD),
+      ("*", MULT),
+      ("<*>", MULT_BIG),
+      ("/=", NOT_EQUALS),
+      ("!~", NOT_MATCHES),
+      ("||", OR),
+      ("<|", PIPE_LEFT),
+      ("|<", PIPE_LEFT_FIRST_ARG),
+      ("|>", PIPE_RIGHT),
+      (">|", PIPE_RIGHT_FIRST_ARG),
+      ("+", PLUS),
+      ("<+>", PLUS_BIG),
+      ("++", PLUS_PLUS),
+      ("^", POW),
+      ("?", QUESTION),
+      ("]", RBRACKET),
+      ("}", RCURLY),
+      (")", RPAREN))
+}
