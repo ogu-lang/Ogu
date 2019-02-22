@@ -47,21 +47,24 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
 
   def parseImport(): ImportClause = {
     tokens.consume(IMPORT)
-    val tag = parseTag()
-    var listOfAlias = List.empty[ImportAlias]
-    val impAlias = parseImportAlias()
-    listOfAlias = impAlias :: listOfAlias
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      val impAlias = parseImportAlias()
-      listOfAlias = impAlias :: listOfAlias
-    }
-    if (tag == ":jvm") {
-      JvmImport(listOfAlias.reverse)
+    if (parseTag() == ":jvm") {
+      JvmImport(parseListOfAlias())
     }
     else {
-      CljImport(listOfAlias.reverse)
+      CljImport(parseListOfAlias())
+    }
+  }
+
+  def parseFromImport(): ImportClause = {
+    tokens.consume(FROM)
+    val tag = parseTag()
+    val name = tokens.consume(classOf[ID]).value
+    tokens.consume(IMPORT)
+    if (tag == ":jvm") {
+      FromJvmRequire(name, parseListOfAlias())
+    }
+    else {
+      FromCljRequire(name, parseListOfAlias())
     }
   }
 
@@ -76,11 +79,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     }
   }
 
-  def parseFromImport(): ImportClause = {
-    tokens.consume(FROM)
-    val tag = parseTag()
-    val name = tokens.consume(classOf[ID]).value
-    tokens.consume(IMPORT)
+  def parseListOfAlias() : List[ImportAlias] = {
     var listOfAlias = List.empty[ImportAlias]
     val impAlias = parseImportAlias()
     listOfAlias = impAlias :: listOfAlias
@@ -90,12 +89,7 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
       val impAlias = parseImportAlias()
       listOfAlias = impAlias :: listOfAlias
     }
-    if (tag == ":jvm") {
-      FromJvmRequire(name, listOfAlias.reverse)
-    }
-    else {
-      FromCljRequire(name, listOfAlias.reverse)
-    }
+    listOfAlias.reverse
   }
 
   def parseImportAlias(): ImportAlias = {
