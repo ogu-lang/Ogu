@@ -621,15 +621,8 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
   def toClojureDefMatchArg(defArg: DefArg): String = {
     defArg match {
-      case DefOtherwiseArg => ":default"
-      case DefArg(Identifier(id)) => id
-      case DefArg(TupleExpr(exprs)) => s"[${exprs.map(toClojure).mkString(" ")}]"
-      case DefArg(InfiniteTupleExpr(exprs)) =>
-        val rest = exprs.last
-        val args = exprs.dropRight(1)
-        s"[${args.map(toClojure).mkString(" ")} & ${toClojure(rest)}]"
       case DefArg(ConstructorExpression(_, cls, _)) => s"$cls"
-      case DefArg(expression) => s"${toClojure(expression)}"
+      case defArg => toClojureDefArg(defArg)
     }
   }
 
