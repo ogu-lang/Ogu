@@ -12,25 +12,23 @@ class Lexer {
 
   val encoding = "UTF-8" // files must be encoded in UTF-8
   val bufferSize = 4096
-  var indentStack : List[Int] = List(0)
+  var indentStack: List[Int] = List(0)
 
-  var currentLine = 0
   var currentColumn = 0
   var parenLevel = 0
   val currentString = new StringBuilder()
   var parseMultiLineString = false
 
-  def scanLine(line: String): List[TOKEN] = {
-    currentLine += 1
+  def scanLine(lineText: String, currentLine: Int): List[TOKEN] = {
     var tokens = List.empty[TOKEN]
-    val withComments = line.split("--")
+    val withComments = lineText.split("--")
     val text = withComments.head
     val len = text.length
     currentColumn = 0
-    tokens = scanIndentation(text, len, tokens)
+    tokens = scanIndentation(text, currentLine,  len, tokens)
     if (currentColumn < len) {
       val str = text.substring(currentColumn)
-      val rest = splitLine(str).map(strToToken)
+      val rest = splitLine(str).map(s => strToToken(s, currentLine))
       tokens = tokens.filter(t => t != SKIP).reverse ++ rest
     }
     val result = if (len > 0 && tokens.nonEmpty && parenLevel == 0 && !parseMultiLineString)
@@ -40,14 +38,14 @@ class Lexer {
     result.filter(t => t != SKIP)
   }
 
-  def splitLine(str: String) : List[String] = {
+  def splitLine(str: String): List[String] = {
 
     var result = List.empty[String]
     val len = str.length
     var ini = 0
     var pos = 0
 
-    def parseQuoted(quot:Char) : Unit = {
+    def parseQuoted(quot: Char): Unit = {
       pos += 1
       while (pos < len && str(pos) != quot) {
         if (str(pos) == '\\')
@@ -69,19 +67,19 @@ class Lexer {
           pos += 1
         ini = pos
       }
-      else if (str(pos) == '.' && pos+1 < len && str(pos+1) == '.' && pos+2 < len && (str(pos+2) == '.' || str(pos+2) == '<')) {
+      else if (str(pos) == '.' && pos + 1 < len && str(pos + 1) == '.' && pos + 2 < len && (str(pos + 2) == '.' || str(pos + 2) == '<')) {
         if (pos > ini) {
           result = str.substring(ini, pos) :: result
         }
-        result = str.substring(pos, pos+3) :: result
+        result = str.substring(pos, pos + 3) :: result
         ini = pos + 3
         pos += 3
       }
-      else if (str(pos) == '.' && pos+1 < len && str(pos+1) == '.') {
+      else if (str(pos) == '.' && pos + 1 < len && str(pos + 1) == '.') {
         if (pos > ini) {
           result = str.substring(ini, pos) :: result
         }
-        result = str.substring(pos, pos+2) :: result
+        result = str.substring(pos, pos + 2) :: result
         ini = pos + 2
         pos += 2
       }
@@ -96,17 +94,17 @@ class Lexer {
       else if (str(pos) == '#') {
         if (pos > ini)
           result = str.substring(ini, pos) :: result
-        if (pos + 1 < len && str(pos+1) == '\"') {
+        if (pos + 1 < len && str(pos + 1) == '\"') {
           ini = pos
-          pos +=  1
+          pos += 1
           parseQuoted('\"')
         }
-        else if (pos + 1 < len && str(pos+1) == '/') {
+        else if (pos + 1 < len && str(pos + 1) == '/') {
           ini = pos
           pos += 1
           parseQuoted('/')
         }
-        else if (pos + 1 < len && isTimeValidChar(str(pos+1))) {
+        else if (pos + 1 < len && isTimeValidChar(str(pos + 1))) {
           ini = pos
           pos += 1
           while (pos < len && isTimeValidChar(str(pos))) {
@@ -115,7 +113,7 @@ class Lexer {
           result = str.substring(ini, pos) :: result
           ini = pos
         }
-        else if (pos + 1 < len && str(pos+1) == '{') {
+        else if (pos + 1 < len && str(pos + 1) == '{') {
           ini = pos
           pos += 2
           result = str.substring(ini, pos) :: result
@@ -146,7 +144,7 @@ class Lexer {
     result.reverse
   }
 
-  def strToToken(str: String) : TOKEN = {
+  def strToToken(str: String, currentLine: Int): TOKEN = {
     if (parseMultiLineString) {
       currentString ++= str
       if (!str.endsWith("\"")) {
@@ -159,112 +157,67 @@ class Lexer {
     }
     else {
       str.head match {
-        case '\"'if !str.endsWith("\"")  =>
+        case '\"' if !str.endsWith("\"") =>
           currentString.clear()
           currentString ++= str
           this.parseMultiLineString = true
           SKIP
         case '\"' => STRING_LITERAL(str)
         case '\'' => CHAR_LITERAL(str)
-        case '#' => tryParseHashTag(str)
+        case '#' => tryParseHashTag(str, currentLine)
         case ':' if str.length > 1 && str != "::" => ATOM(str)
         case _ =>
-          var token = tryParseId(str)
+          var token = tryParseId(str, currentLine)
           if (token.isInstanceOf[LEXER_ERROR])
-            token = tryParseNum(str)
+            token = tryParseNum(str, currentLine)
           if (token.isInstanceOf[LEXER_ERROR])
-            token = tryParseOp(str)
+            token = tryParseOp(str, currentLine)
           token
       }
     }
   }
 
 
-  def scanIndentation(text: String, len: Int, tokens: List[TOKEN]) : List[TOKEN] = {
+  def scanIndentation(text: String, currentLine: Int,  len: Int, tokens: List[TOKEN]): List[TOKEN] =
     if (parenLevel > 0) {
-      return tokens
-    }
-    while (currentColumn < len && isBlank(text(currentColumn)))
-      currentColumn += 1
-    if (currentColumn == indentStack.head)
       tokens
-    else if (currentColumn > indentStack.head) {
-      indentStack = currentColumn :: indentStack
-      INDENT :: tokens
     }
     else {
-      indentStack = indentStack.tail
-      var result = DEDENT :: tokens
-      while (currentColumn < indentStack.head && indentStack.head > 0) {
-        indentStack = indentStack.tail
-        result = DEDENT :: result
+      while (currentColumn < len && isBlank(text(currentColumn)))
+        currentColumn += 1
+      if (currentColumn == indentStack.head)
+        tokens
+      else if (currentColumn > indentStack.head) {
+        indentStack = currentColumn :: indentStack
+        INDENT :: tokens
       }
-      result
-    }
-  }
-
-
-  def tryParseId(str: String) : TOKEN = {
-    str match {
-      case "as" => AS
-      case "bind" => BIND
-      case "catch" => CATCH
-      case "class" => CLASS
-      case "cond" => COND
-      case "contains" => CONTAINS
-      case "data" => DATA
-      case "def" => DEF
-      case "dispatch" => DISPATCH
-      case "do" => DO
-      case "elif" => ELIF
-      case "else" => ELSE
-      case "extends" => EXTENDS
-      case "false" => FALSE
-      case "finally" => FINALLY
-      case "for" => FOR
-      case "from" => FROM
-      case "if" => IF
-      case "import" => IMPORT
-      case "in" => IN
-      case "is" => IS
-      case "lazy" => LAZY
-      case "let" => LET
-      case "loop" => LOOP
-      case "module" => MODULE
-      case "new" => NEW
-      case "otherwise" => OTHERWISE
-      case "priv" => PRIVATE
-      case "private" => PRIVATE
-      case "record" => RECORD
-      case "recur" => RECUR
-      case "reify" => REIFY
-      case "repeat" => REPEAT
-      case "set" => SET
-      case "then" => THEN
-      case "throw" => THROW
-      case "trait" => TRAIT
-      case "true" => TRUE
-      case "try" => TRY
-      case "until" => UNTIL
-      case "var" => VAR
-      case "val" => LET
-      case "when" => WHEN
-      case "where" => WHERE
-      case "while" => WHILE
-      case "with" => WITH
-      case _ =>
-        var isValidId = false
-        var pos = 0
-        val len = str.length
-        while (pos < len && !isValidId) {
-          isValidId = isIdentifierChar(str(pos))
-          pos += 1
+      else {
+        indentStack = indentStack.tail
+        var result = DEDENT :: tokens
+        while (currentColumn < indentStack.head && indentStack.head > 0) {
+          indentStack = indentStack.tail
+          result = DEDENT :: result
         }
-        if (isValidId) {
-          var id = str
-          if (id.endsWith("...")) {
+        result
+      }
+    }
+
+
+  def tryParseId(str: String, currentLine: Int): TOKEN = {
+    KEYWORD_MAP(str) match {
+      case Some(token) => token
+      case None =>
+        //var isValidId = false
+        val s = str.takeWhile(c => !isIdentifierChar(c))
+        val isValidId = s.length < str.length
+        if (!isValidId) {
+          LEXER_ERROR(currentLine, str)
+        } else {
+          val id = if (str.endsWith("...")) {
             currentColumn -= 3
-            id = id.substring(0, str.length-3)
+            str.substring(0, str.length - 3)
+          } else {
+            str
           }
           if (id.contains('.')) {
             val parts = id.split('.')
@@ -275,13 +228,12 @@ class Lexer {
           else if (id.head.isUpper) {
             return TID(id)
           }
-          return ID(id)
+          ID(id)
         }
-        LEXER_ERROR(currentLine, str)
     }
   }
 
-  def tryParseNum(str: String) : TOKEN = try {
+  def tryParseNum(str: String, currentLine: Int): TOKEN = try {
     val value = BigDecimal(str)
     if (isIntegerValue(value)) {
       if (value < Int.MaxValue)
@@ -309,8 +261,8 @@ class Lexer {
 
   private def isIntegerValue(bd: BigDecimal) = (bd.signum == 0) || bd.scale <= 0
 
-  def tryParseOp(str: String) : TOKEN = {
-    OPER_MAP.table.get(str) match {
+  def tryParseOp(str: String, currentLine: Int): TOKEN = {
+    OPER_MAP(str) match {
       case Some(token) =>
         token match {
           case LPAREN => parenLevel += 1
@@ -328,44 +280,49 @@ class Lexer {
     }
   }
 
-  def tryParseHashTag(str: String) : TOKEN = {
+  def tryParseHashTag(str: String, currentLine: Int): TOKEN = {
     if (str == "#{") {
       parenLevel += 1
-      return HASHLCURLY
+      HASHLCURLY
     }
-    val len = str.length
-    if (len > 1 && str(1) == '\"')
-      return FSTRING_LITERAL(str.substring(1))
-    if (len > 1 && str(1) == '/')
-      return REGEXP_LITERAL(str.substring(1))
-    try {
-       ISODATETIME_LITERAL(new DateTime(str.substring(1)))
-    }
-    catch {
-      case _ : Throwable => LEXER_ERROR(currentLine, str)
+    else {
+      val len = str.length
+      if (len > 1 && str(1) == '\"') {
+        FSTRING_LITERAL(str.substring(1))
+      }
+      else if (len > 1 && str(1) == '/') {
+        REGEXP_LITERAL(str.substring(2, len - 1))
+      }
+      else
+        try
+          ISODATETIME_LITERAL(new DateTime(str.substring(1)))
+        catch {
+          case _: Throwable => LEXER_ERROR(currentLine, str)
+        }
     }
   }
 
-  val opChars: Set[Char] = Set('@', '~', '$', '+','-','*', '/', '%', '^', '|', '&', '=', '<', '>', '(', ')', '[', ']',
+  val opChars: Set[Char] = Set('@', '~', '$', '+', '-', '*', '/', '%', '^', '|', '&', '=', '<', '>', '(', ')', '[', ']',
     '{', '}', '!', '?', '.', ':', ';', ',', '\\')
 
   val punctChars: Set[Char] = Set(',', '(', ')', '[', ']', '{', '}', '\\')
 
-  def isBlank(c: Char) : Boolean = Character.isWhitespace(c)
+  def isBlank(c: Char): Boolean = Character.isWhitespace(c)
 
-  def isIdentifierChar(c: Char) : Boolean = Character.isAlphabetic(c) || c == '_'
+  def isIdentifierChar(c: Char): Boolean = Character.isAlphabetic(c) || c == '_'
 
-  def isPunct(c: Char) : Boolean = punctChars contains c
+  def isPunct(c: Char): Boolean = punctChars contains c
 
-  def isNumericChar(c: Char) : Boolean = Character.isDigit(c)
+  def isNumericChar(c: Char): Boolean = Character.isDigit(c)
 
-  def isTimeValidChar(c: Char) : Boolean = c == '-' || c == ':' || Character.isDigit(c) || Character.isUpperCase(c)
+  def isTimeValidChar(c: Char): Boolean = c == '-' || c == ':' || Character.isDigit(c) || Character.isUpperCase(c)
 
-  def isOpChar(c: Char) : Boolean = opChars contains c
+  def isOpChar(c: Char): Boolean = opChars contains c
 
-  def scanLines(lines: Iterator[String]): TokenStream = {
-    var result = lines.flatMap { text =>
-        scanLine(text)
+  def scanLines(lines: Iterator[(String, Int)]): TokenStream = {
+    var result = lines.flatMap {
+      case (text,line) =>
+      scanLine(text, line)
     }.toList.reverse
     if (indentStack.nonEmpty) {
       while (indentStack.nonEmpty && indentStack.head > 0) {
@@ -376,26 +333,26 @@ class Lexer {
     TokenStream(result.reverse)
   }
 
-  def scanFromResources(filename: String) : Try[TokenStream] = {
+  def scanFromResources(filename: String): Try[TokenStream] = {
     scan(filename, getClass.getResourceAsStream(filename))
   }
 
-  def scan(filename: String, fileStream: InputStream) : Try[TokenStream] = {
+  def scan(filename: String, fileStream: InputStream): Try[TokenStream] = {
     Try(Source.fromInputStream(fileStream)) match {
       case Failure(e) =>
         Failure(CantScanFileException(filename, e))
       case Success(rdr) =>
-        Success(scanLines(rdr.getLines.filter(_.length>0)))
+        Success(scanLines(rdr.getLines.zipWithIndex.filter(_._1.length > 0)))
     }
   }
 
-  def scan(filename:String) : Try[TokenStream] = {
+  def scan(filename: String): Try[TokenStream] = {
     scan(filename, new FileInputStream(new File(filename)))
   }
 
-  def scanString(code:String) : Try[TokenStream] = {
+  def scanString(code: String): Try[TokenStream] = {
     Try {
-      scanLines(code.split('\n').filter(_.length>0).toIterator)
+      scanLines(code.split('\n').zipWithIndex.filter(_._1.length > 0).toIterator)
     }
   }
 

@@ -188,7 +188,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= value
 
       case RegexpLiteral(re) =>
-        strBuf ++= "#\"" + re.stripPrefix("/").stripSuffix("/") + "\""
+        strBuf ++= "#\"" + re + "\""
 
       case MatchExpr(expr, re) =>
         strBuf ++= s"(some? (re-matches ${toClojure(re)} ${toClojure(expr)}))"

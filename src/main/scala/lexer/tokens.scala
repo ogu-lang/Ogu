@@ -2,7 +2,6 @@ package lexer
 
 import org.joda.time.DateTime
 
-
 sealed trait TOKEN
 case object SKIP extends TOKEN
 
@@ -87,7 +86,6 @@ case object FALSE extends BOOL_LITERAL(false)
 
 case class ISODATETIME_LITERAL(value: DateTime) extends LITERAL
 
-
 case object AND extends LOGICAL_BIN_OPER
 case object ANDB extends OPER
 case object ARROBA extends OPER
@@ -145,6 +143,60 @@ case object RCURLY extends PAREN
 case object RPAREN extends PAREN
 case object SEMI extends OPER
 
+object KEYWORD_MAP {
+
+  def apply(str: String) : Option[TOKEN] = {
+    table.get(str)
+  }
+
+  private[this] val table = Map(
+    ("as", AS),
+    ("bind", BIND),
+    ("catch", CATCH),
+    ("class", CLASS),
+    ("cond", COND),
+    ("contains", CONTAINS),
+    ("data", DATA),
+    ("def", DEF),
+    ("dispatch", DISPATCH),
+    ("do", DO),
+    ("elif", ELIF),
+    ("else", ELSE),
+    ("extends", EXTENDS),
+    ("false", FALSE),
+    ("finally", FINALLY),
+    ("for", FOR),
+    ("from", FROM),
+    ("if", IF),
+    ("import", IMPORT),
+    ("in", IN),
+    ("is", IS),
+    ("lazy", LAZY),
+    ("let", LET),
+    ("loop", LOOP),
+    ("module", MODULE),
+    ("new", NEW),
+    ("otherwise", OTHERWISE),
+    ("priv", PRIVATE),
+    ("private", PRIVATE),
+    ("record", RECORD),
+    ("recur", RECUR),
+    ("reify", REIFY),
+    ("repeat", REPEAT),
+    ("set", SET),
+    ("then", THEN),
+    ("throw", THROW),
+    ("trait", TRAIT),
+    ("true", TRUE),
+    ("try", TRY),
+    ("until", UNTIL),
+    ("var", VAR),
+    ("val", LET),
+    ("when", WHEN),
+    ("where", WHERE),
+    ("while", WHILE),
+    ("with", WITH))
+}
 
 object OPER_MAP {
 
@@ -152,8 +204,7 @@ object OPER_MAP {
     table.get(str)
   }
 
-  val table =
-    Map(
+  private[this] val table = Map(
       ("&&", AND),
       ("&", ANDB),
       ("@", ARROBA),
