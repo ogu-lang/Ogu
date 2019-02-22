@@ -58,76 +58,76 @@ class Lexer {
     }
 
     while (pos < len) {
-      if (isBlank(str(pos))) {
-        if (pos > ini)
-          result = strToToken(str.substring(ini, pos), currentLine) :: result
-        while (pos < len && isBlank(str(pos)))
-          pos += 1
-        ini = pos
-      }
-      else if (pos+2 < len && (str.substring(pos, pos+3) == "..." || str.substring(pos, pos+3) == "..<")) {
-        if (pos > ini) result = strToToken(str.substring(ini, pos), currentLine) :: result
-        result = strToToken(str.substring(pos, pos + 3), currentLine) :: result
-        ini = pos + 3
-        pos += 3
-      }
-      else if (pos+1 < len && str.substring(pos, pos+2) == "..") {
-        if (pos > ini) result = strToToken(str.substring(ini, pos), currentLine) :: result
-        result = strToToken(str.substring(pos, pos + 2), currentLine) :: result
-        ini = pos + 2
-        pos += 2
-      }
-      else if (isPunct(str(pos))) {
-        if (pos > ini) result = strToToken(str.substring(ini, pos), currentLine) :: result
-        ini = pos
-        pos += 1
-        result = strToToken(str.substring(ini, pos), currentLine) :: result
-        ini = pos
-      }
-      else if (str(pos) == '#') {
-        if (pos > ini) result = strToToken(str.substring(ini, pos), currentLine) :: result
-        if (pos + 1 < len && str(pos + 1) == '\"') {
-          ini = pos
-          pos += 1
+      str(pos) match {
+        case '\"' =>
+          if (pos > ini)
+            result = strToToken(str.substring(ini, pos), currentLine) :: result
           parseQuoted('\"')
-        }
-        else if (pos + 1 < len && str(pos + 1) == '/') {
-          ini = pos
-          pos += 1
-          parseQuoted('/')
-        }
-        else if (pos + 1 < len && isTimeValidChar(str(pos + 1))) {
-          ini = pos
-          pos += 1
-          while (pos < len && isTimeValidChar(str(pos))) {
+        case '\'' =>
+          if (pos == ini)
+            parseQuoted('\'')
+          else
             pos += 1
-          }
-          result = strToToken(str.substring(ini, pos), currentLine) :: result
-          ini = pos
-        }
-        else if (pos + 1 < len && str(pos + 1) == '{') {
-          ini = pos
+
+        case '.' if pos + 2 < len && (str.substring(pos, pos + 3) == "..." || str.substring(pos, pos + 3) == "..<") =>
+          if (pos > ini) result = strToToken(str.substring(ini, pos), currentLine) :: result
+          result = strToToken(str.substring(pos, pos + 3), currentLine) :: result
+          ini = pos + 3
+          pos += 3
+        case '.' if pos + 1 < len && str.substring(pos, pos + 2) == ".." =>
+          if (pos > ini) result = strToToken(str.substring(ini, pos), currentLine) :: result
+          result = strToToken(str.substring(pos, pos + 2), currentLine) :: result
+          ini = pos + 2
           pos += 2
+
+        case '#' =>
+          if (pos > ini) result = strToToken(str.substring(ini, pos), currentLine) :: result
+          if (pos + 1 >= len) {
+            pos += 1
+          } else {
+            str(pos + 1) match {
+              case '\"' =>
+                ini = pos
+                pos += 1
+                parseQuoted('\"')
+              case '/' =>
+                ini = pos
+                pos += 1
+                parseQuoted('/')
+              case '{' =>
+                ini = pos
+                pos += 2
+                result = strToToken(str.substring(ini, pos), currentLine) :: result
+                ini = pos
+              case c if isTimeValidChar(c) =>
+                ini = pos
+                pos += 1
+                while (pos < len && isTimeValidChar(str(pos))) {
+                  pos += 1
+                }
+                result = strToToken(str.substring(ini, pos), currentLine) :: result
+                ini = pos
+              case _ =>
+                pos += 1
+            }
+          }
+
+        case c if isBlank(c) =>
+          if (pos > ini)
+            result = strToToken(str.substring(ini, pos), currentLine) :: result
+          while (pos < len && isBlank(str(pos)))
+            pos += 1
+          ini = pos
+
+        case c if isPunct(c) =>
+          if (pos > ini) result = strToToken(str.substring(ini, pos), currentLine) :: result
+          ini = pos
+          pos += 1
           result = strToToken(str.substring(ini, pos), currentLine) :: result
           ini = pos
-        }
-        else {
+
+        case _ =>
           pos += 1
-        }
-      }
-      else if (str(pos) == '\"') {
-        if (pos > ini)
-          result = strToToken(str.substring(ini, pos), currentLine) :: result
-        parseQuoted('\"')
-      }
-      else if (str(pos) == '\'') {
-        if (pos == ini)
-          parseQuoted('\'')
-        else
-          pos += 1
-      }
-      else {
-        pos += 1
       }
     }
     if (ini < len) {
@@ -136,7 +136,7 @@ class Lexer {
     result.reverse
   }
 
-  def strToToken(str: String, currentLine: Int): TOKEN = {
+  private[this] def strToToken(str: String, currentLine: Int): TOKEN = {
     if (parseMultiLineString) {
       currentString ++= str
       if (!str.endsWith("\"")) {
@@ -184,12 +184,9 @@ class Lexer {
         (startColumn, List(INDENT))
       }
       else {
-        indentStack = indentStack.tail
-        var result = List(DEDENT)
-        while (startColumn < indentStack.head && indentStack.head > 0) {
-          indentStack = indentStack.tail
-          result = DEDENT :: result
-        }
+        val n = indentStack.length
+        indentStack = indentStack.dropWhile(p => startColumn < p && p > 0)
+        val result = List.fill(n-indentStack.length)(DEDENT)
         (startColumn, result)
       }
     }
@@ -309,15 +306,16 @@ class Lexer {
   def isOpChar(c: Char): Boolean = opChars contains c
 
   def scanLines(lines: Iterator[(String, Int)]): TokenStream = {
-    var result = lines.flatMap {
+    val tokens = lines.flatMap {
       case (text,line) =>
-      scanLine(text, line)
-    }.toList.reverse
-    if (indentStack.nonEmpty) {
-      while (indentStack.nonEmpty && indentStack.head > 0) {
-        result = DEDENT :: result
-        indentStack = indentStack.tail
-      }
+        scanLine(text, line)
+    }.toList
+    val result = if (indentStack.isEmpty) {
+      tokens
+    } else {
+        val n = indentStack.length
+        indentStack = indentStack.dropWhile(p => p > 0)
+        List.fill(n - indentStack.length)(DEDENT) ++ tokens.reverse
     }
     TokenStream(result.reverse)
   }

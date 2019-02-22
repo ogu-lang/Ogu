@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+### Added
+
+
+### Fixed
+
+- Refactor Lexer
+
 ## [0.2.0] - 2019-2-21
 
 ### Changed
