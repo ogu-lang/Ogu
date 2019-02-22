@@ -1,9 +1,7 @@
 package lexer
 
 import java.io.{File, FileInputStream, InputStream}
-
 import org.joda.time.DateTime
-
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
@@ -44,7 +42,7 @@ class Lexer {
     var ini = 0
     var pos = 0
 
-    def parseQuoted(quot: Char): Unit = {
+    def parseQuoted(quot: Char): String = {
       pos += 1
       while (pos < len && str(pos) != quot) {
         if (str(pos) == '\\')
@@ -53,8 +51,9 @@ class Lexer {
       }
       if (pos < len)
         pos += 1
-      result = strToToken(str.substring(ini, pos), currentLine) :: result
+      val quotedStr = str.substring(ini, pos)
       ini = pos
+      quotedStr
     }
 
     while (pos < len) {
@@ -62,21 +61,22 @@ class Lexer {
         case '\"' =>
           if (pos > ini)
             result = strToToken(str.substring(ini, pos), currentLine) :: result
-          parseQuoted('\"')
+          result = strToToken(parseQuoted('\"'), currentLine) :: result
         case '\'' =>
           if (pos == ini)
-            parseQuoted('\'')
+            result = strToToken(parseQuoted('\''), currentLine) :: result
           else
             pos += 1
 
         case '.' if pos + 2 < len && (str.substring(pos, pos + 3) == "..." || str.substring(pos, pos + 3) == "..<") =>
           if (pos > ini) result = strToToken(str.substring(ini, pos), currentLine) :: result
-          result = strToToken(str.substring(pos, pos + 3), currentLine) :: result
+          result = OPER_MAP(str.substring(pos, pos + 3)).get :: result
           ini = pos + 3
           pos += 3
+
         case '.' if pos + 1 < len && str.substring(pos, pos + 2) == ".." =>
           if (pos > ini) result = strToToken(str.substring(ini, pos), currentLine) :: result
-          result = strToToken(str.substring(pos, pos + 2), currentLine) :: result
+          result = DOTDOT :: result
           ini = pos + 2
           pos += 2
 
@@ -89,15 +89,15 @@ class Lexer {
               case '\"' =>
                 ini = pos
                 pos += 1
-                parseQuoted('\"')
+                result = tryParseHashTag(parseQuoted('\"'), currentLine) :: result
               case '/' =>
                 ini = pos
                 pos += 1
-                parseQuoted('/')
+                result = tryParseHashTag(parseQuoted('/'), currentLine) :: result
               case '{' =>
                 ini = pos
                 pos += 2
-                result = strToToken(str.substring(ini, pos), currentLine) :: result
+                result = tryParseHashTag(str.substring(ini, pos), currentLine) :: result
                 ini = pos
               case c if isTimeValidChar(c) =>
                 ini = pos
@@ -105,7 +105,7 @@ class Lexer {
                 while (pos < len && isTimeValidChar(str(pos))) {
                   pos += 1
                 }
-                result = strToToken(str.substring(ini, pos), currentLine) :: result
+                result = tryParseHashTag(str.substring(ini, pos), currentLine) :: result
                 ini = pos
               case _ =>
                 pos += 1
@@ -123,7 +123,7 @@ class Lexer {
           if (pos > ini) result = strToToken(str.substring(ini, pos), currentLine) :: result
           ini = pos
           pos += 1
-          result = strToToken(str.substring(ini, pos), currentLine) :: result
+          result = tryParseOp(str.substring(ini, pos), currentLine) :: result
           ini = pos
 
         case _ =>
@@ -252,7 +252,6 @@ class Lexer {
     }
   }
 
-
   private[this] def tryParseOp(str: String, currentLine: Int): TOKEN =
     OPER_MAP(str) match {
       case Some(token) =>
@@ -270,7 +269,6 @@ class Lexer {
       case None =>
         LEXER_ERROR(currentLine, str)
     }
-
 
   private[this] def tryParseHashTag(str: String, currentLine: Int): TOKEN =
     str match {
