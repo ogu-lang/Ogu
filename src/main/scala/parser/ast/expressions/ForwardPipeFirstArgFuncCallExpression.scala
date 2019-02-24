@@ -9,7 +9,7 @@ import scala.annotation.tailrec
 case class ForwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends CallExpression
 
 
-object ForwardPipeFirstArgFuncCallExpression {
+object ForwardPipeFirstArgFuncCallExpression extends ExpressionParser {
 
   def parse(tokens: TokenStream): Expression = {
     val expr = parseBackwardPipeExpr(tokens)
