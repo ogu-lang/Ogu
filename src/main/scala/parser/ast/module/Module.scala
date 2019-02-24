@@ -149,7 +149,7 @@ object Module  {
     else if (tokens.peek(ASSIGN)) {
       tokens.consume(ASSIGN)
       val body = if (!tokens.peek(NL)) {
-        parsePipedExpr(tokens)
+        ForwardPipeFuncCallExpression.parse(tokens)
       }
       else {
         tokens.consume(NL)
@@ -191,7 +191,7 @@ object Module  {
       tokens.consume(ASSIGN)
       var expr: Expression = null
       if (!tokens.peek(NL)) {
-        expr = parsePipedExpr(tokens)
+        expr = ForwardPipeFuncCallExpression.parse(tokens)
         tokens.consumeOptionals(NL)
       }
       else {
@@ -205,7 +205,7 @@ object Module  {
       tokens.consume(ASSIGN)
       var expr: Expression = null
       if (!tokens.peek(NL)) {
-        expr = parsePipedExpr(tokens)
+        expr = ForwardPipeFuncCallExpression.parse(tokens)
         tokens.consume(NL)
       }
       else {
@@ -275,7 +275,7 @@ object Module  {
     if (tokens.peek(ASSIGN)) {
       tokens.consume(ASSIGN)
       val body = if (!tokens.peek(NL)) {
-        parsePipedExpr(tokens)
+        ForwardPipeFuncCallExpression.parse(tokens)
       } else {
         tokens.consume(NL)
         parseBlockExpr(tokens)
@@ -327,7 +327,7 @@ object Module  {
       Some(parseLogicalExpr(tokens))
     }
     tokens.consume(ASSIGN)
-    val body = if (tokens.peek(INDENT)) parseBlockExpr(tokens) else parsePipedExpr(tokens)
+    val body = if (tokens.peek(INDENT)) parseBlockExpr(tokens) else ForwardPipeFuncCallExpression.parse(tokens)
     tokens.consume(NL)
     WhereGuard(comp, body)
   }
@@ -424,7 +424,7 @@ object Module  {
   def parseInBodyExpr(tokens:TokenStream): Option[Expression] = {
     tokens.consume(IN)
     if (!tokens.peek(NL)) {
-      Some(parsePipedExpr(tokens))
+      Some(ForwardPipeFuncCallExpression.parse(tokens))
     } else {
       tokens.consume(NL)
       Some(parseBlockExpr(tokens))
@@ -475,18 +475,13 @@ object Module  {
     }
   }
 
-  private def parsePipedOrBodyExpression(tokens:TokenStream): Expression = {
+  def parsePipedOrBodyExpression(tokens:TokenStream): Expression = {
     if (!tokens.peek(NL))
-      parsePipedExpr(tokens)
+      ForwardPipeFuncCallExpression.parse(tokens)
     else {
       tokens.consume(NL)
       parseBlockExpr(tokens)
     }
-  }
-
-  // pipedExpr = expr (PIPE_OPER pipedExpr)*
-  def parsePipedExpr(tokens:TokenStream) : Expression = {
-    ForwardPipeFuncCallExpression.parse(tokens:TokenStream)
   }
 
 
@@ -612,7 +607,7 @@ object Module  {
     if (tokens.peek(classOf[ID]) && tokens.peek(2, ASSIGN)) {
       val id = tokens.consume(classOf[ID])
       tokens.consume(ASSIGN)
-      val expr = parsePipedExpr(tokens)
+      val expr = ForwardPipeFuncCallExpression.parse(tokens)
       RepeatNewVarValue(id.value, expr)
     } else {
       RepeatNewVarValue(genId(), parseExpr(tokens))
@@ -624,46 +619,10 @@ object Module  {
   }
 
   def parseForExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(FOR)
-    val forDecls = parseForDecls(tokens)
-    val forBody = parseForBody(tokens)
-    ForExpression(forDecls, forBody)
+    ForExpression.parse(tokens)
   }
 
-  def parseForDecls(tokens:TokenStream) : List[LoopDeclVariable] = {
-    var listOfDecls = List.empty[LoopDeclVariable]
-    val forVarDecl = parseForVarDecl(tokens)
-    listOfDecls = forVarDecl :: listOfDecls
 
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      val forVarDecl = parseForVarDecl(tokens)
-      listOfDecls = forVarDecl :: listOfDecls
-    }
-    listOfDecls.reverse
-  }
-
-  def parseForVarDecl(tokens:TokenStream) : LoopDeclVariable = {
-    if (!tokens.peek(LPAREN)) {
-      val id = tokens.consume(classOf[ID])
-      tokens.consume(IN)
-      ForVarDeclIn(id.value, parsePipedExpr(tokens))
-    }
-    else {
-      tokens.consume(LPAREN)
-      var ids = List.empty[String]
-      val id = tokens.consume(classOf[ID])
-      ids = id.value :: ids
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        val id = tokens.consume(classOf[ID])
-        ids = id.value :: ids
-      }
-      tokens.consume(RPAREN)
-      tokens.consume(IN)
-      ForVarDeclTupledIn(ids, parsePipedExpr(tokens))
-    }
-  }
 
   def parseWhileExpr(tokens:TokenStream) : Expression = {
     tokens.consume(WHILE)
@@ -703,7 +662,7 @@ object Module  {
 
     tokens.consume(DO)
     if (!tokens.peek(NL)) {
-      LoopExpression(loopDecls, guardExpr, parsePipedExpr(tokens))
+      LoopExpression(loopDecls, guardExpr, ForwardPipeFuncCallExpression.parse(tokens))
     }
     else {
       tokens.consume(NL)
@@ -727,16 +686,12 @@ object Module  {
     val id = tokens.consume(classOf[ID])
     if (tokens.peek(ASSIGN)) {
       tokens.consume(ASSIGN)
-      LoopVarDecl(id.value, parsePipedExpr(tokens))
+      LoopVarDecl(id.value, ForwardPipeFuncCallExpression.parse(tokens))
     } else {
       throw UnexpectedTokenClassException()
     }
   }
 
-  def parseForBody(tokens:TokenStream) : Expression = {
-    tokens.consume(DO)
-    parsePipedOrBodyExpression(tokens)
-  }
 
   def parseBlockExpr(tokens:TokenStream) : Expression = {
     tokens.consume(INDENT)
@@ -744,7 +699,7 @@ object Module  {
     var loop = 0
     while (!tokens.peek(DEDENT)) {
       loop += 1
-      val expr = parsePipedExpr(tokens)
+      val expr = ForwardPipeFuncCallExpression.parse(tokens)
       tokens.consumeOptionals(NL)
       listOfExpressions = expr :: listOfExpressions
     }
@@ -757,7 +712,7 @@ object Module  {
     val comp = parseLogicalExpr(tokens)
     tokens.consume(THEN)
     val thenPart = if (!tokens.peek(NL)) {
-      parsePipedExpr(tokens)
+      ForwardPipeFuncCallExpression.parse(tokens)
     }
     else {
       tokens.consume(NL)
@@ -771,7 +726,7 @@ object Module  {
         val elifComp = parseLogicalExpr(tokens)
         tokens.consume(THEN)
         val elifPart = if (!tokens.peek(NL)) {
-          ElifPart(elifComp, parsePipedExpr(tokens))
+          ElifPart(elifComp, ForwardPipeFuncCallExpression.parse(tokens))
         }
         else {
           while (tokens.peek(NL)) tokens.consume(NL)
@@ -783,7 +738,7 @@ object Module  {
     if (tokens.peek(ELSE)) {
       tokens.consume(ELSE)
       if (!tokens.peek(NL)) {
-        return IfExpression(comp, thenPart, elif.reverse, parsePipedExpr(tokens))
+        return IfExpression(comp, thenPart, elif.reverse, ForwardPipeFuncCallExpression.parse(tokens))
       } else {
         while (tokens.peek(NL)) tokens.consume(NL)
         return IfExpression(comp, thenPart, elif.reverse, parseBlockExpr(tokens))
@@ -797,7 +752,7 @@ object Module  {
     val comp = parseLogicalExpr(tokens)
     tokens.consume(THEN)
     if (!tokens.peek(NL)) {
-      WhenExpression(comp, parsePipedExpr(tokens))
+      WhenExpression(comp, ForwardPipeFuncCallExpression.parse(tokens))
     }
     else {
       tokens.consume(NL)
@@ -811,7 +766,7 @@ object Module  {
     if (!expr.isInstanceOf[AssignableExpression])
       throw CantAssignToExpression()
     tokens.consume(ASSIGN)
-    val right = parsePipedExpr(tokens)
+    val right = ForwardPipeFuncCallExpression.parse(tokens)
     SimpleAssignExpr(expr, right)
   }
 
@@ -994,7 +949,7 @@ object Module  {
     }
     else if (tokens.peek(LAZY)) {
       tokens.consume(LAZY)
-      LazyExpression(parsePipedExpr(tokens))
+      LazyExpression(ForwardPipeFuncCallExpression.parse(tokens))
     }
     else if (tokens.peek(NEW)) {
       parseNewCtorExpression(tokens)
@@ -1052,7 +1007,7 @@ object Module  {
     tokens.consume(RECUR)
     var recurArgs = List.empty[Expression]
     while (!funcCallEndToken(tokens)) {
-      val arg = parsePipedExpr(tokens)
+      val arg = ForwardPipeFuncCallExpression.parse(tokens)
       recurArgs = arg :: recurArgs
     }
     RecurExpr(recurArgs.reverse)
@@ -1108,14 +1063,14 @@ object Module  {
     var expr: Expression = null
     if (tokens.peek(LPAREN)) {
       tokens.consume(LPAREN)
-      expr = parsePipedExpr(tokens)
+      expr = ForwardPipeFuncCallExpression.parse(tokens)
       if (tokens.peek(COMMA)) {
         var tupleElem = expr
         var tupleElements = List.empty[Expression]
         tupleElements = tupleElem :: tupleElements
         while (tokens.peek(COMMA)) {
           tokens.consume(COMMA)
-          tupleElem = parsePipedExpr(tokens)
+          tupleElem = ForwardPipeFuncCallExpression.parse(tokens)
           tupleElements = tupleElem :: tupleElements
         }
         if (tokens.peek(DOTDOTDOT)) {
@@ -1308,16 +1263,16 @@ object Module  {
       }
       tokens.consume(RPAREN)
       tokens.consume(BACK_ARROW)
-      val expr = parsePipedExpr(tokens)
+      val expr = ForwardPipeFuncCallExpression.parse(tokens)
       ListGuardDeclTupled(listOfIds.reverse, expr)
     }
     else if (tokens.peek(classOf[ID]) && tokens.peek(2, BACK_ARROW)) {
       val id = tokens.consume(classOf[ID])
       tokens.consume(BACK_ARROW)
-      val expr = parsePipedExpr(tokens)
+      val expr = ForwardPipeFuncCallExpression.parse(tokens)
       ListGuardDecl(id.value, expr)
     } else {
-      ListGuardExpr(parsePipedExpr(tokens))
+      ListGuardExpr(ForwardPipeFuncCallExpression.parse(tokens))
     }
   }
 

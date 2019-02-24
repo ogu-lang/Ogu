@@ -128,7 +128,6 @@ case class Atom(value: String) extends Expression
 case class BlockExpression(expressions: List[Expression]) extends Expression
 
 class ControlExpression extends Expression
-case class ForExpression(variables: List[LoopDeclVariable], body: Expression) extends ControlExpression
 case class LoopExpression(variables: List[LoopVarDecl], guard: Option[LoopGuard], body: Expression) extends ControlExpression
 case class WhileExpression(comp: Expression, body: Expression) extends ControlExpression
 case class UntilExpression(comp: Expression, body: Expression) extends ControlExpression
