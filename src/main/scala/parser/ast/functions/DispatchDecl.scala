@@ -20,8 +20,7 @@ object DispatchDecl {
       tokens.consume(CLASS)
       DispatchDecl(id, ClassDispatcher)
     } else {
-      val expr = Module.parsePipedExpr(tokens)
-      DispatchDecl(id, ExpressionDispatcher(expr))
+      DispatchDecl(id, ExpressionDispatcher(Module.parsePipedExpr(tokens)))
     }
   }
 }

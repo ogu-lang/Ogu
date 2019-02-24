@@ -1,8 +1,8 @@
 package parser.ast.types
 
 import lexer._
-import parser.ast.module.Module
-import parser.{ClassMethodDecl, LangNode}
+import parser.ast.functions.ClassMethodDecl
+import parser.LangNode
 
 import scala.annotation.tailrec
 
@@ -30,21 +30,12 @@ object TraitDef {
       val traitName = tokens.consume(classOf[TID]).value
       tokens.consumeOptionals(NL)
       tokens.consume(INDENT)
-      val traitMethods = consumeClassMethodDecls(tokens, List.empty)
+      val traitMethods = ClassMethodDecl.consumeClassMethodDecls(tokens, List.empty)
       tokens.consume(DEDENT)
       consumeTraitDefs(tokens, TraitDef(traitName, traitMethods) :: traits)
     }
   }
 
-  @tailrec
-  private def consumeClassMethodDecls(tokens: TokenStream, methods: List[ClassMethodDecl]) : List[ClassMethodDecl] = {
-    if (!tokens.peek(DEF)) {
-      methods.reverse
-    } else {
-      val defDecl = Module.parseDef(false, tokens)
-      tokens.consumeOptionals(NL)
-      consumeClassMethodDecls(tokens, ClassMethodDecl(defDecl) :: methods)
-    }
-  }
+
 
 }

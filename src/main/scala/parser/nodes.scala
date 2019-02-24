@@ -2,18 +2,17 @@ package parser
 
 import lexer.TokenStream
 import org.joda.time.DateTime
+import parser.ast.functions.ClassMethodDecl
 
 trait LangNode
 
 case class TraitMethodDecl(name: String, args: List[String])
 case class TraitDecl(inner: Boolean, name: String, decls: List[TraitMethodDecl]) extends LangNode
 
-case class ClassMethodDecl(definition: DefDecl)
 
 
 case class RecordDecl(name: String, args: List[String]) extends LangNode
 
-case class ExtendsDecl(cls: String, traitClass: String, decls: Option[List[ClassMethodDecl]]) extends LangNode
 
 
 trait AssignableExpression
@@ -64,8 +63,6 @@ case class WhereBlock(whereDefs: List[WhereDef]) extends LangNode
 
 case class DefArg(expression: Expression)
 object DefOtherwiseArg extends DefArg(null)
-
-
 
 
 class DefDecl(id: String) extends LangNode
