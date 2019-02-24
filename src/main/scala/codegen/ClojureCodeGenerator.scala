@@ -260,7 +260,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case UntilGuardExpr(comp) =>
         strBuf ++= s"when-not ${toClojure(comp)}"
 
-      case RepeatExpr(Some(newValues)) =>
+      case RepeatExpresion(Some(newValues)) =>
         strBuf ++= s"(let [${newValues.map(toClojureNewVarValue).mkString(" ")}]"
         strBuf ++= s"(recur ${newValues.map(nv => nv.variable).mkString(" ")}))"
 

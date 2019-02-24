@@ -16,7 +16,7 @@ object ControlExpressionParser extends ExpressionParser {
           case LOOP => LoopExpression.parse(tokens)
           case RECUR => RecurExpression.parse(tokens)
           case REIFY => ReifyExpression.parse(tokens)
-          case REPEAT => parseRepeatExpr(tokens)
+          case REPEAT => RepeatExpresion.parse(tokens)
           case SET => parseAssignExpr(tokens)
           case THROW => parseThrowExpr(tokens)
           case TRY => parseTryExpr(tokens)

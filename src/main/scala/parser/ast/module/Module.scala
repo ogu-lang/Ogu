@@ -476,12 +476,6 @@ object Module  {
   }
 
 
-  // funcCallExpr ::= control_expr | lambda_expr
-  def parseExpr(tokens:TokenStream) : Expression = {
-    ParseExpr.parse(tokens)
-  }
-
-
   def parseThrowExpr(tokens:TokenStream) : Expression = {
     tokens.consume(THROW)
     val ctor = parseConstructorExpr(tokens)
@@ -543,35 +537,10 @@ object Module  {
 
 
   def parseRepeatExpr(tokens:TokenStream): Expression = {
-    tokens.consume(REPEAT)
-    if (tokens.peek(WITH))
-      tokens.consume(WITH)
-    var repeatVariables = List.empty[RepeatNewVarValue]
-    var repVar = parseRepeatNewValue(tokens)
-    repeatVariables = repVar :: repeatVariables
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      repVar = parseRepeatNewValue(tokens)
-      repeatVariables = repVar :: repeatVariables
-    }
-    tokens.consumeOptionals(NL)
-    RepeatExpr(Some(repeatVariables.reverse))
+    RepeatExpresion.parse(tokens)
+
   }
 
-  def parseRepeatNewValue(tokens:TokenStream) : RepeatNewVarValue = {
-    if (tokens.peek(classOf[ID]) && tokens.peek(2, ASSIGN)) {
-      val id = tokens.consume(classOf[ID])
-      tokens.consume(ASSIGN)
-      val expr = ForwardPipeFuncCallExpression.parse(tokens)
-      RepeatNewVarValue(id.value, expr)
-    } else {
-      RepeatNewVarValue(genId(), parseExpr(tokens))
-    }
-  }
-
-  def genId() : String = {
-    s"id_${java.util.UUID.randomUUID.toString}"
-  }
 
 
   def parseWhileExpr(tokens:TokenStream) : Expression = {
@@ -631,7 +600,7 @@ object Module  {
         throw InvalidLambdaExpression(tokens.nextToken())
       }
       tokens.consume(ARROW)
-      val expr = LambdaExpression(args.reverse, parseExpr(tokens))
+      val expr = LambdaExpression(args.reverse, ParseExpr.parse(tokens))
       expr
     }
   }
@@ -817,12 +786,12 @@ object Module  {
   }
 
   def parseListOfExpressions(tokens:TokenStream) : List[Expression] = {
-    val expr = parseExpr(tokens)
+    val expr = ParseExpr.parse(tokens)
     var exprs = List(expr)
     while (tokens.peek(COMMA)) {
       tokens.consume(COMMA)
       tokens.consumeOptionals(NL)
-      val expr = parseExpr(tokens)
+      val expr = ParseExpr.parse(tokens)
       exprs = expr :: exprs
     }
     exprs.reverse
@@ -1094,12 +1063,12 @@ object Module  {
   def parseSetExpr(tokens:TokenStream): Expression = {
     tokens.consume(HASHLCURLY)
     var listOfValues = List.empty[Expression]
-    val value = parseExpr(tokens)
+    val value = ParseExpr.parse(tokens)
     listOfValues = value :: listOfValues
     while (tokens.peek(COMMA)) {
       tokens.consume(COMMA)
       tokens.consumeOptionals(NL)
-      val value = parseExpr(tokens)
+      val value = ParseExpr.parse(tokens)
       listOfValues = value :: listOfValues
     }
     tokens.consume(RCURLY)
@@ -1110,13 +1079,13 @@ object Module  {
     tokens.consume(LCURLY)
     var listOfPairs = List.empty[(Expression, Expression)]
     val key = parseKeyExpr(tokens)
-    val value = parseExpr(tokens)
+    val value = ParseExpr.parse(tokens)
     listOfPairs = (key, value) :: listOfPairs
     while (tokens.peek(COMMA)) {
       tokens.consume(COMMA)
       tokens.consumeOptionals(NL)
       val key = parseKeyExpr(tokens)
-      val value = parseExpr(tokens)
+      val value = ParseExpr.parse(tokens)
       listOfPairs = (key, value) :: listOfPairs
     }
     tokens.consume(RCURLY)

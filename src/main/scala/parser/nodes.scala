@@ -124,7 +124,7 @@ case class WhenExpression(comp: Expression, body: Expression) extends ControlExp
 
 case class RepeatNewVarValue(variable: String, value: Expression)
 
-case class RepeatExpr(newVariableValues: Option[List[RepeatNewVarValue]]) extends ControlExpression
+
 
 
 
