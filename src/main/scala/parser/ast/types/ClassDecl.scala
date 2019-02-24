@@ -1,8 +1,7 @@
 package parser.ast.types
 
 import lexer._
-import parser.ast.module.Module
-import parser.{ClassMethodDecl, LangNode}
+import parser.LangNode
 import parser.ast.module.Module.{parseDef, parseListOfIds}
 
 case class ClassDecl(inner: Boolean, name: String, args: Option[List[String]], traits: List[TraitDef]) extends LangNode
@@ -19,8 +18,6 @@ object ClassDecl {
       Some(args)
     }
     tokens.consume(NL)
-    var traits = TraitDef.parse(tokens)
-
-    ClassDecl(inner, name, argsOpt, traits)
+    ClassDecl(inner, name, argsOpt, TraitDef.parse(tokens))
   }
 }

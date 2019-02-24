@@ -2,8 +2,9 @@ package parser.ast.module
 
 import lexer._
 
+import scala.annotation.tailrec
+
 trait ImportClause
-case class ImportAlias(name:String, alias:Option[String])
 case class FromCljRequire(from: String, names: List[ImportAlias]) extends ImportClause
 case class FromJvmRequire(from: String, names: List[ImportAlias]) extends ImportClause
 case class CljImport(name:List[ImportAlias]) extends ImportClause
@@ -13,81 +14,59 @@ object ImportClause {
 
   def parse(tokens: TokenStream): Option[List[ImportClause]] = {
     tokens.consumeOptionals(NL)
-    var listOfImports = List.empty[ImportClause]
-    while (tokens.peek(IMPORT) || tokens.peek(FROM)) {
-      if (tokens.peek(IMPORT)) {
-        listOfImports = parseImport(tokens) :: listOfImports
-      }
-      else if (tokens.peek(FROM)) {
-        listOfImports = parseFromImport(tokens) :: listOfImports
-      }
-      tokens.consumeOptionals(NL)
-    }
+    var listOfImports = consumeListOfImportClauses(tokens, List.empty)
     if (listOfImports.isEmpty) {
       None
     }
     else {
-      Some(listOfImports.reverse)
+      Some(listOfImports)
     }
   }
 
-  def parseImport(tokens:TokenStream): ImportClause = {
-    tokens.consume(IMPORT)
-    if (parseTag(tokens) == ":jvm") {
-      JvmImport(parseListOfAlias(tokens))
+  @tailrec
+  private def consumeListOfImportClauses(tokens: TokenStream, list: List[ImportClause]) : List[ImportClause] = {
+    if (!tokens.peek(IMPORT) && !tokens.peek(FROM)) {
+      list.reverse
     }
     else {
-      CljImport(parseListOfAlias(tokens))
+      val clause = if (tokens.peek(IMPORT)) parseImportClause(tokens) else parseFromImportClause(tokens)
+      tokens.consumeOptionals(NL)
+      consumeListOfImportClauses(tokens, clause :: list)
     }
   }
 
-  def parseFromImport(tokens:TokenStream): ImportClause = {
+  private def parseImportClause(tokens:TokenStream): ImportClause = {
+    tokens.consume(IMPORT)
+    if (parseTag(tokens) == ":jvm") {
+      JvmImport(ImportAlias.parseListOfAlias(tokens))
+    }
+    else {
+      CljImport(ImportAlias.parseListOfAlias(tokens))
+    }
+  }
+
+  private def parseFromImportClause(tokens:TokenStream): ImportClause = {
     tokens.consume(FROM)
     val tag = parseTag(tokens)
     val name = tokens.consume(classOf[ID]).value
     tokens.consume(IMPORT)
     if (tag == ":jvm") {
-      FromJvmRequire(name, parseListOfAlias(tokens))
+      FromJvmRequire(name, ImportAlias.parseListOfAlias(tokens))
     }
     else {
-      FromCljRequire(name, parseListOfAlias(tokens))
+      FromCljRequire(name, ImportAlias.parseListOfAlias(tokens))
     }
   }
 
   def parseTag(tokens:TokenStream): String = {
-    if (tokens.peek(LBRACKET)) {
+    if (!tokens.peek(LBRACKET)) {
+      ""
+    } else {
       tokens.consume(LBRACKET)
       val tag = tokens.consume(classOf[ATOM]).value
       tokens.consume(RBRACKET)
       tag
-    } else {
-      ""
     }
   }
-
-  def parseListOfAlias(tokens:TokenStream) : List[ImportAlias] = {
-    var listOfAlias = List.empty[ImportAlias]
-    val impAlias = parseImportAlias(tokens)
-    listOfAlias = impAlias :: listOfAlias
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      val impAlias = parseImportAlias(tokens)
-      listOfAlias = impAlias :: listOfAlias
-    }
-    listOfAlias.reverse
-  }
-
-  def parseImportAlias(tokens:TokenStream): ImportAlias = {
-    val id = if (tokens.peek(classOf[TID])) tokens.consume(classOf[TID]).value else tokens.consume(classOf[ID]).value
-    val alias = if (!tokens.peek(AS)) {
-      None
-    } else {
-      tokens.consume(AS)
-      Some(tokens.consume(classOf[ID]).value)
-    }
-    ImportAlias(id, alias)
-  }
-
 
 }
