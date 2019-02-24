@@ -1,8 +1,9 @@
 package parser
 
+import lexer.TokenStream
 import org.joda.time.DateTime
 
-sealed trait LangNode
+trait LangNode
 
 sealed trait ImportClause
 case class ImportAlias(name:String, alias:Option[String])
@@ -11,7 +12,6 @@ case class FromJvmRequire(from: String, names: List[ImportAlias]) extends Import
 case class CljImport(name:List[ImportAlias]) extends ImportClause
 case class JvmImport(name:List[ImportAlias]) extends ImportClause
 
-case class Module(name: String, imports: Option[List[ImportClause]],decls: List[LangNode]) extends LangNode
 
 case class TraitMethodDecl(name: String, args: List[String])
 case class TraitDecl(inner: Boolean, name: String, decls: List[TraitMethodDecl]) extends LangNode
