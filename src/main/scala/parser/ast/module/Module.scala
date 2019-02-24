@@ -51,10 +51,10 @@ object Module  {
         result = ExtendsDecl.parse(inner, tokens) :: result
       }
       else if (tokens.peek(RECORD)) {
-        result = parseRecord(inner, tokens) :: result
+        result = RecordDecl.parse(inner, tokens) :: result
       }
       else if (tokens.peek(TRAIT)) {
-        result = parseTrait(inner, tokens) :: result
+        result = TraitDecl.parse(inner, tokens) :: result
       }
       else {
         result = TopLevelExpression(parsePipedExpr(tokens)) :: result
@@ -65,14 +65,7 @@ object Module  {
     filter(result.reverse)
   }
 
-  def parseRecord(inner: Boolean, tokens:TokenStream): LangNode = {
-    tokens.consume(RECORD)
-    val name = tokens.consume(classOf[TID]).value
-    tokens.consume(LCURLY)
-    var args = parseListOfIds(tokens)
-    tokens.consume(RCURLY)
-    RecordDecl(name, args)
-  }
+
 
   def parseListOfIds(tokens:TokenStream): List[String] = {
     val arg = tokens.consume(classOf[ID]).value
@@ -85,34 +78,6 @@ object Module  {
     args.reverse
   }
 
-  def parseTrait(inner: Boolean, tokens:TokenStream): LangNode = {
-    tokens.consume(TRAIT)
-    val id = tokens.consume(classOf[TID]).value
-    tokens.consumeOptionals(NL)
-    var decls = List.empty[TraitMethodDecl]
-    if (tokens.peek(INDENT)) {
-      tokens.consume(INDENT)
-      while (tokens.peek(DEF)) {
-        val decl = parseTraitMethodDecl(tokens)
-        tokens.consumeOptionals(NL)
-        decls = decl :: decls
-      }
-      tokens.consume(DEDENT)
-    }
-    TraitDecl(inner, id, decls)
-  }
-
-  def parseTraitMethodDecl(tokens:TokenStream): TraitMethodDecl = {
-    tokens.consume(DEF)
-    val id = tokens.consume(classOf[ID]).value
-    var args = List.empty[String]
-    while (tokens.peek(classOf[ID])) {
-      val arg = tokens.consume(classOf[ID]).value
-      args = arg :: args
-    }
-    tokens.consume(NL)
-    TraitMethodDecl(id, args.reverse)
-  }
 
   val defs = mutable.HashMap.empty[String, MultiDefDecl]
 

@@ -1,7 +1,6 @@
 package parser.ast.types
 
 import lexer._
-import parser.ast.module.Module
 import parser.LangNode
 import parser.ast.functions.ClassMethodDecl
 

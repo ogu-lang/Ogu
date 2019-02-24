@@ -6,12 +6,9 @@ import parser.ast.functions.ClassMethodDecl
 
 trait LangNode
 
-case class TraitMethodDecl(name: String, args: List[String])
-case class TraitDecl(inner: Boolean, name: String, decls: List[TraitMethodDecl]) extends LangNode
 
 
 
-case class RecordDecl(name: String, args: List[String]) extends LangNode
 
 
 
