@@ -10,10 +10,6 @@ trait AssignableExpression
 
 trait Expression extends LangNode
 
-case class ReifyExpression(traitName: String, methods: List[ClassMethodDecl]) extends Expression
-
-
-
 class Name(name: String) extends Expression
 trait LambdaArg
 case class LambdaSimpleArg(name: String) extends Name(name) with LambdaArg

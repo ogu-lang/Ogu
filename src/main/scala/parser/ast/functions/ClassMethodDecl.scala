@@ -10,6 +10,10 @@ case class ClassMethodDecl(definition: DefDecl)
 
 object ClassMethodDecl {
 
+  def parseMethodDecls(tokens: TokenStream): List[ClassMethodDecl] = {
+    consumeClassMethodDecls(tokens, Nil)
+  }
+
   @tailrec
   def consumeClassMethodDecls(tokens: TokenStream, methods: List[ClassMethodDecl]) : List[ClassMethodDecl] = {
     if (!tokens.peek(DEF)) {

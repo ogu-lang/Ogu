@@ -482,21 +482,6 @@ object Module  {
   }
 
 
-  def parseReifyExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(REIFY)
-    val name = tokens.consume(classOf[TID]).value
-    tokens.consume(NL)
-    tokens.consume(INDENT)
-    var methods = List.empty[ClassMethodDecl]
-    while (tokens.peek(DEF)) {
-      val defDecl = parseDef(false, tokens)
-      methods = ClassMethodDecl(defDecl) :: methods
-      tokens.consumeOptionals(NL)
-    }
-    tokens.consume(DEDENT)
-    ReifyExpression(name, methods.reverse)
-  }
-
   def parseThrowExpr(tokens:TokenStream) : Expression = {
     tokens.consume(THROW)
     val ctor = parseConstructorExpr(tokens)
