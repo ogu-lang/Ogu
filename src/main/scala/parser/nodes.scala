@@ -118,9 +118,6 @@ case class FStringLiteral(value: String) extends LiteralExpression
 
 trait CallExpression extends Expression
 case class FunctionCallExpression(func: Expression, args:List[Expression]) extends CallExpression
-case class FunctionCallWithDollarExpression(func: Expression, args: List[Expression]) extends CallExpression
-case class BackwardPipeFuncCallExpression(args: List[Expression]) extends CallExpression
-case class BackwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends CallExpression
 case class NewCallExpression(cls: String, args: List[Expression]) extends CallExpression
 case class ConstructorExpression(isRecord: Boolean, cls: String, args: List[Expression]) extends CallExpression
 case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Expression
@@ -146,7 +143,6 @@ case class ElifPart(comp: Expression, body: Expression)
 case class IfExpression(comp: Expression, thenPart: Expression, elifPart: List[ElifPart], elsePart: Expression) extends ControlExpression
 
 case class CondGuard(comp: Option[Expression], value: Expression)
-case class CondExpression(guards: List[CondGuard]) extends ControlExpression
 
 case class LazyExpression(expr: Expression) extends Expression
 

@@ -1,11 +1,11 @@
 package parser.ast.expressions
 
-import lexer.TokenStream
+import lexer.{TOKEN, TokenStream}
 import parser.Expression
 
 import scala.annotation.tailrec
 
-abstract class LeftAssociativeExpressionParser(nextLevel: ExpressionParser) extends ExpressionParser {
+abstract class LeftAssociativeExpressionParser(nextLevel: ExpressionParser, oper: TOKEN) extends ExpressionParser {
 
   def parse(tokens: TokenStream): Expression = {
     val expr = nextLevel.parse(tokens)
@@ -19,9 +19,9 @@ abstract class LeftAssociativeExpressionParser(nextLevel: ExpressionParser) exte
 
   def build(args: List[Expression]): Expression
 
-  def hasOper(tokens: TokenStream): Boolean
+  def hasOper(tokens: TokenStream): Boolean = tokens.peek(oper)
 
-  def consumeOper(tokens: TokenStream): Unit
+  def consumeOper(tokens: TokenStream): Unit = tokens.consume(oper)
 
   @tailrec
   private[this] def consumeArgs(tokens: TokenStream, nextLevel: ExpressionParser, args: List[Expression]): List[Expression] = {

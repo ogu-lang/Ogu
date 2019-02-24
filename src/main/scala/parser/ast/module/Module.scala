@@ -2,7 +2,7 @@ package parser.ast.module
 
 import lexer._
 import parser._
-import parser.ast.expressions.{ForwardPipeFirstArgFuncCallExpression, ForwardPipeFuncCallExpression, TopLevelExpression}
+import parser.ast.expressions._
 import parser.ast.functions._
 import parser.ast.types._
 
@@ -495,112 +495,26 @@ object Module  {
   }
 
   def parseBackwardPipeExpr(tokens:TokenStream) : Expression = {
-    var expr = parseBackwardFirstArgPipeExpr(tokens)
-    if (tokens.peek(PIPE_LEFT)) {
-      var value = expr
-      var args = List.empty[Expression]
-      while (tokens.peek(PIPE_LEFT)) {
-        args = value :: args
-        tokens.consume(PIPE_LEFT)
-        value = parseBackwardFirstArgPipeExpr(tokens)
-      }
-      args = value :: args
-      expr = BackwardPipeFuncCallExpression(args)
-    }
-    expr
+    BackwardPipeFuncCallExpression.parse(tokens)
   }
 
   def parseBackwardFirstArgPipeExpr(tokens:TokenStream) : Expression = {
-    var expr = parseDollarExpr(tokens)
-    if (tokens.peek(PIPE_LEFT_FIRST_ARG)) {
-      var value = expr
-      var args = List.empty[Expression]
-      while (tokens.peek(PIPE_LEFT_FIRST_ARG)) {
-        args = value :: args
-        tokens.consume(PIPE_LEFT_FIRST_ARG)
-        value = parseDollarExpr(tokens)
-      }
-      args = value :: args
-      expr = BackwardPipeFirstArgFuncCallExpression(args)
-    }
-    expr
+    BackwardPipeFirstArgFuncCallExpression.parse(tokens)
   }
 
   def parseDollarExpr(tokens:TokenStream) : Expression = {
-    var expr = parseExpr(tokens)
-    if (tokens.peek(DOLLAR)) {
-      val func = expr
-      tokens.consume(DOLLAR)
-      var args = List.empty[Expression]
-      while (!funcCallEndToken(tokens)) {
-        expr = parseDollarExpr(tokens)
-        args = expr :: args
-      }
-      expr = FunctionCallWithDollarExpression(func, args.reverse)
-    }
-    expr
+    FunctionCallWithDollarExpression.parse(tokens)
+
   }
 
 
   // funcCallExpr ::= control_expr | lambda_expr
   def parseExpr(tokens:TokenStream) : Expression = {
-    // if control
-    if (tokens.peek(classOf[CONTROL]))
-      parseControlExpr(tokens)
-    else if (tokens.peek(LET))
-      parseLetExpr(tokens)
-    else if (tokens.peek(VAR))
-      parseVarExpr(tokens)
-    else if (tokens.peek(BIND))
-      parseBindExpr(tokens)
-    else
-      parseLambdaExpr(tokens)
+    ParseExpr.parse(tokens)
   }
 
   def parseControlExpr(tokens:TokenStream) : Expression = {
-    if (tokens.peek(COND)) {
-      parseCondExpr(tokens)
-    }
-    else if (tokens.peek(FOR)) {
-      parseForExpr(tokens)
-    }
-    else if (tokens.peek(IF)) {
-      parseIfExpr(tokens)
-    }
-    else if (tokens.peek(WHEN)) {
-      parseWhenExpr(tokens)
-    }
-    else if (tokens.peek(LOOP)) {
-      parseLoopExpr(tokens)
-    }
-    else if (tokens.peek(UNTIL)) {
-      parseWhileExpr(tokens)
-    }
-    else if (tokens.peek(WHILE)) {
-      parseWhileExpr(tokens)
-    }
-    else if (tokens.peek(RECUR)) {
-      parseRecurExpr(tokens)
-    }
-    else if (tokens.peek(REIFY)) {
-      parseReifyExpr(tokens)
-    }
-    else if (tokens.peek(REPEAT)) {
-      parseRepeatExpr(tokens)
-    }
-    else if (tokens.peek(SET)) {
-      parseAssignExpr(tokens)
-    }
-    else if (tokens.peek(TRY)) {
-      parseTryExpr(tokens)
-    }
-    else if (tokens.peek(THROW)) {
-      parseThrowExpr(tokens)
-    }
-    else {
-      println(s"ERROR PARSE CONTROL tokens= $tokens")
-      throw InvalidNodeException(tokens.nextToken())
-    }
+    ControlExpressionParser.parse(tokens)
   }
 
   def parseReifyExpr(tokens:TokenStream) : Expression = {
@@ -677,26 +591,6 @@ object Module  {
     parsePipedOrBodyExpression(tokens)
   }
 
-  def parseCondExpr(tokens:TokenStream): Expression = {
-    tokens.consume(COND)
-    tokens.consume(NL)
-    tokens.consume(INDENT)
-    var guards = List.empty[CondGuard]
-    while (!tokens.peek(DEDENT)) {
-      val comp = if (tokens.peek(OTHERWISE)) {
-        tokens.consume(OTHERWISE)
-        None
-      } else {
-        Some(parseLogicalExpr(tokens))
-      }
-      tokens.consume(ARROW)
-      val value = parsePipedExpr(tokens)
-      tokens.consumeOptionals(NL)
-      guards = CondGuard(comp, value) :: guards
-    }
-    tokens.consume(DEDENT)
-    CondExpression(guards.reverse)
-  }
 
   def parseRepeatExpr(tokens:TokenStream): Expression = {
     tokens.consume(REPEAT)
