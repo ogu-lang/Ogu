@@ -280,7 +280,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           strBuf ++= s"(if ${toClojure(comp)}\n   ${toClojure(thenPart)}\n    ${toClojure(elsePart)})"
         }
 
-      case RecurExpr(args) =>
+      case RecurExpression(args) =>
         strBuf ++= s"(recur ${args.map(toClojure).mkString(" ")})"
 
       case ConstructorExpression(false, cls, args) =>

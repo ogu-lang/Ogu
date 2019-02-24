@@ -843,17 +843,6 @@ object Module  {
     exprs.reverse
   }
 
-
-  def parseRecurExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(RECUR)
-    var recurArgs = List.empty[Expression]
-    while (!funcCallEndToken(tokens)) {
-      val arg = ForwardPipeFuncCallExpression.parse(tokens)
-      recurArgs = arg :: recurArgs
-    }
-    RecurExpr(recurArgs.reverse)
-  }
-
   def parseFuncCallExpr(tokens:TokenStream) : Expression = {
     var expr : Expression = null
     //println(s"@@parseFunCallExpr (tokens=${tokens})")

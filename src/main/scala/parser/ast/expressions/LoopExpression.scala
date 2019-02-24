@@ -3,6 +3,8 @@ package parser.ast.expressions
 import lexer._
 import parser._
 
+import scala.annotation.tailrec
+
 case class LoopExpression(variables: List[LoopVarDecl], guard: Option[LoopGuard], body: Expression)
   extends ControlExpression
 
@@ -33,6 +35,7 @@ object LoopExpression extends ExpressionParser {
     consumeLoopVars(tokens, List(parseLoopVarDecl(tokens)))
   }
 
+  @tailrec
   private[this] def consumeLoopVars(tokens: TokenStream, vars: List[LoopVarDecl]): List[LoopVarDecl] = {
     if (!tokens.peek(COMMA)) {
       vars.reverse
