@@ -475,65 +475,6 @@ object Module  {
     }
   }
 
-  def parseTryExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(TRY)
-    val body = parsePipedOrBodyExpression(tokens)
-    tokens.consumeOptionals(NL)
-    var catches = List.empty[CatchExpression]
-    var indents = 0
-    if (tokens.peek(INDENT)) {
-      tokens.consume(INDENT)
-      indents += 1
-    }
-    while (tokens.peek(CATCH)) {
-      val catchExpr = parseCatchExpr(tokens)
-      catches = catchExpr :: catches
-      tokens.consumeOptionals(NL)
-      if (tokens.peek(INDENT)) {
-        tokens.consume(INDENT)
-        indents += 1
-      }
-    }
-    val finallyExpr = if (tokens.peek(FINALLY)) {
-      Some(parseFinallyExpr(tokens))
-    } else {
-      None
-    }
-    while (indents > 0) {
-      tokens.consume(DEDENT)
-      indents -= 1
-    }
-    TryExpression(body, catches.reverse, finallyExpr)
-  }
-
-  def parseCatchExpr(tokens:TokenStream): CatchExpression = {
-    tokens.consume(CATCH)
-    if (tokens.peek(classOf[ID])) {
-      val id = tokens.consume(classOf[ID]).value
-      tokens.consume(COLON)
-      val ex = tokens.consume(classOf[TID]).value
-      tokens.consume(ARROW)
-      CatchExpression(Some(id), ex, parsePipedOrBodyExpression(tokens))
-    } else {
-      val ex = tokens.consume(classOf[TID]).value
-      tokens.consume(ARROW)
-      CatchExpression(None, ex, parsePipedOrBodyExpression(tokens))
-    }
-  }
-
-  def parseFinallyExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(FINALLY)
-    tokens.consume(ARROW)
-    parsePipedOrBodyExpression(tokens)
-  }
-
-
-  def parseRepeatExpr(tokens:TokenStream): Expression = {
-    RepeatExpresion.parse(tokens)
-
-  }
-
-
 
   def parseWhileExpr(tokens:TokenStream) : Expression = {
     tokens.consume(WHILE)
