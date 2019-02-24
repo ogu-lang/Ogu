@@ -21,6 +21,7 @@ object ADT {
     ADT(id, args)
   }
 
+  @tailrec
   private def consumeListOfIds(tokens: TokenStream, ids: List[String]) : List[String] = {
     if (!tokens.peek(COMMA)) {
       ids.reverse

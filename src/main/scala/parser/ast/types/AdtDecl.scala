@@ -2,6 +2,7 @@ package parser.ast.types
 
 import lexer._
 import parser.LangNode
+import scala.annotation.tailrec
 
 case class AdtDecl(name: String, defs: List[ADT]) extends LangNode
 
@@ -11,34 +12,32 @@ object AdtDecl {
     tokens.consume(DATA)
     val id = tokens.consume(classOf[TID]).value
     tokens.consume(ASSIGN)
-    var indents = 0
-    if (tokens.peek(NL)) {
+    val initialIndents = if (!tokens.peek(NL)) { 0 } else {
       tokens.consumeOptionals(NL)
       tokens.consume(INDENT)
-      indents += 1
+      1
     }
-    var adts = List.empty[ADT]
-    val adt = ADT.parse(tokens)
-    adts = adt :: adts
-    while (tokens.peek(GUARD)) {
-      tokens.consume(GUARD)
-      tokens.consumeOptionals(NL)
-      if (tokens.peek(INDENT)) {
-        tokens.consume(INDENT)
-        indents += 1
-      }
-      val adt = ADT.parse(tokens)
-      adts = adt :: adts
-    }
-    while (indents > 0) {
-      tokens.consume(DEDENT)
-      indents -= 1
-    }
-    AdtDecl(id, adts.reverse)
+    val (adts, indents) = consumeADTs(tokens, initialIndents, List(ADT.parse(tokens)))
+    tokens.consume(indents, DEDENT)
+    AdtDecl(id, adts)
   }
 
-  private def consumeADTs(tokens: TokenStream, adts: List[ADT]) : List[ADT] = {
-    ???
+  @tailrec
+  private def consumeADTs(tokens: TokenStream, indents: Int, adts: List[ADT]) : (List[ADT], Int) = {
+    if (!tokens.peek(GUARD)) {
+      (adts.reverse, indents)
+    }
+    else {
+      tokens.consume(GUARD)
+      tokens.consumeOptionals(NL)
+      if (!tokens.peek(INDENT)) {
+        consumeADTs(tokens, indents, ADT.parse(tokens) :: adts)
+      } else {
+        tokens.consume(INDENT)
+        consumeADTs(tokens, indents+1, ADT.parse(tokens) :: adts)
+      }
+    }
   }
+
 
 }
