@@ -1,9 +1,11 @@
 package parser.ast.expressions
 import lexer._
-import parser.ast.module.Module._
 import parser.{Expression, InvalidExpression, InvalidNodeException}
 
-object ControlExpressionParser extends ExpressionParser {
+class ControlExpression extends Expression
+
+
+object ControlExpression extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
     tokens.nextToken() match {
@@ -20,9 +22,9 @@ object ControlExpressionParser extends ExpressionParser {
           case SET => SimpleAssignExpression.parse(tokens)
           case THROW => ThrowExpression.parse(tokens)
           case TRY => TryExpression.parse(tokens)
-          case UNTIL => parseWhileExpr(tokens)
-          case WHEN => parseWhenExpr(tokens)
-          case WHILE => parseWhileExpr(tokens)
+          case UNTIL => UntilExpression.parse(tokens)
+          case WHEN => WhenExpression.parse(tokens)
+          case WHILE => WhileExpression.parse(tokens)
           case _ => throw InvalidNodeException(tokens.nextToken())
         }
     }

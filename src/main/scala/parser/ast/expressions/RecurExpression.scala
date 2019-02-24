@@ -1,11 +1,12 @@
 package parser.ast.expressions
 
 import lexer.{RECUR, TokenStream}
-import parser.{ControlExpression, Expression}
+import parser.Expression
 
 import scala.annotation.tailrec
 
 case class RecurExpression(args: List[Expression]) extends ControlExpression
+
 
 object RecurExpression extends ExpressionParser {
 

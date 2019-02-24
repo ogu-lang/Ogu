@@ -116,13 +116,7 @@ case class Atom(value: String) extends Expression
 
 
 
-class ControlExpression extends Expression
 
-case class WhileExpression(comp: Expression, body: Expression) extends ControlExpression
-case class UntilExpression(comp: Expression, body: Expression) extends ControlExpression
-case class WhenExpression(comp: Expression, body: Expression) extends ControlExpression
-
-case class RepeatNewVarValue(variable: String, value: Expression)
 
 
 

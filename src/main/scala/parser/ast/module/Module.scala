@@ -476,36 +476,6 @@ object Module  {
   }
 
 
-  def parseWhileExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(WHILE)
-    val comp = LogicalExpression.parse(tokens)
-    tokens.consume(DO)
-    WhileExpression(comp, parsePipedOrBodyExpression(tokens))
-  }
-
-
-  def parseUntilExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(UNTIL)
-    val comp = LogicalExpression.parse(tokens)
-    tokens.consume(DO)
-    UntilExpression(comp, parsePipedOrBodyExpression(tokens))
-  }
-
-
-  def parseWhenExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(WHEN)
-    val comp = LogicalExpression.parse(tokens)
-    tokens.consume(THEN)
-    if (!tokens.peek(NL)) {
-      WhenExpression(comp, ForwardPipeFuncCallExpression.parse(tokens))
-    }
-    else {
-      tokens.consume(NL)
-      WhenExpression(comp, BlockExpression.parse(tokens))
-    }
-  }
-
-
   def parseLambdaExpr(tokens:TokenStream) : Expression = {
     if (!tokens.peek(LAMBDA)) {
       LogicalExpression.parse(tokens)

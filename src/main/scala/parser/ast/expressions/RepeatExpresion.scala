@@ -1,7 +1,9 @@
 package parser.ast.expressions
 
 import lexer._
-import parser.{ControlExpression, Expression, RepeatNewVarValue}
+import parser.Expression
+
+case class RepeatNewVarValue(variable: String, value: Expression)
 
 case class RepeatExpresion(newVariableValues: Option[List[RepeatNewVarValue]]) extends ControlExpression
 

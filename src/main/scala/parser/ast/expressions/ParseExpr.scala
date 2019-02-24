@@ -1,8 +1,8 @@
 package parser.ast.expressions
 
 import lexer._
-import parser.{Expression, InvalidExpression}
 import parser.ast.module.Module._
+import parser.{Expression, InvalidExpression}
 
 object ParseExpr extends ExpressionParser {
   def parse(tokens: TokenStream): Expression = {
@@ -13,7 +13,7 @@ object ParseExpr extends ExpressionParser {
           case LET => parseLetExpr(tokens)
           case VAR => parseVarExpr(tokens)
           case BIND => parseBindExpr(tokens)
-          case ctl if ctl.isInstanceOf[CONTROL] => ControlExpressionParser.parse(tokens)
+          case ctl if ctl.isInstanceOf[CONTROL] => ControlExpression.parse(tokens)
           case _ => parseLambdaExpr(tokens)
         }
     }
