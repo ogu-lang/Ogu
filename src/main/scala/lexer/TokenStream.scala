@@ -41,6 +41,13 @@ case class TokenStream(var tokens: List[TOKEN]) {
 
   def nextToken() : Option[TOKEN] = tokens.headOption
 
+  def consume(n: Int, token: TOKEN): Unit = {
+    if (n > 0) {
+      consume(token)
+      consume(n-1, token)
+    }
+  }
+
   def consume[T]() : Option[T] = {
     if (tokens.isEmpty)
       None
