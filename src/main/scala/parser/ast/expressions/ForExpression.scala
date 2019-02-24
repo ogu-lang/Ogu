@@ -15,9 +15,11 @@ object ForExpression extends ExpressionParser {
     ForExpression(forDecls, forBody)
   }
 
-  def parseForDecls(tokens:TokenStream) : List[LoopDeclVariable] = parseForDecls(tokens, List(parseForVarDecl(tokens)))
+  private[this] def parseForDecls(tokens:TokenStream) : List[LoopDeclVariable] = {
+    parseForDecls(tokens, List(parseForVarDecl(tokens)))
+  }
 
-  def parseForDecls(tokens: TokenStream, decls: List[LoopDeclVariable]) : List[LoopDeclVariable] = {
+  private[this] def parseForDecls(tokens: TokenStream, decls: List[LoopDeclVariable]) : List[LoopDeclVariable] = {
     if (!tokens.peek(COMMA)) {
       decls.reverse
     }
@@ -27,7 +29,7 @@ object ForExpression extends ExpressionParser {
     }
   }
 
-  def parseForVarDecl(tokens:TokenStream) : LoopDeclVariable = {
+  private[this] def parseForVarDecl(tokens:TokenStream) : LoopDeclVariable = {
     if (!tokens.peek(LPAREN)) {
       val id = tokens.consume(classOf[ID])
       tokens.consume(IN)
@@ -42,7 +44,7 @@ object ForExpression extends ExpressionParser {
     }
   }
 
-  def parseForBody(tokens:TokenStream) : Expression = {
+  private[this] def parseForBody(tokens:TokenStream) : Expression = {
     tokens.consume(DO)
     Module.parsePipedOrBodyExpression(tokens)
   }

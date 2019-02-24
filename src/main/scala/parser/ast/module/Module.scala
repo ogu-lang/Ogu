@@ -618,11 +618,6 @@ object Module  {
     s"id_${java.util.UUID.randomUUID.toString}"
   }
 
-  def parseForExpr(tokens:TokenStream) : Expression = {
-    ForExpression.parse(tokens)
-  }
-
-
 
   def parseWhileExpr(tokens:TokenStream) : Expression = {
     tokens.consume(WHILE)
