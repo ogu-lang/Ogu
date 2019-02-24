@@ -376,10 +376,10 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case BackwardPipeFuncCallExpression(args) =>
         strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})"
 
-      case SimpleAssignExpr(ArrayAccessExpression(array, index), value) =>
+      case SimpleAssignExpression(ArrayAccessExpression(array, index), value) =>
         strBuf ++= s"(aset ${toClojure(array)} ${toClojure(index)} ${toClojure(value)})"
 
-      case SimpleAssignExpr(Identifier(variable), value) =>
+      case SimpleAssignExpression(Identifier(variable), value) =>
         if (isVariable(variable)) {
           strBuf ++= s"(var-set $variable ${toClojure(value)})"
         }

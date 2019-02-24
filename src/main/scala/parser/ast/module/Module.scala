@@ -572,15 +572,6 @@ object Module  {
     }
   }
 
-  def parseAssignExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(SET)
-    val expr = parsePipedOrBodyExpression(tokens)
-    if (!expr.isInstanceOf[AssignableExpression])
-      throw CantAssignToExpression()
-    tokens.consume(ASSIGN)
-    val right = ForwardPipeFuncCallExpression.parse(tokens)
-    SimpleAssignExpr(expr, right)
-  }
 
   def parseLambdaExpr(tokens:TokenStream) : Expression = {
     if (!tokens.peek(LAMBDA)) {

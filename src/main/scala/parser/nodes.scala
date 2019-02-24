@@ -171,12 +171,7 @@ case class CatchExpression(id: Option[String], ex: String, body: Expression) ext
 case class TryExpression(body: Expression, catches: List[CatchExpression], finExpr: Option[Expression]) extends Expression
 case class ThrowExpression(ctor: ConstructorExpression) extends Expression
 
-case class SimpleAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
-case class PlusAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
-case class MinusAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
-case class MultAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
-case class DivAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
-case class ModAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
+
 
 
 trait ValidRangeExpression extends Expression
