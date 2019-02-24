@@ -2,6 +2,7 @@ package parser.ast.module
 
 import lexer._
 import parser._
+import parser.ast.types.{AdtDecl, ClassDecl}
 
 import scala.collection.mutable
 
@@ -21,89 +22,8 @@ object Module  {
 
   private[this] def parseModule(moduleName: String, tokens: TokenStream) : Module = {
     tokens.consumeOptionals(NL)
-    Module(moduleName, parseImports(tokens), parseModuleNodes(tokens))
+    Module(moduleName, ImportClause.parse(tokens), parseModuleNodes(tokens))
   }
-
-
-  def parseImports(tokens: TokenStream): Option[List[ImportClause]] = {
-    tokens.consumeOptionals(NL)
-    var listOfImports = List.empty[ImportClause]
-    while (tokens.peek(IMPORT) || tokens.peek(FROM)) {
-      if (tokens.peek(IMPORT)) {
-        listOfImports = parseImport(tokens) :: listOfImports
-      }
-      else if (tokens.peek(FROM)) {
-        listOfImports = parseFromImport(tokens) :: listOfImports
-      }
-      tokens.consumeOptionals(NL)
-    }
-    if (listOfImports.isEmpty) {
-      None
-    }
-    else {
-      Some(listOfImports.reverse)
-    }
-  }
-
-  def parseImport(tokens:TokenStream): ImportClause = {
-    tokens.consume(IMPORT)
-    if (parseTag(tokens) == ":jvm") {
-      JvmImport(parseListOfAlias(tokens))
-    }
-    else {
-      CljImport(parseListOfAlias(tokens))
-    }
-  }
-
-  def parseFromImport(tokens:TokenStream): ImportClause = {
-    tokens.consume(FROM)
-    val tag = parseTag(tokens)
-    val name = tokens.consume(classOf[ID]).value
-    tokens.consume(IMPORT)
-    if (tag == ":jvm") {
-      FromJvmRequire(name, parseListOfAlias(tokens))
-    }
-    else {
-      FromCljRequire(name, parseListOfAlias(tokens))
-    }
-  }
-
-  def parseTag(tokens:TokenStream): String = {
-    if (tokens.peek(LBRACKET)) {
-      tokens.consume(LBRACKET)
-      val tag = tokens.consume(classOf[ATOM]).value
-      tokens.consume(RBRACKET)
-      tag
-    } else {
-      ""
-    }
-  }
-
-  def parseListOfAlias(tokens:TokenStream) : List[ImportAlias] = {
-    var listOfAlias = List.empty[ImportAlias]
-    val impAlias = parseImportAlias(tokens)
-    listOfAlias = impAlias :: listOfAlias
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      val impAlias = parseImportAlias(tokens)
-      listOfAlias = impAlias :: listOfAlias
-    }
-    listOfAlias.reverse
-  }
-
-  def parseImportAlias(tokens:TokenStream): ImportAlias = {
-    val id = if (tokens.peek(classOf[TID])) tokens.consume(classOf[TID]).value else tokens.consume(classOf[ID]).value
-    val alias = if (!tokens.peek(AS)) {
-      None
-    } else {
-      tokens.consume(AS)
-      Some(tokens.consume(classOf[ID]).value)
-    }
-    ImportAlias(id, alias)
-  }
-
-
 
   def parseModuleNodes(tokens:TokenStream): List[LangNode] = {
     println(s"@@@ parse module nodes (tokens=$tokens)")
@@ -115,10 +35,10 @@ object Module  {
         inner = true
       }
       if (tokens.peek(CLASS)) {
-        result = parseClass(inner, tokens) :: result
+        result = ClassDecl.parse(inner, tokens) :: result
       }
       else if (tokens.peek(DATA)) {
-        result = parseData(inner, tokens) :: result
+        result = AdtDecl.parse(inner, tokens) :: result
       }
       else if (tokens.peek(DEF)) {
         result = multiDef(parseDef(inner, tokens)) :: result
@@ -184,37 +104,7 @@ object Module  {
     ExtendsDecl(cls, trt, defs)
   }
 
-  def parseClass(inner: Boolean, tokens:TokenStream): LangNode = {
-    tokens.consume(CLASS)
-    val name = tokens.consume(classOf[TID]).value
-    val argsOpt = if (!tokens.peek(LPAREN)) None else {
-      tokens.consume(LPAREN)
-      val args = parseListOfIds(tokens)
-      tokens.consume(RPAREN)
-      Some(args)
-    }
-    tokens.consume(NL)
-    var traits = List.empty[TraitDef]
-    if (tokens.peek(INDENT)) {
-      tokens.consume(INDENT)
-      while (!tokens.peek(DEDENT)) {
-        tokens.consume(EXTENDS)
-        val traitName = tokens.consume(classOf[TID]).value
-        tokens.consumeOptionals(NL)
-        tokens.consume(INDENT)
-        var traitMethods = List.empty[ClassMethodDecl]
-        while (tokens.peek(DEF)) {
-          val defDecl = parseDef(false, tokens)
-          traitMethods = ClassMethodDecl(defDecl) :: traitMethods
-          tokens.consumeOptionals(NL)
-        }
-        traits = TraitDef(traitName, traitMethods.reverse) :: traits
-        tokens.consume(DEDENT)
-      }
-      tokens.consume(DEDENT)
-    }
-    ClassDecl(inner, name, argsOpt, traits)
-  }
+
 
   def parseDispatch(inner: Boolean, tokens:TokenStream): LangNode = {
     tokens.consume(DISPATCH)
@@ -229,53 +119,7 @@ object Module  {
     }
   }
 
-  def parseData(inner: Boolean, tokens:TokenStream): LangNode = {
-    tokens.consume(DATA)
-    val id = tokens.consume(classOf[TID]).value
-    tokens.consume(ASSIGN)
-    var indents = 0
-    if (tokens.peek(NL)) {
-      tokens.consumeOptionals(NL)
-      tokens.consume(INDENT)
-      indents += 1
-    }
-    var adts = List.empty[ADT]
-    val adt = parseADT(tokens)
-    adts = adt :: adts
-    while (tokens.peek(GUARD)) {
-      tokens.consume(GUARD)
-      tokens.consumeOptionals(NL)
-      if (tokens.peek(INDENT)) {
-        tokens.consume(INDENT)
-        indents += 1
-      }
-      val adt = parseADT(tokens)
-      adts = adt :: adts
-    }
-    while (indents > 0) {
-      tokens.consume(DEDENT)
-      indents -= 1
-    }
-    AdtDecl(id, adts.reverse)
-  }
 
-  def parseADT(tokens:TokenStream): ADT = {
-    val id = tokens.consume(classOf[TID]).value
-    var args = List.empty[String]
-    if (tokens.peek(LPAREN)) {
-      tokens.consume(LPAREN)
-      val arg = tokens.consume(classOf[ID]).value
-      args = arg :: args
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        tokens.consumeOptionals(NL)
-        val arg = tokens.consume(classOf[ID]).value
-        args = arg :: args
-      }
-      tokens.consume(RPAREN)
-    }
-    ADT(id, args.reverse)
-  }
 
   def parseTrait(inner: Boolean, tokens:TokenStream): LangNode = {
     tokens.consume(TRAIT)

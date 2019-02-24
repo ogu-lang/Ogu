@@ -3,9 +3,6 @@ package parser
 import lexer._
 import parser.ast.module.Module
 
-import scala.collection.mutable
-
-
 class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Option[SymbolTable]) {
 
 
@@ -13,6 +10,5 @@ class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Optio
     val nameOfModule = filename.substring(filename.lastIndexOf('/') + 1, filename.lastIndexOf('.'))
     Module.parse(tokens, nameOfModule)
   }
-
 
 }

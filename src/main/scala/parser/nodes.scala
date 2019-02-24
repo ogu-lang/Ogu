@@ -5,20 +5,10 @@ import org.joda.time.DateTime
 
 trait LangNode
 
-sealed trait ImportClause
-case class ImportAlias(name:String, alias:Option[String])
-case class FromCljRequire(from: String, names: List[ImportAlias]) extends ImportClause
-case class FromJvmRequire(from: String, names: List[ImportAlias]) extends ImportClause
-case class CljImport(name:List[ImportAlias]) extends ImportClause
-case class JvmImport(name:List[ImportAlias]) extends ImportClause
-
-
 case class TraitMethodDecl(name: String, args: List[String])
 case class TraitDecl(inner: Boolean, name: String, decls: List[TraitMethodDecl]) extends LangNode
 
 case class ClassMethodDecl(definition: DefDecl)
-case class TraitDef(traitName: String, methods: List[ClassMethodDecl]) extends LangNode
-case class ClassDecl(inner: Boolean, name: String, args: Option[List[String]], traits: List[TraitDef]) extends LangNode
 
 
 case class RecordDecl(name: String, args: List[String]) extends LangNode
@@ -26,8 +16,6 @@ case class RecordDecl(name: String, args: List[String]) extends LangNode
 case class ExtendsDecl(cls: String, traitClass: String, decls: Option[List[ClassMethodDecl]]) extends LangNode
 
 
-case class ADT(name: String, args: List[String])
-case class AdtDecl(name: String, defs: List[ADT]) extends LangNode
 trait AssignableExpression
 
 

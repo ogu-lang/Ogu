@@ -1,9 +1,8 @@
 package codegen
 
-import com.sun.deploy.config.VerboseDefaultConfig
-import interpreter.Interpreter.toClojure
 import parser._
-import parser.ast.module.Module
+import parser.ast.types.{AdtDecl, ClassDecl, TraitDef}
+import parser.ast.module._
 
 
 class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
