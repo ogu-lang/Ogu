@@ -1,8 +1,10 @@
 package codegen
 
-import com.sun.deploy.config.VerboseDefaultConfig
-import interpreter.Interpreter.toClojure
 import parser._
+import parser.ast.expressions.{ForwardPipeFirstArgFuncCallExpression, ForwardPipeFuncCallExpression, TopLevelExpression}
+import parser.ast.functions._
+import parser.ast.types._
+import parser.ast.module._
 
 
 class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {

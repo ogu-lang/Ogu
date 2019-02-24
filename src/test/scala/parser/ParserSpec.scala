@@ -2,6 +2,8 @@ package parser
 
 import lexer._
 import org.scalatest.{FlatSpec, Matchers}
+import parser.ast.expressions.{ForwardPipeFuncCallExpression, TopLevelExpression}
+import parser.ast.module.Module
 
 import scala.util.{Failure, Success, Try}
 

@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+### Fixed 
+
+- remove duplicated code in parser
 ## [0.2.1] - 2019-2-22
 
 ### Fixed
