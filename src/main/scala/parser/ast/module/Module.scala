@@ -475,14 +475,6 @@ object Module  {
     }
   }
 
-
-  def parseThrowExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(THROW)
-    val ctor = parseConstructorExpr(tokens)
-    tokens.consumeOptionals(NL)
-    ThrowExpression(ctor)
-  }
-
   def parseTryExpr(tokens:TokenStream) : Expression = {
     tokens.consume(TRY)
     val body = parsePipedOrBodyExpression(tokens)
