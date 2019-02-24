@@ -2,6 +2,7 @@ package parser.ast.module
 
 import lexer._
 import parser._
+import parser.ast.functions.DispatchDecl
 import parser.ast.types.{AdtDecl, ClassDecl}
 
 import scala.collection.mutable
@@ -44,7 +45,7 @@ object Module  {
         result = multiDef(parseDef(inner, tokens)) :: result
       }
       else if (tokens.peek(DISPATCH)) {
-        result = parseDispatch(inner, tokens) :: result
+        result = DispatchDecl.parse(inner, tokens) :: result
       }
       else if (tokens.peek(EXTENDS)) {
         result = parseExtends(inner, tokens) :: result
@@ -103,23 +104,6 @@ object Module  {
     }
     ExtendsDecl(cls, trt, defs)
   }
-
-
-
-  def parseDispatch(inner: Boolean, tokens:TokenStream): LangNode = {
-    tokens.consume(DISPATCH)
-    val id = tokens.consume(classOf[ID]).value
-    tokens.consume(WITH)
-    if (tokens.peek(CLASS)) {
-      tokens.consume(CLASS)
-      DispatchDecl(id, ClassDispatcher)
-    } else {
-      val expr = parsePipedExpr(tokens)
-      DispatchDecl(id, ExpressionDispatcher(expr))
-    }
-  }
-
-
 
   def parseTrait(inner: Boolean, tokens:TokenStream): LangNode = {
     tokens.consume(TRAIT)

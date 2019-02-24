@@ -66,10 +66,7 @@ case class DefArg(expression: Expression)
 object DefOtherwiseArg extends DefArg(null)
 
 
-sealed trait DispatcherTrait
-object ClassDispatcher extends DispatcherTrait
-case class ExpressionDispatcher(expr:Expression) extends DispatcherTrait
-case class DispatchDecl(id:String, dispatcher: DispatcherTrait) extends LangNode
+
 
 class DefDecl(id: String) extends LangNode
 case class MultiMethod(inner: Boolean, id: String, matches: List[DefArg], args: List[DefArg], body: Expression, whereBlock: Option[WhereBlock])
