@@ -3,7 +3,8 @@ package parser.ast.expressions
 import lexer._
 import parser._
 import parser.ast._
-import parser.ast.module.Module
+
+import scala.annotation.tailrec
 
 case class ForExpression(variables: List[LoopDeclVariable], body: Expression) extends ControlExpression
 
@@ -19,6 +20,7 @@ object ForExpression extends ExpressionParser {
     parseForDecls(tokens, List(parseForVarDecl(tokens)))
   }
 
+  @tailrec
   private[this] def parseForDecls(tokens: TokenStream, decls: List[LoopDeclVariable]) : List[LoopDeclVariable] = {
     if (!tokens.peek(COMMA)) {
       decls.reverse
@@ -46,6 +48,6 @@ object ForExpression extends ExpressionParser {
 
   private[this] def parseForBody(tokens:TokenStream) : Expression = {
     tokens.consume(DO)
-    Module.parsePipedOrBodyExpression(tokens)
+    parsePipedOrBodyExpression(tokens)
   }
 }

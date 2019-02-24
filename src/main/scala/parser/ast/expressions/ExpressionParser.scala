@@ -5,8 +5,8 @@ import parser.Expression
 
 trait ExpressionParser {
 
-
   def parse(tokens: TokenStream) : Expression
+
 }
 
 

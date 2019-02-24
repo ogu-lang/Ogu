@@ -16,7 +16,6 @@ case class InvalidLetDeclaration(message: String) extends Throwable
 
 case class CantAssignToExpression() extends Throwable
 
-case class InvalidIfExpression() extends Throwable
 
 case class InvalidUntilAlreadyHasWhile() extends Throwable
 

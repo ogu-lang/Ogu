@@ -322,11 +322,11 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case LambdaExpression(args, expr) =>
         strBuf ++= s"(fn [${args.map(toClojureLambdaArg).mkString(" ")}] ${toClojure(expr)})"
 
-      case LogicalAndExpression(left, right) =>
-        strBuf ++= s"(and ${toClojure(left)} ${toClojure(right)})"
+      case LogicalAndExpression(args) =>
+        strBuf ++= s"(and ${args.map(toClojure).mkString(" ")})"
 
-      case LogicalOrExpression(left, right) =>
-        strBuf ++= s"(or ${toClojure(left)} ${toClojure(right)})"
+      case LogicalOrExpression(args) =>
+        strBuf ++= s"(or ${args.map(toClojure).mkString(" ")})"
 
       case PartialAdd(args) =>
         if (args.isEmpty) strBuf ++= "+" else strBuf ++= s"(+ ${args.map(toClojure).mkString(" ")})"

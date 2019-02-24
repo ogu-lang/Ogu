@@ -1,21 +1,14 @@
 package parser
 
-import lexer.TokenStream
 import org.joda.time.DateTime
 import parser.ast.functions.ClassMethodDecl
 
 trait LangNode
 
-
-
-
-
-
-
 trait AssignableExpression
 
 
-sealed trait Expression extends LangNode
+trait Expression extends LangNode
 
 case class ReifyExpression(traitName: String, methods: List[ClassMethodDecl]) extends Expression
 
@@ -125,7 +118,7 @@ case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Exp
 case class Atom(value: String) extends Expression
 
 
-case class BlockExpression(expressions: List[Expression]) extends Expression
+
 
 class ControlExpression extends Expression
 case class LoopExpression(variables: List[LoopVarDecl], guard: Option[LoopGuard], body: Expression) extends ControlExpression
@@ -138,18 +131,12 @@ case class RepeatNewVarValue(variable: String, value: Expression)
 case class RepeatExpr(newVariableValues: Option[List[RepeatNewVarValue]]) extends ControlExpression
 case class RecurExpr(args: List[Expression]) extends ControlExpression
 
-case class ElifPart(comp: Expression, body: Expression)
-case class IfExpression(comp: Expression, thenPart: Expression, elifPart: List[ElifPart], elsePart: Expression) extends ControlExpression
 
-case class CondGuard(comp: Option[Expression], value: Expression)
 
 case class LazyExpression(expr: Expression) extends Expression
 
 class BinaryExpression(val left: Expression, val right: Expression) extends Expression
 
-class LogicalExpression(l1: Expression, r1: Expression)  extends BinaryExpression(l1, r1)
-case class LogicalAndExpression(override val left: Expression, override val right: Expression) extends LogicalExpression(left, right)
-case class LogicalOrExpression(override val left: Expression, override val right: Expression) extends LogicalExpression(left, right)
 
 class ComparativeExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
 case class LessThanExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)

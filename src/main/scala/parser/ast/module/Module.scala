@@ -153,7 +153,7 @@ object Module  {
       }
       else {
         tokens.consume(NL)
-        parseBlockExpr(tokens)
+        BlockExpression.parse(tokens)
       }
       val where = tryParseWhereBlock(tokens)
       if (matches.isEmpty) {
@@ -196,12 +196,12 @@ object Module  {
       }
       else {
         tokens.consume(NL)
-        expr = parseBlockExpr(tokens)
+        expr = BlockExpression.parse(tokens)
       }
       DefBodyGuardOtherwiseExpression(expr)
 
     } else {
-      val guardExpr = parseLogicalExpr(tokens)
+      val guardExpr = LogicalExpression.parse(tokens)
       tokens.consume(ASSIGN)
       var expr: Expression = null
       if (!tokens.peek(NL)) {
@@ -210,7 +210,7 @@ object Module  {
       }
       else {
         tokens.consume(NL)
-        expr = parseBlockExpr(tokens)
+        expr = BlockExpression.parse(tokens)
       }
       DefBodyGuardExpression(guardExpr, expr)
     }
@@ -278,7 +278,7 @@ object Module  {
         ForwardPipeFuncCallExpression.parse(tokens)
       } else {
         tokens.consume(NL)
-        parseBlockExpr(tokens)
+        BlockExpression.parse(tokens)
       }
       if (listOfIds.size == 1)
         WhereDefSimple(listOfIds.head, if (listOfArgs.isEmpty) None else Some(listOfArgs.reverse), body)
@@ -324,10 +324,10 @@ object Module  {
       tokens.consume(OTHERWISE)
       None
     } else {
-      Some(parseLogicalExpr(tokens))
+      Some(LogicalExpression.parse(tokens))
     }
     tokens.consume(ASSIGN)
-    val body = if (tokens.peek(INDENT)) parseBlockExpr(tokens) else ForwardPipeFuncCallExpression.parse(tokens)
+    val body = if (tokens.peek(INDENT)) BlockExpression.parse(tokens) else ForwardPipeFuncCallExpression.parse(tokens)
     tokens.consume(NL)
     WhereGuard(comp, body)
   }
@@ -337,7 +337,7 @@ object Module  {
       val id = tokens.consume(classOf[ID])
       Identifier(id.value)
     } else {
-      parseLogicalExpr(tokens)
+      LogicalExpression.parse(tokens)
     }
   }
 
@@ -373,7 +373,7 @@ object Module  {
       }
     }
     else {
-      parseLogicalExpr(tokens)
+      LogicalExpression.parse(tokens)
     }
   }
 
@@ -427,7 +427,7 @@ object Module  {
       Some(ForwardPipeFuncCallExpression.parse(tokens))
     } else {
       tokens.consume(NL)
-      Some(parseBlockExpr(tokens))
+      Some(BlockExpression.parse(tokens))
     }
   }
 
@@ -475,42 +475,12 @@ object Module  {
     }
   }
 
-  def parsePipedOrBodyExpression(tokens:TokenStream): Expression = {
-    if (!tokens.peek(NL))
-      ForwardPipeFuncCallExpression.parse(tokens)
-    else {
-      tokens.consume(NL)
-      parseBlockExpr(tokens)
-    }
-  }
-
-
-  def parseForwardPipeFirstArgExpr(tokens:TokenStream) : Expression = {
-    ForwardPipeFirstArgFuncCallExpression.parse(tokens)
-  }
-
-  def parseBackwardPipeExpr(tokens:TokenStream) : Expression = {
-    BackwardPipeFuncCallExpression.parse(tokens)
-  }
-
-  def parseBackwardFirstArgPipeExpr(tokens:TokenStream) : Expression = {
-    BackwardPipeFirstArgFuncCallExpression.parse(tokens)
-  }
-
-  def parseDollarExpr(tokens:TokenStream) : Expression = {
-    FunctionCallWithDollarExpression.parse(tokens)
-
-  }
-
 
   // funcCallExpr ::= control_expr | lambda_expr
   def parseExpr(tokens:TokenStream) : Expression = {
     ParseExpr.parse(tokens)
   }
 
-  def parseControlExpr(tokens:TokenStream) : Expression = {
-    ControlExpressionParser.parse(tokens)
-  }
 
   def parseReifyExpr(tokens:TokenStream) : Expression = {
     tokens.consume(REIFY)
@@ -621,7 +591,7 @@ object Module  {
 
   def parseWhileExpr(tokens:TokenStream) : Expression = {
     tokens.consume(WHILE)
-    val comp = parseLogicalExpr(tokens)
+    val comp = LogicalExpression.parse(tokens)
     tokens.consume(DO)
     WhileExpression(comp, parsePipedOrBodyExpression(tokens))
   }
@@ -629,7 +599,7 @@ object Module  {
 
   def parseUntilExpr(tokens:TokenStream) : Expression = {
     tokens.consume(UNTIL)
-    val comp = parseLogicalExpr(tokens)
+    val comp = LogicalExpression.parse(tokens)
     tokens.consume(DO)
     UntilExpression(comp, parsePipedOrBodyExpression(tokens))
   }
@@ -644,7 +614,7 @@ object Module  {
 
     if (tokens.peek(WHILE)) {
       tokens.consume(WHILE)
-      guardExpr = Some(WhileGuardExpr(parseLogicalExpr(tokens)))
+      guardExpr = Some(WhileGuardExpr(LogicalExpression.parse(tokens)))
     }
 
 
@@ -652,7 +622,7 @@ object Module  {
       if (guardExpr.isDefined)
         throw InvalidUntilAlreadyHasWhile()
       tokens.consume(UNTIL)
-      guardExpr = Some(UntilGuardExpr(parseLogicalExpr(tokens)))
+      guardExpr = Some(UntilGuardExpr(LogicalExpression.parse(tokens)))
     }
 
     tokens.consume(DO)
@@ -661,7 +631,7 @@ object Module  {
     }
     else {
       tokens.consume(NL)
-      LoopExpression(loopDecls, guardExpr, parseBlockExpr(tokens))
+      LoopExpression(loopDecls, guardExpr, BlockExpression.parse(tokens))
     }
   }
 
@@ -687,71 +657,16 @@ object Module  {
     }
   }
 
-
-  def parseBlockExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(INDENT)
-    var listOfExpressions = List.empty[Expression]
-    var loop = 0
-    while (!tokens.peek(DEDENT)) {
-      loop += 1
-      val expr = ForwardPipeFuncCallExpression.parse(tokens)
-      tokens.consumeOptionals(NL)
-      listOfExpressions = expr :: listOfExpressions
-    }
-    tokens.consume(DEDENT)
-    BlockExpression(listOfExpressions.reverse)
-  }
-
-  def parseIfExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(IF)
-    val comp = parseLogicalExpr(tokens)
-    tokens.consume(THEN)
-    val thenPart = if (!tokens.peek(NL)) {
-      ForwardPipeFuncCallExpression.parse(tokens)
-    }
-    else {
-      tokens.consume(NL)
-      parseBlockExpr(tokens)
-    }
-    while (tokens.peek(NL)) tokens.consume(NL)
-    var elif = List.empty[ElifPart]
-    if (tokens.peek(ELIF)) {
-      while (tokens.peek(ELIF)) {
-        tokens.consume(ELIF)
-        val elifComp = parseLogicalExpr(tokens)
-        tokens.consume(THEN)
-        val elifPart = if (!tokens.peek(NL)) {
-          ElifPart(elifComp, ForwardPipeFuncCallExpression.parse(tokens))
-        }
-        else {
-          while (tokens.peek(NL)) tokens.consume(NL)
-          ElifPart(elifComp, parseBlockExpr(tokens))
-        }
-        elif = elifPart :: elif
-      }
-    }
-    if (tokens.peek(ELSE)) {
-      tokens.consume(ELSE)
-      if (!tokens.peek(NL)) {
-        return IfExpression(comp, thenPart, elif.reverse, ForwardPipeFuncCallExpression.parse(tokens))
-      } else {
-        while (tokens.peek(NL)) tokens.consume(NL)
-        return IfExpression(comp, thenPart, elif.reverse, parseBlockExpr(tokens))
-      }
-    }
-    throw InvalidIfExpression()
-  }
-
   def parseWhenExpr(tokens:TokenStream) : Expression = {
     tokens.consume(WHEN)
-    val comp = parseLogicalExpr(tokens)
+    val comp = LogicalExpression.parse(tokens)
     tokens.consume(THEN)
     if (!tokens.peek(NL)) {
       WhenExpression(comp, ForwardPipeFuncCallExpression.parse(tokens))
     }
     else {
       tokens.consume(NL)
-      WhenExpression(comp, parseBlockExpr(tokens))
+      WhenExpression(comp, BlockExpression.parse(tokens))
     }
   }
 
@@ -767,7 +682,7 @@ object Module  {
 
   def parseLambdaExpr(tokens:TokenStream) : Expression = {
     if (!tokens.peek(LAMBDA)) {
-      parseLogicalExpr(tokens)
+      LogicalExpression.parse(tokens)
     }
     else {
       tokens.consume(LAMBDA)
@@ -807,23 +722,6 @@ object Module  {
       LambdaTupleArg(ids.reverse)
     } else {
       throw InvalidLambdaExpression(tokens.nextToken())
-    }
-  }
-
-  def parseLogicalExpr(tokens:TokenStream) : Expression = {
-    var expr = parseComparativeExpr(tokens)
-    while (tokens.peek(classOf[LOGICAL_BIN_OPER])) {
-      val logicalOper = tokens.consume(classOf[LOGICAL_BIN_OPER])
-      while (tokens.peek(NL)) tokens.consume(NL)
-      expr = classifyLogicalExpr(logicalOper, expr, parseLogicalExpr(tokens))
-    }
-    expr
-  }
-
-  def classifyLogicalExpr(oper: LOGICAL_BIN_OPER, left: Expression, right: Expression) : LogicalExpression = {
-    oper match {
-      case AND => LogicalAndExpression(left, right)
-      case OR => LogicalOrExpression(left, right)
     }
   }
 
@@ -926,7 +824,7 @@ object Module  {
     if (tokens.peek(ARROBA)) {
       val array = expr
       tokens.consume(ARROBA)
-      val arg = parseLogicalExpr(tokens)
+      val arg = LogicalExpression.parse(tokens)
       expr = ArrayAccessExpression(array, arg)
     }
     expr
@@ -1026,7 +924,7 @@ object Module  {
           val id = tokens.consume(classOf[ID])
           expr = Identifier(id.value)
         } else {
-          expr = parseDollarExpr(tokens)
+          expr = FunctionCallWithDollarExpression.parse(tokens)
         }
         args = expr :: args
       }
@@ -1153,7 +1051,7 @@ object Module  {
     val parOp = tokens.consume(classOf[OPER])
     var listOfArgs: List[Expression] = List.empty[Expression]
     while (!tokens.peek(RPAREN)) {
-      val expr = parseLogicalExpr(tokens)
+      val expr = LogicalExpression.parse(tokens)
       listOfArgs = expr :: listOfArgs
     }
     tokens.consume(RPAREN)
@@ -1186,13 +1084,13 @@ object Module  {
       tokens.consume(RBRACKET)
       return EmptyListExpresion()
     }
-    var expr = parseLogicalExpr(tokens)
+    var expr = LogicalExpression.parse(tokens)
     if (tokens.peek(COMMA)) {
       var list = List.empty[Expression]
       while(tokens.peek(COMMA)) {
         tokens.consume(COMMA)
         list = expr :: list
-        expr = parseLogicalExpr(tokens)
+        expr = LogicalExpression.parse(tokens)
       }
       list = expr :: list
       expr = ListExpression(list.reverse, None)
@@ -1234,14 +1132,14 @@ object Module  {
         val rangeInit = lexpr.head
         val rangeIncrement = SubstractExpression(lexpr.tail.head, lexpr.head)
         if (include)
-          RangeWithIncrementExpression(rangeInit, rangeIncrement, parseLogicalExpr(tokens))
+          RangeWithIncrementExpression(rangeInit, rangeIncrement, LogicalExpression.parse(tokens))
         else
-          RangeWithIncrementExpressionUntil(rangeInit, rangeIncrement, parseLogicalExpr(tokens))
+          RangeWithIncrementExpressionUntil(rangeInit, rangeIncrement, LogicalExpression.parse(tokens))
       case rangeInit =>
         if (include)
-          RangeExpression(rangeInit, parseLogicalExpr(tokens))
+          RangeExpression(rangeInit, LogicalExpression.parse(tokens))
         else
-          RangeExpressionUntil(rangeInit, parseLogicalExpr(tokens))
+          RangeExpressionUntil(rangeInit, LogicalExpression.parse(tokens))
     }
   }
 
