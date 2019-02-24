@@ -604,58 +604,6 @@ object Module  {
     UntilExpression(comp, parsePipedOrBodyExpression(tokens))
   }
 
-  def parseLoopExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(LOOP)
-
-    val loopDecls = parseLoopDecls(tokens)
-
-    var guardExpr : Option[LoopGuard] = None
-    tokens.consumeOptionals(NL)
-
-    if (tokens.peek(WHILE)) {
-      tokens.consume(WHILE)
-      guardExpr = Some(WhileGuardExpr(LogicalExpression.parse(tokens)))
-    }
-
-
-    if (tokens.peek(UNTIL)) {
-      if (guardExpr.isDefined)
-        throw InvalidUntilAlreadyHasWhile()
-      tokens.consume(UNTIL)
-      guardExpr = Some(UntilGuardExpr(LogicalExpression.parse(tokens)))
-    }
-
-    tokens.consume(DO)
-    if (!tokens.peek(NL)) {
-      LoopExpression(loopDecls, guardExpr, ForwardPipeFuncCallExpression.parse(tokens))
-    }
-    else {
-      tokens.consume(NL)
-      LoopExpression(loopDecls, guardExpr, BlockExpression.parse(tokens))
-    }
-  }
-
-  def parseLoopDecls(tokens:TokenStream) : List[LoopVarDecl] = {
-    var listOfDecls = List.empty[LoopVarDecl]
-    var loopVarDecl = parseLoopVarDecl(tokens)
-    listOfDecls = loopVarDecl :: listOfDecls
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      loopVarDecl = parseLoopVarDecl(tokens)
-      listOfDecls = loopVarDecl :: listOfDecls
-    }
-    listOfDecls.reverse
-  }
-
-  def parseLoopVarDecl(tokens:TokenStream) : LoopVarDecl = {
-    val id = tokens.consume(classOf[ID])
-    if (tokens.peek(ASSIGN)) {
-      tokens.consume(ASSIGN)
-      LoopVarDecl(id.value, ForwardPipeFuncCallExpression.parse(tokens))
-    } else {
-      throw UnexpectedTokenClassException()
-    }
-  }
 
   def parseWhenExpr(tokens:TokenStream) : Expression = {
     tokens.consume(WHEN)

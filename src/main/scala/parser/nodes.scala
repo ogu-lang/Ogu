@@ -121,7 +121,7 @@ case class Atom(value: String) extends Expression
 
 
 class ControlExpression extends Expression
-case class LoopExpression(variables: List[LoopVarDecl], guard: Option[LoopGuard], body: Expression) extends ControlExpression
+
 case class WhileExpression(comp: Expression, body: Expression) extends ControlExpression
 case class UntilExpression(comp: Expression, body: Expression) extends ControlExpression
 case class WhenExpression(comp: Expression, body: Expression) extends ControlExpression
