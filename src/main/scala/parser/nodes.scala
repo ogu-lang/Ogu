@@ -20,7 +20,6 @@ sealed trait Expression extends LangNode
 case class ReifyExpression(traitName: String, methods: List[ClassMethodDecl]) extends Expression
 
 
-case class TopLevelExpression(expression: Expression) extends LangNode
 
 class Name(name: String) extends Expression
 trait LambdaArg
@@ -120,8 +119,6 @@ case class FStringLiteral(value: String) extends LiteralExpression
 trait CallExpression extends Expression
 case class FunctionCallExpression(func: Expression, args:List[Expression]) extends CallExpression
 case class FunctionCallWithDollarExpression(func: Expression, args: List[Expression]) extends CallExpression
-case class ForwardPipeFuncCallExpression(args: List[Expression]) extends CallExpression
-case class ForwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends CallExpression
 case class BackwardPipeFuncCallExpression(args: List[Expression]) extends CallExpression
 case class BackwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends CallExpression
 case class NewCallExpression(cls: String, args: List[Expression]) extends CallExpression

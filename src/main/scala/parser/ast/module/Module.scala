@@ -2,6 +2,7 @@ package parser.ast.module
 
 import lexer._
 import parser._
+import parser.ast.expressions.{ForwardPipeFirstArgFuncCallExpression, ForwardPipeFuncCallExpression, TopLevelExpression}
 import parser.ast.functions._
 import parser.ast.types._
 
@@ -57,10 +58,9 @@ object Module  {
         result = TraitDecl.parse(inner, tokens) :: result
       }
       else {
-        result = TopLevelExpression(parsePipedExpr(tokens)) :: result
+        result = TopLevelExpression.parse(tokens) :: result
       }
       tokens.consumeOptionals(NL)
-      //println(s"PARSED SO FAR: ${result.reverse}\n\n")
     }
     filter(result.reverse)
   }
@@ -486,40 +486,12 @@ object Module  {
 
   // pipedExpr = expr (PIPE_OPER pipedExpr)*
   def parsePipedExpr(tokens:TokenStream) : Expression = {
-    val expr = parseForwardPipeExpr(tokens:TokenStream)
-    expr
+    ForwardPipeFuncCallExpression.parse(tokens:TokenStream)
   }
 
-  def parseForwardPipeExpr(tokens:TokenStream) : Expression = {
-    var expr = parseForwardPipeFirstArgExpr(tokens)
-    if (tokens.peek(PIPE_RIGHT)) {
-      var value = expr
-      var args = List.empty[Expression]
-      while (tokens.peek(PIPE_RIGHT)) {
-        args = value :: args
-        tokens.consume(PIPE_RIGHT)
-        value = parseForwardPipeFirstArgExpr(tokens)
-      }
-      args = value :: args
-      expr = ForwardPipeFuncCallExpression(args.reverse)
-    }
-    expr
-  }
 
   def parseForwardPipeFirstArgExpr(tokens:TokenStream) : Expression = {
-    var expr = parseBackwardPipeExpr(tokens)
-    if (tokens.peek(PIPE_RIGHT_FIRST_ARG)) {
-      var value = expr
-      var args = List.empty[Expression]
-      while (tokens.peek(PIPE_RIGHT_FIRST_ARG)) {
-        args = value :: args
-        tokens.consume(PIPE_RIGHT_FIRST_ARG)
-        value = parseDollarExpr(tokens)
-      }
-      args = value :: args
-      expr = ForwardPipeFirstArgFuncCallExpression(args.reverse)
-    }
-    expr
+    ForwardPipeFirstArgFuncCallExpression.parse(tokens)
   }
 
   def parseBackwardPipeExpr(tokens:TokenStream) : Expression = {

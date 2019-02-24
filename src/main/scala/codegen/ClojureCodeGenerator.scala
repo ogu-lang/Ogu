@@ -1,6 +1,7 @@
 package codegen
 
 import parser._
+import parser.ast.expressions.{ForwardPipeFirstArgFuncCallExpression, ForwardPipeFuncCallExpression, TopLevelExpression}
 import parser.ast.functions._
 import parser.ast.types._
 import parser.ast.module._
