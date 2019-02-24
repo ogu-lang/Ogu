@@ -20,4 +20,19 @@ package object expressions {
     tokens.consume(NL)
     BlockExpression.parse(tokens)
   }
+
+  def parseListOfExpressions(tokens:TokenStream) : List[Expression] = {
+    consumeListOfExpression(tokens, List(ParseExpr.parse(tokens)))
+  }
+
+  private[this] def consumeListOfExpression(tokens: TokenStream, expressions: List[Expression]) : List[Expression] = {
+    if (!tokens.peek(COMMA)) {
+      expressions.reverse
+    }
+    else {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      consumeListOfExpression(tokens, ParseExpr.parse(tokens) :: expressions)
+    }
+  }
 }

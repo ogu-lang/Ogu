@@ -283,10 +283,10 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case RecurExpression(args) =>
         strBuf ++= s"(recur ${args.map(toClojure).mkString(" ")})"
 
-      case ConstructorExpression(false, cls, args) =>
+      case ConstructorExpression(cls, args) =>
         strBuf ++= s"($cls. ${args.map(toClojure).mkString(" ")})"
 
-      case ConstructorExpression(true, cls, args) =>
+      case RecordConstructorExpression(cls, args) =>
         strBuf ++= s"(->$cls ${args.map(toClojure).mkString(" ")})"
 
       case NewCallExpression(cls, args) if args.isEmpty =>
@@ -474,7 +474,17 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
                 case DefArg(ListExpression(defArgs, None)) =>
                   letDecls = s"[${defArgs.map(toClojure).mkString(" ")}] ${namedArgs.head}]" :: letDecls
 
-                case DefArg(ConstructorExpression(_, cls, ctorArgs)) =>
+                case DefArg(ConstructorExpression(cls, ctorArgs)) =>
+                  andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
+                  var argDecls = List.empty[String]
+                  for (arg <- ctorArgs) {
+                    arg match {
+                      case Identifier(id) => argDecls = s"$id (.$id ${namedArgs.head})" :: argDecls
+                    }
+                  }
+                  letDecls = argDecls.reverse ++ letDecls
+
+                case DefArg(RecordConstructorExpression(cls, ctorArgs)) =>
                   andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
                   var argDecls = List.empty[String]
                   for (arg <- ctorArgs) {
@@ -624,7 +634,8 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
   def toClojureDefMatchArg(defArg: DefArg): String = {
     defArg match {
-      case DefArg(ConstructorExpression(_, cls, _)) => s"$cls"
+      case DefArg(ConstructorExpression(cls, _)) => s"$cls"
+      case DefArg(RecordConstructorExpression(cls, _)) => s"$cls"
       case d => toClojureDefArg(d)
     }
   }

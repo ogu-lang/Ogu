@@ -733,31 +733,13 @@ object Module  {
       parseNewCtorExpression(tokens)
     }
     else if (tokens.peek(classOf[TID])) {
-      parseConstructorExpr(tokens)
+      ConstructorExpression.parse(tokens)
     }
     else {
       parseFuncCallExpr(tokens)
     }
   }
 
-  def parseConstructorExpr(tokens:TokenStream) : ConstructorExpression = {
-    val cls = tokens.consume(classOf[TID]).value
-    if (tokens.peek(LPAREN)) {
-      tokens.consume(LPAREN)
-      val args = if (tokens.peek(RPAREN)) List.empty else parseListOfExpressions(tokens)
-      tokens.consume(RPAREN)
-      ConstructorExpression(isRecord = false, cls, args)
-    }
-    else if (tokens.peek(LCURLY)) {
-      tokens.consume(LCURLY)
-      val args = if (tokens.peek(RCURLY)) List.empty else parseListOfExpressions(tokens)
-      tokens.consume(RCURLY)
-      ConstructorExpression(isRecord = true, cls, args)
-    }
-    else {
-      ConstructorExpression(isRecord = true, cls, List.empty)
-    }
-  }
 
   def parseNewCtorExpression(tokens:TokenStream) : Expression = {
     tokens.consume(NEW)
@@ -768,17 +750,7 @@ object Module  {
     NewCallExpression(cls, args)
   }
 
-  def parseListOfExpressions(tokens:TokenStream) : List[Expression] = {
-    val expr = ParseExpr.parse(tokens)
-    var exprs = List(expr)
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      val expr = ParseExpr.parse(tokens)
-      exprs = expr :: exprs
-    }
-    exprs.reverse
-  }
+
 
   def parseFuncCallExpr(tokens:TokenStream) : Expression = {
     var expr : Expression = null

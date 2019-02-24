@@ -108,7 +108,7 @@ case class FStringLiteral(value: String) extends LiteralExpression
 trait CallExpression extends Expression
 case class FunctionCallExpression(func: Expression, args:List[Expression]) extends CallExpression
 case class NewCallExpression(cls: String, args: List[Expression]) extends CallExpression
-case class ConstructorExpression(isRecord: Boolean, cls: String, args: List[Expression]) extends CallExpression
+
 case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Expression
 
 case class Atom(value: String) extends Expression
