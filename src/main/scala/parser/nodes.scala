@@ -119,17 +119,6 @@ case class LazyExpression(expr: Expression) extends Expression
 class BinaryExpression(val left: Expression, val right: Expression) extends Expression
 
 
-case class AddExpression(override val left: Expression, override val right: Expression) extends SumExpression(left, right)
-case class SubstractExpression(override val left: Expression, override val right: Expression) extends SumExpression(left, right)
-case class ConcatExpression(override val left: Expression, override val right: Expression) extends SumExpression(left, right)
-
-
-class MultExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
-case class MultiplyExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
-case class MultiplyBigExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
-case class DivideExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
-case class ModExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
-
 case class ComposeExpressionForward(left: Expression, right: Expression) extends Expression
 case class ComposeExpressionBackward(left: Expression, right: Expression) extends Expression
 

@@ -526,41 +526,15 @@ object Module  {
   }
 
   def parseSumExpr(tokens:TokenStream) : Expression = {
-    var expr = parseMulExpr(tokens)
-    while (tokens.peek(classOf[SUM_OPER])) {
-      val oper : SUM_OPER = tokens.consume().get
-      while (tokens.peek(NL)) tokens.consume(NL)
-      expr = classifySumExpr(oper, expr, parseMulExpr(tokens))
-    }
-    expr
+    AddExpression.parse(tokens)
   }
 
-  def classifySumExpr(oper: SUM_OPER, left: Expression, right: Expression) : SumExpression = {
-    oper match {
-      case PLUS => AddExpression(left, right)
-      case MINUS => SubstractExpression(left, right)
-      case PLUS_PLUS => ConcatExpression(left, right)
-    }
-  }
+
 
   def parseMulExpr(tokens:TokenStream) : Expression = {
-    var expr = parsePowExpr(tokens)
-    while (tokens.peek(classOf[MUL_OPER])) {
-      val oper = tokens.consume(classOf[MUL_OPER])
-      while (tokens.peek(NL)) tokens.consume(NL)
-      expr = classifyMulExpr(oper, expr, parsePowExpr(tokens))
-    }
-    expr
+    MultiplyExpression.parse(tokens)
   }
 
-  def classifyMulExpr(oper: MUL_OPER, left: Expression, right: Expression) : MultExpression = {
-    oper match {
-      case MULT => MultiplyExpression(left, right)
-      case DIV => DivideExpression(left, right)
-      case MOD => ModExpression(left, right)
-      case MULT_BIG => MultiplyBigExpression(left, right)
-    }
-  }
 
 
   def parsePowExpr(tokens:TokenStream) : Expression = {
@@ -856,7 +830,7 @@ object Module  {
       case expression: ListExpression if expression.expressions.size == 2 =>
         val lexpr = expression.expressions
         val rangeInit = lexpr.head
-        val rangeIncrement = SubstractExpression(lexpr.tail.head, lexpr.head)
+        val rangeIncrement = SubstractExpression(List(lexpr.tail.head, lexpr.head))
         if (include)
           RangeWithIncrementExpression(rangeInit, rangeIncrement, LogicalExpression.parse(tokens))
         else

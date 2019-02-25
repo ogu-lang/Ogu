@@ -107,20 +107,26 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= s"${toClojure(expression)})\n"
         removeVariables(decls)
 
-      case AddExpression(left, right) =>
-        strBuf ++= s"(+ ${toClojure(left)} ${toClojure(right)})"
+      case AddExpression(args) =>
+        strBuf ++= s"(+ ${args.map(toClojure).mkString(" ")})"
 
-      case SubstractExpression(left, right) =>
-        strBuf ++= s"(- ${toClojure(left)} ${toClojure(right)})"
+      case AddBigExpression(args) =>
+        strBuf ++= s"(+' ${args.map(toClojure).mkString(" ")})"
 
-      case MultiplyExpression(left, right) =>
-        strBuf ++= s"(* ${toClojure(left)} ${toClojure(right)})"
+      case SubstractExpression(args) =>
+        strBuf ++= s"(- ${args.map(toClojure).mkString(" ")})"
 
-      case MultiplyBigExpression(left, right) =>
-        strBuf ++= s"(*' ${toClojure(left)} ${toClojure(right)})"
+      case SubstractBigExpression(args) =>
+        strBuf ++= s"(-' ${args.map(toClojure).mkString(" ")})"
 
-      case DivideExpression(left, right) =>
-        strBuf ++= s"(/ ${toClojure(left)} ${toClojure(right)})"
+      case MultiplyExpression(args) =>
+        strBuf ++= s"(* ${args.map(toClojure).mkString(" ")})"
+
+      case MultiplyBigExpression(args) =>
+        strBuf ++= s"(*' ${args.map(toClojure).mkString(" ")})"
+
+      case DivideExpression(args) =>
+        strBuf ++= s"(/ ${args.map(toClojure).mkString(" ")})"
 
       case ModExpression(left, right) =>
         strBuf ++= s"(mod ${toClojure(left)} ${toClojure(right)})"
@@ -313,8 +319,8 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case LessOrEqualThanExpression(args) =>
         strBuf ++= s"(<= ${args.map(toClojure).mkString(" ")})"
 
-      case ConcatExpression(left, right) =>
-        strBuf ++= s"(concat ${toClojure(left)} ${toClojure(right)})"
+      case ConcatExpression(args) =>
+        strBuf ++= s"(concat ${args.map(toClojure).mkString(" ")})"
 
       case ConsExpression(args) =>
         strBuf ++= s"(cons ${args.map(toClojure).mkString(" ")})"
