@@ -10,12 +10,13 @@ case class ReMatchExpr(left: Expression, right: Expression) extends Expression
 object ReMatchExpr extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
-    var expr = parseConsExpr(tokens)
-    if (tokens.peek(MATCH)) {
-      val oper = tokens.consume(MATCH)
+    val expr = parseConsExpr(tokens)
+    if (!tokens.peek(MATCH)) {
+      expr
+    } else {
+      tokens.consume(MATCH)
       tokens.consumeOptionals(NL)
-      expr = ReMatchExpr(expr, parseConsExpr(tokens))
+      ReMatchExpr(expr, parseConsExpr(tokens))
     }
-    expr
   }
 }

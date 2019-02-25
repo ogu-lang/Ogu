@@ -8,12 +8,13 @@ case class MatchesExpression(left: Expression, right: Expression) extends Expres
 object MatchesExpression extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
-    var expr = NoMatchExpr.parse(tokens)
-    if (tokens.peek(MATCHES)) {
-      val oper = tokens.consume(MATCHES)
+    val expr = NoMatchExpr.parse(tokens)
+    if (!tokens.peek(MATCHES)) {
+      expr
+    } else {
+      tokens.consume(MATCHES)
       tokens.consumeOptionals(NL)
-      expr = MatchesExpression(expr, NoMatchExpr.parse(tokens))
+      MatchesExpression(expr, NoMatchExpr.parse(tokens))
     }
-    expr
   }
 }
