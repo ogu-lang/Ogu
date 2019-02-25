@@ -1,7 +1,6 @@
 package parser
 
 import org.joda.time.DateTime
-import parser.ast.functions.ClassMethodDecl
 
 trait LangNode
 

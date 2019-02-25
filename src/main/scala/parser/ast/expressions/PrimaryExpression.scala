@@ -1,6 +1,6 @@
 package parser.ast.expressions
 import lexer._
-import parser.ast.module.Module.{parseFuncCallExpr}
+import parser.ast.module.Module.parseFuncCallExpr
 import parser.{Expression, InvalidExpression}
 
 object PrimaryExpression extends ExpressionParser {

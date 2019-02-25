@@ -3,8 +3,8 @@ package codegen
 import parser._
 import parser.ast.expressions._
 import parser.ast.functions._
-import parser.ast.types._
 import parser.ast.module._
+import parser.ast.types._
 
 
 class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
