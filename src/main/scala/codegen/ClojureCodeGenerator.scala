@@ -192,7 +192,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case RegexpLiteral(re) =>
         strBuf ++= "#\"" + re + "\""
 
-      case MatchExpr(expr, re) =>
+      case MatchesExpression(expr, re) =>
         strBuf ++= s"(some? (re-matches ${toClojure(re)} ${toClojure(expr)}))"
 
       case ReMatchExpr(expr, re) =>
@@ -298,20 +298,20 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case FunctionCallWithDollarExpression(func, args) =>
         strBuf ++= s"(${toClojure(func)} ${args.map(toClojure).mkString(" ")})"
 
-      case EqualsExpr(left, right) =>
-        strBuf ++= s"(= ${toClojure(left)} ${toClojure(right)})"
+      case EqualsExpression(args) =>
+        strBuf ++= s"(= ${args.map(toClojure).mkString(" ")})"
 
-      case GreaterThanExpr(left, right) =>
-        strBuf ++= s"(> ${toClojure(left)} ${toClojure(right)})"
+      case GreaterThanExpression(args) =>
+        strBuf ++= s"(> ${args.map(toClojure).mkString(" ")})"
 
-      case GreaterOrEqualThanExpr(left, right) =>
-        strBuf ++= s"(>= ${toClojure(left)} ${toClojure(right)})"
+      case GreaterOrEqualThanExpression(args) =>
+        strBuf ++= s"(>= ${args.map(toClojure).mkString(" ")})"
 
-      case LessThanExpr(left, right) =>
-        strBuf ++= s"(< ${toClojure(left)} ${toClojure(right)})"
+      case LessThanExpression(args) =>
+        strBuf ++= s"(< ${args.map(toClojure).mkString(" ")})"
 
-      case LessOrEqualThanExpr(left, right) =>
-        strBuf ++= s"(<= ${toClojure(left)} ${toClojure(right)})"
+      case LessOrEqualThanExpression(args) =>
+        strBuf ++= s"(<= ${args.map(toClojure).mkString(" ")})"
 
       case ConcatExpression(left, right) =>
         strBuf ++= s"(concat ${toClojure(left)} ${toClojure(right)})"

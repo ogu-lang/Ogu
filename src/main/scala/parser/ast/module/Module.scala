@@ -522,28 +522,7 @@ object Module  {
   }
 
   def parseComparativeExpr(tokens:TokenStream) : Expression = {
-    var expr = parseConsExpr(tokens)
-    while (tokens.peek(classOf[COMPARATIVE_BIN_OPER])) {
-      val oper = tokens.consume(classOf[COMPARATIVE_BIN_OPER])
-      while (tokens.peek(NL)) tokens.consume(NL)
-      expr = classifyComparativeExpr(oper, expr, parseConsExpr(tokens))
-    }
-    expr
-  }
-
-  def classifyComparativeExpr(oper: COMPARATIVE_BIN_OPER, left: Expression, right: Expression) : ComparativeExpression = {
-    oper match {
-      case LT => LessThanExpr(left, right)
-      case GT => GreaterThanExpr(left, right)
-      case LE => LessOrEqualThanExpr(left, right)
-      case GE => GreaterOrEqualThanExpr(left, right)
-      case EQUALS => EqualsExpr(left, right)
-      case NOT_EQUALS => NotEqualsExpr(left, right)
-      case MATCH => ReMatchExpr(left, right)
-      case MATCHES => MatchExpr(left, right)
-      case NOT_MATCHES => NoMatchExpr(left, right)
-      case CONTAINS => ContainsExpr(left, right)
-    }
+    ComparativeExpression.parse(tokens)
   }
 
   def parseConsExpr(tokens:TokenStream) : Expression = {

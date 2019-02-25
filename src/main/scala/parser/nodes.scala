@@ -113,32 +113,9 @@ case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Exp
 
 case class Atom(value: String) extends Expression
 
-
-
-
-
-
-
-
-
-
-
 case class LazyExpression(expr: Expression) extends Expression
 
 class BinaryExpression(val left: Expression, val right: Expression) extends Expression
-
-
-class ComparativeExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
-case class LessThanExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class GreaterThanExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class LessOrEqualThanExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class GreaterOrEqualThanExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class EqualsExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class NotEqualsExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class MatchExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class ReMatchExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class NoMatchExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class ContainsExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
 
 case class ConsExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
 

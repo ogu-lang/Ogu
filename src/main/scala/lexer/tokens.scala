@@ -29,7 +29,7 @@ trait DECL extends KEYWORD
 case object CATCH extends CONTROL
 case object CLASS extends DECL
 case object COND extends CONTROL
-case object CONTAINS extends COMPARATIVE_BIN_OPER
+case object CONTAINS extends OPER
 case object DATA extends DECL
 case object DEF extends DECL
 case object DISPATCH extends DECL

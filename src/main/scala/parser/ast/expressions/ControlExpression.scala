@@ -4,7 +4,6 @@ import parser.{Expression, InvalidExpression, InvalidNodeException}
 
 class ControlExpression extends Expression
 
-
 object ControlExpression extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
