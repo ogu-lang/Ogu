@@ -118,8 +118,6 @@ case class LazyExpression(expr: Expression) extends Expression
 class BinaryExpression(val left: Expression, val right: Expression) extends Expression
 
 
-case class ComposeExpressionForward(left: Expression, right: Expression) extends Expression
-case class ComposeExpressionBackward(left: Expression, right: Expression) extends Expression
 
 case class ArrayAccessExpression(array: Expression, index: Expression) extends Expression with AssignableExpression
 

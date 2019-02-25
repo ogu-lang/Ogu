@@ -134,11 +134,11 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case PowerExpression(left, right) =>
         strBuf ++= s"(pow ${toClojure(left)} ${toClojure(right)})"
 
-      case ComposeExpressionForward(left, right) =>
-        strBuf ++= s"(comp ${toClojure(right)} ${toClojure(left)})"
+      case ComposeExpressionForward(args) =>
+        strBuf ++= s"(comp ${args.reverse.map(toClojure).mkString(" ")})"
 
-      case ComposeExpressionBackward(left, right) =>
-        strBuf ++= s"(comp ${toClojure(left)} ${toClojure(right)})"
+      case ComposeExpressionBackward(args) =>
+        strBuf ++= s"(comp ${args.map(toClojure).mkString(" ")})"
 
       case Identifier(id) =>
         if (isVariable(id)) {

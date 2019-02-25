@@ -523,15 +523,7 @@ object Module  {
 
 
   def parseComposeExpr(tokens:TokenStream) : Expression = {
-    var expr = parsePostfixExpr(tokens)
-    while (tokens.peek(classOf[COMPOSE_OPER])) {
-      val op = tokens.consume(classOf[COMPOSE_OPER])
-      expr = op match {
-        case COMPOSE_FORWARD => ComposeExpressionForward(expr, parseComposeExpr(tokens))
-        case COMPOSE_BACKWARD => ComposeExpressionBackward(expr, parseComposeExpr(tokens))
-      }
-    }
-    expr
+    ComposeExpressionForward.parse(tokens)
   }
 
   def parsePostfixExpr(tokens:TokenStream) : Expression = {
