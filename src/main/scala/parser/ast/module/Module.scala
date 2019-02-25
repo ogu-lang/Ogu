@@ -524,13 +524,12 @@ object Module  {
 
   def parseFuncCallExpr(tokens:TokenStream) : Expression = {
     var expr : Expression = null
-    //println(s"@@parseFunCallExpr (tokens=${tokens})")
     if (tokens.peek(classOf[ID])) {
       val id = tokens.consume(classOf[ID])
       expr = Identifier(id.value)
     }
     else if (tokens.peek(classOf[ATOM])) {
-      expr = parseAtom(tokens)
+      expr = Atom.parse(tokens)
     }
     if (!funcCallEndToken(tokens)) {
       var args = List.empty[Expression]
@@ -552,11 +551,6 @@ object Module  {
       }
       expr
     }
-  }
-
-  def parseAtom(tokens:TokenStream) : Expression = {
-    val atom = tokens.consume(classOf[ATOM])
-    Atom(atom.value)
   }
 
   def parseLiteral(tokens:TokenStream) : Expression = {
@@ -726,7 +720,7 @@ object Module  {
 
   def parseKeyExpr(tokens:TokenStream) : Expression = {
     if (tokens.peek(classOf[ATOM]))
-      parseAtom(tokens)
+      Atom.parse(tokens)
     else
       parseLiteral(tokens)
   }

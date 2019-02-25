@@ -110,7 +110,7 @@ case class FunctionCallExpression(func: Expression, args:List[Expression]) exten
 
 case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Expression
 
-case class Atom(value: String) extends Expression
+
 
 
 

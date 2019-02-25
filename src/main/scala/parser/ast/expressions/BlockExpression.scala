@@ -10,7 +10,7 @@ object BlockExpression extends ExpressionParser {
 
   def parse(tokens: TokenStream): Expression = {
     tokens.consume(INDENT)
-    var listOfExpressions = consumeExpressions(tokens, Nil)
+    val listOfExpressions = consumeExpressions(tokens, Nil)
     tokens.consume(DEDENT)
     BlockExpression(listOfExpressions)
   }
