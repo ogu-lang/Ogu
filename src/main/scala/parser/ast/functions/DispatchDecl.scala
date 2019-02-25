@@ -1,7 +1,7 @@
 package parser.ast.functions
 
 import lexer._
-import parser.ast.module.Module
+import parser.ast.expressions.ForwardPipeFuncCallExpression
 import parser.{Expression, LangNode}
 
 sealed trait DispatcherTrait
@@ -20,7 +20,7 @@ object DispatchDecl {
       tokens.consume(CLASS)
       DispatchDecl(id, ClassDispatcher)
     } else {
-      DispatchDecl(id, ExpressionDispatcher(Module.parsePipedExpr(tokens)))
+      DispatchDecl(id, ExpressionDispatcher(ForwardPipeFuncCallExpression.parse(tokens)))
     }
   }
 }

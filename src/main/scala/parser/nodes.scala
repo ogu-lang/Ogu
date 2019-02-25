@@ -1,25 +1,13 @@
 package parser
 
-import lexer.TokenStream
 import org.joda.time.DateTime
-import parser.ast.functions.ClassMethodDecl
 
 trait LangNode
-
-
-
-
-
-
 
 trait AssignableExpression
 
 
-sealed trait Expression extends LangNode
-
-case class ReifyExpression(traitName: String, methods: List[ClassMethodDecl]) extends Expression
-
-
+trait Expression extends LangNode
 
 class Name(name: String) extends Expression
 trait LambdaArg
@@ -118,87 +106,18 @@ case class FStringLiteral(value: String) extends LiteralExpression
 
 trait CallExpression extends Expression
 case class FunctionCallExpression(func: Expression, args:List[Expression]) extends CallExpression
-case class FunctionCallWithDollarExpression(func: Expression, args: List[Expression]) extends CallExpression
-case class BackwardPipeFuncCallExpression(args: List[Expression]) extends CallExpression
-case class BackwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends CallExpression
-case class NewCallExpression(cls: String, args: List[Expression]) extends CallExpression
-case class ConstructorExpression(isRecord: Boolean, cls: String, args: List[Expression]) extends CallExpression
+
+
 case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Expression
 
 case class Atom(value: String) extends Expression
 
 
-case class BlockExpression(expressions: List[Expression]) extends Expression
-
-class ControlExpression extends Expression
-case class ForExpression(variables: List[LoopDeclVariable], body: Expression) extends ControlExpression
-case class LoopExpression(variables: List[LoopVarDecl], guard: Option[LoopGuard], body: Expression) extends ControlExpression
-case class WhileExpression(comp: Expression, body: Expression) extends ControlExpression
-case class UntilExpression(comp: Expression, body: Expression) extends ControlExpression
-case class WhenExpression(comp: Expression, body: Expression) extends ControlExpression
-
-case class RepeatNewVarValue(variable: String, value: Expression)
-
-case class RepeatExpr(newVariableValues: Option[List[RepeatNewVarValue]]) extends ControlExpression
-case class RecurExpr(args: List[Expression]) extends ControlExpression
-
-case class ElifPart(comp: Expression, body: Expression)
-case class IfExpression(comp: Expression, thenPart: Expression, elifPart: List[ElifPart], elsePart: Expression) extends ControlExpression
-
-case class CondGuard(comp: Option[Expression], value: Expression)
-case class CondExpression(guards: List[CondGuard]) extends ControlExpression
-
-case class LazyExpression(expr: Expression) extends Expression
 
 class BinaryExpression(val left: Expression, val right: Expression) extends Expression
 
-class LogicalExpression(l1: Expression, r1: Expression)  extends BinaryExpression(l1, r1)
-case class LogicalAndExpression(override val left: Expression, override val right: Expression) extends LogicalExpression(left, right)
-case class LogicalOrExpression(override val left: Expression, override val right: Expression) extends LogicalExpression(left, right)
-
-class ComparativeExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
-case class LessThanExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class GreaterThanExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class LessOrEqualThanExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class GreaterOrEqualThanExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class EqualsExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class NotEqualsExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class MatchExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class ReMatchExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class NoMatchExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-case class ContainsExpr(override val left: Expression, override val right: Expression) extends ComparativeExpression(left, right)
-
-case class ConsExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
-
-class SumExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
-case class AddExpression(override val left: Expression, override val right: Expression) extends SumExpression(left, right)
-case class SubstractExpression(override val left: Expression, override val right: Expression) extends SumExpression(left, right)
-case class ConcatExpression(override val left: Expression, override val right: Expression) extends SumExpression(left, right)
 
 
-class MultExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
-case class MultiplyExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
-case class MultiplyBigExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
-case class DivideExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
-case class ModExpression(override val left: Expression, override val right: Expression) extends MultExpression(left, right)
-
-case class ComposeExpressionForward(left: Expression, right: Expression) extends Expression
-case class ComposeExpressionBackward(left: Expression, right: Expression) extends Expression
-
-case class PowerExpression(base: Expression, exponent: Expression) extends Expression
-
-case class ArrayAccessExpression(array: Expression, index: Expression) extends Expression with AssignableExpression
-
-case class CatchExpression(id: Option[String], ex: String, body: Expression) extends Expression
-case class TryExpression(body: Expression, catches: List[CatchExpression], finExpr: Option[Expression]) extends Expression
-case class ThrowExpression(ctor: ConstructorExpression) extends Expression
-
-case class SimpleAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
-case class PlusAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
-case class MinusAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
-case class MultAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
-case class DivAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
-case class ModAssignExpr(left: Expression, right: Expression) extends Expression with AssignableExpression
 
 
 trait ValidRangeExpression extends Expression
@@ -230,21 +149,6 @@ case class BodyGuardsExpresionAndWhere(guards: List[DefBodyGuardExpr], whereBloc
 case class TupleExpr(expressions: List[Expression]) extends Expression
 case class InfiniteTupleExpr(expressions: List[Expression]) extends Expression
 
-trait PartialOper extends Expression
-case class PartialAdd(args: List[Expression]) extends PartialOper
-case class PartialSub(args: List[Expression]) extends PartialOper
-case class PartialMul(args: List[Expression]) extends PartialOper
-case class PartialDiv(args: List[Expression]) extends PartialOper
-case class PartialMod(args: List[Expression]) extends PartialOper
-case class PartialEQ(args: List[Expression]) extends PartialOper
-case class PartialNE(args: List[Expression]) extends PartialOper
-case class PartialLT(args: List[Expression]) extends PartialOper
-case class PartialLE(args: List[Expression]) extends PartialOper
-case class PartialGT(args: List[Expression]) extends PartialOper
-case class PartialGE(args: List[Expression]) extends PartialOper
-case class PartialPow(args: List[Expression]) extends PartialOper
-case class PartialCons(args: List[Expression]) extends PartialOper
-case class PartialConcat(args: List[Expression]) extends PartialOper
 
 case class DictionaryExpression(items: List[(Expression, Expression)]) extends Expression
 case class SetExpression(values: List[Expression]) extends Expression

@@ -1,7 +1,5 @@
 package parser
 
-import java.math.BigInteger
-
 import backend.Backend
 import clojure.lang
 import org.scalatest.{FlatSpec, Matchers}

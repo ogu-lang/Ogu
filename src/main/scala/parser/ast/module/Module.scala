@@ -2,7 +2,7 @@ package parser.ast.module
 
 import lexer._
 import parser._
-import parser.ast.expressions.{ForwardPipeFirstArgFuncCallExpression, ForwardPipeFuncCallExpression, TopLevelExpression}
+import parser.ast.expressions._
 import parser.ast.functions._
 import parser.ast.types._
 
@@ -149,11 +149,11 @@ object Module  {
     else if (tokens.peek(ASSIGN)) {
       tokens.consume(ASSIGN)
       val body = if (!tokens.peek(NL)) {
-        parsePipedExpr(tokens)
+        ForwardPipeFuncCallExpression.parse(tokens)
       }
       else {
         tokens.consume(NL)
-        parseBlockExpr(tokens)
+        BlockExpression.parse(tokens)
       }
       val where = tryParseWhereBlock(tokens)
       if (matches.isEmpty) {
@@ -191,26 +191,26 @@ object Module  {
       tokens.consume(ASSIGN)
       var expr: Expression = null
       if (!tokens.peek(NL)) {
-        expr = parsePipedExpr(tokens)
+        expr = ForwardPipeFuncCallExpression.parse(tokens)
         tokens.consumeOptionals(NL)
       }
       else {
         tokens.consume(NL)
-        expr = parseBlockExpr(tokens)
+        expr = BlockExpression.parse(tokens)
       }
       DefBodyGuardOtherwiseExpression(expr)
 
     } else {
-      val guardExpr = parseLogicalExpr(tokens)
+      val guardExpr = LogicalExpression.parse(tokens)
       tokens.consume(ASSIGN)
       var expr: Expression = null
       if (!tokens.peek(NL)) {
-        expr = parsePipedExpr(tokens)
+        expr = ForwardPipeFuncCallExpression.parse(tokens)
         tokens.consume(NL)
       }
       else {
         tokens.consume(NL)
-        expr = parseBlockExpr(tokens)
+        expr = BlockExpression.parse(tokens)
       }
       DefBodyGuardExpression(guardExpr, expr)
     }
@@ -275,10 +275,10 @@ object Module  {
     if (tokens.peek(ASSIGN)) {
       tokens.consume(ASSIGN)
       val body = if (!tokens.peek(NL)) {
-        parsePipedExpr(tokens)
+        ForwardPipeFuncCallExpression.parse(tokens)
       } else {
         tokens.consume(NL)
-        parseBlockExpr(tokens)
+        BlockExpression.parse(tokens)
       }
       if (listOfIds.size == 1)
         WhereDefSimple(listOfIds.head, if (listOfArgs.isEmpty) None else Some(listOfArgs.reverse), body)
@@ -324,10 +324,10 @@ object Module  {
       tokens.consume(OTHERWISE)
       None
     } else {
-      Some(parseLogicalExpr(tokens))
+      Some(LogicalExpression.parse(tokens))
     }
     tokens.consume(ASSIGN)
-    val body = if (tokens.peek(INDENT)) parseBlockExpr(tokens) else parsePipedExpr(tokens)
+    val body = if (tokens.peek(INDENT)) BlockExpression.parse(tokens) else ForwardPipeFuncCallExpression.parse(tokens)
     tokens.consume(NL)
     WhereGuard(comp, body)
   }
@@ -337,7 +337,7 @@ object Module  {
       val id = tokens.consume(classOf[ID])
       Identifier(id.value)
     } else {
-      parseLogicalExpr(tokens)
+      LogicalExpression.parse(tokens)
     }
   }
 
@@ -373,7 +373,7 @@ object Module  {
       }
     }
     else {
-      parseLogicalExpr(tokens)
+      LogicalExpression.parse(tokens)
     }
   }
 
@@ -424,10 +424,10 @@ object Module  {
   def parseInBodyExpr(tokens:TokenStream): Option[Expression] = {
     tokens.consume(IN)
     if (!tokens.peek(NL)) {
-      Some(parsePipedExpr(tokens))
+      Some(ForwardPipeFuncCallExpression.parse(tokens))
     } else {
       tokens.consume(NL)
-      Some(parseBlockExpr(tokens))
+      Some(BlockExpression.parse(tokens))
     }
   }
 
@@ -475,455 +475,10 @@ object Module  {
     }
   }
 
-  private def parsePipedOrBodyExpression(tokens:TokenStream): Expression = {
-    if (!tokens.peek(NL))
-      parsePipedExpr(tokens)
-    else {
-      tokens.consume(NL)
-      parseBlockExpr(tokens)
-    }
-  }
-
-  // pipedExpr = expr (PIPE_OPER pipedExpr)*
-  def parsePipedExpr(tokens:TokenStream) : Expression = {
-    ForwardPipeFuncCallExpression.parse(tokens:TokenStream)
-  }
-
-
-  def parseForwardPipeFirstArgExpr(tokens:TokenStream) : Expression = {
-    ForwardPipeFirstArgFuncCallExpression.parse(tokens)
-  }
-
-  def parseBackwardPipeExpr(tokens:TokenStream) : Expression = {
-    var expr = parseBackwardFirstArgPipeExpr(tokens)
-    if (tokens.peek(PIPE_LEFT)) {
-      var value = expr
-      var args = List.empty[Expression]
-      while (tokens.peek(PIPE_LEFT)) {
-        args = value :: args
-        tokens.consume(PIPE_LEFT)
-        value = parseBackwardFirstArgPipeExpr(tokens)
-      }
-      args = value :: args
-      expr = BackwardPipeFuncCallExpression(args)
-    }
-    expr
-  }
-
-  def parseBackwardFirstArgPipeExpr(tokens:TokenStream) : Expression = {
-    var expr = parseDollarExpr(tokens)
-    if (tokens.peek(PIPE_LEFT_FIRST_ARG)) {
-      var value = expr
-      var args = List.empty[Expression]
-      while (tokens.peek(PIPE_LEFT_FIRST_ARG)) {
-        args = value :: args
-        tokens.consume(PIPE_LEFT_FIRST_ARG)
-        value = parseDollarExpr(tokens)
-      }
-      args = value :: args
-      expr = BackwardPipeFirstArgFuncCallExpression(args)
-    }
-    expr
-  }
-
-  def parseDollarExpr(tokens:TokenStream) : Expression = {
-    var expr = parseExpr(tokens)
-    if (tokens.peek(DOLLAR)) {
-      val func = expr
-      tokens.consume(DOLLAR)
-      var args = List.empty[Expression]
-      while (!funcCallEndToken(tokens)) {
-        expr = parseDollarExpr(tokens)
-        args = expr :: args
-      }
-      expr = FunctionCallWithDollarExpression(func, args.reverse)
-    }
-    expr
-  }
-
-
-  // funcCallExpr ::= control_expr | lambda_expr
-  def parseExpr(tokens:TokenStream) : Expression = {
-    // if control
-    if (tokens.peek(classOf[CONTROL]))
-      parseControlExpr(tokens)
-    else if (tokens.peek(LET))
-      parseLetExpr(tokens)
-    else if (tokens.peek(VAR))
-      parseVarExpr(tokens)
-    else if (tokens.peek(BIND))
-      parseBindExpr(tokens)
-    else
-      parseLambdaExpr(tokens)
-  }
-
-  def parseControlExpr(tokens:TokenStream) : Expression = {
-    if (tokens.peek(COND)) {
-      parseCondExpr(tokens)
-    }
-    else if (tokens.peek(FOR)) {
-      parseForExpr(tokens)
-    }
-    else if (tokens.peek(IF)) {
-      parseIfExpr(tokens)
-    }
-    else if (tokens.peek(WHEN)) {
-      parseWhenExpr(tokens)
-    }
-    else if (tokens.peek(LOOP)) {
-      parseLoopExpr(tokens)
-    }
-    else if (tokens.peek(UNTIL)) {
-      parseWhileExpr(tokens)
-    }
-    else if (tokens.peek(WHILE)) {
-      parseWhileExpr(tokens)
-    }
-    else if (tokens.peek(RECUR)) {
-      parseRecurExpr(tokens)
-    }
-    else if (tokens.peek(REIFY)) {
-      parseReifyExpr(tokens)
-    }
-    else if (tokens.peek(REPEAT)) {
-      parseRepeatExpr(tokens)
-    }
-    else if (tokens.peek(SET)) {
-      parseAssignExpr(tokens)
-    }
-    else if (tokens.peek(TRY)) {
-      parseTryExpr(tokens)
-    }
-    else if (tokens.peek(THROW)) {
-      parseThrowExpr(tokens)
-    }
-    else {
-      println(s"ERROR PARSE CONTROL tokens= $tokens")
-      throw InvalidNodeException(tokens.nextToken())
-    }
-  }
-
-  def parseReifyExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(REIFY)
-    val name = tokens.consume(classOf[TID]).value
-    tokens.consume(NL)
-    tokens.consume(INDENT)
-    var methods = List.empty[ClassMethodDecl]
-    while (tokens.peek(DEF)) {
-      val defDecl = parseDef(false, tokens)
-      methods = ClassMethodDecl(defDecl) :: methods
-      tokens.consumeOptionals(NL)
-    }
-    tokens.consume(DEDENT)
-    ReifyExpression(name, methods.reverse)
-  }
-
-  def parseThrowExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(THROW)
-    val ctor = parseConstructorExpr(tokens)
-    tokens.consumeOptionals(NL)
-    ThrowExpression(ctor)
-  }
-
-  def parseTryExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(TRY)
-    val body = parsePipedOrBodyExpression(tokens)
-    tokens.consumeOptionals(NL)
-    var catches = List.empty[CatchExpression]
-    var indents = 0
-    if (tokens.peek(INDENT)) {
-      tokens.consume(INDENT)
-      indents += 1
-    }
-    while (tokens.peek(CATCH)) {
-      val catchExpr = parseCatchExpr(tokens)
-      catches = catchExpr :: catches
-      tokens.consumeOptionals(NL)
-      if (tokens.peek(INDENT)) {
-        tokens.consume(INDENT)
-        indents += 1
-      }
-    }
-    val finallyExpr = if (tokens.peek(FINALLY)) {
-      Some(parseFinallyExpr(tokens))
-    } else {
-      None
-    }
-    while (indents > 0) {
-      tokens.consume(DEDENT)
-      indents -= 1
-    }
-    TryExpression(body, catches.reverse, finallyExpr)
-  }
-
-  def parseCatchExpr(tokens:TokenStream): CatchExpression = {
-    tokens.consume(CATCH)
-    if (tokens.peek(classOf[ID])) {
-      val id = tokens.consume(classOf[ID]).value
-      tokens.consume(COLON)
-      val ex = tokens.consume(classOf[TID]).value
-      tokens.consume(ARROW)
-      CatchExpression(Some(id), ex, parsePipedOrBodyExpression(tokens))
-    } else {
-      val ex = tokens.consume(classOf[TID]).value
-      tokens.consume(ARROW)
-      CatchExpression(None, ex, parsePipedOrBodyExpression(tokens))
-    }
-  }
-
-  def parseFinallyExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(FINALLY)
-    tokens.consume(ARROW)
-    parsePipedOrBodyExpression(tokens)
-  }
-
-  def parseCondExpr(tokens:TokenStream): Expression = {
-    tokens.consume(COND)
-    tokens.consume(NL)
-    tokens.consume(INDENT)
-    var guards = List.empty[CondGuard]
-    while (!tokens.peek(DEDENT)) {
-      val comp = if (tokens.peek(OTHERWISE)) {
-        tokens.consume(OTHERWISE)
-        None
-      } else {
-        Some(parseLogicalExpr(tokens))
-      }
-      tokens.consume(ARROW)
-      val value = parsePipedExpr(tokens)
-      tokens.consumeOptionals(NL)
-      guards = CondGuard(comp, value) :: guards
-    }
-    tokens.consume(DEDENT)
-    CondExpression(guards.reverse)
-  }
-
-  def parseRepeatExpr(tokens:TokenStream): Expression = {
-    tokens.consume(REPEAT)
-    if (tokens.peek(WITH))
-      tokens.consume(WITH)
-    var repeatVariables = List.empty[RepeatNewVarValue]
-    var repVar = parseRepeatNewValue(tokens)
-    repeatVariables = repVar :: repeatVariables
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      repVar = parseRepeatNewValue(tokens)
-      repeatVariables = repVar :: repeatVariables
-    }
-    tokens.consumeOptionals(NL)
-    RepeatExpr(Some(repeatVariables.reverse))
-  }
-
-  def parseRepeatNewValue(tokens:TokenStream) : RepeatNewVarValue = {
-    if (tokens.peek(classOf[ID]) && tokens.peek(2, ASSIGN)) {
-      val id = tokens.consume(classOf[ID])
-      tokens.consume(ASSIGN)
-      val expr = parsePipedExpr(tokens)
-      RepeatNewVarValue(id.value, expr)
-    } else {
-      RepeatNewVarValue(genId(), parseExpr(tokens))
-    }
-  }
-
-  def genId() : String = {
-    s"id_${java.util.UUID.randomUUID.toString}"
-  }
-
-  def parseForExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(FOR)
-    val forDecls = parseForDecls(tokens)
-    val forBody = parseForBody(tokens)
-    ForExpression(forDecls, forBody)
-  }
-
-  def parseForDecls(tokens:TokenStream) : List[LoopDeclVariable] = {
-    var listOfDecls = List.empty[LoopDeclVariable]
-    val forVarDecl = parseForVarDecl(tokens)
-    listOfDecls = forVarDecl :: listOfDecls
-
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      val forVarDecl = parseForVarDecl(tokens)
-      listOfDecls = forVarDecl :: listOfDecls
-    }
-    listOfDecls.reverse
-  }
-
-  def parseForVarDecl(tokens:TokenStream) : LoopDeclVariable = {
-    if (!tokens.peek(LPAREN)) {
-      val id = tokens.consume(classOf[ID])
-      tokens.consume(IN)
-      ForVarDeclIn(id.value, parsePipedExpr(tokens))
-    }
-    else {
-      tokens.consume(LPAREN)
-      var ids = List.empty[String]
-      val id = tokens.consume(classOf[ID])
-      ids = id.value :: ids
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        val id = tokens.consume(classOf[ID])
-        ids = id.value :: ids
-      }
-      tokens.consume(RPAREN)
-      tokens.consume(IN)
-      ForVarDeclTupledIn(ids, parsePipedExpr(tokens))
-    }
-  }
-
-  def parseWhileExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(WHILE)
-    val comp = parseLogicalExpr(tokens)
-    tokens.consume(DO)
-    WhileExpression(comp, parsePipedOrBodyExpression(tokens))
-  }
-
-
-  def parseUntilExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(UNTIL)
-    val comp = parseLogicalExpr(tokens)
-    tokens.consume(DO)
-    UntilExpression(comp, parsePipedOrBodyExpression(tokens))
-  }
-
-  def parseLoopExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(LOOP)
-
-    val loopDecls = parseLoopDecls(tokens)
-
-    var guardExpr : Option[LoopGuard] = None
-    tokens.consumeOptionals(NL)
-
-    if (tokens.peek(WHILE)) {
-      tokens.consume(WHILE)
-      guardExpr = Some(WhileGuardExpr(parseLogicalExpr(tokens)))
-    }
-
-
-    if (tokens.peek(UNTIL)) {
-      if (guardExpr.isDefined)
-        throw InvalidUntilAlreadyHasWhile()
-      tokens.consume(UNTIL)
-      guardExpr = Some(UntilGuardExpr(parseLogicalExpr(tokens)))
-    }
-
-    tokens.consume(DO)
-    if (!tokens.peek(NL)) {
-      LoopExpression(loopDecls, guardExpr, parsePipedExpr(tokens))
-    }
-    else {
-      tokens.consume(NL)
-      LoopExpression(loopDecls, guardExpr, parseBlockExpr(tokens))
-    }
-  }
-
-  def parseLoopDecls(tokens:TokenStream) : List[LoopVarDecl] = {
-    var listOfDecls = List.empty[LoopVarDecl]
-    var loopVarDecl = parseLoopVarDecl(tokens)
-    listOfDecls = loopVarDecl :: listOfDecls
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      loopVarDecl = parseLoopVarDecl(tokens)
-      listOfDecls = loopVarDecl :: listOfDecls
-    }
-    listOfDecls.reverse
-  }
-
-  def parseLoopVarDecl(tokens:TokenStream) : LoopVarDecl = {
-    val id = tokens.consume(classOf[ID])
-    if (tokens.peek(ASSIGN)) {
-      tokens.consume(ASSIGN)
-      LoopVarDecl(id.value, parsePipedExpr(tokens))
-    } else {
-      throw UnexpectedTokenClassException()
-    }
-  }
-
-  def parseForBody(tokens:TokenStream) : Expression = {
-    tokens.consume(DO)
-    parsePipedOrBodyExpression(tokens)
-  }
-
-  def parseBlockExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(INDENT)
-    var listOfExpressions = List.empty[Expression]
-    var loop = 0
-    while (!tokens.peek(DEDENT)) {
-      loop += 1
-      val expr = parsePipedExpr(tokens)
-      tokens.consumeOptionals(NL)
-      listOfExpressions = expr :: listOfExpressions
-    }
-    tokens.consume(DEDENT)
-    BlockExpression(listOfExpressions.reverse)
-  }
-
-  def parseIfExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(IF)
-    val comp = parseLogicalExpr(tokens)
-    tokens.consume(THEN)
-    val thenPart = if (!tokens.peek(NL)) {
-      parsePipedExpr(tokens)
-    }
-    else {
-      tokens.consume(NL)
-      parseBlockExpr(tokens)
-    }
-    while (tokens.peek(NL)) tokens.consume(NL)
-    var elif = List.empty[ElifPart]
-    if (tokens.peek(ELIF)) {
-      while (tokens.peek(ELIF)) {
-        tokens.consume(ELIF)
-        val elifComp = parseLogicalExpr(tokens)
-        tokens.consume(THEN)
-        val elifPart = if (!tokens.peek(NL)) {
-          ElifPart(elifComp, parsePipedExpr(tokens))
-        }
-        else {
-          while (tokens.peek(NL)) tokens.consume(NL)
-          ElifPart(elifComp, parseBlockExpr(tokens))
-        }
-        elif = elifPart :: elif
-      }
-    }
-    if (tokens.peek(ELSE)) {
-      tokens.consume(ELSE)
-      if (!tokens.peek(NL)) {
-        return IfExpression(comp, thenPart, elif.reverse, parsePipedExpr(tokens))
-      } else {
-        while (tokens.peek(NL)) tokens.consume(NL)
-        return IfExpression(comp, thenPart, elif.reverse, parseBlockExpr(tokens))
-      }
-    }
-    throw InvalidIfExpression()
-  }
-
-  def parseWhenExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(WHEN)
-    val comp = parseLogicalExpr(tokens)
-    tokens.consume(THEN)
-    if (!tokens.peek(NL)) {
-      WhenExpression(comp, parsePipedExpr(tokens))
-    }
-    else {
-      tokens.consume(NL)
-      WhenExpression(comp, parseBlockExpr(tokens))
-    }
-  }
-
-  def parseAssignExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(SET)
-    val expr = parsePipedOrBodyExpression(tokens)
-    if (!expr.isInstanceOf[AssignableExpression])
-      throw CantAssignToExpression()
-    tokens.consume(ASSIGN)
-    val right = parsePipedExpr(tokens)
-    SimpleAssignExpr(expr, right)
-  }
 
   def parseLambdaExpr(tokens:TokenStream) : Expression = {
     if (!tokens.peek(LAMBDA)) {
-      parseLogicalExpr(tokens)
+      LogicalExpression.parse(tokens)
     }
     else {
       tokens.consume(LAMBDA)
@@ -939,7 +494,7 @@ object Module  {
         throw InvalidLambdaExpression(tokens.nextToken())
       }
       tokens.consume(ARROW)
-      val expr = LambdaExpression(args.reverse, parseExpr(tokens))
+      val expr = LambdaExpression(args.reverse, ParseExpr.parse(tokens))
       expr
     }
   }
@@ -966,203 +521,6 @@ object Module  {
     }
   }
 
-  def parseLogicalExpr(tokens:TokenStream) : Expression = {
-    var expr = parseComparativeExpr(tokens)
-    while (tokens.peek(classOf[LOGICAL_BIN_OPER])) {
-      val logicalOper = tokens.consume(classOf[LOGICAL_BIN_OPER])
-      while (tokens.peek(NL)) tokens.consume(NL)
-      expr = classifyLogicalExpr(logicalOper, expr, parseLogicalExpr(tokens))
-    }
-    expr
-  }
-
-  def classifyLogicalExpr(oper: LOGICAL_BIN_OPER, left: Expression, right: Expression) : LogicalExpression = {
-    oper match {
-      case AND => LogicalAndExpression(left, right)
-      case OR => LogicalOrExpression(left, right)
-    }
-  }
-
-  def parseComparativeExpr(tokens:TokenStream) : Expression = {
-    var expr = parseConsExpr(tokens)
-    while (tokens.peek(classOf[COMPARATIVE_BIN_OPER])) {
-      val oper = tokens.consume(classOf[COMPARATIVE_BIN_OPER])
-      while (tokens.peek(NL)) tokens.consume(NL)
-      expr = classifyComparativeExpr(oper, expr, parseConsExpr(tokens))
-    }
-    expr
-  }
-
-  def classifyComparativeExpr(oper: COMPARATIVE_BIN_OPER, left: Expression, right: Expression) : ComparativeExpression = {
-    oper match {
-      case LT => LessThanExpr(left, right)
-      case GT => GreaterThanExpr(left, right)
-      case LE => LessOrEqualThanExpr(left, right)
-      case GE => GreaterOrEqualThanExpr(left, right)
-      case EQUALS => EqualsExpr(left, right)
-      case NOT_EQUALS => NotEqualsExpr(left, right)
-      case MATCH => ReMatchExpr(left, right)
-      case MATCHES => MatchExpr(left, right)
-      case NOT_MATCHES => NoMatchExpr(left, right)
-      case CONTAINS => ContainsExpr(left, right)
-    }
-  }
-
-  def parseConsExpr(tokens:TokenStream) : Expression = {
-    var expr = parseSumExpr(tokens)
-    while (tokens.peek(CONS)) {
-      tokens.consume(CONS)
-      while (tokens.peek(NL)) tokens.consume(NL)
-      expr = ConsExpression(expr, parseConsExpr(tokens))
-    }
-    expr
-  }
-
-  def parseSumExpr(tokens:TokenStream) : Expression = {
-    var expr = parseMulExpr(tokens)
-    while (tokens.peek(classOf[SUM_OPER])) {
-      val oper : SUM_OPER = tokens.consume().get
-      while (tokens.peek(NL)) tokens.consume(NL)
-      expr = classifySumExpr(oper, expr, parseMulExpr(tokens))
-    }
-    expr
-  }
-
-  def classifySumExpr(oper: SUM_OPER, left: Expression, right: Expression) : SumExpression = {
-    oper match {
-      case PLUS => AddExpression(left, right)
-      case MINUS => SubstractExpression(left, right)
-      case PLUS_PLUS => ConcatExpression(left, right)
-    }
-  }
-
-  def parseMulExpr(tokens:TokenStream) : Expression = {
-    var expr = parsePowExpr(tokens)
-    while (tokens.peek(classOf[MUL_OPER])) {
-      val oper = tokens.consume(classOf[MUL_OPER])
-      while (tokens.peek(NL)) tokens.consume(NL)
-      expr = classifyMulExpr(oper, expr, parsePowExpr(tokens))
-    }
-    expr
-  }
-
-  def classifyMulExpr(oper: MUL_OPER, left: Expression, right: Expression) : MultExpression = {
-    oper match {
-      case MULT => MultiplyExpression(left, right)
-      case DIV => DivideExpression(left, right)
-      case MOD => ModExpression(left, right)
-      case MULT_BIG => MultiplyBigExpression(left, right)
-    }
-  }
-
-
-  def parsePowExpr(tokens:TokenStream) : Expression = {
-    var expr = parseComposeExpr(tokens)
-    while (tokens.peek(POW)) {
-      tokens.consume(POW)
-      expr = PowerExpression(expr, parsePowExpr(tokens))
-    }
-    expr
-  }
-
-  def parseComposeExpr(tokens:TokenStream) : Expression = {
-    var expr = parsePostfixExpr(tokens)
-    while (tokens.peek(classOf[COMPOSE_OPER])) {
-      val op = tokens.consume(classOf[COMPOSE_OPER])
-      expr = op match {
-        case COMPOSE_FORWARD => ComposeExpressionForward(expr, parseComposeExpr(tokens))
-        case COMPOSE_BACKWARD => ComposeExpressionBackward(expr, parseComposeExpr(tokens))
-      }
-    }
-    expr
-  }
-
-  def parsePostfixExpr(tokens:TokenStream) : Expression = {
-    var expr = parsePrimExpr(tokens)
-    if (tokens.peek(ARROBA)) {
-      val array = expr
-      tokens.consume(ARROBA)
-      val arg = parseLogicalExpr(tokens)
-      expr = ArrayAccessExpression(array, arg)
-    }
-    expr
-  }
-
-  def parsePrimExpr(tokens:TokenStream) : Expression = {
-    if (tokens.peek(LPAREN) && tokens.peek(2, classOf[OPER])) {
-      parsePartialOper(tokens)
-    }
-    else if (tokens.peek(LPAREN) || tokens.peek(LBRACKET) || tokens.peek(LCURLY) || tokens.peek(HASHLCURLY)) {
-      parseAtomicExpr(tokens)
-    }
-    else if (tokens.peek(classOf[LITERAL])) {
-      parseAtomicExpr(tokens)
-    }
-    else if (tokens.peek(LAZY)) {
-      tokens.consume(LAZY)
-      LazyExpression(parsePipedExpr(tokens))
-    }
-    else if (tokens.peek(NEW)) {
-      parseNewCtorExpression(tokens)
-    }
-    else if (tokens.peek(classOf[TID])) {
-      parseConstructorExpr(tokens)
-    }
-    else {
-      parseFuncCallExpr(tokens)
-    }
-  }
-
-  def parseConstructorExpr(tokens:TokenStream) : ConstructorExpression = {
-    val cls = tokens.consume(classOf[TID]).value
-    if (tokens.peek(LPAREN)) {
-      tokens.consume(LPAREN)
-      val args = if (tokens.peek(RPAREN)) List.empty else parseListOfExpressions(tokens)
-      tokens.consume(RPAREN)
-      ConstructorExpression(isRecord = false, cls, args)
-    }
-    else if (tokens.peek(LCURLY)) {
-      tokens.consume(LCURLY)
-      val args = if (tokens.peek(RCURLY)) List.empty else parseListOfExpressions(tokens)
-      tokens.consume(RCURLY)
-      ConstructorExpression(isRecord = true, cls, args)
-    }
-    else {
-      ConstructorExpression(isRecord = true, cls, List.empty)
-    }
-  }
-
-  def parseNewCtorExpression(tokens:TokenStream) : Expression = {
-    tokens.consume(NEW)
-    val cls = tokens.consume(classOf[TID]).value
-    tokens.consume(LPAREN)
-    val args = if (tokens.peek(RPAREN)) List.empty[Expression] else parseListOfExpressions(tokens)
-    tokens.consume(RPAREN)
-    NewCallExpression(cls, args)
-  }
-
-  def parseListOfExpressions(tokens:TokenStream) : List[Expression] = {
-    val expr = parseExpr(tokens)
-    var exprs = List(expr)
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      val expr = parseExpr(tokens)
-      exprs = expr :: exprs
-    }
-    exprs.reverse
-  }
-
-
-  def parseRecurExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(RECUR)
-    var recurArgs = List.empty[Expression]
-    while (!funcCallEndToken(tokens)) {
-      val arg = parsePipedExpr(tokens)
-      recurArgs = arg :: recurArgs
-    }
-    RecurExpr(recurArgs.reverse)
-  }
 
   def parseFuncCallExpr(tokens:TokenStream) : Expression = {
     var expr : Expression = null
@@ -1182,7 +540,7 @@ object Module  {
           val id = tokens.consume(classOf[ID])
           expr = Identifier(id.value)
         } else {
-          expr = parseDollarExpr(tokens)
+          expr = FunctionCallWithDollarExpression.parse(tokens)
         }
         args = expr :: args
       }
@@ -1208,54 +566,6 @@ object Module  {
       }
     }
 
-  }
-
-  def parseAtomicExpr(tokens:TokenStream) : Expression = {
-    var expr: Expression = null
-    if (tokens.peek(LPAREN)) {
-      tokens.consume(LPAREN)
-      expr = parsePipedExpr(tokens)
-      if (tokens.peek(COMMA)) {
-        var tupleElem = expr
-        var tupleElements = List.empty[Expression]
-        tupleElements = tupleElem :: tupleElements
-        while (tokens.peek(COMMA)) {
-          tokens.consume(COMMA)
-          tupleElem = parsePipedExpr(tokens)
-          tupleElements = tupleElem :: tupleElements
-        }
-        if (tokens.peek(DOTDOTDOT)) {
-          tokens.consume(DOTDOTDOT)
-          expr = InfiniteTupleExpr(tupleElements.reverse)
-
-        } else {
-          expr = TupleExpr(tupleElements.reverse)
-        }
-      }
-      if (expr.isInstanceOf[Identifier]) {
-        expr = FunctionCallExpression(expr, List.empty[Expression])
-      }
-      tokens.consume(RPAREN)
-    }
-    else if (tokens.peek(LBRACKET)) {
-      expr = parseRangeExpr(tokens)
-    }
-    else if (tokens.peek(LCURLY)) {
-      expr = parseDictionaryExpr(tokens)
-    }
-    else if (tokens.peek(HASHLCURLY)) {
-      expr = parseSetExpr(tokens)
-    }
-    else {
-      expr = parseLiteral(tokens)
-    }
-
-
-    if (expr == null) {
-      println(s"!!! expr == null, tokens = $tokens")
-      throw UnexpectedTokenClassException()
-    }
-    expr
   }
 
   def parseAtom(tokens:TokenStream) : Expression = {
@@ -1304,37 +614,6 @@ object Module  {
     }
   }
 
-  def parsePartialOper(tokens:TokenStream) : Expression = {
-    tokens.consume(LPAREN)
-    val parOp = tokens.consume(classOf[OPER])
-    var listOfArgs: List[Expression] = List.empty[Expression]
-    while (!tokens.peek(RPAREN)) {
-      val expr = parseLogicalExpr(tokens)
-      listOfArgs = expr :: listOfArgs
-    }
-    tokens.consume(RPAREN)
-    classifyPartialOper(parOp, listOfArgs)
-  }
-
-  def classifyPartialOper(parOp: OPER, args: List[Expression]) : Expression = {
-    parOp match {
-      case PLUS => PartialAdd(args)
-      case MINUS => PartialSub(args)
-      case MULT => PartialMul(args)
-      case DIV => PartialDiv(args)
-      case MOD => PartialMod(args)
-      case EQUALS => PartialEQ(args)
-      case NOT_EQUALS => PartialNE(args)
-      case LT => PartialLT(args)
-      case GT => PartialGT(args)
-      case LE => PartialLE(args)
-      case GE => PartialGE(args)
-      case POW => PartialPow(args)
-      case CONS => PartialCons(args)
-      case PLUS_PLUS => PartialConcat(args)
-      case _ => throw PartialOperNotSupported(parOp)
-    }
-  }
 
   def parseRangeExpr(tokens:TokenStream) : Expression = {
     tokens.consume(LBRACKET)
@@ -1342,13 +621,13 @@ object Module  {
       tokens.consume(RBRACKET)
       return EmptyListExpresion()
     }
-    var expr = parseLogicalExpr(tokens)
+    var expr = LogicalExpression.parse(tokens)
     if (tokens.peek(COMMA)) {
       var list = List.empty[Expression]
       while(tokens.peek(COMMA)) {
         tokens.consume(COMMA)
         list = expr :: list
-        expr = parseLogicalExpr(tokens)
+        expr = LogicalExpression.parse(tokens)
       }
       list = expr :: list
       expr = ListExpression(list.reverse, None)
@@ -1388,16 +667,16 @@ object Module  {
       case expression: ListExpression if expression.expressions.size == 2 =>
         val lexpr = expression.expressions
         val rangeInit = lexpr.head
-        val rangeIncrement = SubstractExpression(lexpr.tail.head, lexpr.head)
+        val rangeIncrement = SubstractExpression(List(lexpr.tail.head, lexpr.head))
         if (include)
-          RangeWithIncrementExpression(rangeInit, rangeIncrement, parseLogicalExpr(tokens))
+          RangeWithIncrementExpression(rangeInit, rangeIncrement, LogicalExpression.parse(tokens))
         else
-          RangeWithIncrementExpressionUntil(rangeInit, rangeIncrement, parseLogicalExpr(tokens))
+          RangeWithIncrementExpressionUntil(rangeInit, rangeIncrement, LogicalExpression.parse(tokens))
       case rangeInit =>
         if (include)
-          RangeExpression(rangeInit, parseLogicalExpr(tokens))
+          RangeExpression(rangeInit, LogicalExpression.parse(tokens))
         else
-          RangeExpressionUntil(rangeInit, parseLogicalExpr(tokens))
+          RangeExpressionUntil(rangeInit, LogicalExpression.parse(tokens))
     }
   }
 
@@ -1414,28 +693,28 @@ object Module  {
       }
       tokens.consume(RPAREN)
       tokens.consume(BACK_ARROW)
-      val expr = parsePipedExpr(tokens)
+      val expr = ForwardPipeFuncCallExpression.parse(tokens)
       ListGuardDeclTupled(listOfIds.reverse, expr)
     }
     else if (tokens.peek(classOf[ID]) && tokens.peek(2, BACK_ARROW)) {
       val id = tokens.consume(classOf[ID])
       tokens.consume(BACK_ARROW)
-      val expr = parsePipedExpr(tokens)
+      val expr = ForwardPipeFuncCallExpression.parse(tokens)
       ListGuardDecl(id.value, expr)
     } else {
-      ListGuardExpr(parsePipedExpr(tokens))
+      ListGuardExpr(ForwardPipeFuncCallExpression.parse(tokens))
     }
   }
 
   def parseSetExpr(tokens:TokenStream): Expression = {
     tokens.consume(HASHLCURLY)
     var listOfValues = List.empty[Expression]
-    val value = parseExpr(tokens)
+    val value = ParseExpr.parse(tokens)
     listOfValues = value :: listOfValues
     while (tokens.peek(COMMA)) {
       tokens.consume(COMMA)
       tokens.consumeOptionals(NL)
-      val value = parseExpr(tokens)
+      val value = ParseExpr.parse(tokens)
       listOfValues = value :: listOfValues
     }
     tokens.consume(RCURLY)
@@ -1446,13 +725,13 @@ object Module  {
     tokens.consume(LCURLY)
     var listOfPairs = List.empty[(Expression, Expression)]
     val key = parseKeyExpr(tokens)
-    val value = parseExpr(tokens)
+    val value = ParseExpr.parse(tokens)
     listOfPairs = (key, value) :: listOfPairs
     while (tokens.peek(COMMA)) {
       tokens.consume(COMMA)
       tokens.consumeOptionals(NL)
       val key = parseKeyExpr(tokens)
-      val value = parseExpr(tokens)
+      val value = ParseExpr.parse(tokens)
       listOfPairs = (key, value) :: listOfPairs
     }
     tokens.consume(RCURLY)

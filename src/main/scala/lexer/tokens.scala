@@ -29,7 +29,7 @@ trait DECL extends KEYWORD
 case object CATCH extends CONTROL
 case object CLASS extends DECL
 case object COND extends CONTROL
-case object CONTAINS extends COMPARATIVE_BIN_OPER
+case object CONTAINS extends OPER
 case object DATA extends DECL
 case object DEF extends DECL
 case object DISPATCH extends DECL
@@ -239,10 +239,10 @@ object OPER_MAP {
       ("~", MATCH),
       ("=~", MATCHES),
       ("-", MINUS),
-      ("<->", MINUS_BIG),
+      ("-'", MINUS_BIG),
       ("%", MOD),
       ("*", MULT),
-      ("<*>", MULT_BIG),
+      ("*'", MULT_BIG),
       ("/=", NOT_EQUALS),
       ("!~", NOT_MATCHES),
       ("||", OR),
@@ -251,7 +251,7 @@ object OPER_MAP {
       ("|>", PIPE_RIGHT),
       (">|", PIPE_RIGHT_FIRST_ARG),
       ("+", PLUS),
-      ("<+>", PLUS_BIG),
+      ("+'", PLUS_BIG),
       ("++", PLUS_PLUS),
       ("^", POW),
       ("?", QUESTION),

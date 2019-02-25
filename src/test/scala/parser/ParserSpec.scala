@@ -2,7 +2,7 @@ package parser
 
 import lexer._
 import org.scalatest.{FlatSpec, Matchers}
-import parser.ast.expressions.{ForwardPipeFuncCallExpression, TopLevelExpression}
+import parser.ast.expressions.{AddExpression, ForwardPipeFuncCallExpression, TopLevelExpression}
 import parser.ast.module.Module
 
 import scala.util.{Failure, Success, Try}
@@ -27,16 +27,16 @@ class ParserSpec extends FlatSpec with Matchers {
   }
 
   "A parser" should "parse simple arithmetic expressions" in {
-    parseExpr("1 + 1") should be(Success(AddExpression(IntLiteral(1), IntLiteral(1))))
+    parseExpr("1 + 1") should be(Success(AddExpression(List(IntLiteral(1), IntLiteral(1)))))
     parseExpr("1 adasjldasj 1") should be(Failure(ParserException("1 adasjldasj 1")))
   }
 
   "A parser" should "parse simple Lambda Expressions" in {
     parseExpr("\\a -> a + 1") should
-      be (Success(LambdaExpression(List(LambdaSimpleArg("a")), AddExpression(Identifier("a"), IntLiteral(1)))))
+      be (Success(LambdaExpression(List(LambdaSimpleArg("a")), AddExpression(List(Identifier("a"), IntLiteral(1))))))
 
     parseExpr("\\(a, b) -> a + b") should
-      be (Success(LambdaExpression(List(LambdaTupleArg(List("a", "b"))), AddExpression(Identifier("a"), Identifier("b")))))
+      be (Success(LambdaExpression(List(LambdaTupleArg(List("a", "b"))), AddExpression(List(Identifier("a"), Identifier("b"))))))
   }
 
   "A parser" should "parse simple forward pipe" in {

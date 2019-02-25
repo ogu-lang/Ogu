@@ -1,7 +1,9 @@
 package lexer
 
 import java.io.{File, FileInputStream, InputStream}
+
 import org.joda.time.DateTime
+
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 

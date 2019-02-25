@@ -2,6 +2,7 @@ package parser.ast.types
 
 import lexer._
 import parser.LangNode
+
 import scala.annotation.tailrec
 
 case class AdtDecl(name: String, defs: List[ADT]) extends LangNode

@@ -1,8 +1,8 @@
 package parser.ast.types
 
 import lexer._
-import parser.ast._
 import parser.LangNode
+import parser.ast._
 
 
 case class RecordDecl(name: String, args: List[String]) extends LangNode
