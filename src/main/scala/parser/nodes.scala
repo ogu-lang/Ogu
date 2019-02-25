@@ -1,7 +1,6 @@
 package parser
 
 import org.joda.time.DateTime
-import parser.ast.expressions.SumExpression
 import parser.ast.functions.ClassMethodDecl
 
 trait LangNode
@@ -121,8 +120,6 @@ class BinaryExpression(val left: Expression, val right: Expression) extends Expr
 
 case class ComposeExpressionForward(left: Expression, right: Expression) extends Expression
 case class ComposeExpressionBackward(left: Expression, right: Expression) extends Expression
-
-case class PowerExpression(base: Expression, exponent: Expression) extends Expression
 
 case class ArrayAccessExpression(array: Expression, index: Expression) extends Expression with AssignableExpression
 

@@ -5,7 +5,7 @@ import parser.Expression
 
 case class ConsExpression(args: List[Expression]) extends Expression
 
-object ConsExpression extends RightAssociativeExpressionParser(SumExpression, CONS) {
+object ConsExpression extends RightAssociativeExpressionParser(AddExpression, CONS) {
 
   override def build(args: List[Expression]): Expression = ConsExpression(args)
 

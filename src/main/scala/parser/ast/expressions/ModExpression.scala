@@ -9,12 +9,13 @@ case class ModExpression(left: Expression, right: Expression) extends Expression
 object ModExpression extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
-    var expr = Module.parsePowExpr(tokens)
-    if (tokens.peek(MOD)) {
-      val oper = tokens.consume(MOD)
+    val expr = PowerExpression.parse(tokens)
+    if (!tokens.peek(MOD)) {
+      expr
+    } else {
+      tokens.consume(MOD)
       tokens.consumeOptionals(NL)
-      expr = ModExpression(expr, Module.parsePowExpr(tokens))
+      ModExpression(expr, PowerExpression.parse(tokens))
     }
-    expr
   }
 }

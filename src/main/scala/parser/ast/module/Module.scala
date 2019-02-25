@@ -521,30 +521,6 @@ object Module  {
     }
   }
 
-  def parseComparativeExpr(tokens:TokenStream) : Expression = {
-    ComparativeExpression.parse(tokens)
-  }
-
-  def parseSumExpr(tokens:TokenStream) : Expression = {
-    AddExpression.parse(tokens)
-  }
-
-
-
-  def parseMulExpr(tokens:TokenStream) : Expression = {
-    MultiplyExpression.parse(tokens)
-  }
-
-
-
-  def parsePowExpr(tokens:TokenStream) : Expression = {
-    var expr = parseComposeExpr(tokens)
-    while (tokens.peek(POW)) {
-      tokens.consume(POW)
-      expr = PowerExpression(expr, parsePowExpr(tokens))
-    }
-    expr
-  }
 
   def parseComposeExpr(tokens:TokenStream) : Expression = {
     var expr = parsePostfixExpr(tokens)
