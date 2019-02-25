@@ -146,8 +146,6 @@ case class BodyGuardsExpresion(guards: List[DefBodyGuardExpr]) extends Expressio
 case class BodyGuardsExpresionAndWhere(guards: List[DefBodyGuardExpr], whereBlock: WhereBlock) extends Expression
 
 
-case class TupleExpr(expressions: List[Expression]) extends Expression
-case class InfiniteTupleExpr(expressions: List[Expression]) extends Expression
 
 
 case class DictionaryExpression(items: List[(Expression, Expression)]) extends Expression

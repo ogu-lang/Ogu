@@ -431,7 +431,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case BodyGuardsExpresion(guards) =>
         strBuf ++= s"(cond\n ${guards.map(toClojureDefBodyGuardExpr).mkString("\n")})"
 
-      case TupleExpr(exprs) =>
+      case TupleExpression(exprs) =>
         strBuf ++= s"[${exprs.map(toClojure).mkString(" ")}]"
 
       case WhereBlock(defs) =>
@@ -631,7 +631,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     defArg match {
       case DefOtherwiseArg => ":default"
       case DefArg(Identifier(id)) => id
-      case DefArg(TupleExpr(exprs)) => s"[${exprs.map(toClojure).mkString(" ")}]"
+      case DefArg(TupleExpression(exprs)) => s"[${exprs.map(toClojure).mkString(" ")}]"
       case DefArg(InfiniteTupleExpr(exprs)) =>
         val rest = exprs.last
         val args = exprs.dropRight(1)
