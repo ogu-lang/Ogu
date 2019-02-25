@@ -22,17 +22,25 @@ package object expressions {
   }
 
   def parseListOfExpressions(tokens:TokenStream) : List[Expression] = {
-    consumeListOfExpression(tokens, List(ParseExpr.parse(tokens)))
+    consumeListOfExpression(tokens, ParseExpr, List(ParseExpr.parse(tokens)))
   }
 
-  private[this] def consumeListOfExpression(tokens: TokenStream, expressions: List[Expression]) : List[Expression] = {
+  def parseListOfPipedExpressions(tokens:TokenStream) : List[Expression] = {
+    consumeListOfExpression(tokens, ForwardPipeFuncCallExpression, List(ForwardPipeFuncCallExpression.parse(tokens)))
+  }
+
+  private[this]
+  def consumeListOfExpression(tokens: TokenStream, parser: ExpressionParser, expressions: List[Expression])
+  : List[Expression] = {
     if (!tokens.peek(COMMA)) {
       expressions.reverse
     }
     else {
       tokens.consume(COMMA)
       tokens.consumeOptionals(NL)
-      consumeListOfExpression(tokens, ParseExpr.parse(tokens) :: expressions)
+      consumeListOfExpression(tokens, parser, parser.parse(tokens) :: expressions)
     }
   }
+
+
 }

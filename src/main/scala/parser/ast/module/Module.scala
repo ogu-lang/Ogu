@@ -521,15 +521,6 @@ object Module  {
     }
   }
 
-  def parseNewCtorExpression(tokens:TokenStream) : Expression = {
-    tokens.consume(NEW)
-    val cls = tokens.consume(classOf[TID]).value
-    tokens.consume(LPAREN)
-    val args = if (tokens.peek(RPAREN)) List.empty[Expression] else parseListOfExpressions(tokens)
-    tokens.consume(RPAREN)
-    NewCallExpression(cls, args)
-  }
-
 
   def parseFuncCallExpr(tokens:TokenStream) : Expression = {
     var expr : Expression = null
@@ -577,54 +568,6 @@ object Module  {
 
   }
 
-  def parseAtomicExpr(tokens:TokenStream) : Expression = {
-    var expr: Expression = null
-    if (tokens.peek(LPAREN)) {
-      tokens.consume(LPAREN)
-      expr = ForwardPipeFuncCallExpression.parse(tokens)
-      if (tokens.peek(COMMA)) {
-        var tupleElem = expr
-        var tupleElements = List.empty[Expression]
-        tupleElements = tupleElem :: tupleElements
-        while (tokens.peek(COMMA)) {
-          tokens.consume(COMMA)
-          tupleElem = ForwardPipeFuncCallExpression.parse(tokens)
-          tupleElements = tupleElem :: tupleElements
-        }
-        if (tokens.peek(DOTDOTDOT)) {
-          tokens.consume(DOTDOTDOT)
-          expr = InfiniteTupleExpr(tupleElements.reverse)
-
-        } else {
-          expr = TupleExpr(tupleElements.reverse)
-        }
-      }
-      if (expr.isInstanceOf[Identifier]) {
-        expr = FunctionCallExpression(expr, List.empty[Expression])
-      }
-      tokens.consume(RPAREN)
-    }
-    else if (tokens.peek(LBRACKET)) {
-      expr = parseRangeExpr(tokens)
-    }
-    else if (tokens.peek(LCURLY)) {
-      expr = parseDictionaryExpr(tokens)
-    }
-    else if (tokens.peek(HASHLCURLY)) {
-      expr = parseSetExpr(tokens)
-    }
-    else {
-      expr = parseLiteral(tokens)
-    }
-
-
-    if (expr == null) {
-      println(s"!!! expr == null, tokens = $tokens")
-      throw UnexpectedTokenClassException()
-    }
-    expr
-  }
-
   def parseAtom(tokens:TokenStream) : Expression = {
     val atom = tokens.consume(classOf[ATOM])
     Atom(atom.value)
@@ -670,12 +613,6 @@ object Module  {
       null
     }
   }
-
-  def parsePartialOper(tokens:TokenStream) : Expression = {
-    PartialOperExpression.parse(tokens)
-
-  }
-
 
 
   def parseRangeExpr(tokens:TokenStream) : Expression = {
