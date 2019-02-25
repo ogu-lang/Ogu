@@ -119,7 +119,6 @@ class BinaryExpression(val left: Expression, val right: Expression) extends Expr
 
 
 
-case class ArrayAccessExpression(array: Expression, index: Expression) extends Expression with AssignableExpression
 
 
 trait ValidRangeExpression extends Expression
