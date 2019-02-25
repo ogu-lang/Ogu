@@ -672,36 +672,11 @@ object Module  {
   }
 
   def parsePartialOper(tokens:TokenStream) : Expression = {
-    tokens.consume(LPAREN)
-    val parOp = tokens.consume(classOf[OPER])
-    var listOfArgs: List[Expression] = List.empty[Expression]
-    while (!tokens.peek(RPAREN)) {
-      val expr = LogicalExpression.parse(tokens)
-      listOfArgs = expr :: listOfArgs
-    }
-    tokens.consume(RPAREN)
-    classifyPartialOper(parOp, listOfArgs)
+    PartialOperExpression.parse(tokens)
+
   }
 
-  def classifyPartialOper(parOp: OPER, args: List[Expression]) : Expression = {
-    parOp match {
-      case PLUS => PartialAdd(args)
-      case MINUS => PartialSub(args)
-      case MULT => PartialMul(args)
-      case DIV => PartialDiv(args)
-      case MOD => PartialMod(args)
-      case EQUALS => PartialEQ(args)
-      case NOT_EQUALS => PartialNE(args)
-      case LT => PartialLT(args)
-      case GT => PartialGT(args)
-      case LE => PartialLE(args)
-      case GE => PartialGE(args)
-      case POW => PartialPow(args)
-      case CONS => PartialCons(args)
-      case PLUS_PLUS => PartialConcat(args)
-      case _ => throw PartialOperNotSupported(parOp)
-    }
-  }
+
 
   def parseRangeExpr(tokens:TokenStream) : Expression = {
     tokens.consume(LBRACKET)

@@ -1,6 +1,7 @@
 package parser.ast.expressions
-import lexer.{NL, TOKEN, TokenStream}
+import lexer.{TOKEN, TokenStream}
 import parser.Expression
+
 import scala.annotation.tailrec
 
 abstract class RightAssociativeExpressionParser(nextLevel: ExpressionParser, oper: TOKEN) extends ExpressionParser {

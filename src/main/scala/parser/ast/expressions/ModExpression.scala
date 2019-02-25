@@ -2,7 +2,6 @@ package parser.ast.expressions
 
 import lexer.{MOD, NL, TokenStream}
 import parser.Expression
-import parser.ast.module.Module
 
 case class ModExpression(left: Expression, right: Expression) extends Expression
 
