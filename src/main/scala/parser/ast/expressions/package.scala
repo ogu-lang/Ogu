@@ -26,11 +26,11 @@ package object expressions {
     BlockExpression.parse(tokens)
   }
 
-  def parseListOfExpressions(tokens:TokenStream) : List[Expression] = {
+  def parseListOfCommaSeparatedExpressions(tokens:TokenStream) : List[Expression] = {
     consumeListOfExpression(tokens, ParseExpr, List(ParseExpr.parse(tokens)))
   }
 
-  def parseListOfPipedExpressions(tokens:TokenStream) : List[Expression] = {
+  def parseListOfCommaSeparatedPipedExpressions(tokens:TokenStream) : List[Expression] = {
     consumeListOfExpression(tokens, ForwardPipeFuncCallExpression, List(ForwardPipeFuncCallExpression.parse(tokens)))
   }
 

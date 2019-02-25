@@ -1,7 +1,7 @@
 package parser.ast.expressions
 import lexer._
 import parser._
-import parser.ast.module.Module.{parseDictionaryExpr, parseLiteral, parseRangeExpr, parseSetExpr}
+import parser.ast.module.Module.{parseDictionaryExpr, parseLiteral, parseSetExpr}
 
 object AtomicExpression extends ExpressionParser {
 
@@ -14,7 +14,7 @@ object AtomicExpression extends ExpressionParser {
           case LPAREN =>
             TupleExpression.parse(tokens)
           case LBRACKET =>
-            parseRangeExpr(tokens)
+            ListExpression.parse(tokens)
           case LCURLY =>
             parseDictionaryExpr(tokens)
           case HASHLCURLY =>

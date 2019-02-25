@@ -120,23 +120,11 @@ class BinaryExpression(val left: Expression, val right: Expression) extends Expr
 
 
 
-trait ValidRangeExpression extends Expression
-case class RangeExpression(rangeInit:Expression, rangeEnd:Expression) extends ValidRangeExpression
-case class RangeExpressionUntil(rangeInit:Expression, rangeEnd:Expression) extends ValidRangeExpression
-case class RangeWithIncrementExpression(rangeInit:Expression, rangeIncrement: Expression, rangeEnd:Expression) extends ValidRangeExpression
-case class RangeWithIncrementExpressionUntil(rangeInit:Expression, rangeIncrement: Expression, rangeEnd:Expression) extends ValidRangeExpression
-case class InfiniteRangeExpression(rangeInit: Expression) extends ValidRangeExpression
-case class InfiniteRangeWithIncrementExpression(rangeInit: Expression, rangeIncrement: Expression)
-case class EmptyListExpresion() extends ValidRangeExpression
 
 
-trait ListGuard
-case class ListGuardDecl(id: String, value: Expression) extends ListGuard
-case class ListGuardExpr(value: Expression) extends ListGuard
-case class ListGuardDeclTupled(ids: List[String], value: Expression) extends ListGuard
 
 
-case class ListExpression(expressions: List[Expression], guards: Option[List[ListGuard]]) extends ValidRangeExpression
+
 
 
 trait DefBodyGuardExpr
