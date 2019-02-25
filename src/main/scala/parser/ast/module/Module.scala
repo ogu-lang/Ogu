@@ -525,16 +525,6 @@ object Module  {
     ComparativeExpression.parse(tokens)
   }
 
-  def parseConsExpr(tokens:TokenStream) : Expression = {
-    var expr = parseSumExpr(tokens)
-    while (tokens.peek(CONS)) {
-      tokens.consume(CONS)
-      while (tokens.peek(NL)) tokens.consume(NL)
-      expr = ConsExpression(expr, parseConsExpr(tokens))
-    }
-    expr
-  }
-
   def parseSumExpr(tokens:TokenStream) : Expression = {
     var expr = parseMulExpr(tokens)
     while (tokens.peek(classOf[SUM_OPER])) {

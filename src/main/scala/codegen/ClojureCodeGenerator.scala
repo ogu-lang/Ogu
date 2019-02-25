@@ -316,8 +316,8 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case ConcatExpression(left, right) =>
         strBuf ++= s"(concat ${toClojure(left)} ${toClojure(right)})"
 
-      case ConsExpression(left, right) =>
-        strBuf ++= s"(cons ${toClojure(left)} ${toClojure(right)})"
+      case ConsExpression(args) =>
+        strBuf ++= s"(cons ${args.map(toClojure).mkString(" ")})"
 
       case LambdaExpression(args, expr) =>
         strBuf ++= s"(fn [${args.map(toClojureLambdaArg).mkString(" ")}] ${toClojure(expr)})"
@@ -467,10 +467,12 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
                 // nothing
                 case DefArg(_:EmptyListExpresion) =>
                   andList = s"\t\t(empty? ${namedArgs.head})" :: andList
-                case DefArg(ConsExpression(Identifier(head), Identifier(tail))) =>
-                  letDecls = s"[$head & $tail] ${namedArgs.head}" :: letDecls
-                case DefArg(ConsExpression(Identifier(head), ConsExpression(Identifier(second), Identifier(tail)))) =>
-                  letDecls = s"[$head $second & $tail] ${namedArgs.head}" :: letDecls
+
+                case DefArg(ConsExpression(args)) =>
+                  val tail = args.last
+                  val head = args.init
+                  letDecls = s"[${head.map(toClojure).mkString(" ")} & ${toClojure(tail)}] ${namedArgs.head}" :: letDecls
+
                 case DefArg(ListExpression(defArgs, None)) =>
                   letDecls = s"[${defArgs.map(toClojure).mkString(" ")}] ${namedArgs.head}]" :: letDecls
 

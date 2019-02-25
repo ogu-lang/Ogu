@@ -1,6 +1,7 @@
 package parser
 
 import org.joda.time.DateTime
+import parser.ast.expressions.SumExpression
 import parser.ast.functions.ClassMethodDecl
 
 trait LangNode
@@ -117,9 +118,7 @@ case class LazyExpression(expr: Expression) extends Expression
 
 class BinaryExpression(val left: Expression, val right: Expression) extends Expression
 
-case class ConsExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
 
-class SumExpression(override val left: Expression, override val right: Expression) extends BinaryExpression(left, right)
 case class AddExpression(override val left: Expression, override val right: Expression) extends SumExpression(left, right)
 case class SubstractExpression(override val left: Expression, override val right: Expression) extends SumExpression(left, right)
 case class ConcatExpression(override val left: Expression, override val right: Expression) extends SumExpression(left, right)
