@@ -113,7 +113,7 @@ case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Exp
 
 case class Atom(value: String) extends Expression
 
-case class LazyExpression(expr: Expression) extends Expression
+
 
 class BinaryExpression(val left: Expression, val right: Expression) extends Expression
 

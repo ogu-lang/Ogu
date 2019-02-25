@@ -521,48 +521,6 @@ object Module  {
     }
   }
 
-
-  def parseComposeExpr(tokens:TokenStream) : Expression = {
-    ComposeExpressionForward.parse(tokens)
-  }
-
-  def parsePostfixExpr(tokens:TokenStream) : Expression = {
-    var expr = parsePrimExpr(tokens)
-    if (tokens.peek(ARROBA)) {
-      val array = expr
-      tokens.consume(ARROBA)
-      val arg = LogicalExpression.parse(tokens)
-      expr = ArrayAccessExpression(array, arg)
-    }
-    expr
-  }
-
-  def parsePrimExpr(tokens:TokenStream) : Expression = {
-    if (tokens.peek(LPAREN) && tokens.peek(2, classOf[OPER])) {
-      parsePartialOper(tokens)
-    }
-    else if (tokens.peek(LPAREN) || tokens.peek(LBRACKET) || tokens.peek(LCURLY) || tokens.peek(HASHLCURLY)) {
-      parseAtomicExpr(tokens)
-    }
-    else if (tokens.peek(classOf[LITERAL])) {
-      parseAtomicExpr(tokens)
-    }
-    else if (tokens.peek(LAZY)) {
-      tokens.consume(LAZY)
-      LazyExpression(ForwardPipeFuncCallExpression.parse(tokens))
-    }
-    else if (tokens.peek(NEW)) {
-      parseNewCtorExpression(tokens)
-    }
-    else if (tokens.peek(classOf[TID])) {
-      ConstructorExpression.parse(tokens)
-    }
-    else {
-      parseFuncCallExpr(tokens)
-    }
-  }
-
-
   def parseNewCtorExpression(tokens:TokenStream) : Expression = {
     tokens.consume(NEW)
     val cls = tokens.consume(classOf[TID]).value
@@ -571,7 +529,6 @@ object Module  {
     tokens.consume(RPAREN)
     NewCallExpression(cls, args)
   }
-
 
 
   def parseFuncCallExpr(tokens:TokenStream) : Expression = {
