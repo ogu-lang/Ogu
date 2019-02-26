@@ -1,6 +1,5 @@
 package parser.ast.expressions
 import lexer.{TOKEN, TokenStream}
-import parser.Expression
 
 import scala.annotation.tailrec
 

@@ -1,7 +1,7 @@
 package parser.ast.expressions
 
 import lexer.{DEDENT, INDENT, NL, TokenStream}
-import parser.Expression
+import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 
 
 case class BlockExpression(expressions: List[Expression]) extends Expression

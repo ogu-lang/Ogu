@@ -1,7 +1,7 @@
 package parser.ast
 
 import lexer._
-import parser.Expression
+import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 
 package object expressions {
 

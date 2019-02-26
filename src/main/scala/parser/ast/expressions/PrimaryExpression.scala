@@ -1,7 +1,11 @@
 package parser.ast.expressions
 import lexer._
+import parser.InvalidExpression
+import parser.ast.expressions.arithmetic.PartialOperExpression
+import parser.ast.expressions.control.LazyExpression
+import parser.ast.expressions.literals.AtomicExpression
+import parser.ast.expressions.types.{ConstructorExpression, NewCallExpression}
 import parser.ast.module.Module.parseFuncCallExpr
-import parser.{Expression, InvalidExpression}
 
 object PrimaryExpression extends ExpressionParser {
 

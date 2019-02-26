@@ -1,7 +1,6 @@
 package parser.ast.types
 
 import lexer._
-import parser.LangNode
 import parser.ast._
 
 

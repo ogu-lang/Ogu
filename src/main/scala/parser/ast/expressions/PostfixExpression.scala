@@ -1,7 +1,7 @@
 package parser.ast.expressions
 
 import lexer.{ARROBA, TokenStream}
-import parser.{AssignableExpression, Expression}
+import parser.ast.expressions.logical.LogicalExpression
 
 case class ArrayAccessExpression(array: Expression, index: Expression) extends Expression with AssignableExpression
 

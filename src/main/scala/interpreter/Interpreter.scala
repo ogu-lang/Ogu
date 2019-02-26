@@ -2,7 +2,7 @@ package interpreter
 
 import clojure.java.api.Clojure
 import codegen.ClojureCodeGenerator
-import parser._
+import parser.ast.LangNode
 
 import scala.io.Source
 

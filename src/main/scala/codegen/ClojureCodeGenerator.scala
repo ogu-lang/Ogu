@@ -1,7 +1,16 @@
 package codegen
 
-import parser._
+import parser.ast._
 import parser.ast.expressions._
+import parser.ast.expressions.arithmetic._
+import parser.ast.expressions.comparisons._
+import parser.ast.expressions.control._
+import parser.ast.expressions.functions._
+import parser.ast.expressions.list_ops._
+import parser.ast.expressions.literals._
+import parser.ast.expressions.logical._
+import parser.ast.expressions.regexp._
+import parser.ast.expressions.types._
 import parser.ast.functions._
 import parser.ast.module._
 import parser.ast.types._

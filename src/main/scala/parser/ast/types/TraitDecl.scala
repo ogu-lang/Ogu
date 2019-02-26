@@ -1,7 +1,7 @@
 package parser.ast.types
 
 import lexer._
-import parser.LangNode
+import parser.ast.LangNode
 import parser.ast.functions.TraitMethodDecl
 
 case class TraitDecl(inner: Boolean, name: String, decls: List[TraitMethodDecl]) extends LangNode

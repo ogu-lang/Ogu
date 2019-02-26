@@ -1,6 +1,7 @@
 package parser
 
 import lexer._
+import parser.ast.LangNode
 import parser.ast.module.Module
 
 class Parser(filename:String, val tokens: TokenStream, defaultSymbolTable: Option[SymbolTable]) {

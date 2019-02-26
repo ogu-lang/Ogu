@@ -2,7 +2,11 @@ package parser.ast.module
 
 import lexer._
 import parser._
+import parser.ast._
 import parser.ast.expressions._
+import parser.ast.expressions.functions.{ForwardPipeFuncCallExpression, FunctionCallWithDollarExpression}
+import parser.ast.expressions.literals.Atom
+import parser.ast.expressions.logical.LogicalExpression
 import parser.ast.functions._
 import parser.ast.types._
 
@@ -521,7 +525,6 @@ object Module  {
     }
   }
 
-
   def parseFuncCallExpr(tokens:TokenStream) : Expression = {
     var expr : Expression = null
     if (tokens.peek(classOf[ID])) {
@@ -553,86 +556,6 @@ object Module  {
     }
   }
 
-  def parseLiteral(tokens:TokenStream) : Expression = {
-    if (tokens.peek(TRUE)) {
-      tokens.consume(TRUE)
-      BoolLiteral(true)
-    }
-    else if (tokens.peek(FALSE)) {
-      tokens.consume(FALSE)
-      BoolLiteral(false)
-    }
-    else if (tokens.peek(classOf[INT_LITERAL])) {
-      IntLiteral(tokens.consume(classOf[INT_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[LONG_LITERAL])) {
-      LongLiteral(tokens.consume(classOf[LONG_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[BIGINT_LITERAL])) {
-      BigIntLiteral(tokens.consume(classOf[BIGINT_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[DOUBLE_LITERAL])) {
-      DoubleLiteral(tokens.consume(classOf[DOUBLE_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[STRING_LITERAL])) {
-      StringLiteral(tokens.consume(classOf[STRING_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[ISODATETIME_LITERAL])) {
-      DateTimeLiteral(tokens.consume(classOf[ISODATETIME_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[CHAR_LITERAL])) {
-      CharLiteral(tokens.consume(classOf[CHAR_LITERAL]).chr)
-    }
-    else if (tokens.peek(classOf[REGEXP_LITERAL])) {
-      RegexpLiteral(tokens.consume(classOf[REGEXP_LITERAL]).re)
-    }
-    else if (tokens.peek(classOf[FSTRING_LITERAL])) {
-      FStringLiteral(tokens.consume(classOf[FSTRING_LITERAL]).value)
-    }
-    else  {
-      null
-    }
-  }
 
 
-
-
-  def parseSetExpr(tokens:TokenStream): Expression = {
-    tokens.consume(HASHLCURLY)
-    var listOfValues = List.empty[Expression]
-    val value = ParseExpr.parse(tokens)
-    listOfValues = value :: listOfValues
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      val value = ParseExpr.parse(tokens)
-      listOfValues = value :: listOfValues
-    }
-    tokens.consume(RCURLY)
-    SetExpression(listOfValues.reverse)
-  }
-
-  def parseDictionaryExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(LCURLY)
-    var listOfPairs = List.empty[(Expression, Expression)]
-    val key = parseKeyExpr(tokens)
-    val value = ParseExpr.parse(tokens)
-    listOfPairs = (key, value) :: listOfPairs
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      val key = parseKeyExpr(tokens)
-      val value = ParseExpr.parse(tokens)
-      listOfPairs = (key, value) :: listOfPairs
-    }
-    tokens.consume(RCURLY)
-    DictionaryExpression(listOfPairs.reverse)
-  }
-
-  def parseKeyExpr(tokens:TokenStream) : Expression = {
-    if (tokens.peek(classOf[ATOM]))
-      Atom.parse(tokens)
-    else
-      parseLiteral(tokens)
-  }
 }

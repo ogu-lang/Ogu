@@ -1,8 +1,9 @@
 package parser.ast.functions
 
 import lexer._
-import parser.ast.expressions.ForwardPipeFuncCallExpression
-import parser.{Expression, LangNode}
+import parser.ast.LangNode
+import parser.ast.expressions.Expression
+import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 
 sealed trait DispatcherTrait
 object ClassDispatcher extends DispatcherTrait
