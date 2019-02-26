@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [0.2.4] - 2019-2-26
+
+### Changed
+
+- all expressions are in separated parse objects
+- more functional style for code of parser
+
 ## [0.2.3] - 2019-2-25
 
 ### Fixed
