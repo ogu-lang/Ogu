@@ -1,8 +1,8 @@
 package backend
 
-import java.io.{File, FileInputStream, InputStream}
 
 import interpreter.Interpreter
+import java.io.{File, FileInputStream, InputStream}
 import lexer.Lexer
 import parser._
 
@@ -32,22 +32,19 @@ object Backend {
     }
   }
 
-  def compileStream(fileName: String, inputStream: InputStream): AnyRef = {
-    if (inputStream == null) {
-      return Failure(new NullPointerException)
+  def compileStream(fileName: String, inputStream: InputStream): AnyRef =
+    Option(inputStream) match {
+      case None => Failure(new NullPointerException)
+      case Some(stream) =>
+        val lexer = new Lexer()
+        val tryScan = lexer.scan(fileName, stream)
+        tryScan match {
+          case Success(tokens) =>
+            val parser = new Parser(fileName, tokens)
+            val ast = parser.parse()
+            Interpreter.load(ast)
+          case Failure(exception) => Failure(exception)
+        }
     }
-
-    val lexer = new Lexer()
-    val tryScan = lexer.scan(fileName, inputStream)
-    tryScan match {
-      case Success(tokens) =>
-        val parser = new Parser(fileName, tokens)
-        val ast = parser.parse()
-        Interpreter.load(ast)
-      case Failure(exception) => Failure(exception)
-    }
-  }
-
-
 
 }
