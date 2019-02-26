@@ -6,7 +6,6 @@ import parser.ast.expressions.{BlockExpression, Expression, parsePipedOrBodyExpr
 
 import scala.annotation.tailrec
 
-trait Variable
 
 object VariableParser {
 

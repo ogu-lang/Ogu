@@ -19,8 +19,9 @@ package object expressions {
         }
     }
 
-  def parsePipedOrBodyExpression(tokens:TokenStream): Expression = if (!tokens.peek(NL))
+  def parsePipedOrBodyExpression(tokens:TokenStream): Expression = if (!tokens.peek(NL)) {
     ForwardPipeFuncCallExpression.parse(tokens)
+  }
   else {
     tokens.consume(NL)
     BlockExpression.parse(tokens)
