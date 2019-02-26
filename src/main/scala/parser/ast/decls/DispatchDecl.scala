@@ -1,4 +1,4 @@
-package parser.ast.functions
+package parser.ast.decls
 
 import lexer._
 import parser.ast.LangNode

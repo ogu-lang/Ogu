@@ -1,7 +1,6 @@
 package parser.ast.expressions.control
 
 import lexer._
-import parser._
 import parser.ast._
 import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 import parser.ast.expressions.{Expression, ExpressionParser, parsePipedOrBodyExpression}

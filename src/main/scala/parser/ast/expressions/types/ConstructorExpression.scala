@@ -1,9 +1,7 @@
 package parser.ast.expressions.types
 
 import lexer._
-import parser.ast.CallExpression
-import parser.ast.expressions._
-import parser.ast.expressions.ExpressionParser
+import parser.ast.expressions.{CallExpression, ExpressionParser, _}
 
 case class ConstructorExpression(cls: String, args: List[Expression]) extends CallExpression
 case class RecordConstructorExpression(rec: String, args: List[Expression]) extends CallExpression
