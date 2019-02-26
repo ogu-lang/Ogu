@@ -86,10 +86,11 @@ case class TokenStream(var tokens: List[TOKEN]) {
     if (peek(t)) {
       val result = tokens.head
       tokens = tokens.tail
-      return result.asInstanceOf[T]
+      result.asInstanceOf[T]
     }
-    println(s"can't consume classof $t, tokens=$tokens")
-    throw UnexpectedTokenClassException()
+    else {
+      throw UnexpectedTokenClassException()
+    }
   }
 
   def consumeOptional(tok: TOKEN): Unit = {
@@ -99,8 +100,9 @@ case class TokenStream(var tokens: List[TOKEN]) {
   }
 
   def consumeOptionals(tok: TOKEN): Unit = {
-    while (peek(tok)) {
+    if (peek(tok)) {
       consume(tok)
+      consumeOptionals(tok)
     }
   }
 
