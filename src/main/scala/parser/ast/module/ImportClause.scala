@@ -14,7 +14,7 @@ object ImportClause {
 
   def parse(tokens: TokenStream): Option[List[ImportClause]] = {
     tokens.consumeOptionals(NL)
-    var listOfImports = consumeListOfImportClauses(tokens, List.empty)
+    val listOfImports = consumeListOfImportClauses(tokens, List.empty)
     if (listOfImports.isEmpty) {
       None
     }
@@ -24,20 +24,20 @@ object ImportClause {
   }
 
   @tailrec
-  private def consumeListOfImportClauses(tokens: TokenStream, list: List[ImportClause]) : List[ImportClause] = {
+  private[this] def consumeListOfImportClauses(tokens: TokenStream, list: List[ImportClause]) : List[ImportClause] = {
     if (!tokens.peek(IMPORT) && !tokens.peek(FROM)) {
       list.reverse
     }
     else {
-      val clause = if (tokens.peek(IMPORT)) parseImportClause(tokens) else parseFromImportClause(tokens)
+      val clause = if (tokens.peek(IMPORT)) parseImport(tokens) else parseFrom(tokens)
       tokens.consumeOptionals(NL)
       consumeListOfImportClauses(tokens, clause :: list)
     }
   }
 
-  private def parseImportClause(tokens:TokenStream): ImportClause = {
+  private[this] def parseImport(tokens:TokenStream): ImportClause = {
     tokens.consume(IMPORT)
-    if (parseTag(tokens) == ":jvm") {
+    if (parseTag(tokens) equals ":jvm") {
       JvmImport(ImportAlias.parseListOfAlias(tokens))
     }
     else {
@@ -45,12 +45,12 @@ object ImportClause {
     }
   }
 
-  private def parseFromImportClause(tokens:TokenStream): ImportClause = {
+  private[this] def parseFrom(tokens:TokenStream): ImportClause = {
     tokens.consume(FROM)
     val tag = parseTag(tokens)
     val name = tokens.consume(classOf[ID]).value
     tokens.consume(IMPORT)
-    if (tag == ":jvm") {
+    if (tag equals ":jvm") {
       FromJvmRequire(name, ImportAlias.parseListOfAlias(tokens))
     }
     else {
