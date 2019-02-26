@@ -2,7 +2,7 @@ package parser
 
 import lexer.{LEXER_ERROR, TOKEN}
 
-case class InvalidNodeException(token: Option[TOKEN]) extends Throwable
+case class InvalidNodeException(token: TOKEN) extends Throwable
 
 case class InvalidExpression() extends Throwable
 
@@ -10,7 +10,7 @@ case class UnexpectedTokenClassException() extends Throwable
 case class UnexpectedTokenException(token: TOKEN, tokens: List[TOKEN]) extends Throwable
 case class UndefinedIdentifierException(id: String) extends Throwable
 
-case class InvalidLambdaExpression(tokenOpt: Option[TOKEN]) extends Throwable
+case class InvalidLambdaExpression(token: TOKEN) extends Throwable
 
 case class InvalidLetDeclaration(message: String) extends Throwable
 

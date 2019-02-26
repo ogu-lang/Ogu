@@ -5,41 +5,55 @@ import parser.{LexerError, UnexpectedTokenClassException, UnexpectedTokenExcepti
 
 case class TokenStream(var tokens: List[TOKEN]) {
 
-  def nonEmpty : Boolean = tokens.nonEmpty
+  def nonEmpty: Boolean = tokens.nonEmpty
 
-  def isEmpty : Boolean = tokens.isEmpty
+  def isEmpty: Boolean = tokens.isEmpty
 
-  def peek(obj: TOKEN) : Boolean = if (tokens.isEmpty) false else tokens.head == obj
-
-  def peek(n: Int, obj: TOKEN) : Boolean =
-    if (tokens.isEmpty || tokens.length < n)
-      false
-    else
-      tokens.drop(n-1).head == obj
-
-  def peek[T](n: Int, t: Class[T]) : Boolean =
-    if (tokens.isEmpty || tokens.length < n)
-      false
-    else {
-      val token = tokens.drop(n-1).head
-      t.isAssignableFrom(token.getClass)
-    }
-
-  def peek[T](t: Class[T]) : Boolean = {
-    if (tokens.isEmpty)
-      false
-    else {
-      tokens.head match {
-        case lexererror: LEXER_ERROR =>
-          println(s"@@@LEXER ERROR head= ${tokens.head}")
-          throw LexerError(lexererror)
-        case _ =>
-      }
-      t.isAssignableFrom(tokens.head.getClass)
+  def peek(obj: TOKEN): Boolean = {
+    tokens.headOption match {
+      case None => false
+      case Some(token) => token.equals(obj)
     }
   }
 
-  def nextToken() : Option[TOKEN] = tokens.headOption
+  def peek(n: Int, obj: TOKEN): Boolean = {
+    if (tokens.isEmpty || tokens.length < n)
+      false
+    else
+      tokens.drop(n - 1).headOption match {
+        case None => false
+        case Some(token) => token.equals(obj)
+      }
+  }
+
+  def peek[T](n: Int, t: Class[T]) : Boolean = {
+    if (tokens.isEmpty || tokens.length < n)
+      false
+    else {
+      tokens.drop(n - 1).headOption match {
+        case None => false
+        case Some(token) => t.isAssignableFrom(token.getClass)
+      }
+    }
+  }
+
+  def peek[T](t: Class[T]) : Boolean = {
+    tokens.headOption match {
+      case None => false
+      case Some(token) =>
+        token match {
+          case lexererror: LEXER_ERROR =>
+            throw LexerError(lexererror)
+          case _ =>
+        }
+        t.isAssignableFrom(token.getClass)
+    }
+  }
+
+  def nextToken() : TOKEN = tokens.headOption match {
+    case None => EOF
+    case Some(token) => token
+  }
 
   def consume(n: Int, token: TOKEN): Unit = {
     if (n > 0) {

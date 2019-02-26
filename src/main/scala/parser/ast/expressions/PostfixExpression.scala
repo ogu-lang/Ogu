@@ -8,7 +8,7 @@ case class ArrayAccessExpression(array: Expression, index: Expression) extends E
 object PostfixExpression extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
-    var expr = PrimaryExpression.parse(tokens)
+    val expr = PrimaryExpression.parse(tokens)
     if (!tokens.peek(ARROBA)) {
       expr
     } else {

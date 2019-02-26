@@ -9,18 +9,14 @@ object WhereBlock {
 
   def parse(tokens:TokenStream): Option[WhereBlock] = {
     tokens.nextToken() match {
-      case None => None
-      case Some(token) =>
-        token match {
-          case WHERE => Some(parseUnindented(tokens))
+      case WHERE => Some(parseUnindented(tokens))
 
-          case NL if tokens.peek(2, INDENT) =>
-            tokens.consume(NL)
-            Some(parseWhereBlock(tokens))
+      case NL if tokens.peek(2, INDENT) =>
+        tokens.consume(NL)
+        Some(parseWhereBlock(tokens))
 
-          case _ =>
-            None
-        }
+      case _ =>
+        None
     }
   }
 

@@ -19,37 +19,32 @@ object WhereDef {
     val listOfArgs = parseListOfArgs(tokens, Nil)
 
     tokens.nextToken() match {
-      case None => throw InvalidDef()
+      case ASSIGN =>
+        tokens.consume(ASSIGN)
+        val body = parsePipedOrBodyExpression(tokens)
+        if (listOfIds.size == 1)
+          WhereDefSimple(listOfIds.head, listOfArgs, body)
+        else
+          WhereDefTupled(listOfIds, listOfArgs, body)
 
-      case Some(token) =>
-        token match {
-          case ASSIGN =>
-            tokens.consume(ASSIGN)
-            val body = parsePipedOrBodyExpression(tokens)
-            if (listOfIds.size == 1)
-              WhereDefSimple(listOfIds.head, listOfArgs, body)
-            else
-              WhereDefTupled(listOfIds, listOfArgs, body)
-
-          case GUARD | NL =>
-            tokens.consumeOptionals(NL)
-            val indent = if (!tokens.peek(INDENT)) {
-              false
-            } else {
-              tokens.consume(INDENT)
-              true
-            }
-            val guards = parseListOfWhereGuards(tokens, Nil)
-            if (indent) {
-              tokens.consume(DEDENT)
-            }
-            if (listOfIds.size equals 1)
-              WhereDefWithGuards(listOfIds.head, listOfArgs, guards)
-            else
-              WhereDefTupledWithGuards(listOfIds, listOfArgs, guards)
-
-          case _ => throw InvalidDef()
+      case GUARD | NL =>
+        tokens.consumeOptionals(NL)
+        val indent = if (!tokens.peek(INDENT)) {
+          false
+        } else {
+          tokens.consume(INDENT)
+          true
         }
+        val guards = parseListOfWhereGuards(tokens, Nil)
+        if (indent) {
+          tokens.consume(DEDENT)
+        }
+        if (listOfIds.size equals 1)
+          WhereDefWithGuards(listOfIds.head, listOfArgs, guards)
+        else
+          WhereDefTupledWithGuards(listOfIds, listOfArgs, guards)
+
+      case _ => throw InvalidDef()
     }
   }
 

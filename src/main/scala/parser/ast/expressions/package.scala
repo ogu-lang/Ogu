@@ -7,16 +7,13 @@ package object expressions {
 
   def funcCallEndToken(tokens:TokenStream) : Boolean =
     tokens.nextToken() match {
-      case None => true
-      case Some(token) =>
-        token match {
-          case NL | INDENT | DEDENT | ASSIGN | DOLLAR | COMMA | LET | VAR | DO | THEN | ELSE |
-            RPAREN | IN | RBRACKET | RCURLY | WHERE => true
-          case pipe if pipe.isInstanceOf[PIPE_OPER] => true
-          case oper if oper.isInstanceOf[OPER] => true
-          case decl if decl.isInstanceOf[DECL] => true
-          case _ => false
-        }
+      case NL | INDENT | DEDENT | ASSIGN | DOLLAR | COMMA | LET | VAR | DO | THEN | ELSE |
+           RPAREN | IN | RBRACKET | RCURLY | WHERE => true
+      case pipe if pipe.isInstanceOf[PIPE_OPER] => true
+      case oper if oper.isInstanceOf[OPER] => true
+      case decl if decl.isInstanceOf[DECL] => true
+      case EOF => true
+      case _ => false
     }
 
   def parsePipedOrBodyExpression(tokens:TokenStream): Expression = if (!tokens.peek(NL)) {

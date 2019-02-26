@@ -42,20 +42,16 @@ object Module {
         tokens.consume(PRIVATE); true
       }
       val (newDefs, newNodes) = tokens.nextToken() match {
-        case None => (defs, nodes)
-        case Some(token) =>
-          token match {
-            case CLASS => (defs, ClassDecl.parse(inner, tokens) :: nodes)
-            case DATA => (defs, AdtDecl.parse(inner, tokens) :: nodes)
-            case DEF =>
-              val (ndefs, node) = MultiDefDecl.parse(inner, tokens, defs)
-              (ndefs, node :: nodes)
-            case DISPATCH => (defs, DispatchDecl.parse(inner, tokens) :: nodes)
-            case EXTENDS => (defs, ExtendsDecl.parse(inner, tokens) :: nodes)
-            case RECORD => (defs, RecordDecl.parse(inner, tokens) :: nodes)
-            case TRAIT => (defs, TraitDecl.parse(inner, tokens) :: nodes)
-            case _ => (defs, TopLevelExpression.parse(tokens) :: nodes)
-          }
+        case CLASS => (defs, ClassDecl.parse(inner, tokens) :: nodes)
+        case DATA => (defs, AdtDecl.parse(inner, tokens) :: nodes)
+        case DEF =>
+          val (ndefs, node) = MultiDefDecl.parse(inner, tokens, defs)
+          (ndefs, node :: nodes)
+        case DISPATCH => (defs, DispatchDecl.parse(inner, tokens) :: nodes)
+        case EXTENDS => (defs, ExtendsDecl.parse(inner, tokens) :: nodes)
+        case RECORD => (defs, RecordDecl.parse(inner, tokens) :: nodes)
+        case TRAIT => (defs, TraitDecl.parse(inner, tokens) :: nodes)
+        case _ => (defs, TopLevelExpression.parse(tokens) :: nodes)
       }
       tokens.consumeOptionals(NL)
       parseModuleNodes(tokens, newNodes, newDefs)

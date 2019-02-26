@@ -17,26 +17,21 @@ object DefDecl {
     val defId = tokens.consume(classOf[ID]).value
     val (args, dispatchers) = DefArg.parseDefArgs(tokens)
     tokens.nextToken() match {
-      case None => throw InvalidDef()
+      case ASSIGN =>
+        tokens.consume(ASSIGN)
+        buildResult(inner, defId, args, dispatchers, parsePipedOrBodyExpression(tokens), WhereBlock.parse(tokens))
 
-      case Some(token) =>
-        token match {
-          case ASSIGN =>
-            tokens.consume(ASSIGN)
-            buildResult(inner, defId, args, dispatchers, parsePipedOrBodyExpression(tokens), WhereBlock.parse(tokens))
-
-          case NL =>
-            tokens.consume(NL)
-            val body = DefBodyGuardExpr.parse(tokens)
-            body match {
-              case BodyGuardsExpresionAndWhere(guards, whereBlock) =>
-                buildResult(inner, defId, args, dispatchers, BodyGuardsExpresion(guards), Some(whereBlock))
-              case _ =>
-                buildResult(inner, defId, args, dispatchers, body, WhereBlock.parse(tokens))
-            }
-
-          case _ => throw InvalidDef()
+      case NL =>
+        tokens.consume(NL)
+        val body = DefBodyGuardExpr.parse(tokens)
+        body match {
+          case BodyGuardsExpresionAndWhere(guards, whereBlock) =>
+            buildResult(inner, defId, args, dispatchers, BodyGuardsExpresion(guards), Some(whereBlock))
+          case _ =>
+            buildResult(inner, defId, args, dispatchers, body, WhereBlock.parse(tokens))
         }
+
+      case _ => throw InvalidDef()
     }
   }
 
