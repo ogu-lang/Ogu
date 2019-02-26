@@ -41,19 +41,13 @@ object Backend {
     val tryScan = lexer.scan(fileName, inputStream)
     tryScan match {
       case Success(tokens) =>
-        val parser = new Parser(fileName, tokens, defaultRuntime())
+        val parser = new Parser(fileName, tokens)
         val ast = parser.parse()
         Interpreter.load(ast)
       case Failure(exception) => Failure(exception)
     }
   }
 
-  def defaultRuntime(): Option[SymbolTable] = {
-    val table = SymbolTable(None)
-    table.add(FunctionSymbol("println!"))
-    table.add(FunctionSymbol("input!"))
-    Some(table)
-  }
 
 
 }

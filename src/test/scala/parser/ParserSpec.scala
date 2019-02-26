@@ -20,7 +20,7 @@ class ParserSpec extends FlatSpec with Matchers {
     lexResult match {
       case Failure(exception) => Failure(exception)
       case Success(tokens) =>
-        val parser = new Parser("test.ogu", tokens, None)
+        val parser = new Parser("test.ogu", tokens)
         val result = Try(parser.parse())
         result match {
           case Success(Module(_, _, List(TopLevelExpression(expr)))) => Success(expr)
