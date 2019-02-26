@@ -9,12 +9,13 @@ case class ContainsExpr(val left: Expression, val right: Expression) extends Exp
 object ContainsExpr extends ExpressionParser {
 
   def parse(tokens: TokenStream): Expression = {
-    var expr = MatchesExpression.parse(tokens)
-    if (tokens.peek(CONTAINS)) {
+    val expr = MatchesExpression.parse(tokens)
+    if (!tokens.peek(CONTAINS)) {
+      expr
+    } else {
       val oper = tokens.consume(CONTAINS)
       tokens.consumeOptionals(NL)
-      expr = ContainsExpr(expr, MatchesExpression.parse(tokens))
+      ContainsExpr(expr, MatchesExpression.parse(tokens))
     }
-    expr
   }
 }
