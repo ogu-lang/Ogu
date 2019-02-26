@@ -1,9 +1,8 @@
 package parser.ast.decls
 
 import lexer.TokenStream
-import parser.ast.expressions.Identifier
 import parser.ast._
-import parser.ast.module.Module
+import parser.ast.expressions.Identifier
 
 
 case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(id) {
@@ -11,7 +10,7 @@ case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(
 
   def args : List[String] = {
     val count = decls.map(_.args.size).max
-    var ids: List[String] = decls.flatMap(decl => decl.args.flatMap {
+    val ids: List[String] = decls.flatMap(decl => decl.args.flatMap {
       case DefArg(Identifier(name)) => Some(name)
       case DefArg(IdIsType(name, _)) => Some(name)
       case _ => None
@@ -34,7 +33,7 @@ object MultiDefDecl {
             val mDecl = MultiDefDecl(defDecl.id, decls)
             (defs + (mDecl.id -> mDecl), mDecl)
         }
-      case d => (defs, d)
+      case node:LangNode => (defs, node)
     }
   }
 
