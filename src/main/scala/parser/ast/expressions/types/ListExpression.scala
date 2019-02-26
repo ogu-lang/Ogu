@@ -3,7 +3,6 @@ package parser.ast.expressions.types
 import lexer._
 import parser.ast._
 import parser.ast.expressions._
-import parser.ast.expressions.{Expression, ExpressionParser}
 import parser.ast.expressions.arithmetic.SubstractExpression
 import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 import parser.ast.expressions.logical.LogicalExpression
@@ -37,24 +36,22 @@ object ListExpression extends ExpressionParser {
     }
     else {
       val exprs = parseListOfCommaSeparatedExpressions(tokens)
-      val expr = if (exprs.length == 1) exprs.head else ListExpression(exprs, None)
-      val finalExpr = if (tokens.peek(DOTDOT)) {
-        tokens.consume(DOTDOT)
-        parseEndRange(tokens, expr, include = true)
-      }
-      else if (tokens.peek(DOTDOTLESS)) {
-        tokens.consume(DOTDOTLESS)
-        parseEndRange(tokens, expr, include = false)
-      }
-      else if (tokens.peek(DOTDOTDOT)) {
-        tokens.consume(DOTDOTDOT)
-        InfiniteRangeExpression(expr)
-      }
-      else if (tokens.peek(GUARD)) {
-        tokens.consume(GUARD)
-        ListExpression(List(expr), Some(consumeListGuards(tokens, List(parseListGuard(tokens)))))
-      } else {
-        expr
+      val expr = if (1 == exprs.length) exprs(0) else ListExpression(exprs, None)
+      val finalExpr = tokens.nextToken() match {
+        case DOTDOT =>
+          tokens.consume(DOTDOT)
+          parseEndRange(tokens, expr, include = true)
+        case DOTDOTLESS =>
+          tokens.consume(DOTDOTLESS)
+          parseEndRange(tokens, expr, include = false)
+        case DOTDOTDOT =>
+          tokens.consume(DOTDOTDOT)
+          InfiniteRangeExpression(expr)
+        case GUARD =>
+          tokens.consume(GUARD)
+          ListExpression(List(expr), Some(consumeListGuards(tokens, List(parseListGuard(tokens)))))
+        case _ =>
+          expr
       }
       tokens.consume(RBRACKET)
       if (!finalExpr.isInstanceOf[ValidRangeExpression])
@@ -76,7 +73,7 @@ object ListExpression extends ExpressionParser {
 
   private[this] def parseEndRange(tokens: TokenStream, expression: Expression, include: Boolean): Expression = {
     expression match {
-      case ListExpression(exprs, _) if exprs.size == 2 =>
+      case ListExpression(exprs, _) if 2 == exprs.size  =>
         val rangeInit = exprs(0)
         val rangeEnd = exprs(1)
         val rangeIncrement = SubstractExpression(List(rangeEnd, rangeInit))
@@ -84,7 +81,7 @@ object ListExpression extends ExpressionParser {
           RangeWithIncrementExpression(rangeInit, rangeIncrement, LogicalExpression.parse(tokens))
         else
           RangeWithIncrementExpressionUntil(rangeInit, rangeIncrement, LogicalExpression.parse(tokens))
-      case rangeInit =>
+      case rangeInit: Expression =>
         if (include)
           RangeExpression(rangeInit, LogicalExpression.parse(tokens))
         else
@@ -93,21 +90,19 @@ object ListExpression extends ExpressionParser {
   }
 
   def parseListGuard(tokens: TokenStream): ListGuard = {
-    if (tokens.peek(LPAREN) && tokens.peek(2, classOf[ID]) && tokens.peek(3, COMMA)) {
-      tokens.consume(LPAREN)
-      val listOfIds = consumeListOfIdsSepByComma(tokens)
-      tokens.consume(RPAREN)
-      tokens.consume(BACK_ARROW)
-      val expr = ForwardPipeFuncCallExpression.parse(tokens)
-      ListGuardDeclTupled(listOfIds, expr)
-    }
-    else if (tokens.peek(classOf[ID]) && tokens.peek(2, BACK_ARROW)) {
-      val id = tokens.consume(classOf[ID]).value
-      tokens.consume(BACK_ARROW)
-      val expr = ForwardPipeFuncCallExpression.parse(tokens)
-      ListGuardDecl(id, expr)
-    } else {
-      ListGuardExpr(ForwardPipeFuncCallExpression.parse(tokens))
+    tokens.nextToken() match {
+      case LPAREN if tokens.peek(2, classOf[ID]) && tokens.peek(3, COMMA) =>
+        tokens.consume(LPAREN)
+        val listOfIds = consumeListOfIdsSepByComma(tokens)
+        tokens.consume(RPAREN)
+        tokens.consume(BACK_ARROW)
+        ListGuardDeclTupled(listOfIds, ForwardPipeFuncCallExpression.parse(tokens))
+      case _: ID if tokens.peek(2, BACK_ARROW) =>
+        val id = tokens.consume(classOf[ID]).value
+        tokens.consume(BACK_ARROW)
+        ListGuardDecl(id, ForwardPipeFuncCallExpression.parse(tokens))
+      case _ =>
+        ListGuardExpr(ForwardPipeFuncCallExpression.parse(tokens))
     }
   }
 
