@@ -1,4 +1,4 @@
-package parser.ast.functions
+package parser.ast.decls
 
 import lexer.{DEF, NL, TokenStream}
 import parser.ast.DefDecl

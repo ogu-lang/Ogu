@@ -2,7 +2,7 @@ package parser.ast.expressions.control
 
 import lexer._
 import parser.ast.expressions.{Expression, ExpressionParser}
-import parser.ast.functions.ClassMethodDecl
+import parser.ast.decls.ClassMethodDecl
 
 case class ReifyExpression(traitName: String, methods: List[ClassMethodDecl]) extends Expression
 

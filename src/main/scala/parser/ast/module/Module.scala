@@ -7,7 +7,7 @@ import parser.ast.expressions._
 import parser.ast.expressions.functions.{ForwardPipeFuncCallExpression, FunctionCallExpression, FunctionCallWithDollarExpression, LambdaExpression}
 import parser.ast.expressions.literals.Atom
 import parser.ast.expressions.logical.LogicalExpression
-import parser.ast.functions._
+import parser.ast.decls._
 import parser.ast.types._
 
 import scala.annotation.tailrec

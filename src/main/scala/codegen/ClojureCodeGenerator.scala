@@ -12,7 +12,7 @@ import parser.ast.expressions.logical._
 import parser.ast.expressions.regexp._
 import parser.ast.expressions.types._
 import parser.ast.expressions.vars._
-import parser.ast.functions._
+import parser.ast.decls._
 import parser.ast.module._
 import parser.ast.types._
 
