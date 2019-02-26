@@ -3,7 +3,7 @@ package parser.ast.decls
 import lexer._
 import parser.InvalidDef
 import parser.ast.consumeListOfIdsSepByComma
-import parser.ast.expressions.{Expression, Identifier, parsePipedOrBodyExpression}
+import parser.ast.expressions._
 import parser.ast.expressions.logical.LogicalExpression
 
 trait WhereDef
@@ -22,7 +22,7 @@ object WhereDef {
       case ASSIGN =>
         tokens.consume(ASSIGN)
         val body = parsePipedOrBodyExpression(tokens)
-        if (listOfIds.size == 1)
+        if (1 == listOfIds.size )
           WhereDefSimple(listOfIds.head, listOfArgs, body)
         else
           WhereDefTupled(listOfIds, listOfArgs, body)
@@ -39,7 +39,7 @@ object WhereDef {
         if (indent) {
           tokens.consume(DEDENT)
         }
-        if (listOfIds.size equals 1)
+        if (1 == listOfIds.size)
           WhereDefWithGuards(listOfIds.head, listOfArgs, guards)
         else
           WhereDefTupledWithGuards(listOfIds, listOfArgs, guards)
@@ -69,17 +69,15 @@ object WhereDef {
   }
 
   private[this] def parseListOfWhereGuards(tokens: TokenStream, guards: List[WhereGuard]) : List[WhereGuard] = {
-    if (!tokens.peek(GUARD) && !tokens.peek(INDENT)) {
-      guards
-    }
-    else if (tokens.peek(GUARD)) {
-      parseListOfWhereGuards(tokens, parseWhereGuard(tokens) :: guards)
-    }
-    else {
-      tokens.consume(INDENT)
-      val result = parseListOfWhereGuards(tokens, guards)
-      tokens.consume(DEDENT)
-      parseListOfWhereGuards(tokens, result)
+    tokens.nextToken() match {
+      case GUARD =>
+        parseListOfWhereGuards(tokens, parseWhereGuard(tokens) :: guards)
+      case INDENT =>
+        tokens.consume(INDENT)
+        val result = parseListOfWhereGuards(tokens, guards)
+        tokens.consume(DEDENT)
+        parseListOfWhereGuards(tokens, result)
+      case _ => guards.reverse
     }
   }
 

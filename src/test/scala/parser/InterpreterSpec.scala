@@ -97,7 +97,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
   "An Interpeter" should "run alg files" in {
     run("/alg/ack.ogu") should be(10)
     run("/alg/collatz.ogu") should be (66)
-    run("/alg/facts.ogu") should equal (false)
+    run("/alg/facts.ogu") should equal (true)
     run("/alg/pi.ogu") should equal (false)
     toList(run("/alg/qsort.ogu")) should be (List(1, 2, 3, 4, 5, 6, 7, 8, 9))
     run("/alg/e1.ogu") should be(233168)
