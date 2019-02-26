@@ -4,7 +4,7 @@ import lexer._
 import parser.InvalidExpression
 import parser.ast.expressions.control.ControlExpression
 import parser.ast.expressions.functions.LambdaExpression
-import parser.ast.module.Module._
+import parser.ast.expressions.vars.{BindDeclExpression, LetDeclExpression, VarDeclExpression}
 
 object ParseExpr extends ExpressionParser {
   def parse(tokens: TokenStream): Expression = {
@@ -12,9 +12,9 @@ object ParseExpr extends ExpressionParser {
       case None => throw InvalidExpression()
       case Some(token) =>
         token match {
-          case LET => parseLetExpr(tokens)
-          case VAR => parseVarExpr(tokens)
-          case BIND => parseBindExpr(tokens)
+          case LET => LetDeclExpression.parse(tokens)
+          case VAR => VarDeclExpression.parse(tokens)
+          case BIND => BindDeclExpression.parse(tokens)
           case ctl if ctl.isInstanceOf[CONTROL] => ControlExpression.parse(tokens)
           case _ => LambdaExpression.parse(tokens)
         }

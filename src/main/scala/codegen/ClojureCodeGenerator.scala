@@ -11,6 +11,7 @@ import parser.ast.expressions.literals._
 import parser.ast.expressions.logical._
 import parser.ast.expressions.regexp._
 import parser.ast.expressions.types._
+import parser.ast.expressions.vars._
 import parser.ast.functions._
 import parser.ast.module._
 import parser.ast.types._
@@ -86,29 +87,29 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
           case ExpressionDispatcher(expr) => strBuf ++= s"${toClojure(expr)})\n"
         }
 
-      case BindDeclExpr(decls, expression) =>
+      case BindDeclExpression(decls, expression) =>
         strBuf ++= s"(binding ["
         strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
         strBuf ++= "]\n"
         strBuf ++= s"\t${toClojure(expression)})\n"
 
-      case LetDeclExpr(decls, Some(expression)) =>
+      case LetDeclExpression(decls, Some(expression)) =>
         strBuf ++= "(let ["
         strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
         strBuf ++= " ]\n"
         strBuf ++= s"\t${toClojure(expression)})\n"
 
-      case LetDeclExpr(decls: List[_], None) =>
+      case LetDeclExpression(decls: List[_], None) =>
         for (decl <- decls.asInstanceOf[List[LetVariable]]) {
           strBuf ++= s"(def ${toClojureLetId(decl.id)} ${toClojure(decl.value)})\n"
         }
 
-      case VarDeclExpr(decls, None) =>
+      case VarDeclExpression(decls, None) =>
         for (d <- decls) {
           strBuf ++= toClojureOguVariable(d)
         }
 
-      case VarDeclExpr(decls, Some(expression)) =>
+      case VarDeclExpression(decls, Some(expression)) =>
         strBuf ++= "(with-local-vars ["
         strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
         strBuf ++= "]\n"

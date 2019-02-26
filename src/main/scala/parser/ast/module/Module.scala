@@ -7,6 +7,7 @@ import parser.ast.expressions._
 import parser.ast.expressions.functions.{ForwardPipeFuncCallExpression, FunctionCallWithDollarExpression, LambdaExpression}
 import parser.ast.expressions.literals.Atom
 import parser.ast.expressions.logical.LogicalExpression
+import parser.ast.expressions.vars._
 import parser.ast.functions._
 import parser.ast.types._
 
@@ -31,28 +32,34 @@ object Module  {
     Module(moduleName, ImportClause.parse(tokens), parseModuleNodes(tokens))
   }
 
-  def parseModuleNodes(tokens:TokenStream): List[LangNode] = {
+  private[this] def parseModuleNodes(tokens:TokenStream): List[LangNode] = {
     println(s"@@@ parse module nodes (tokens=$tokens)")
-    var result = List.empty[LangNode]
-    while (tokens.nonEmpty) {
+    filter(parseModuleNodes(tokens, Nil))
+  }
+
+  private[this] def parseModuleNodes(tokens: TokenStream, nodes: List[LangNode]): List[LangNode] = {
+    if (tokens.isEmpty) {
+      nodes.reverse
+    }
+    else {
       val inner = if (!tokens.peek(PRIVATE)) false else { tokens.consume(PRIVATE); true }
-      result = tokens.nextToken() match {
-        case None =>  result
+      val newNodes = tokens.nextToken() match {
+        case None =>  nodes
         case Some(token) =>
           token match {
-            case CLASS => ClassDecl.parse(inner, tokens) :: result
-            case DATA => AdtDecl.parse(inner, tokens) :: result
-            case DEF => multiDef(parseDef(inner, tokens)) :: result
-            case DISPATCH => DispatchDecl.parse(inner, tokens) :: result
-            case EXTENDS => ExtendsDecl.parse(inner, tokens) :: result
-            case RECORD => RecordDecl.parse(inner, tokens) :: result
-            case TRAIT => TraitDecl.parse(inner, tokens) :: result
-            case _ => TopLevelExpression.parse(tokens) :: result
+            case CLASS => ClassDecl.parse(inner, tokens) :: nodes
+            case DATA => AdtDecl.parse(inner, tokens) :: nodes
+            case DEF => multiDef(parseDef(inner, tokens)) :: nodes
+            case DISPATCH => DispatchDecl.parse(inner, tokens) :: nodes
+            case EXTENDS => ExtendsDecl.parse(inner, tokens) :: nodes
+            case RECORD => RecordDecl.parse(inner, tokens) :: nodes
+            case TRAIT => TraitDecl.parse(inner, tokens) :: nodes
+            case _ => TopLevelExpression.parse(tokens) :: nodes
           }
       }
       tokens.consumeOptionals(NL)
+      parseModuleNodes(tokens, newNodes)
     }
-    filter(result.reverse)
   }
 
   val defs = mutable.HashMap.empty[String, MultiDefDecl]
@@ -353,103 +360,7 @@ object Module  {
     }
   }
 
-  def parseLetExpr(tokens:TokenStream) : Expression = {
-    LetDeclExpr(parseListOfLetVars(tokens, LET), parseInBodyOptExpr(tokens))
-  }
 
-  def parseVarExpr(tokens:TokenStream): Expression = {
-    VarDeclExpr(parseListOfLetVars(tokens, VAR), parseInBodyOptExpr(tokens))
-  }
-
-  def parseBindExpr(tokens:TokenStream): Expression = {
-    val listOfLetVars = parseListOfLetVars(tokens, BIND)
-    parseInBodyOptExpr(tokens) match {
-      case None => throw InvalidExpression()
-      case Some(body) =>  BindDeclExpr(listOfLetVars.reverse, body)
-    }
-  }
-
-  def parseListOfLetVars(tokens:TokenStream, token: TOKEN) : List[Variable] = {
-    tokens.consume(token)
-    tokens.consumeOptionals(NL)
-    var insideIndent = if (tokens.peek(INDENT)) 1 else 0
-    if (insideIndent == 1)
-      tokens.consume(INDENT)
-    var letVar = parseLetVar(tokens)
-    var listOfLetVars = List.empty[Variable]
-    listOfLetVars = letVar :: listOfLetVars
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      if (tokens.peek(INDENT)) {
-        tokens.consume(INDENT)
-        insideIndent += 1
-      }
-      letVar = parseLetVar(tokens)
-      listOfLetVars = letVar :: listOfLetVars
-    }
-
-    while (insideIndent > 0) {
-      tokens.consumeOptionals(NL)
-      tokens.consume(DEDENT)
-      insideIndent -= 1
-    }
-    listOfLetVars.reverse
-  }
-
-  def parseInBodyExpr(tokens:TokenStream): Option[Expression] = {
-    tokens.consume(IN)
-    if (!tokens.peek(NL)) {
-      Some(ForwardPipeFuncCallExpression.parse(tokens))
-    } else {
-      tokens.consume(NL)
-      Some(BlockExpression.parse(tokens))
-    }
-  }
-
-  def parseInBodyOptExpr(tokens:TokenStream) : Option[Expression] = {
-    if (tokens.peek(IN)) {
-      parseInBodyExpr(tokens)
-    } else if (tokens.peek(NL) && tokens.peek(2, IN)) {
-      tokens.consume(NL)
-      parseInBodyExpr(tokens)
-    } else if (tokens.peek(NL) && tokens.peek(2, INDENT) && tokens.peek(3, IN)) {
-      tokens.consume(NL)
-      tokens.consume(INDENT)
-      val result = parseInBodyExpr(tokens)
-      tokens.consume(DEDENT)
-      result
-    } else {
-      None
-    }
-  }
-
-  def parseLetVar(tokens:TokenStream) : Variable = {
-    tokens.consumeOptionals(NL)
-    val id = parseLetId(tokens)
-    tokens.consume(ASSIGN)
-    val expr = parsePipedOrBodyExpression(tokens)
-    LetVariable(id, expr)
-  }
-
-  def parseLetId(tokens:TokenStream) : LetId = {
-    if (!tokens.peek(LPAREN)) {
-      val idToken = tokens.consume(classOf[ID])
-      LetSimpleId(idToken.value)
-    } else {
-      tokens.consume(LPAREN)
-      var ids = List.empty[LetId]
-      val id = parseLetId(tokens)
-      ids =id :: ids
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        val id = parseLetId(tokens)
-        ids = id :: ids
-      }
-      tokens.consume(RPAREN)
-      LetTupledId(ids)
-    }
-  }
 
 
 

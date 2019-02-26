@@ -1,33 +1,12 @@
 package parser.ast
 
-import parser.ast.expressions.{AssignableExpression, Expression, Identifier, LambdaArg}
-
-
-
-
-
-
+import parser.ast.expressions.{Expression, Identifier}
 
 case class IdIsType(id: String, cl: String) extends Expression
 
 trait LetId
 case class LetSimpleId(id:String) extends LetId
 case class LetTupledId(ids:List[LetId]) extends LetId
-
-trait Variable
-case class LetVariable(id: LetId, value: Expression) extends Variable
-
-
-trait LetDeclExprTrait extends Expression
-case class LetDeclExpr(decls: List[Variable], inExpr: Option[Expression]) extends LetDeclExprTrait
-case class VarDeclExpr(decls: List[Variable], inExpr: Option[Expression]) extends Expression
-case class BindDeclExpr(decls: List[Variable], inExpr: Expression) extends Expression
-
-trait LoopDeclVariable extends Variable
-case class LoopVarDecl(id: String, initialValue: Expression) extends LoopDeclVariable
-case class ForVarDeclIn(id: String, initialValue: Expression) extends LoopDeclVariable
-case class ForVarDeclTupledIn(ids: List[String], initialValue: Expression) extends LoopDeclVariable
-
 
 case class WhereGuard(guarExpr: Option[Expression], body: Expression)
 

@@ -2,13 +2,14 @@ package parser.ast.expressions.control
 
 import lexer._
 import parser._
-import parser.ast.LoopVarDecl
 import parser.ast.expressions._
 import parser.ast.expressions.ExpressionParser
 import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 import parser.ast.expressions.logical.LogicalExpression
 
 import scala.annotation.tailrec
+
+case class LoopVarDecl(id: String, initialValue: Expression) extends LoopDeclVariable
 
 trait LoopGuard extends Expression
 case class WhileGuardExpr(comp:Expression) extends LoopGuard
