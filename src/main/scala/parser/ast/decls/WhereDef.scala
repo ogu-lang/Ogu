@@ -2,7 +2,7 @@ package parser.ast.decls
 
 import lexer._
 import parser.InvalidDef
-import parser.ast.{LangNode, consumeListOfIdsSepByComma}
+import parser.ast.consumeListOfIdsSepByComma
 import parser.ast.expressions.{Expression, Identifier, parsePipedOrBodyExpression}
 import parser.ast.expressions.logical.LogicalExpression
 
@@ -15,58 +15,76 @@ case class WhereDefTupledWithGuards(idList: List[String], args: Option[List[Expr
 object WhereDef {
 
   def parse(tokens:TokenStream): WhereDef = {
-    val listOfIds = if (!tokens.peek(LPAREN)) {
+    val listOfIds = parseListOfIds(tokens)
+    val listOfArgs = parseListOfArgs(tokens, Nil)
+
+    tokens.nextToken() match {
+      case None => throw InvalidDef()
+
+      case Some(token) =>
+        token match {
+          case ASSIGN =>
+            tokens.consume(ASSIGN)
+            val body = parsePipedOrBodyExpression(tokens)
+            if (listOfIds.size == 1)
+              WhereDefSimple(listOfIds.head, listOfArgs, body)
+            else
+              WhereDefTupled(listOfIds, listOfArgs, body)
+
+          case GUARD | NL =>
+            tokens.consumeOptionals(NL)
+            val indent = if (!tokens.peek(INDENT)) {
+              false
+            } else {
+              tokens.consume(INDENT)
+              true
+            }
+            val guards = parseListOfWhereGuards(tokens, Nil)
+            if (indent) {
+              tokens.consume(DEDENT)
+            }
+            if (listOfIds.size equals 1)
+              WhereDefWithGuards(listOfIds.head, listOfArgs, guards)
+            else
+              WhereDefTupledWithGuards(listOfIds, listOfArgs, guards)
+
+          case _ => throw InvalidDef()
+        }
+    }
+  }
+
+  private[this] def parseListOfIds(tokens: TokenStream) : List[String] = {
+    if (!tokens.peek(LPAREN)) {
       List(tokens.consume(classOf[ID]).value)
     } else {
       tokens.consume(LPAREN)
-      val l = consumeListOfIdsSepByComma(tokens)
+      val list = consumeListOfIdsSepByComma(tokens)
       tokens.consume(RPAREN)
-      l
+      list
     }
-    var listOfArgs = List.empty[Expression]
-    while (!tokens.peek(ASSIGN) && !tokens.peek(GUARD) && !tokens.peek(NL)) {
-      val expr = parseWhereArg(tokens)
-      listOfArgs = expr :: listOfArgs
-    }
-    if (tokens.peek(ASSIGN)) {
-      tokens.consume(ASSIGN)
-      val body = parsePipedOrBodyExpression(tokens)
-      if (listOfIds.size == 1)
-        WhereDefSimple(listOfIds.head, if (listOfArgs.isEmpty) None else Some(listOfArgs.reverse), body)
-      else
-        WhereDefTupled(listOfIds, if (listOfArgs.isEmpty) None else Some(listOfArgs.reverse), body)
-    }
-    else if (tokens.peek(GUARD) || tokens.peek(NL)) {
-      var inIndent = false
-      tokens.consumeOptionals(NL)
-      if (tokens.peek(INDENT)) {
-        inIndent = true
-        tokens.consume(INDENT)
-      }
-      var guards = List.empty[WhereGuard]
-      while (tokens.peek(GUARD) || tokens.peek(INDENT)) {
-        if (!tokens.peek(INDENT)) {
-          guards = parseWhereGuard(tokens) :: guards
-        }
-        else {
-          tokens.consume(INDENT)
-          while (tokens.peek(GUARD)) {
-            guards = parseWhereGuard(tokens) :: guards
-          }
-          tokens.consume(DEDENT)
-        }
-      }
+  }
 
-      if (inIndent) {
-        tokens.consume(DEDENT)
-      }
-      if (listOfIds.size == 1)
-        WhereDefWithGuards(listOfIds.head, if (listOfArgs.isEmpty) None else Some(listOfArgs), guards.reverse)
-      else
-        WhereDefTupledWithGuards(listOfIds, if (listOfArgs.isEmpty) None else Some(listOfArgs), guards.reverse)
+  private[this] def parseListOfArgs(tokens: TokenStream, args: List[Expression]) : Option[List[Expression]] = {
+    if (tokens.peek(ASSIGN) || tokens.peek(GUARD) || tokens.peek(NL)) {
+      if (args.isEmpty) None else Some(args.reverse)
     }
     else {
-      throw InvalidDef()
+      parseListOfArgs(tokens, parseWhereArg(tokens) :: args)
+    }
+  }
+
+  private[this] def parseListOfWhereGuards(tokens: TokenStream, guards: List[WhereGuard]) : List[WhereGuard] = {
+    if (!tokens.peek(GUARD) && !tokens.peek(INDENT)) {
+      guards
+    }
+    else if (tokens.peek(GUARD)) {
+      parseListOfWhereGuards(tokens, parseWhereGuard(tokens) :: guards)
+    }
+    else {
+      tokens.consume(INDENT)
+      val result = parseListOfWhereGuards(tokens, guards)
+      tokens.consume(DEDENT)
+      parseListOfWhereGuards(tokens, result)
     }
   }
 
