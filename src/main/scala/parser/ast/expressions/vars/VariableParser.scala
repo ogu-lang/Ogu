@@ -12,10 +12,8 @@ object VariableParser {
   def parseListOfLetVars(tokens: TokenStream, token: TOKEN): List[Variable] = {
     tokens.consume(token)
     tokens.consumeOptionals(NL)
-    var initIndent = if (tokens.peek(INDENT)) 1 else 0
-    if (initIndent == 1)
-      tokens.consume(INDENT)
-    var letVar = parseLetVar(tokens)
+    val initIndent = if (tokens.peek(INDENT)) { tokens.consume(INDENT); 1 } else 0
+    val letVar = parseLetVar(tokens)
     val (insideIndent, listOfLetVars) = parseListOfLetVars(tokens, initIndent, List(letVar))
     tokens.consumeOptionals(NL)
     tokens.consume(insideIndent, DEDENT)
@@ -23,19 +21,19 @@ object VariableParser {
   }
 
   def parseInBodyOptExpr(tokens:TokenStream) : Option[Expression] = {
-    if (tokens.peek(IN)) {
-      parseInBodyExpr(tokens)
-    } else if (tokens.peek(NL) && tokens.peek(2, IN)) {
-      tokens.consume(NL)
-      parseInBodyExpr(tokens)
-    } else if (tokens.peek(NL) && tokens.peek(2, INDENT) && tokens.peek(3, IN)) {
-      tokens.consume(NL)
-      tokens.consume(INDENT)
-      val result = parseInBodyExpr(tokens)
-      tokens.consume(DEDENT)
-      result
-    } else {
-      None
+    tokens.nextToken match {
+      case IN =>
+        parseInBodyExpr(tokens)
+      case NL if tokens.peek(2, IN) =>
+        tokens.consume(NL)
+        parseInBodyExpr(tokens)
+      case NL if tokens.peek(2, INDENT) && tokens.peek(3, IN) =>
+        tokens.consume(NL)
+        tokens.consume(INDENT)
+        val result = parseInBodyExpr(tokens)
+        tokens.consume(DEDENT)
+        result
+      case _ => None
     }
   }
 
