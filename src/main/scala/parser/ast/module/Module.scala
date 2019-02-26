@@ -35,53 +35,25 @@ object Module  {
     println(s"@@@ parse module nodes (tokens=$tokens)")
     var result = List.empty[LangNode]
     while (tokens.nonEmpty) {
-      var inner = false
-      if (tokens.peek(PRIVATE)) {
-        tokens.consume(PRIVATE)
-        inner = true
-      }
-      if (tokens.peek(CLASS)) {
-        result = ClassDecl.parse(inner, tokens) :: result
-      }
-      else if (tokens.peek(DATA)) {
-        result = AdtDecl.parse(inner, tokens) :: result
-      }
-      else if (tokens.peek(DEF)) {
-        result = multiDef(parseDef(inner, tokens)) :: result
-      }
-      else if (tokens.peek(DISPATCH)) {
-        result = DispatchDecl.parse(inner, tokens) :: result
-      }
-      else if (tokens.peek(EXTENDS)) {
-        result = ExtendsDecl.parse(inner, tokens) :: result
-      }
-      else if (tokens.peek(RECORD)) {
-        result = RecordDecl.parse(inner, tokens) :: result
-      }
-      else if (tokens.peek(TRAIT)) {
-        result = TraitDecl.parse(inner, tokens) :: result
-      }
-      else {
-        result = TopLevelExpression.parse(tokens) :: result
+      val inner = if (!tokens.peek(PRIVATE)) false else { tokens.consume(PRIVATE); true }
+      result = tokens.nextToken() match {
+        case None =>  result
+        case Some(token) =>
+          token match {
+            case CLASS => ClassDecl.parse(inner, tokens) :: result
+            case DATA => AdtDecl.parse(inner, tokens) :: result
+            case DEF => multiDef(parseDef(inner, tokens)) :: result
+            case DISPATCH => DispatchDecl.parse(inner, tokens) :: result
+            case EXTENDS => ExtendsDecl.parse(inner, tokens) :: result
+            case RECORD => RecordDecl.parse(inner, tokens) :: result
+            case TRAIT => TraitDecl.parse(inner, tokens) :: result
+            case _ => TopLevelExpression.parse(tokens) :: result
+          }
       }
       tokens.consumeOptionals(NL)
     }
     filter(result.reverse)
   }
-
-
-
-  def parseListOfIds(tokens:TokenStream): List[String] = {
-    val arg = tokens.consume(classOf[ID]).value
-    var args = List(arg)
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      val arg = tokens.consume(classOf[ID]).value
-      args = arg :: args
-    }
-    args.reverse
-  }
-
 
   val defs = mutable.HashMap.empty[String, MultiDefDecl]
 
@@ -267,7 +239,7 @@ object Module  {
       List(tokens.consume(classOf[ID]).value)
     } else {
       tokens.consume(LPAREN)
-      val l = parseListOfIds(tokens)
+      val l = consumeListOfIdsSepByComma(tokens)
       tokens.consume(RPAREN)
       l
     }
