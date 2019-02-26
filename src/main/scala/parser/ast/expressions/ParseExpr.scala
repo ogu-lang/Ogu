@@ -3,6 +3,7 @@ package parser.ast.expressions
 import lexer._
 import parser.InvalidExpression
 import parser.ast.expressions.control.ControlExpression
+import parser.ast.expressions.functions.LambdaExpression
 import parser.ast.module.Module._
 
 object ParseExpr extends ExpressionParser {
@@ -15,7 +16,7 @@ object ParseExpr extends ExpressionParser {
           case VAR => parseVarExpr(tokens)
           case BIND => parseBindExpr(tokens)
           case ctl if ctl.isInstanceOf[CONTROL] => ControlExpression.parse(tokens)
-          case _ => parseLambdaExpr(tokens)
+          case _ => LambdaExpression.parse(tokens)
         }
     }
   }

@@ -4,7 +4,7 @@ import lexer._
 import parser._
 import parser.ast._
 import parser.ast.expressions._
-import parser.ast.expressions.functions.{ForwardPipeFuncCallExpression, FunctionCallWithDollarExpression}
+import parser.ast.expressions.functions.{ForwardPipeFuncCallExpression, FunctionCallWithDollarExpression, LambdaExpression}
 import parser.ast.expressions.literals.Atom
 import parser.ast.expressions.logical.LogicalExpression
 import parser.ast.functions._
@@ -480,50 +480,6 @@ object Module  {
   }
 
 
-  def parseLambdaExpr(tokens:TokenStream) : Expression = {
-    if (!tokens.peek(LAMBDA)) {
-      LogicalExpression.parse(tokens)
-    }
-    else {
-      tokens.consume(LAMBDA)
-      var args = List.empty[LambdaArg]
-      val arg = parseLambdaArg(tokens)
-      args = arg :: args
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        val arg = parseLambdaArg(tokens)
-        args = arg :: args
-      }
-      if (!tokens.peek(ARROW)) {
-        throw InvalidLambdaExpression(tokens.nextToken())
-      }
-      tokens.consume(ARROW)
-      val expr = LambdaExpression(args.reverse, ParseExpr.parse(tokens))
-      expr
-    }
-  }
-
-  def parseLambdaArg(tokens:TokenStream) : LambdaArg = {
-    if (tokens.peek(classOf[ID])) {
-      val id = tokens.consume(classOf[ID])
-      LambdaSimpleArg(id.value)
-    }
-    else if (tokens.peek(LPAREN)) {
-      tokens.consume(LPAREN)
-      var ids = List.empty[String]
-      val id = tokens.consume(classOf[ID]).value
-      ids = id :: ids
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        val id = tokens.consume(classOf[ID]).value
-        ids = id :: ids
-      }
-      tokens.consume(RPAREN)
-      LambdaTupleArg(ids.reverse)
-    } else {
-      throw InvalidLambdaExpression(tokens.nextToken())
-    }
-  }
 
   def parseFuncCallExpr(tokens:TokenStream) : Expression = {
     var expr : Expression = null

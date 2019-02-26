@@ -2,11 +2,10 @@ package parser
 
 import lexer._
 import org.scalatest.{FlatSpec, Matchers}
-import parser.ast.{Identifier, LambdaExpression, LambdaSimpleArg, LambdaTupleArg}
 import parser.ast.expressions.arithmetic.AddExpression
 import parser.ast.expressions.literals.IntLiteral
-import parser.ast.expressions.TopLevelExpression
-import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
+import parser.ast.expressions.{Identifier, LambdaSimpleArg, LambdaTupleArg, TopLevelExpression}
+import parser.ast.expressions.functions.{ForwardPipeFuncCallExpression, LambdaExpression}
 import parser.ast.module.Module
 
 import scala.util.{Failure, Success, Try}
