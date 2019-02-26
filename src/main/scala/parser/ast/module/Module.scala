@@ -2,7 +2,11 @@ package parser.ast.module
 
 import lexer._
 import parser._
+import parser.ast._
 import parser.ast.expressions._
+import parser.ast.expressions.functions.{ForwardPipeFuncCallExpression, FunctionCallWithDollarExpression}
+import parser.ast.expressions.literals.Atom
+import parser.ast.expressions.logical.LogicalExpression
 import parser.ast.functions._
 import parser.ast.types._
 
@@ -521,16 +525,14 @@ object Module  {
     }
   }
 
-
   def parseFuncCallExpr(tokens:TokenStream) : Expression = {
     var expr : Expression = null
-    //println(s"@@parseFunCallExpr (tokens=${tokens})")
     if (tokens.peek(classOf[ID])) {
       val id = tokens.consume(classOf[ID])
       expr = Identifier(id.value)
     }
     else if (tokens.peek(classOf[ATOM])) {
-      expr = parseAtom(tokens)
+      expr = Atom.parse(tokens)
     }
     if (!funcCallEndToken(tokens)) {
       var args = List.empty[Expression]
@@ -554,194 +556,6 @@ object Module  {
     }
   }
 
-  def funcCallEndToken(tokens:TokenStream) : Boolean = {
-    if (tokens.isEmpty) {
-      true
-    } else {
-      tokens.nextToken().exists { next =>
-        next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] ||
-          next == INDENT || next == DEDENT || next == ASSIGN  ||
-          next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN ||
-          next == ELSE || next == RPAREN || next == IN || next == RBRACKET || next == RCURLY || next == WHERE
-      }
-    }
-
-  }
-
-  def parseAtom(tokens:TokenStream) : Expression = {
-    val atom = tokens.consume(classOf[ATOM])
-    Atom(atom.value)
-  }
-
-  def parseLiteral(tokens:TokenStream) : Expression = {
-    if (tokens.peek(TRUE)) {
-      tokens.consume(TRUE)
-      BoolLiteral(true)
-    }
-    else if (tokens.peek(FALSE)) {
-      tokens.consume(FALSE)
-      BoolLiteral(false)
-    }
-    else if (tokens.peek(classOf[INT_LITERAL])) {
-      IntLiteral(tokens.consume(classOf[INT_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[LONG_LITERAL])) {
-      LongLiteral(tokens.consume(classOf[LONG_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[BIGINT_LITERAL])) {
-      BigIntLiteral(tokens.consume(classOf[BIGINT_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[DOUBLE_LITERAL])) {
-      DoubleLiteral(tokens.consume(classOf[DOUBLE_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[STRING_LITERAL])) {
-      StringLiteral(tokens.consume(classOf[STRING_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[ISODATETIME_LITERAL])) {
-      DateTimeLiteral(tokens.consume(classOf[ISODATETIME_LITERAL]).value)
-    }
-    else if (tokens.peek(classOf[CHAR_LITERAL])) {
-      CharLiteral(tokens.consume(classOf[CHAR_LITERAL]).chr)
-    }
-    else if (tokens.peek(classOf[REGEXP_LITERAL])) {
-      RegexpLiteral(tokens.consume(classOf[REGEXP_LITERAL]).re)
-    }
-    else if (tokens.peek(classOf[FSTRING_LITERAL])) {
-      FStringLiteral(tokens.consume(classOf[FSTRING_LITERAL]).value)
-    }
-    else  {
-      null
-    }
-  }
 
 
-  def parseRangeExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(LBRACKET)
-    if (tokens.peek(RBRACKET)) {
-      tokens.consume(RBRACKET)
-      return EmptyListExpresion()
-    }
-    var expr = LogicalExpression.parse(tokens)
-    if (tokens.peek(COMMA)) {
-      var list = List.empty[Expression]
-      while(tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        list = expr :: list
-        expr = LogicalExpression.parse(tokens)
-      }
-      list = expr :: list
-      expr = ListExpression(list.reverse, None)
-    }
-    if (tokens.peek(DOTDOT)) {
-      tokens.consume(DOTDOT)
-      expr = parseEndRange(tokens, expr, include=true)
-    }
-    if (tokens.peek(DOTDOTLESS)) {
-      tokens.consume(DOTDOTLESS)
-      expr = parseEndRange(tokens, expr, include = false)
-    }
-    if (tokens.peek(DOTDOTDOT)) {
-      tokens.consume(DOTDOTDOT)
-      expr = InfiniteRangeExpression(expr)
-    }
-    else if (tokens.peek(GUARD)) {
-      tokens.consume(GUARD)
-      var listOfGuards = List.empty[ListGuard]
-      var guard = parseListGuard(tokens)
-      listOfGuards = guard :: listOfGuards
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        guard = parseListGuard(tokens)
-        listOfGuards = guard :: listOfGuards
-      }
-      expr = ListExpression(List(expr), Some(listOfGuards.reverse))
-    }
-    tokens.consume(RBRACKET)
-    if (!expr.isInstanceOf[ValidRangeExpression])
-      expr = ListExpression(List(expr), None)
-    expr
-  }
-
-  private[this] def parseEndRange(tokens: TokenStream, expr: Expression, include: Boolean) : Expression = {
-    expr match {
-      case expression: ListExpression if expression.expressions.size == 2 =>
-        val lexpr = expression.expressions
-        val rangeInit = lexpr.head
-        val rangeIncrement = SubstractExpression(List(lexpr.tail.head, lexpr.head))
-        if (include)
-          RangeWithIncrementExpression(rangeInit, rangeIncrement, LogicalExpression.parse(tokens))
-        else
-          RangeWithIncrementExpressionUntil(rangeInit, rangeIncrement, LogicalExpression.parse(tokens))
-      case rangeInit =>
-        if (include)
-          RangeExpression(rangeInit, LogicalExpression.parse(tokens))
-        else
-          RangeExpressionUntil(rangeInit, LogicalExpression.parse(tokens))
-    }
-  }
-
-  def parseListGuard(tokens:TokenStream) : ListGuard = {
-    if (tokens.peek(LPAREN) && tokens.peek(2, classOf[ID]) && tokens.peek(3, COMMA)) {
-      tokens.consume(LPAREN)
-      var listOfIds = List.empty[String]
-      val id = tokens.consume(classOf[ID])
-      listOfIds = id.value :: listOfIds
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        val id = tokens.consume(classOf[ID])
-        listOfIds = id.value :: listOfIds
-      }
-      tokens.consume(RPAREN)
-      tokens.consume(BACK_ARROW)
-      val expr = ForwardPipeFuncCallExpression.parse(tokens)
-      ListGuardDeclTupled(listOfIds.reverse, expr)
-    }
-    else if (tokens.peek(classOf[ID]) && tokens.peek(2, BACK_ARROW)) {
-      val id = tokens.consume(classOf[ID])
-      tokens.consume(BACK_ARROW)
-      val expr = ForwardPipeFuncCallExpression.parse(tokens)
-      ListGuardDecl(id.value, expr)
-    } else {
-      ListGuardExpr(ForwardPipeFuncCallExpression.parse(tokens))
-    }
-  }
-
-  def parseSetExpr(tokens:TokenStream): Expression = {
-    tokens.consume(HASHLCURLY)
-    var listOfValues = List.empty[Expression]
-    val value = ParseExpr.parse(tokens)
-    listOfValues = value :: listOfValues
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      val value = ParseExpr.parse(tokens)
-      listOfValues = value :: listOfValues
-    }
-    tokens.consume(RCURLY)
-    SetExpression(listOfValues.reverse)
-  }
-
-  def parseDictionaryExpr(tokens:TokenStream) : Expression = {
-    tokens.consume(LCURLY)
-    var listOfPairs = List.empty[(Expression, Expression)]
-    val key = parseKeyExpr(tokens)
-    val value = ParseExpr.parse(tokens)
-    listOfPairs = (key, value) :: listOfPairs
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      val key = parseKeyExpr(tokens)
-      val value = ParseExpr.parse(tokens)
-      listOfPairs = (key, value) :: listOfPairs
-    }
-    tokens.consume(RCURLY)
-    DictionaryExpression(listOfPairs.reverse)
-  }
-
-  def parseKeyExpr(tokens:TokenStream) : Expression = {
-    if (tokens.peek(classOf[ATOM]))
-      parseAtom(tokens)
-    else
-      parseLiteral(tokens)
-  }
 }

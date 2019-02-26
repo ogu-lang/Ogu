@@ -1,8 +1,9 @@
 package parser.ast.expressions
 
 import lexer._
+import parser.InvalidExpression
+import parser.ast.expressions.control.ControlExpression
 import parser.ast.module.Module._
-import parser.{Expression, InvalidExpression}
 
 object ParseExpr extends ExpressionParser {
   def parse(tokens: TokenStream): Expression = {

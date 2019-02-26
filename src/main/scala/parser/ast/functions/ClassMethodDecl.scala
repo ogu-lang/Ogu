@@ -1,7 +1,7 @@
 package parser.ast.functions
 
 import lexer.{DEF, NL, TokenStream}
-import parser.DefDecl
+import parser.ast.DefDecl
 import parser.ast.module.Module
 
 import scala.annotation.tailrec

@@ -1,7 +1,8 @@
 package parser.ast.expressions
 
 import lexer.TokenStream
-import parser.{Expression, LangNode}
+import parser.ast.LangNode
+import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 
 case class TopLevelExpression(expression: Expression) extends LangNode
 

@@ -1,7 +1,7 @@
 package parser.ast.types
 
 import lexer._
-import parser.LangNode
+import parser.ast.LangNode
 import parser.ast.functions.ClassMethodDecl
 
 import scala.annotation.tailrec

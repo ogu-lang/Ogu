@@ -1,17 +1,22 @@
 package parser.ast
 
 import lexer._
-import parser.Expression
+import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 
 package object expressions {
 
-  def funcCallEndToken(tokens:TokenStream) : Boolean = if (tokens.isEmpty) true else {
-      tokens.nextToken().exists { next =>
-        next == NL || next.isInstanceOf[PIPE_OPER] || next.isInstanceOf[OPER] || next.isInstanceOf[DECL] ||
-          next == INDENT || next == DEDENT || next == ASSIGN ||
-          next == DOLLAR || next == COMMA || next == LET || next == VAR || next == DO || next == THEN ||
-          next == ELSE || next == RPAREN || next == IN || next == RBRACKET || next == RCURLY || next == WHERE
-      }
+  def funcCallEndToken(tokens:TokenStream) : Boolean =
+    tokens.nextToken() match {
+      case None => true
+      case Some(token) =>
+        token match {
+          case NL | INDENT | DEDENT | ASSIGN | DOLLAR | COMMA | LET | VAR | DO | THEN | ELSE |
+            RPAREN | IN | RBRACKET | RCURLY | WHERE => true
+          case pipe if pipe.isInstanceOf[PIPE_OPER] => true
+          case oper if oper.isInstanceOf[OPER] => true
+          case decl if decl.isInstanceOf[DECL] => true
+          case _ => false
+        }
     }
 
   def parsePipedOrBodyExpression(tokens:TokenStream): Expression = if (!tokens.peek(NL))
@@ -21,11 +26,11 @@ package object expressions {
     BlockExpression.parse(tokens)
   }
 
-  def parseListOfExpressions(tokens:TokenStream) : List[Expression] = {
+  def parseListOfCommaSeparatedExpressions(tokens:TokenStream) : List[Expression] = {
     consumeListOfExpression(tokens, ParseExpr, List(ParseExpr.parse(tokens)))
   }
 
-  def parseListOfPipedExpressions(tokens:TokenStream) : List[Expression] = {
+  def parseListOfCommaSeparatedPipedExpressions(tokens:TokenStream) : List[Expression] = {
     consumeListOfExpression(tokens, ForwardPipeFuncCallExpression, List(ForwardPipeFuncCallExpression.parse(tokens)))
   }
 

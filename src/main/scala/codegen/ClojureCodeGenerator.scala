@@ -1,7 +1,16 @@
 package codegen
 
-import parser._
+import parser.ast._
 import parser.ast.expressions._
+import parser.ast.expressions.arithmetic._
+import parser.ast.expressions.comparisons._
+import parser.ast.expressions.control._
+import parser.ast.expressions.functions._
+import parser.ast.expressions.list_ops._
+import parser.ast.expressions.literals._
+import parser.ast.expressions.logical._
+import parser.ast.expressions.regexp._
+import parser.ast.expressions.types._
 import parser.ast.functions._
 import parser.ast.module._
 import parser.ast.types._
@@ -431,7 +440,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case BodyGuardsExpresion(guards) =>
         strBuf ++= s"(cond\n ${guards.map(toClojureDefBodyGuardExpr).mkString("\n")})"
 
-      case TupleExpr(exprs) =>
+      case TupleExpression(exprs) =>
         strBuf ++= s"[${exprs.map(toClojure).mkString(" ")}]"
 
       case WhereBlock(defs) =>
@@ -631,7 +640,7 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     defArg match {
       case DefOtherwiseArg => ":default"
       case DefArg(Identifier(id)) => id
-      case DefArg(TupleExpr(exprs)) => s"[${exprs.map(toClojure).mkString(" ")}]"
+      case DefArg(TupleExpression(exprs)) => s"[${exprs.map(toClojure).mkString(" ")}]"
       case DefArg(InfiniteTupleExpr(exprs)) =>
         val rest = exprs.last
         val args = exprs.dropRight(1)
