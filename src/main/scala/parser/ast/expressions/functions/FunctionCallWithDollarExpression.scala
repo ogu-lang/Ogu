@@ -1,8 +1,7 @@
 package parser.ast.expressions.functions
 
 import lexer._
-import parser.ast.CallExpression
-import parser.ast.expressions.{Expression, ExpressionParser, ParseExpr, funcCallEndToken}
+import parser.ast.expressions._
 
 case class FunctionCallWithDollarExpression(func: Expression, args: List[Expression]) extends CallExpression
 

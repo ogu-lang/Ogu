@@ -1,8 +1,7 @@
 package parser.ast.expressions.types
 
 import lexer._
-import parser.ast.CallExpression
-import parser.ast.expressions.{Expression, ExpressionParser, parseListOfCommaSeparatedExpressions}
+import parser.ast.expressions.{CallExpression, Expression, ExpressionParser, parseListOfCommaSeparatedExpressions}
 
 case class NewCallExpression(cls: String, args: List[Expression]) extends CallExpression
 

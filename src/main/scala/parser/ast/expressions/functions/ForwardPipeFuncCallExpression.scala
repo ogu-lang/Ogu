@@ -1,8 +1,7 @@
 package parser.ast.expressions.functions
 
 import lexer.PIPE_RIGHT
-import parser.ast.CallExpression
-import parser.ast.expressions.{Expression, LeftAssociativeExpressionParser}
+import parser.ast.expressions.{CallExpression, Expression, LeftAssociativeExpressionParser}
 
 
 case class ForwardPipeFuncCallExpression(args: List[Expression]) extends CallExpression

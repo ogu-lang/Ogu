@@ -4,10 +4,9 @@ import lexer._
 import parser._
 import parser.ast._
 import parser.ast.expressions._
-import parser.ast.expressions.functions.{ForwardPipeFuncCallExpression, FunctionCallWithDollarExpression, LambdaExpression}
+import parser.ast.expressions.functions.{ForwardPipeFuncCallExpression, FunctionCallExpression, FunctionCallWithDollarExpression, LambdaExpression}
 import parser.ast.expressions.literals.Atom
 import parser.ast.expressions.logical.LogicalExpression
-import parser.ast.expressions.vars._
 import parser.ast.functions._
 import parser.ast.types._
 
@@ -364,36 +363,6 @@ object Module  {
 
 
 
-  def parseFuncCallExpr(tokens:TokenStream) : Expression = {
-    var expr : Expression = null
-    if (tokens.peek(classOf[ID])) {
-      val id = tokens.consume(classOf[ID])
-      expr = Identifier(id.value)
-    }
-    else if (tokens.peek(classOf[ATOM])) {
-      expr = Atom.parse(tokens)
-    }
-    if (!funcCallEndToken(tokens)) {
-      var args = List.empty[Expression]
-      val func = expr
-      while (!funcCallEndToken(tokens)) {
-        if (tokens.peek(classOf[ID])) {
-          val id = tokens.consume(classOf[ID])
-          expr = Identifier(id.value)
-        } else {
-          expr = FunctionCallWithDollarExpression.parse(tokens)
-        }
-        args = expr :: args
-      }
-      FunctionCallExpression(func, args.reverse)
-    } else {
-      if (expr == null) {
-        println(s"@@INVALID EXPRESSION TOKENS= $tokens")
-        throw InvalidExpression()
-      }
-      expr
-    }
-  }
 
 
 

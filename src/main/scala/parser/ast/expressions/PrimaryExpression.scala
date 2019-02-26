@@ -3,9 +3,9 @@ import lexer._
 import parser.InvalidExpression
 import parser.ast.expressions.arithmetic.PartialOperExpression
 import parser.ast.expressions.control.LazyExpression
+import parser.ast.expressions.functions.FunctionCallExpression
 import parser.ast.expressions.literals.AtomicExpression
 import parser.ast.expressions.types.{ConstructorExpression, NewCallExpression}
-import parser.ast.module.Module.parseFuncCallExpr
 
 object PrimaryExpression extends ExpressionParser {
 
@@ -20,7 +20,7 @@ object PrimaryExpression extends ExpressionParser {
           case NEW => NewCallExpression.parse(tokens)
           case lit if lit.isInstanceOf[LITERAL] => AtomicExpression.parse(tokens)
           case tid if tid.isInstanceOf[TID] => ConstructorExpression.parse(tokens)
-          case _ => parseFuncCallExpr(tokens)
+          case _ => FunctionCallExpression.parse(tokens)
         }
     }
   }

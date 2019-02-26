@@ -1,12 +1,9 @@
 package parser.ast
 
-import parser.ast.expressions.{Expression, Identifier}
+import parser.ast.expressions.{CallExpression, Expression, Identifier}
 
 case class IdIsType(id: String, cl: String) extends Expression
 
-trait LetId
-case class LetSimpleId(id:String) extends LetId
-case class LetTupledId(ids:List[LetId]) extends LetId
 
 case class WhereGuard(guarExpr: Option[Expression], body: Expression)
 
@@ -54,14 +51,6 @@ case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(
     ids.reverse
   }
 }
-
-
-trait CallExpression extends Expression
-case class FunctionCallExpression(func: Expression, args:List[Expression]) extends CallExpression
-
-
-
-
 
 
 trait DefBodyGuardExpr

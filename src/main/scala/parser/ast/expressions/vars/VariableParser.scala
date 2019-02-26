@@ -1,9 +1,10 @@
 package parser.ast.expressions.vars
 
 import lexer._
-import parser.ast.{LetId, LetSimpleId, LetTupledId}
 import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
-import parser.ast.expressions.{BlockExpression, Expression, ExpressionParser, parsePipedOrBodyExpression}
+import parser.ast.expressions.{BlockExpression, Expression, parsePipedOrBodyExpression}
+
+import scala.annotation.tailrec
 
 trait Variable
 
@@ -12,29 +13,14 @@ object VariableParser {
   def parseListOfLetVars(tokens: TokenStream, token: TOKEN): List[Variable] = {
     tokens.consume(token)
     tokens.consumeOptionals(NL)
-    var insideIndent = if (tokens.peek(INDENT)) 1 else 0
-    if (insideIndent == 1)
+    var initIndent = if (tokens.peek(INDENT)) 1 else 0
+    if (initIndent == 1)
       tokens.consume(INDENT)
     var letVar = parseLetVar(tokens)
-    var listOfLetVars = List.empty[Variable]
-    listOfLetVars = letVar :: listOfLetVars
-    while (tokens.peek(COMMA)) {
-      tokens.consume(COMMA)
-      tokens.consumeOptionals(NL)
-      if (tokens.peek(INDENT)) {
-        tokens.consume(INDENT)
-        insideIndent += 1
-      }
-      letVar = parseLetVar(tokens)
-      listOfLetVars = letVar :: listOfLetVars
-    }
-
-    while (insideIndent > 0) {
-      tokens.consumeOptionals(NL)
-      tokens.consume(DEDENT)
-      insideIndent -= 1
-    }
-    listOfLetVars.reverse
+    val (insideIndent, listOfLetVars) = parseListOfLetVars(tokens, initIndent, List(letVar))
+    tokens.consumeOptionals(NL)
+    tokens.consume(insideIndent, DEDENT)
+    listOfLetVars
   }
 
   def parseInBodyOptExpr(tokens:TokenStream) : Option[Expression] = {
@@ -54,6 +40,24 @@ object VariableParser {
     }
   }
 
+  @tailrec
+  private[this]
+  def parseListOfLetVars(tokens: TokenStream, indent: Int, vars: List[Variable]) : (Int, List[Variable]) = {
+    if (!tokens.peek(COMMA)) {
+      (indent, vars.reverse)
+    }
+    else {
+      tokens.consume(COMMA)
+      tokens.consumeOptionals(NL)
+      if (!tokens.peek(INDENT)) {
+        parseListOfLetVars(tokens, indent, parseLetVar(tokens) :: vars)
+      }
+      else {
+        tokens.consume(INDENT)
+        parseListOfLetVars(tokens, indent+1, parseLetVar(tokens) :: vars)
+      }
+    }
+  }
 
 
   private[this] def parseLetVar(tokens:TokenStream) : Variable = {
@@ -74,23 +78,25 @@ object VariableParser {
     }
   }
 
-
   private[this] def parseLetId(tokens:TokenStream) : LetId = {
     if (!tokens.peek(LPAREN)) {
-      val idToken = tokens.consume(classOf[ID])
-      LetSimpleId(idToken.value)
+      LetSimpleId(tokens.consume(classOf[ID]).value)
     } else {
       tokens.consume(LPAREN)
-      var ids = List.empty[LetId]
-      val id = parseLetId(tokens)
-      ids =id :: ids
-      while (tokens.peek(COMMA)) {
-        tokens.consume(COMMA)
-        val id = parseLetId(tokens)
-        ids = id :: ids
-      }
+      val ids = consumeListOfLetIds(tokens, List(parseLetId(tokens)))
       tokens.consume(RPAREN)
       LetTupledId(ids)
+    }
+  }
+
+  @tailrec
+  private[this] def consumeListOfLetIds(tokens: TokenStream, ids: List[LetId]) : List[LetId] = {
+    if (!tokens.peek(COMMA)) {
+      ids.reverse
+    }
+    else {
+      tokens.consume(COMMA)
+      consumeListOfLetIds(tokens, parseLetId(tokens) :: ids)
     }
   }
 
