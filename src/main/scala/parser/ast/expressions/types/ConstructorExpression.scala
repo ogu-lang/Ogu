@@ -10,20 +10,19 @@ object ConstructorExpression extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
     val cls = tokens.consume(classOf[TID]).value
-    if (tokens.peek(LPAREN)) {
-      tokens.consume(LPAREN)
-      val args = if (tokens.peek(RPAREN)) List.empty else parseListOfCommaSeparatedExpressions(tokens)
-      tokens.consume(RPAREN)
-      ConstructorExpression(cls, args)
-    }
-    else if (tokens.peek(LCURLY)) {
-      tokens.consume(LCURLY)
-      val args = if (tokens.peek(RCURLY)) List.empty else parseListOfCommaSeparatedExpressions(tokens)
-      tokens.consume(RCURLY)
-      RecordConstructorExpression(cls, args)
-    }
-    else {
-      RecordConstructorExpression(cls, List.empty)
+    tokens.nextToken() match {
+      case LPAREN =>
+        tokens.consume(LPAREN)
+        val args = if (tokens.peek(RPAREN)) List.empty else parseListOfCommaSeparatedExpressions(tokens)
+        tokens.consume(RPAREN)
+        ConstructorExpression(cls, args)
+      case LCURLY =>
+        tokens.consume(LCURLY)
+        val args = if (tokens.peek(RCURLY)) List.empty else parseListOfCommaSeparatedExpressions(tokens)
+        tokens.consume(RCURLY)
+        RecordConstructorExpression(cls, args)
+      case _ =>
+        RecordConstructorExpression(cls, List.empty)
     }
   }
 

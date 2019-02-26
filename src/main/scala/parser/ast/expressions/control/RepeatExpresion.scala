@@ -1,8 +1,8 @@
 package parser.ast.expressions.control
 
 import lexer._
-import parser.ast.expressions.{Expression, ExpressionParser, ParseExpr}
 import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
+import parser.ast.expressions.{Expression, ExpressionParser, ParseExpr}
 
 case class RepeatNewVarValue(variable: String, value: Expression)
 

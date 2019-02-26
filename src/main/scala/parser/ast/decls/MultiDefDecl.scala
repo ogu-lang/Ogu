@@ -3,6 +3,7 @@ package parser.ast.decls
 import lexer.TokenStream
 import parser.ast._
 import parser.ast.expressions.Identifier
+import parser.InvalidDef
 
 
 case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(id) {
@@ -34,6 +35,7 @@ object MultiDefDecl {
             (defs + (mDecl.id -> mDecl), mDecl)
         }
       case node:LangNode => (defs, node)
+      case _ => throw InvalidDef()
     }
   }
 

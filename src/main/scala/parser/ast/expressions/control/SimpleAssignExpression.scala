@@ -1,9 +1,9 @@
 package parser.ast.expressions.control
 
 import lexer.{ASSIGN, SET, TokenStream}
-import parser.CantAssignToExpression
 import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 import parser.ast.expressions.{AssignableExpression, Expression, ExpressionParser, parsePipedOrBodyExpression}
+import parser.CantAssignToExpression
 
 case class SimpleAssignExpression(left: Expression, right: Expression) extends Expression with AssignableExpression
 

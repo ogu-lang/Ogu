@@ -23,7 +23,7 @@ object ImportAlias {
   }
 
   @tailrec
-  private def consumeListOfAlias(tokens: TokenStream, list: List[ImportAlias]) : List[ImportAlias] = {
+  private[this] def consumeListOfAlias(tokens: TokenStream, list: List[ImportAlias]) : List[ImportAlias] = {
     if (!tokens.peek(COMMA)) {
       list.reverse
     }

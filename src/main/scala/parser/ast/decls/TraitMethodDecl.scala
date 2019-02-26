@@ -12,7 +12,7 @@ object TraitMethodDecl {
   def parse(tokens:TokenStream): TraitMethodDecl = {
     tokens.consume(DEF)
     val id = tokens.consume(classOf[ID]).value
-    var args = consumeListOfIdsSepByBlank(tokens, List.empty)
+    val args = consumeListOfIdsSepByBlank(tokens, List.empty)
     tokens.consume(NL)
     TraitMethodDecl(id, args)
   }
