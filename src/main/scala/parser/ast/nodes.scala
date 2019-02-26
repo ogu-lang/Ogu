@@ -1,17 +1,12 @@
 package parser.ast
 
-import parser.ast.expressions.{AssignableExpression, Expression}
+import parser.ast.expressions.{AssignableExpression, Expression, Identifier, LambdaArg}
 
 
 
 
 
 
-class Name(name: String) extends Expression
-trait LambdaArg
-case class LambdaSimpleArg(name: String) extends Name(name) with LambdaArg
-case class Identifier(name: String) extends Name(name) with AssignableExpression
-case class LambdaTupleArg(names: List[String]) extends LambdaArg
 
 case class IdIsType(id: String, cl: String) extends Expression
 
@@ -84,21 +79,6 @@ case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(
 
 trait CallExpression extends Expression
 case class FunctionCallExpression(func: Expression, args:List[Expression]) extends CallExpression
-
-
-case class LambdaExpression(args: List[LambdaArg], expr: Expression) extends Expression
-
-
-
-
-
-class BinaryExpression(val left: Expression, val right: Expression) extends Expression
-
-
-
-
-
-
 
 
 
