@@ -10,6 +10,7 @@ import parser.ast.expressions.logical.LogicalExpression
 import parser.ast.functions._
 import parser.ast.types._
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 
 case class Module(name: String, imports: Option[List[ImportClause]],decls: List[LangNode]) extends LangNode
@@ -28,15 +29,18 @@ object Module  {
 
   private[this] def parseModule(moduleName: String, tokens: TokenStream) : Module = {
     tokens.consumeOptionals(NL)
+    val defs = mutable.HashMap.empty[String, MultiDefDecl]
     Module(moduleName, ImportClause.parse(tokens), parseModuleNodes(tokens))
   }
 
   private[this] def parseModuleNodes(tokens:TokenStream): List[LangNode] = {
-    println(s"@@@ parse module nodes (tokens=$tokens)")
-    filter(parseModuleNodes(tokens, Nil))
+    val defs = mutable.HashMap.empty[String, MultiDefDecl]
+    filter(parseModuleNodes(tokens, Nil, defs), defs)
   }
 
-  private[this] def parseModuleNodes(tokens: TokenStream, nodes: List[LangNode]): List[LangNode] = {
+  @tailrec
+  private[this]
+  def parseModuleNodes(tokens: TokenStream, nodes: List[LangNode], defs: mutable.HashMap[String, MultiDefDecl]): List[LangNode] = {
     if (tokens.isEmpty) {
       nodes.reverse
     }
@@ -48,7 +52,7 @@ object Module  {
           token match {
             case CLASS => ClassDecl.parse(inner, tokens) :: nodes
             case DATA => AdtDecl.parse(inner, tokens) :: nodes
-            case DEF => multiDef(parseDef(inner, tokens)) :: nodes
+            case DEF => multiDef(parseDef(inner, tokens), defs) :: nodes
             case DISPATCH => DispatchDecl.parse(inner, tokens) :: nodes
             case EXTENDS => ExtendsDecl.parse(inner, tokens) :: nodes
             case RECORD => RecordDecl.parse(inner, tokens) :: nodes
@@ -57,13 +61,11 @@ object Module  {
           }
       }
       tokens.consumeOptionals(NL)
-      parseModuleNodes(tokens, newNodes)
+      parseModuleNodes(tokens, newNodes, defs)
     }
   }
 
-  val defs = mutable.HashMap.empty[String, MultiDefDecl]
-
-  private[this] def multiDef(node: LangNode): LangNode = {
+  private[this] def multiDef(node: LangNode, defs: mutable.HashMap[String, MultiDefDecl]): LangNode = {
     node match {
       case decl: SimpleDefDecl =>
         if (defs.contains(decl.id)) {
@@ -83,7 +85,7 @@ object Module  {
     }
   }
 
-  private[this] def filter(nodes: List[LangNode]): List[LangNode] = {
+  private[this] def filter(nodes: List[LangNode], defs: mutable.HashMap[String, MultiDefDecl]): List[LangNode] = {
     var result = List.empty[LangNode]
     for (node <- nodes) {
       node match {
@@ -358,12 +360,6 @@ object Module  {
       LogicalExpression.parse(tokens)
     }
   }
-
-
-
-
-
-
 
 
 }
