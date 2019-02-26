@@ -1,9 +1,6 @@
 package parser.ast.decls
 
 import lexer.{DEF, NL, TokenStream}
-import parser.ast.DefDecl
-import parser.ast.module.Module
-
 import scala.annotation.tailrec
 
 case class ClassMethodDecl(definition: DefDecl)
@@ -19,7 +16,7 @@ object ClassMethodDecl {
     if (!tokens.peek(DEF)) {
       methods.reverse
     } else {
-      val defDecl = Module.parseDef(false, tokens)
+      val defDecl = DefDecl.parse(false, tokens)
       tokens.consumeOptionals(NL)
       consumeClassMethodDecls(tokens, ClassMethodDecl(defDecl) :: methods)
     }
