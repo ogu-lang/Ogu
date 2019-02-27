@@ -1,7 +1,6 @@
 package parser.ast.expressions
 
 import lexer._
-import parser.InvalidExpression
 import parser.ast.expressions.control.ControlExpression
 import parser.ast.expressions.functions.LambdaExpression
 import parser.ast.expressions.vars.{BindDeclExpression, LetDeclExpression, VarDeclExpression}

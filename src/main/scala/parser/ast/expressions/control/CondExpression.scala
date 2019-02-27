@@ -1,10 +1,9 @@
 package parser.ast.expressions.control
 
 import lexer._
-import parser.ast.expressions.{Expression, ExpressionParser}
 import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 import parser.ast.expressions.logical.LogicalExpression
-
+import parser.ast.expressions.{Expression, ExpressionParser}
 import scala.annotation.tailrec
 
 case class CondGuard(comp: Option[Expression], value: Expression)

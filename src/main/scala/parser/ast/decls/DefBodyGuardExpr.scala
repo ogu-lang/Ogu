@@ -2,7 +2,6 @@ package parser.ast.decls
 
 import lexer._
 import parser.ast.expressions._
-import parser.ast.expressions.Expression
 import parser.ast.expressions.logical.LogicalExpression
 
 trait DefBodyGuardExpr

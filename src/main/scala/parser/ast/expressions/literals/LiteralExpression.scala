@@ -1,8 +1,8 @@
 package parser.ast.expressions.literals
 
 import lexer._
-import parser.InvalidExpression
 import parser.ast.expressions.{Expression, ExpressionParser}
+import parser.InvalidExpression
 
 trait LiteralExpression extends Expression
 

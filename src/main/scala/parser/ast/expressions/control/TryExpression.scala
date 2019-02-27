@@ -2,7 +2,6 @@ package parser.ast.expressions.control
 
 import lexer._
 import parser.ast.expressions._
-import parser.ast.expressions.ExpressionParser
 
 case class CatchExpression(id: Option[String], ex: String, body: Expression) extends Expression
 
