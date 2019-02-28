@@ -111,11 +111,6 @@ import parser.ast.module._
 
 
 
-      case CondExpression(guards) =>
-        strBuf ++= s"(cond\n\t${guards.map(toClojureCondGuard).mkString("\n\t")})"
-
-
-
       case RecurExpression(args) =>
         strBuf ++= s"(recur ${args.map(toClojure).mkString(" ")})"
 
@@ -188,14 +183,6 @@ import parser.ast.module._
     }
   }
 
-  def toClojureCondGuard(condGuard: CondGuard) : String = {
-    if (condGuard.comp.isDefined) {
-      s"${toClojure(condGuard.comp.get)} ${toClojure(condGuard.value)}"
-    }
-    else {
-      s":else ${toClojure(condGuard.value)}"
-    }
-  }
 
 
 

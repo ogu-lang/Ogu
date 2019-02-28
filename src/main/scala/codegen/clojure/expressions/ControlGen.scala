@@ -25,6 +25,8 @@ object ControlGen {
 
     override def mkString(node: ControlExpression): String = {
       node match {
+        case CondExpression(guards) =>
+          s"(cond\n\t${guards.map(toClojureCondGuard).mkString("\n\t")})"
 
         case ForExpression(variables, body) =>
           s"(doall (for [${variables.map(CodeGenerator.buildString(_)).mkString("\n")}] \n${CodeGenerator.buildString(body)}))"
@@ -80,6 +82,16 @@ object ControlGen {
 
     private[this] def toClojureNewVarValue(variable: RepeatNewVarValue): String = {
       s"${variable.variable} ${CodeGenerator.buildString(variable.value)}"
+    }
+
+    def toClojureCondGuard(condGuard: CondGuard) : String = {
+      condGuard match {
+        case CondGuard(Some(comp), value) =>
+          s"${CodeGenerator.buildString(comp)} ${CodeGenerator.buildString(value)}"
+        case CondGuard(None, value) =>
+          s":else ${CodeGenerator.buildString(condGuard.value)}"
+
+      }
     }
 
 
