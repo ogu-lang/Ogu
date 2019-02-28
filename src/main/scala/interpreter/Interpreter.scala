@@ -1,14 +1,17 @@
 package interpreter
 
 import clojure.java.api.Clojure
-import codegen.ClojureCodeGenerator
-import parser.ast.LangNode
+import codegen.{Translator, _}
+import codegen.clojure.module.ModuleGen._
+import parser.ast.module.Module
 
 import scala.io.Source
 
+
 object Interpreter {
 
-  def load(ast:LangNode): AnyRef = {
+
+  def load(ast:Module): AnyRef = {
     val clojureStr = toClojure(ast)
     println(clojureStr)
 
@@ -21,9 +24,8 @@ object Interpreter {
     result
   }
 
-  def toClojure(node: LangNode): String = {
-    val codeGenerator = new ClojureCodeGenerator(node)
-    codeGenerator.mkString()
+  def toClojure(node: Module)(implicit translator: Translator[Module]): String = {
+    CodeGenerator.mkString(node)
   }
 
   def readOguRuntime() : String = {
