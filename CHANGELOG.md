@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [0.2.5] - 2019-2-28
+
+### Changed
+
+- major refactor of codegen to clojure
+
 ## [0.2.4] - 2019-2-26
 
 ### Changed
