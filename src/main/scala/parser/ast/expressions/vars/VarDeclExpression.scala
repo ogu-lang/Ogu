@@ -3,7 +3,7 @@ package parser.ast.expressions.vars
 import lexer.{TokenStream, VAR}
 import parser.ast.expressions.{Expression, ExpressionParser}
 
-case class VarDeclExpression(decls: List[Variable], inExpr: Option[Expression]) extends Expression
+case class VarDeclExpression(decls: List[LetVariable], inExpr: Option[Expression]) extends Expression
 
 object VarDeclExpression extends ExpressionParser {
 
