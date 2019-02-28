@@ -1,32 +1,11 @@
-package codegen
+package codegen.clojure
 
-import parser.ast._
-import parser.ast.expressions._
-import parser.ast.expressions.arithmetic._
-import parser.ast.expressions.comparisons._
-import parser.ast.expressions.control._
-import parser.ast.expressions.functions._
-import parser.ast.expressions.list_ops._
-import parser.ast.expressions.literals._
-import parser.ast.expressions.logical._
-import parser.ast.expressions.regexp._
-import parser.ast.expressions.types._
-import parser.ast.expressions.vars._
-import parser.ast.decls._
 import parser.ast.module._
-import parser.ast.types._
 
 
-class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
-  private[this] var varDecls : Set[String] = Set.empty[String]
-
-  def mkString(): String = toClojure(node)
-
-  def toClojure(node: LangNode): String = {
-    val strBuf = new StringBuilder()
-    node match {
-      case Module(name, None, decls) =>
+        /**
+        strBuf ++= ModuleGenCode
         strBuf ++= s"(ns $name )\n\n"
         for (node <- decls) {
           strBuf ++= toClojure(node)
@@ -93,16 +72,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
         strBuf ++= "]\n"
         strBuf ++= s"\t${toClojure(expression)})\n"
 
-      case LetDeclExpression(decls, Some(expression)) =>
-        strBuf ++= "(let ["
-        strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
-        strBuf ++= " ]\n"
-        strBuf ++= s"\t${toClojure(expression)})\n"
-
-      case LetDeclExpression(decls: List[_], None) =>
-        for (decl <- decls.asInstanceOf[List[LetVariable]]) {
-          strBuf ++= s"(def ${toClojureLetId(decl.id)} ${toClojure(decl.value)})\n"
-        }
 
       case VarDeclExpression(decls, None) =>
         for (d <- decls) {
@@ -308,8 +277,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
       case NewCallExpression(cls, args) if args.isEmpty =>
         strBuf ++= s"($cls.)"
 
-      case FunctionCallExpression(func, args) =>
-        strBuf ++= s"(${toClojure(func)} ${args.map(toClojure).mkString(" ")})"
 
       case FunctionCallWithDollarExpression(func, args) =>
         strBuf ++= s"(${toClojure(func)} ${args.map(toClojure).mkString(" ")})"
@@ -585,12 +552,6 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
 
 
 
-  def toClojureLetId(id: LetId) : String = {
-    id match {
-      case LetSimpleId(name) => name
-      case LetTupledId(ids) => s"[${ids.map(toClojureLetId).mkString(" ")}]"
-    }
-  }
 
   def toClojureLoopVar(variable: LoopDeclVariable): String = {
     variable match {
@@ -800,3 +761,4 @@ class ClojureCodeGenerator(node: LangNode) extends CodeGenerator {
     }
   }
 }
+*/
