@@ -8,6 +8,8 @@ trait DefBodyGuardExpr
 
 case class DefBodyGuardExpression(comp: Expression, body: Expression) extends DefBodyGuardExpr
 case class DefBodyGuardOtherwiseExpression(body: Expression) extends DefBodyGuardExpr
+
+
 case class BodyGuardsExpresion(guards: List[DefBodyGuardExpr]) extends Expression
 case class BodyGuardsExpresionAndWhere(guards: List[DefBodyGuardExpr], whereBlock: WhereBlock) extends Expression
 

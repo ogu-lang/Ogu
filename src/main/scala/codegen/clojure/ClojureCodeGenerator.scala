@@ -86,32 +86,10 @@ import parser.ast.module._
         strBuf ++= s"${toClojure(expression)})\n"
         removeVariables(decls)
 
-      case AddExpression(args) =>
-        strBuf ++= s"(+ ${args.map(toClojure).mkString(" ")})"
 
-      case AddBigExpression(args) =>
-        strBuf ++= s"(+' ${args.map(toClojure).mkString(" ")})"
 
-      case SubstractExpression(args) =>
-        strBuf ++= s"(- ${args.map(toClojure).mkString(" ")})"
 
-      case SubstractBigExpression(args) =>
-        strBuf ++= s"(-' ${args.map(toClojure).mkString(" ")})"
 
-      case MultiplyExpression(args) =>
-        strBuf ++= s"(* ${args.map(toClojure).mkString(" ")})"
-
-      case MultiplyBigExpression(args) =>
-        strBuf ++= s"(*' ${args.map(toClojure).mkString(" ")})"
-
-      case DivideExpression(args) =>
-        strBuf ++= s"(/ ${args.map(toClojure).mkString(" ")})"
-
-      case ModExpression(left, right) =>
-        strBuf ++= s"(mod ${toClojure(left)} ${toClojure(right)})"
-
-      case PowerExpression(left, right) =>
-        strBuf ++= s"(pow ${toClojure(left)} ${toClojure(right)})"
 
       case ComposeExpressionForward(args) =>
         strBuf ++= s"(comp ${args.reverse.map(toClojure).mkString(" ")})"
@@ -196,17 +174,7 @@ import parser.ast.module._
 
 
 
-      case ListExpression(listOfExpr, None) =>
-        strBuf ++= s"[${listOfExpr.map(toClojure).mkString(" ")}]"
 
-      case ListExpression(listOfExpr, Some(guards)) =>
-        strBuf ++= s"(for [${guards.map(toClojureListGuard).mkString(" ")}] "
-        if (listOfExpr.size == 1) {
-          strBuf ++= toClojure(listOfExpr.head)
-        } else {
-          strBuf ++= s"(do ${listOfExpr.map(toClojure).mkString("\n")})"
-        }
-        strBuf ++= ")"
 
       case DictionaryExpression(pairs) =>
         strBuf ++= s"{${pairs.map(toClojureDictPair).mkString(" ")}}"
@@ -307,30 +275,7 @@ import parser.ast.module._
         strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
         strBuf ++= s"[${args.map(toClojureDefArg).mkString(" ")}]\n\t${toClojure(body)})\n\n"
 
-      case SimpleDefDecl(inner, id, args, BodyGuardsExpresion(guards), None) =>
-        if (inner) {
-          strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n"
-        } else {
-          strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n"
-        }
-        strBuf ++= s"  (cond\n${guards.map(toClojureDefBodyGuardExpr).mkString("\n")}"
-        strBuf ++= "))\n\n"
 
-      case SimpleDefDecl(inner, id, args, body, None) =>
-        if (inner) {
-          strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n\t\t${toClojure(body)})\n\n"
-        } else {
-          strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n\t\t${toClojure(body)})\n\n"
-        }
-
-      case SimpleDefDecl(inner, id, args, body, Some(whereBlock)) =>
-        if (inner) {
-          strBuf ++= s"(defn- $id [${args.map(toClojureDefArg).mkString(" ")}]\n" +
-            s"\t\t${toClojure(whereBlock)}\n    ${toClojure(body)})\n\n"
-        } else {
-          strBuf ++= s"(defn $id [${args.map(toClojureDefArg).mkString(" ")}]\n" +
-            s"\t\t${toClojure(whereBlock)}\n    ${toClojure(body)})\n\n"
-        }
 
       case BodyGuardsExpresion(guards) =>
         strBuf ++= s"(cond\n ${guards.map(toClojureDefBodyGuardExpr).mkString("\n")})"
@@ -338,8 +283,6 @@ import parser.ast.module._
       case TupleExpression(exprs) =>
         strBuf ++= s"[${exprs.map(toClojure).mkString(" ")}]"
 
-      case WhereBlock(defs) =>
-        strBuf ++= defs.map(toClojureWhereDef).mkString("\n")
 
       case md: MultiDefDecl =>
         if (!md.patternMatching()) {
@@ -501,34 +444,8 @@ import parser.ast.module._
     s"${variable.variable} ${toClojure(variable.value)}"
   }
 
-  def toClojureListGuard(guard: ListGuard): String = {
-    guard match {
-      case ListGuardDecl(id, value) => s"$id ${toClojure(value)}"
-      case ListGuardExpr(expr) => s":when ${toClojure(expr)}"
-      case ListGuardDeclTupled(ids, value) => s"[${ids.mkString(" ")}] ${toClojure(value)}"
-    }
-  }
 
-  def toClojureDefBodyGuardExpr(guard: DefBodyGuardExpr): String = {
-    guard match {
-      case DefBodyGuardExpression(comp, expr) => s"\t${toClojure(comp)} ${toClojure(expr)}"
-      case DefBodyGuardOtherwiseExpression(expr) => s"\t:else ${toClojure(expr)}"
-      case _ => ???
-    }
-  }
 
-  def toClojureDefArg(defArg: DefArg): String = {
-    defArg match {
-      case DefOtherwiseArg => ":default"
-      case DefArg(Identifier(id)) => id
-      case DefArg(TupleExpression(exprs)) => s"[${exprs.map(toClojure).mkString(" ")}]"
-      case DefArg(InfiniteTupleExpr(exprs)) =>
-        val rest = exprs.last
-        val args = exprs.dropRight(1)
-        s"[${args.map(toClojure).mkString(" ")} & ${toClojure(rest)}]"
-      case DefArg(expression) => s"${toClojure(expression)}"
-    }
-  }
 
   def toClojureDefMatchArg(defArg: DefArg): String = {
     defArg match {
@@ -547,28 +464,7 @@ import parser.ast.module._
     }
   }
 
-  def toClojureWhereDef(whereDef: WhereDef): String = {
-    whereDef match {
-      case WhereDefSimple(id, None, body) => s"(def $id ${toClojure(body)})"
-      case WhereDefSimple(id, Some(args), body) =>
-        s"(def $id (fn [${args.map(toClojure).mkString(" ")}] ${toClojure(body)}))"
-      case WhereDefWithGuards(id, Some(args), guards) =>
-        s"(def $id (fn [${args.map(toClojure).mkString(" ")}] \n" +
-          s"(cond ${guards.map(toClojureWhereGuard).mkString("\n")})))"
-      case WhereDefTupled(idList, None, body) =>
-        var strBuf = new StringBuilder()
-        strBuf ++= s"(def _*temp*_ ${toClojure(body)})\n"
-        var i = 0
-        for (id <- idList) {
-          strBuf ++= s"(def ${id} (nth _*temp*_ $i))\n"
-          i += 1
-        }
-        strBuf.toString()
-      case w =>
-        println(w)
-        ???
-    }
-  }
+
 
   def toClojureWhereDefAsLet(whereDef: WhereDef): String = {
     whereDef match {
@@ -593,12 +489,7 @@ import parser.ast.module._
     }
   }
 
-  def toClojureWhereGuard(guard: WhereGuard) : String = {
-    guard match  {
-      case WhereGuard(Some(comp), expr) => s"${toClojure(comp)} ${toClojure(expr)}"
-      case WhereGuard(None, expr) => s":else ${toClojure(expr)}"
-    }
-  }
+
 
   def toClojureOguVariable(variable: Variable) : String = {
     variable match {

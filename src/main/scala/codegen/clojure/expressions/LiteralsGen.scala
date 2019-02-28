@@ -1,7 +1,7 @@
 package codegen.clojure.expressions
 
 import codegen.Translator
-import parser.ast.expressions.literals.{IntLiteral, LiteralExpression}
+import parser.ast.expressions.literals.{DoubleLiteral, IntLiteral, LiteralExpression}
 
 object LiteralsGen {
 
@@ -9,6 +9,7 @@ object LiteralsGen {
 
     override def mkString(node: LiteralExpression): String = {
       node match {
+        case DoubleLiteral(d) => d.toString
         case IntLiteral(i) => i.toString
       }
     }
