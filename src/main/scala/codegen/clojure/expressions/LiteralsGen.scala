@@ -11,6 +11,7 @@ object LiteralsGen {
       node match {
         case BigIntLiteral(bi) => bi.toString()
         case BigDecimalLiteral(bd) => bd.toString()
+        case CharLiteral(c) => s"\\${c.stripPrefix("\'").stripSuffix("\'")}"
         case DoubleLiteral(d) => d.toString
         case IntLiteral(i) => i.toString
         case LongLiteral(l) => l.toString

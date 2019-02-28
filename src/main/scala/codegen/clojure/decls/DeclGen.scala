@@ -1,7 +1,7 @@
 package codegen.clojure.decls
 
-import codegen.clojure.expressions.ExpressionsGen._
 import codegen.{CodeGenerator, Translator}
+import codegen.clojure.expressions.ExpressionsGen._
 import parser.ast.decls._
 import parser.ast.expressions.{Expression, Identifier}
 import parser.ast.expressions.list_ops.ConsExpression
@@ -117,6 +117,7 @@ object DeclGen {
 
   implicit object MultiDefDeclTranslator extends Translator[MultiDefDecl] {
 
+
     override def mkString(node: MultiDefDecl): String = {
       val strBuf = new StringBuilder()
         if (!node.patternMatching()) {
@@ -143,7 +144,7 @@ object DeclGen {
             if (decl.whereBlock.nonEmpty) {
               val whereDefs = decl.whereBlock.get.whereDefs
               for (wd <- whereDefs) {
-                letDecls = s"${CodeGenerator.buildString(wd)}" :: letDecls
+                letDecls = s"${whereDefAsLet(wd)}" :: letDecls
               }
               letDecls = letDecls.reverse
             }
@@ -221,6 +222,26 @@ object DeclGen {
           strBuf ++= "))\n\n"
         }
       strBuf.mkString
+    }
+
+    private[this] def whereDefAsLet(whereDef: WhereDef): String = {
+      whereDef match {
+        case WhereDefSimple(id, None, body) => s"$id ${CodeGenerator.buildString(body)}"
+        case WhereDefSimple(id, Some(args), body) =>
+          s"$id (fn [${args.map(CodeGenerator.buildString(_)).mkString(" ")}] ${CodeGenerator.buildString(body)})"
+        case WhereDefWithGuards(id, Some(args), guards) =>
+          s"$id (fn [${args.map(CodeGenerator.buildString(_)).mkString(" ")}] \n" +
+            s"(cond ${guards.map(CodeGenerator.buildString(_)).mkString("\n")}))"
+        case WhereDefTupled(idList, None, body) =>
+          var strBuf = new StringBuilder()
+          strBuf ++= s"_*temp*_ ${CodeGenerator.buildString(body)}\n"
+          var i = 0
+          for (id <- idList) {
+            strBuf ++= s"${id} (nth _*temp*_ $i)\n"
+            i += 1
+          }
+          strBuf.toString()
+      }
     }
   }
 

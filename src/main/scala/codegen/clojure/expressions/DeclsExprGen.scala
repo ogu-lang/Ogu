@@ -4,6 +4,7 @@ import codegen.{CodeGenerator, Translator}
 import codegen.clojure.decls.DeclGen._
 import codegen.clojure.expressions.ExpressionsGen._
 import parser.ast.decls.BodyGuardsExpresion
+import parser.ast.expressions.control.{ForVarDeclIn, ForVarDeclTupledIn, LoopDeclVariable}
 import parser.ast.expressions.vars._
 
 object DeclsExprGen {
@@ -35,6 +36,18 @@ object DeclsExprGen {
       }
     }
   }
+
+  implicit object LoopDeclVariableTranslator extends Translator[LoopDeclVariable] {
+
+    override def mkString(node: LoopDeclVariable): String = {
+      node match {
+        case ForVarDeclIn(id, initialValue) => s"$id ${CodeGenerator.buildString(initialValue)}"
+        case ForVarDeclTupledIn(ids, initialValue) => s"[${ids.mkString(" ")}] ${CodeGenerator.buildString(initialValue)}"
+      }
+    }
+  }
+
+
 
   implicit object VarDeclExpressionTranslator extends Translator[VarDeclExpression] {
 
@@ -72,6 +85,7 @@ object DeclsExprGen {
       for (v <- decls) {
         v match {
           case LetVariable(LetSimpleId(id), _) => varDecls = varDecls + id
+          case _=>
         }
       }
     }

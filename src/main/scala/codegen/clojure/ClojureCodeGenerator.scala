@@ -85,47 +85,11 @@ import parser.ast.module._
       case ComposeExpressionBackward(args) =>
         strBuf ++= s"(comp ${args.map(toClojure).mkString(" ")})"
 
-      case Identifier(id) =>
-        if (isVariable(id)) {
-          strBuf ++= "@"
-        }
-        val pos = id.lastIndexOf('.')
-        if (pos <= 1) {
-          strBuf ++= id
-        } else {
-          var containsClass = false
-          val parts = id.split('.')
-          for (p <- parts) {
-            if (p.head.isUpper) {
-              containsClass = true
-            }
-          }
-          if (containsClass) {
-            val sb = new StringBuilder(id)
-            sb.replace(pos, pos + 1, "/")
-            strBuf ++= sb.toString()
-          }
-          else if (parts.length == 2) {
-            strBuf ++= s"(.${parts.last} ${parts.head})"
-          }
-          else {
-            strBuf ++= id
-          }
-        }
+
 
       case BoolLiteral(value) =>
         strBuf ++= value.toString
 
-      case CharLiteral(value) =>
-        strBuf ++= s"\\${value.stripPrefix("\'").stripSuffix("\'")}"
-
-      case IntLiteral(i) =>
-        strBuf ++= i.toString
-
-      case LongLiteral(i) =>
-        strBuf ++= i.toString
-
-      case DoubleLiteral(d) =>
         strBuf ++= d.toString
 
       case StringLiteral(str) =>
@@ -165,8 +129,6 @@ import parser.ast.module._
 
 
 
-      case ForExpression(variables, body) =>
-        strBuf ++= s"(doall (for [${variables.map(toClojureForVarDeclIn).mkString("\n")}] \n${toClojure(body)}))"
 
       case LoopExpression(variables, None, body) =>
         strBuf ++= s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n ${toClojure(body)})"
@@ -185,8 +147,6 @@ import parser.ast.module._
         strBuf ++= s"(let [${newValues.map(toClojureNewVarValue).mkString(" ")}]"
         strBuf ++= s"(recur ${newValues.map(nv => nv.variable).mkString(" ")}))"
 
-      case WhileExpression(comp, body) =>
-        strBuf ++= s"(while ${toClojure(comp)} ${toClojure(body)})"
 
       case CondExpression(guards) =>
         strBuf ++= s"(cond\n\t${guards.map(toClojureCondGuard).mkString("\n\t")})"
@@ -211,23 +171,8 @@ import parser.ast.module._
 
 
 
-      case ConcatExpression(args) =>
-        strBuf ++= s"(concat ${args.map(toClojure).mkString(" ")})"
-
-      case ConsExpression(args) =>
-        strBuf ++= s"(cons ${args.map(toClojure).mkString(" ")})"
 
 
-      case SimpleAssignExpression(ArrayAccessExpression(array, index), value) =>
-        strBuf ++= s"(aset ${toClojure(array)} ${toClojure(index)} ${toClojure(value)})"
-
-      case SimpleAssignExpression(Identifier(variable), value) =>
-        if (isVariable(variable)) {
-          strBuf ++= s"(var-set $variable ${toClojure(value)})"
-        }
-        else {
-          strBuf ++= s"(alter-var-root (var $variable) (constantly ${toClojure(value)}))"
-        }
 
       case MultiMethod(_, id, matches, args, BodyGuardsExpresion(guards), None) =>
         strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
@@ -288,12 +233,6 @@ import parser.ast.module._
     }
   }
 
-  def toClojureForVarDeclIn(variable: LoopDeclVariable): String = {
-   variable match {
-     case ForVarDeclIn(id, initialValue) => s"$id ${toClojure(initialValue)}"
-     case ForVarDeclTupledIn(ids, initialValue) => s"[${ids.mkString(" ")}] ${toClojure(initialValue)}"
-   }
-  }
 
   def toClojureNewVarValue(variable: RepeatNewVarValue): String = {
     s"${variable.variable} ${toClojure(variable.value)}"
@@ -321,28 +260,7 @@ import parser.ast.module._
 
 
 
-  def toClojureWhereDefAsLet(whereDef: WhereDef): String = {
-    whereDef match {
-      case WhereDefSimple(id, None, body) => s"$id ${toClojure(body)}"
-      case WhereDefSimple(id, Some(args), body) =>
-        s"$id (fn [${args.map(toClojure).mkString(" ")}] ${toClojure(body)})"
-      case WhereDefWithGuards(id, Some(args), guards) =>
-        s"$id (fn [${args.map(toClojure).mkString(" ")}] \n" +
-          s"(cond ${guards.map(toClojureWhereGuard).mkString("\n")}))"
-      case WhereDefTupled(idList, None, body) =>
-        var strBuf = new StringBuilder()
-        strBuf ++= s"_*temp*_ ${toClojure(body)}\n"
-        var i = 0
-        for (id <- idList) {
-          strBuf ++= s"${id} (nth _*temp*_ $i)\n"
-          i += 1
-        }
-        strBuf.toString()
-      case w =>
-        println(w)
-        ???
-    }
-  }
+
 
 
 
