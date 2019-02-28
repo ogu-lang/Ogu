@@ -33,6 +33,9 @@ object ExpressionsGen {
 
     override def mkString(node: Expression): String = {
       node match {
+        case ArrayAccessExpression(array, index) =>
+          s"(aget ${mkString(array)} ${mkString(index)})"
+
         case BlockExpression(expressions) =>
           expressions match {
             case Nil => ""

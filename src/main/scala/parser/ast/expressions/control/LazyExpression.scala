@@ -4,7 +4,7 @@ import lexer.{LAZY, TokenStream}
 import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 import parser.ast.expressions.{Expression, ExpressionParser}
 
-case class LazyExpression(expr: Expression) extends Expression
+case class LazyExpression(expr: Expression) extends ControlExpression
 
 object LazyExpression extends ExpressionParser {
 

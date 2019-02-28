@@ -55,6 +55,8 @@ object ControlGen {
           s"(if ${CodeGenerator.buildString(comp)}\n ${CodeGenerator.buildString(thenPart)}\n " +
             s"(${mkString(IfExpression(ep.comp, ep.body, tail, elsePart))}))"
 
+        case LazyExpression(expr) =>
+          s"(lazy-seq ${CodeGenerator.buildString(expr)})"
 
         case LoopExpression(variables, None, body) =>
           s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n ${CodeGenerator.buildString(body)})"
@@ -63,9 +65,8 @@ object ControlGen {
           s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n" +
             s"   (${CodeGenerator.buildString(guard)} ${CodeGenerator.buildString(body)}))"
 
-        case RepeatExpresion(Some(newValues)) =>
-          s"(let [${newValues.map(toClojureNewVarValue).mkString(" ")}]" +
-          s"(recur ${newValues.map(nv => nv.variable).mkString(" ")}))"
+        case RecurExpression(args) =>
+           s"(recur ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
 
 
         case ReifyExpression(name, methods) =>
@@ -77,6 +78,10 @@ object ControlGen {
           }
           strBuf ++= ")\n"
           strBuf.mkString
+
+        case RepeatExpresion(Some(newValues)) =>
+          s"(let [${newValues.map(toClojureNewVarValue).mkString(" ")}]" +
+            s"(recur ${newValues.map(nv => nv.variable).mkString(" ")}))"
 
         case SimpleAssignExpression(ArrayAccessExpression(array, index), value) =>
           s"(aset ${CodeGenerator.buildString(array)} ${CodeGenerator.buildString(index)} ${CodeGenerator.buildString(value)})"

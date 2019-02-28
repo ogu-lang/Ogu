@@ -32,8 +32,6 @@ import parser.ast.module._
 
 
 
-      case ArrayAccessExpression(array, index) =>
-        strBuf ++= s"(aget ${toClojure(array)} ${toClojure(index)})"
 
 
 
@@ -45,24 +43,6 @@ import parser.ast.module._
 
 
 
-
-      case RecurExpression(args) =>
-        strBuf ++= s"(recur ${args.map(toClojure).mkString(" ")})"
-
-
-      case NewCallExpression(cls, args) if args.isEmpty =>
-        strBuf ++= s"($cls.)"
-
-
-
-
-
-
-
-
-
-      case LazyExpression(expr) =>
-        strBuf ++= s"(lazy-seq ${toClojure(expr)})"
 
 
 
