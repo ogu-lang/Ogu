@@ -73,18 +73,6 @@ import parser.ast.module._
         strBuf ++= s"\t${toClojure(expression)})\n"
 
 
-      case VarDeclExpression(decls, None) =>
-        for (d <- decls) {
-          strBuf ++= toClojureOguVariable(d)
-        }
-
-      case VarDeclExpression(decls, Some(expression)) =>
-        strBuf ++= "(with-local-vars ["
-        strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
-        strBuf ++= "]\n"
-        addVariables(decls)
-        strBuf ++= s"${toClojure(expression)})\n"
-        removeVariables(decls)
 
 
 
@@ -176,15 +164,6 @@ import parser.ast.module._
 
 
 
-      case DictionaryExpression(pairs) =>
-        strBuf ++= s"{${pairs.map(toClojureDictPair).mkString(" ")}}"
-
-      case BlockExpression(expressions) =>
-        if (expressions.size == 1) {
-          strBuf ++= toClojure(expressions.head)
-        } else {
-          strBuf ++= s"(do ${expressions.map(toClojure).mkString("\n")})"
-        }
 
       case ForExpression(variables, body) =>
         strBuf ++= s"(doall (for [${variables.map(toClojureForVarDeclIn).mkString("\n")}] \n${toClojure(body)}))"
@@ -215,12 +194,6 @@ import parser.ast.module._
       case WhenExpression(comp, body) =>
         strBuf ++= s"(when ${toClojure(comp)}\n ${toClojure(body)})"
 
-      case IfExpression(comp, thenPart, elifPart, elsePart) =>
-        if (elifPart.nonEmpty) {
-          ???
-        } else {
-          strBuf ++= s"(if ${toClojure(comp)}\n   ${toClojure(thenPart)}\n    ${toClojure(elsePart)})"
-        }
 
       case RecurExpression(args) =>
         strBuf ++= s"(recur ${args.map(toClojure).mkString(" ")})"
@@ -243,15 +216,6 @@ import parser.ast.module._
 
       case ConsExpression(args) =>
         strBuf ++= s"(cons ${args.map(toClojure).mkString(" ")})"
-
-      case LogicalAndExpression(args) =>
-        strBuf ++= s"(and ${args.map(toClojure).mkString(" ")})"
-
-      case LogicalOrExpression(args) =>
-        strBuf ++= s"(or ${args.map(toClojure).mkString(" ")})"
-
-
-
 
 
       case SimpleAssignExpression(ArrayAccessExpression(array, index), value) =>
@@ -280,108 +244,7 @@ import parser.ast.module._
 
 
 
-      case md: MultiDefDecl =>
-        if (!md.patternMatching()) {
-          strBuf ++= s"\n(defn ${md.id}\n"
-          for (decl <- md.decls) {
-            strBuf ++= "([" + decl.args.map(arg => s"${toClojure(arg.expression)}").mkString(" ") + "] "
-            if (decl.whereBlock.nonEmpty) {
-              val whereDefs = decl.whereBlock.get.whereDefs
-              strBuf ++= s"${whereDefs.map(toClojureWhereDef).mkString("\n")}"
-            }
-            strBuf ++= s"${toClojure(decl.body)})\n"
-          }
-          strBuf ++= ")\n\n"
-        }
-        else {
-          strBuf ++= s"\n(defn ${md.id} [" + md.args.mkString(" ") + "]\n"
-          strBuf ++= "\t(cond\n"
-          val args: List[String] = md.args
-          for (decl <- md.decls) {
-            var andList = List.empty[String]
-            var letDecls = List.empty[String]
-            var argDecls = decl.args
-            var namedArgs = args
-            if (decl.whereBlock.nonEmpty) {
-              val whereDefs = decl.whereBlock.get.whereDefs
-              for (wd <- whereDefs) {
-                letDecls = s"${toClojureWhereDefAsLet(wd)}" :: letDecls
-              }
-              letDecls = letDecls.reverse
-            }
-            while (argDecls.nonEmpty) {
-              val arg = argDecls.head
-              arg match {
-                case DefArg(Identifier(id)) if args.contains(id) =>
-                // nothing
-                case DefArg(_:EmptyListExpresion) =>
-                  andList = s"\t\t(empty? ${namedArgs.head})" :: andList
 
-                case DefArg(ConsExpression(args)) =>
-                  val tail = args.last
-                  val head = args.init
-                  letDecls = s"[${head.map(toClojure).mkString(" ")} & ${toClojure(tail)}] ${namedArgs.head}" :: letDecls
-
-                case DefArg(ListExpression(defArgs, None)) =>
-                  letDecls = s"[${defArgs.map(toClojure).mkString(" ")}] ${namedArgs.head}]" :: letDecls
-
-                case DefArg(ConstructorExpression(cls, ctorArgs)) =>
-                  andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
-                  var argDecls = List.empty[String]
-                  for (arg <- ctorArgs) {
-                    arg match {
-                      case Identifier(id) => argDecls = s"$id (.$id ${namedArgs.head})" :: argDecls
-                    }
-                  }
-                  letDecls = argDecls.reverse ++ letDecls
-
-                case DefArg(RecordConstructorExpression(cls, ctorArgs)) =>
-                  andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
-                  var argDecls = List.empty[String]
-                  for (arg <- ctorArgs) {
-                    arg match {
-                      case Identifier(id) => argDecls = s"$id (.$id ${namedArgs.head})" :: argDecls
-                    }
-                  }
-                  letDecls = argDecls.reverse ++ letDecls
-                case DefArg(IdIsType(_, cls)) =>
-                  andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
-
-                case DefArg(exp: Expression) =>
-                  andList = s"\t\t(= ${namedArgs.head} ${toClojure(exp)})" :: andList
-
-              }
-              argDecls = argDecls.tail
-              namedArgs = namedArgs.tail
-            }
-            if (andList.isEmpty) {
-              if (letDecls.isEmpty) {
-                strBuf ++= s"\t\t:else  ${toClojure(decl.body)}"
-              }
-              else {
-                strBuf ++= s"\t\t:else (let [${letDecls.mkString("\n\t\t\t")}]\n\t\t${toClojure(decl.body)})"
-              }
-            }
-            else if (andList.length == 1) {
-              if (letDecls.isEmpty) {
-                strBuf ++= s"${andList.mkString(" ")} ${toClojure(decl.body)}\n"
-              }
-              else {
-                strBuf ++= s"${andList.mkString(" ")} (let [${letDecls.mkString(" ")}]\n\t\t${toClojure(decl.body)})\n"
-              }
-            }
-            else {
-              if (letDecls.isEmpty) {
-                strBuf ++= s"  (and ${andList.mkString(" ")}) ${toClojure(decl.body)}\n"
-              }
-              else {
-                strBuf ++= s"  (and ${andList.mkString(" ")}) (let [${letDecls.mkString(" ")}]\n\t\t${toClojure(decl.body)})\n"
-
-              }
-            }
-          }
-          strBuf ++= "))\n\n"
-        }
 
       case LazyExpression(expr) =>
         strBuf ++= s"(lazy-seq ${toClojure(expr)})"
@@ -423,10 +286,6 @@ import parser.ast.module._
       case LoopVarDecl(id, initialValue) => s"$id ${toClojure(initialValue)}"
       case _ => ???
     }
-  }
-
-  def toClojureDictPair(pair: (Expression, Expression)): String = {
-    s"${toClojure(pair._1)} ${toClojure(pair._2)}"
   }
 
   def toClojureForVarDeclIn(variable: LoopDeclVariable): String = {
@@ -487,11 +346,6 @@ import parser.ast.module._
 
 
 
-  def toClojureOguVariable(variable: Variable) : String = {
-    variable match {
-      case LetVariable(id, expr) => s"(-def-ogu-var- ${toClojureLetId(id)} ${toClojure(expr)})\n"
-    }
-  }
 
   def toClojureImportClauses(importClauses: List[ImportClause]): String = {
     val strBuf = new StringBuilder()
@@ -547,24 +401,6 @@ import parser.ast.module._
     }
   }
 
-  def isVariable(id: String): Boolean = {
-    this.varDecls.contains(id)
-  }
 
-  def addVariables(decls: List[Variable]): Unit = {
-    for (v <- decls) {
-      v match {
-        case LetVariable(LetSimpleId(id), _) => this.varDecls = this.varDecls + id
-      }
-    }
-  }
-
-  def removeVariables(decls: List[Variable]): Unit = {
-    for (v <- decls) {
-      v match {
-        case LetVariable(LetSimpleId(id), _) => this.varDecls = this.varDecls - id
-      }
-    }
-  }
 }
 */

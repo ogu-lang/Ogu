@@ -6,7 +6,7 @@ import parser.ast.expressions.TopLevelExpression
 import parser.ast.module.Module
 import codegen.clojure.decls.DeclGen._
 import codegen.clojure.expressions.ExpressionsGen._
-import parser.ast.decls.SimpleDefDecl
+import parser.ast.decls.{MultiDefDecl, SimpleDefDecl}
 
 import scala.annotation.tailrec
 
@@ -28,6 +28,7 @@ object ModuleGen {
       val s = nodes.head match {
         case e:TopLevelExpression => CodeGenerator.buildString(e)
         case sd: SimpleDefDecl => CodeGenerator.buildString(sd)
+        case md: MultiDefDecl => CodeGenerator.buildString(md)
         case _ => s"**ERROR (${nodes.head.getClass})**"
       }
       genDecls(nodes.tail, s :: strs )

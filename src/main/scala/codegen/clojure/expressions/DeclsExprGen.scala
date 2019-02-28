@@ -36,6 +36,56 @@ object DeclsExprGen {
     }
   }
 
+  implicit object VarDeclExpressionTranslator extends Translator[VarDeclExpression] {
+
+    override def mkString(node: VarDeclExpression): String = {
+      val strBuf = new StringBuilder()
+      node match {
+        case VarDeclExpression(decls, None) =>
+          for (d <- decls) {
+            strBuf ++= toClojureOguVariable(d)
+          }
+
+        case VarDeclExpression(decls, Some(expression)) =>
+          strBuf ++= "(with-local-vars ["
+          strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${CodeGenerator.buildString(d.id)} ${CodeGenerator.buildString(d.value)}").mkString(" ")
+          strBuf ++= "]\n"
+          addVariables(decls)
+          strBuf ++= s"${CodeGenerator.buildString(expression)})\n"
+          removeVariables(decls)
+      }
+      strBuf.mkString
+    }
+
+
+    def toClojureOguVariable(variable: LetVariable) : String = {
+        s"(-def-ogu-var- ${variable.id} ${CodeGenerator.buildString(variable.value)})\n"
+    }
+
+    var varDecls : Set[String] = Set.empty[String]
+
+    def isVariable(id: String): Boolean = {
+      varDecls.contains(id)
+    }
+
+    def addVariables(decls: List[LetVariable]): Unit = {
+      for (v <- decls) {
+        v match {
+          case LetVariable(LetSimpleId(id), _) => varDecls = varDecls + id
+        }
+      }
+    }
+
+    def removeVariables(decls: List[LetVariable]): Unit = {
+      for (v <- decls) {
+        v match {
+          case LetVariable(LetSimpleId(id), _) => varDecls = varDecls - id
+        }
+      }
+    }
+
+  }
+
   implicit object BodyGuardsExpresionTranslator extends Translator[BodyGuardsExpresion] {
 
     override def mkString(node: BodyGuardsExpresion): String = {

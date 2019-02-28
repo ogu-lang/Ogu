@@ -1,9 +1,11 @@
 package codegen.clojure.decls
 
-import codegen.{CodeGenerator, Translator}
 import codegen.clojure.expressions.ExpressionsGen._
+import codegen.{CodeGenerator, Translator}
 import parser.ast.decls._
-import parser.ast.expressions.{Identifier, InfiniteTupleExpr, TupleExpression}
+import parser.ast.expressions.{Expression, Identifier}
+import parser.ast.expressions.list_ops.ConsExpression
+import parser.ast.expressions.types._
 
 object DeclGen {
 
@@ -112,4 +114,114 @@ object DeclGen {
     }
 
   }
+
+  implicit object MultiDefDeclTranslator extends Translator[MultiDefDecl] {
+
+    override def mkString(node: MultiDefDecl): String = {
+      val strBuf = new StringBuilder()
+        if (!node.patternMatching()) {
+          strBuf ++= s"\n(defn ${node.id}\n"
+          for (decl <- node.decls) {
+            strBuf ++= "([" + decl.args.map(arg => s"${CodeGenerator.buildString(arg.expression)}").mkString(" ") + "] "
+            if (decl.whereBlock.nonEmpty) {
+              val whereDefs = decl.whereBlock.get.whereDefs
+              strBuf ++= s"${whereDefs.map(CodeGenerator.buildString(_)).mkString("\n")}"
+            }
+            strBuf ++= s"${CodeGenerator.buildString(decl.body)})\n"
+          }
+          strBuf ++= ")\n\n"
+        }
+        else {
+          strBuf ++= s"\n(defn ${node.id} [" + node.args.mkString(" ") + "]\n"
+          strBuf ++= "\t(cond\n"
+          val args: List[String] = node.args
+          for (decl <- node.decls) {
+            var andList = List.empty[String]
+            var letDecls = List.empty[String]
+            var argDecls = decl.args
+            var namedArgs = args
+            if (decl.whereBlock.nonEmpty) {
+              val whereDefs = decl.whereBlock.get.whereDefs
+              for (wd <- whereDefs) {
+                letDecls = s"${CodeGenerator.buildString(wd)}" :: letDecls
+              }
+              letDecls = letDecls.reverse
+            }
+            while (argDecls.nonEmpty) {
+              val arg = argDecls.head
+              arg match {
+                case DefArg(Identifier(id)) if args.contains(id) =>
+                // nothing
+                case DefArg(_:EmptyListExpresion) =>
+                  andList = s"\t\t(empty? ${namedArgs.head})" :: andList
+
+                case DefArg(ConsExpression(args)) =>
+                  val tail = args.last
+                  val head = args.init
+                  letDecls = s"[${head.map(CodeGenerator.buildString(_)).mkString(" ")} & ${CodeGenerator.buildString(tail)}] ${namedArgs.head}" :: letDecls
+
+                case DefArg(ListExpression(defArgs, None)) =>
+                  letDecls = s"[${defArgs.map(CodeGenerator.buildString(_)).mkString(" ")}] ${namedArgs.head}]" :: letDecls
+
+                case DefArg(ConstructorExpression(cls, ctorArgs)) =>
+                  andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
+                  var argDecls = List.empty[String]
+                  for (arg <- ctorArgs) {
+                    arg match {
+                      case Identifier(id) => argDecls = s"$id (.$id ${namedArgs.head})" :: argDecls
+                    }
+                  }
+                  letDecls = argDecls.reverse ++ letDecls
+
+                case DefArg(RecordConstructorExpression(cls, ctorArgs)) =>
+                  andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
+                  var argDecls = List.empty[String]
+                  for (arg <- ctorArgs) {
+                    arg match {
+                      case Identifier(id) => argDecls = s"$id (.$id ${namedArgs.head})" :: argDecls
+                    }
+                  }
+                  letDecls = argDecls.reverse ++ letDecls
+                case DefArg(IdIsType(_, cls)) =>
+                  andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
+
+                case DefArg(exp: Expression) =>
+                  andList = s"\t\t(= ${namedArgs.head} ${CodeGenerator.buildString(exp)})" :: andList
+
+              }
+              argDecls = argDecls.tail
+              namedArgs = namedArgs.tail
+            }
+            if (andList.isEmpty) {
+              if (letDecls.isEmpty) {
+                strBuf ++= s"\t\t:else  ${CodeGenerator.buildString(decl.body)}"
+              }
+              else {
+                strBuf ++= s"\t\t:else (let [${letDecls.mkString("\n\t\t\t")}]\n\t\t${CodeGenerator.buildString(decl.body)})"
+              }
+            }
+            else if (andList.length == 1) {
+              if (letDecls.isEmpty) {
+                strBuf ++= s"${andList.mkString(" ")} ${CodeGenerator.buildString(decl.body)}\n"
+              }
+              else {
+                strBuf ++= s"${andList.mkString(" ")} (let [${letDecls.mkString(" ")}]\n\t\t${CodeGenerator.buildString(decl.body)})\n"
+              }
+            }
+            else {
+              if (letDecls.isEmpty) {
+                strBuf ++= s"  (and ${andList.mkString(" ")}) ${CodeGenerator.buildString(decl.body)}\n"
+              }
+              else {
+                strBuf ++= s"  (and ${andList.mkString(" ")}) (let [${letDecls.mkString(" ")}]\n\t\t${CodeGenerator.buildString(decl.body)})\n"
+
+              }
+            }
+          }
+          strBuf ++= "))\n\n"
+        }
+      strBuf.mkString
+    }
+  }
+
 }
