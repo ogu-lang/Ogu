@@ -1,10 +1,12 @@
 package codegen.clojure.expressions
 
 import codegen.{CodeGenerator, Translator}
+import codegen.clojure.decls.DeclGen._
 import codegen.clojure.expressions.ExpressionsGen._
+import parser.ast.decls.BodyGuardsExpresion
 import parser.ast.expressions.vars._
 
-object DeclsGen {
+object DeclsExprGen {
 
   implicit object LetIdTranslator extends Translator[LetId] {
 
@@ -34,5 +36,12 @@ object DeclsGen {
     }
   }
 
+  implicit object BodyGuardsExpresionTranslator extends Translator[BodyGuardsExpresion] {
+
+    override def mkString(node: BodyGuardsExpresion): String = {
+          s"(cond\n ${node.guards.map(g => CodeGenerator.buildString(g)).mkString("\n")})"
+    }
+
+  }
 }
 

@@ -3,11 +3,12 @@ package codegen.clojure.expressions
 import codegen.{CodeGenerator, Translator}
 import codegen.clojure.expressions.ArithmeticsGen._
 import codegen.clojure.expressions.ComparativeGen._
-import codegen.clojure.expressions.DeclsGen._
+import codegen.clojure.expressions.DeclsExprGen._
 import codegen.clojure.expressions.FunctionsGen._
 import codegen.clojure.expressions.LiteralsGen._
 import codegen.clojure.expressions.PartialOperGen._
 import codegen.clojure.expressions.RangeGen._
+import parser.ast.decls.BodyGuardsExpresion
 import parser.ast.expressions._
 import parser.ast.expressions.arithmetic.PartialOper
 import parser.ast.expressions.comparisons.ComparativeExpression
@@ -34,6 +35,8 @@ object ExpressionsGen {
         case ae: ArithmeticExpression => CodeGenerator.buildString(ae)
         case le: LiteralExpression => CodeGenerator.buildString(le)
         case re: ValidRangeExpression => CodeGenerator.buildString(re)
+        case te: TupleExpression => CodeGenerator.buildString(te)
+        case bg: BodyGuardsExpresion => CodeGenerator.buildString(bg)
         case _ => s"EXPRESSION(${node.getClass})"
       }
     }

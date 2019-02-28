@@ -277,11 +277,7 @@ import parser.ast.module._
 
 
 
-      case BodyGuardsExpresion(guards) =>
-        strBuf ++= s"(cond\n ${guards.map(toClojureDefBodyGuardExpr).mkString("\n")})"
 
-      case TupleExpression(exprs) =>
-        strBuf ++= s"[${exprs.map(toClojure).mkString(" ")}]"
 
 
       case md: MultiDefDecl =>
