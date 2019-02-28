@@ -53,7 +53,7 @@ object ControlGen {
 
         case IfExpression(comp, thenPart, ep :: tail, elsePart) =>
           s"(if ${CodeGenerator.buildString(comp)}\n ${CodeGenerator.buildString(thenPart)}\n " +
-            s"(${mkString(IfExpression(ep.comp, ep.body, tail, elsePart))}))"
+            s"${mkString(IfExpression(ep.comp, ep.body, tail, elsePart))})"
 
         case LazyExpression(expr) =>
           s"(lazy-seq ${CodeGenerator.buildString(expr)})"
