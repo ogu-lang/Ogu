@@ -5,7 +5,7 @@ import parser.ast.expressions._
 
 case class CatchExpression(id: Option[String], ex: String, body: Expression) extends Expression
 
-case class TryExpression(body: Expression, catches: List[CatchExpression], fin: Option[Expression]) extends Expression
+case class TryExpression(body: Expression, catches: List[CatchExpression], fin: Option[Expression]) extends ControlExpression
 
 object TryExpression extends ExpressionParser {
 

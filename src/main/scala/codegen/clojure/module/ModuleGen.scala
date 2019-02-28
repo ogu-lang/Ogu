@@ -8,7 +8,7 @@ import parser.ast.LangNode
 import parser.ast.expressions.TopLevelExpression
 import parser.ast.module._
 import parser.ast.decls.{DispatchDecl, MultiDefDecl, MultiMethod, SimpleDefDecl}
-import parser.ast.types.{ClassDecl, ExtendsDecl, TraitDecl}
+import parser.ast.types._
 
 import scala.annotation.tailrec
 
@@ -93,11 +93,13 @@ object ModuleGen {
     }
     else {
       val s = nodes.head match {
+        case ad: AdtDecl => CodeGenerator.buildString(ad)
         case cd: ClassDecl => CodeGenerator.buildString(cd)
         case dd: DispatchDecl => CodeGenerator.buildString(dd)
         case ed: ExtendsDecl => CodeGenerator.buildString(ed)
         case md: MultiDefDecl => CodeGenerator.buildString(md)
         case mm: MultiMethod => CodeGenerator.buildString(mm)
+        case rd: RecordDecl => CodeGenerator.buildString(rd)
         case sd: SimpleDefDecl => CodeGenerator.buildString(sd)
         case tl:TopLevelExpression => CodeGenerator.buildString(tl)
         case td: TraitDecl => CodeGenerator.buildString(td)

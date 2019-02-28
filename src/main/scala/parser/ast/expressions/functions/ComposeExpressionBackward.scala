@@ -1,9 +1,9 @@
 package parser.ast.expressions.functions
 
 import lexer.COMPOSE_BACKWARD
-import parser.ast.expressions.{Expression, LeftAssociativeExpressionParser, PostfixExpression}
+import parser.ast.expressions.{CallExpression, Expression, LeftAssociativeExpressionParser, PostfixExpression}
 
-case class ComposeExpressionBackward(args: List[Expression]) extends Expression
+case class ComposeExpressionBackward(args: List[Expression]) extends CallExpression
 
 object ComposeExpressionBackward extends LeftAssociativeExpressionParser(PostfixExpression, COMPOSE_BACKWARD) {
 

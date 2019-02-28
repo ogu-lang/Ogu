@@ -2,7 +2,7 @@ package codegen.clojure.expressions
 
 import codegen.{CodeGenerator, Translator}
 import codegen.clojure.expressions.ExpressionsGen._
-import parser.ast.expressions.types.{DictionaryExpression, TupleExpression}
+import parser.ast.expressions.types.{DictionaryExpression, SetExpression, TupleExpression}
 
 object TypeExprGen {
 
@@ -22,6 +22,17 @@ object TypeExprGen {
       }
 
     }
+
+  }
+
+  implicit object SetExpressionTranslator extends Translator[SetExpression] {
+
+    override def mkString(node: SetExpression): String = {
+      s"#{${node.values.map(CodeGenerator.buildString(_)).mkString(" ")}}"
+    }
+
+
+
 
   }
 }

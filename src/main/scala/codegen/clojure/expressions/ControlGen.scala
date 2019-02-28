@@ -1,8 +1,10 @@
 package codegen.clojure.expressions
 
+import codegen.clojure.decls.DeclGen._
 import codegen.clojure.expressions.DeclsExprGen._
-import codegen.{CodeGenerator, Translator}
 import codegen.clojure.expressions.ExpressionsGen._
+import codegen.clojure.expressions.FunctionsGen._
+import codegen.{CodeGenerator, Translator}
 import parser.ast.expressions.{ArrayAccessExpression, Identifier}
 import parser.ast.expressions.control._
 
@@ -19,6 +21,21 @@ object ControlGen {
           s"when-not ${CodeGenerator.buildString(comp)}"
       }
     }
+  }
+
+  implicit object CatchExpressionTranslatro extends Translator[CatchExpression] {
+
+    override def mkString(node: CatchExpression): String = {
+      s"(catch ${node.ex} ${node.id.getOrElse("_")} ${CodeGenerator.buildString(node.body)})"
+    }
+  }
+
+  implicit object ThrowExpressionTranslator extends Translator[ThrowExpression] {
+
+    override def mkString(node: ThrowExpression): String = {
+      s"(throw ${CallExpressionExpressionTranslator.mkString(node.ctor)})"
+    }
+
   }
 
   implicit object ControlExpressionTranslator extends Translator[ControlExpression] {
@@ -51,12 +68,15 @@ object ControlGen {
           s"(recur ${newValues.map(nv => nv.variable).mkString(" ")}))"
 
 
-        case WhenExpression(comp, body) =>
-          s"(when ${CodeGenerator.buildString(comp)}\n\t${CodeGenerator.buildString(body)})"
-
-
-        case WhileExpression(comp, body) =>
-          s"(while ${CodeGenerator.buildString(comp)} ${CodeGenerator.buildString(body)})"
+        case ReifyExpression(name, methods) =>
+          val strBuf = new StringBuilder()
+          strBuf ++= s"(reify $name\n"
+          for (method <- methods) {
+            val s = CodeGenerator.buildString(method.definition).replaceFirst("\\(defn\\s+", "\t(")
+            strBuf ++= s
+          }
+          strBuf ++= ")\n"
+          strBuf.mkString
 
         case SimpleAssignExpression(ArrayAccessExpression(array, index), value) =>
           s"(aset ${CodeGenerator.buildString(array)} ${CodeGenerator.buildString(index)} ${CodeGenerator.buildString(value)})"
@@ -68,6 +88,26 @@ object ControlGen {
           else {
             s"(alter-var-root (var $variable) (constantly ${CodeGenerator.buildString(value)}))"
           }
+
+        case TryExpression(body, catches, finExpr) =>
+          val strBuf = new StringBuilder()
+          strBuf ++= s"(try ${CodeGenerator.buildString(body)}\n"
+          strBuf ++= s"\t${catches.map(CodeGenerator.buildString(_)).mkString("\n\t")}"
+          if (finExpr.isDefined) {
+            strBuf ++= s"\t(finally ${CodeGenerator.buildString(finExpr.get)})\n"
+          }
+          strBuf ++= ")\n"
+          strBuf.mkString
+
+
+
+        case WhenExpression(comp, body) =>
+          s"(when ${CodeGenerator.buildString(comp)}\n\t${CodeGenerator.buildString(body)})"
+
+
+        case WhileExpression(comp, body) =>
+          s"(while ${CodeGenerator.buildString(comp)} ${CodeGenerator.buildString(body)})"
+
 
       }
     }

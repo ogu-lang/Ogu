@@ -4,8 +4,7 @@ import lexer.{MATCH, NL, TokenStream}
 import parser.ast.expressions.list_ops.ConsExpression
 import parser.ast.expressions.{Expression, ExpressionParser}
 
-
-case class ReMatchExpr(left: Expression, right: Expression) extends Expression
+case class ReMatchExpr(left: Expression, right: Expression) extends RegexExpression
 
 object ReMatchExpr extends ExpressionParser {
 

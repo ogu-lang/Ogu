@@ -3,7 +3,7 @@ package parser.ast.expressions.regexp
 import lexer._
 import parser.ast.expressions.{Expression, ExpressionParser}
 
-case class NoMatchExpr(left: Expression, right: Expression) extends Expression
+case class NoMatchExpr(left: Expression, right: Expression) extends RegexExpression
 
 object NoMatchExpr extends ExpressionParser {
 

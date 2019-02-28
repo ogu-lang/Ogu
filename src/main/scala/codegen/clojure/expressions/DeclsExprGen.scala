@@ -47,6 +47,14 @@ object DeclsExprGen {
     }
   }
 
+  implicit object BindDeclExpressionTranslator extends Translator[BindDeclExpression] {
+
+    override def mkString(node: BindDeclExpression): String = {
+        s"(binding [" +
+        node.decls.map(d => s"${CodeGenerator.buildString(d.id)} ${CodeGenerator.buildString(d.value)}").mkString(" ") +
+        s"]\n\t${CodeGenerator.buildString(node.inExpr)})\n"
+    }
+  }
 
 
   implicit object VarDeclExpressionTranslator extends Translator[VarDeclExpression] {
@@ -72,7 +80,7 @@ object DeclsExprGen {
 
 
     def toClojureOguVariable(variable: LetVariable) : String = {
-        s"(-def-ogu-var- ${variable.id} ${CodeGenerator.buildString(variable.value)})\n"
+        s"(-def-ogu-var- ${CodeGenerator.buildString(variable.id)} ${CodeGenerator.buildString(variable.value)})\n"
     }
 
     var varDecls : Set[String] = Set.empty[String]

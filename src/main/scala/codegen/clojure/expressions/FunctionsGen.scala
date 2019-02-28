@@ -12,14 +12,24 @@ object FunctionsGen {
   implicit object CallExpressionExpressionTranslator extends Translator[CallExpression] {
     override def mkString(node: CallExpression): String = {
       node match {
+        case ComposeExpressionForward(args) =>
+          s"(comp ${args.reverse.map(CodeGenerator.buildString(_)).mkString(" ")})"
+
+        case ComposeExpressionBackward(args) =>
+         s"(comp ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
+
         case FunctionCallExpression(func, args) =>
           s"(${CodeGenerator.buildString(func)} ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
+
         case ForwardPipeFuncCallExpression(args) =>
           s"(->> ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
+
         case ForwardPipeFirstArgFuncCallExpression(args) =>
           s"(-> ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
+
         case BackwardPipeFuncCallExpression(args) =>
           s"(->> ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
+
         case FunctionCallWithDollarExpression(func, args) =>
           s"(${CodeGenerator.buildString(func)} ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
 

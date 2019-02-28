@@ -18,31 +18,6 @@ import parser.ast.module._
         }
 
 
-      case RecordDecl(name, args) =>
-        strBuf ++= s"(defrecord $name [${args.mkString(" ")}])\n"
-
-
-
-      case ReifyExpression(name, methods) =>
-        strBuf ++= s"(reify $name\n"
-        for (method <- methods) {
-          val s = toClojure(method.definition).replaceFirst("\\(defn\\s+", "\t(")
-          strBuf ++= s
-        }
-        strBuf ++= ")\n"
-
-      case AdtDecl(name, adts) =>
-        strBuf ++= s"(defprotocol $name)\n"
-        for (adt <- adts) {
-          strBuf ++=  s"(deftype ${adt.name} [${adt.args.mkString(" ")}] $name)\n"
-        }
-
-
-      case BindDeclExpression(decls, expression) =>
-        strBuf ++= s"(binding ["
-        strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${toClojureLetId(d.id)} ${toClojure(d.value)}").mkString(" ")
-        strBuf ++= "]\n"
-        strBuf ++= s"\t${toClojure(expression)})\n"
 
 
 
@@ -51,50 +26,16 @@ import parser.ast.module._
 
 
 
-      case ComposeExpressionForward(args) =>
-        strBuf ++= s"(comp ${args.reverse.map(toClojure).mkString(" ")})"
-
-      case ComposeExpressionBackward(args) =>
-        strBuf ++= s"(comp ${args.map(toClojure).mkString(" ")})"
 
 
 
-      case BoolLiteral(value) =>
-        strBuf ++= value.toString
 
-        strBuf ++= d.toString
 
-      case StringLiteral(str) =>
-        strBuf ++= str
-
-      case FStringLiteral(str) =>
-        strBuf ++= s"(fmt $str)"
-
-      case DateTimeLiteral(date) =>
-        strBuf ++= "#inst  \"" + s"$date" + "\""
-
-      case Atom(value) =>
-        strBuf ++= value
-
-      case RegexpLiteral(re) =>
-        strBuf ++= "#\"" + re + "\""
-
-      case MatchesExpression(expr, re) =>
-        strBuf ++= s"(some? (re-matches ${toClojure(re)} ${toClojure(expr)}))"
-
-      case ReMatchExpr(expr, re) =>
-        strBuf ++= s"(re-matches ${toClojure(re)} ${toClojure(expr)})"
-
-      case NoMatchExpr(expr, re) =>
-        strBuf ++= s"(nil? (re-matches ${toClojure(re)} ${toClojure(expr)}))"
 
       case ArrayAccessExpression(array, index) =>
         strBuf ++= s"(aget ${toClojure(array)} ${toClojure(index)})"
 
 
-
-      case SetExpression(elements) =>
-        strBuf ++= s"#{${elements.map(toClojure).mkString(" ")}}"
 
 
 
@@ -125,19 +66,6 @@ import parser.ast.module._
 
 
 
-      case TryExpression(body, catches, finExpr) =>
-        strBuf ++= s"(try ${toClojure(body)}\n"
-        strBuf ++= s"\t${catches.map(toClojure).mkString("\n\t")}"
-        if (finExpr.isDefined) {
-          strBuf ++= s"\t(finally ${toClojure(finExpr.get)})\n"
-        }
-        strBuf ++= ")\n"
-
-      case CatchExpression(id, ex, body) =>
-        strBuf ++= s"(catch $ex ${id.getOrElse("_")} ${toClojure(body)})"
-
-      case ThrowExpression(ctor) =>
-        strBuf ++= s"(throw ${toClojure(ctor)})"
 
 
 

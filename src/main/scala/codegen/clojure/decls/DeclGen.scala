@@ -68,6 +68,8 @@ object DeclGen {
         case MultiMethod(_, id, matches, args, body, None) =>
           strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
           strBuf ++= s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n\t${CodeGenerator.buildString(body)})\n\n"
+
+        case _ => ???
       }
       strBuf.mkString
     }
@@ -82,9 +84,6 @@ object DeclGen {
     }
 
   }
-
-
-
 
   implicit object WhereGuardTranslator extends Translator[WhereGuard] {
 
@@ -128,7 +127,6 @@ object DeclGen {
 
   }
 
-
   implicit object SimpleDefDeclTranslator extends Translator[SimpleDefDecl] {
 
     override def mkString(node: SimpleDefDecl): String = {
@@ -162,7 +160,6 @@ object DeclGen {
   }
 
   implicit object MultiDefDeclTranslator extends Translator[MultiDefDecl] {
-
 
     override def mkString(node: MultiDefDecl): String = {
       val strBuf = new StringBuilder()
@@ -269,8 +266,6 @@ object DeclGen {
         }
       strBuf.mkString
     }
-
-
 
     private[this] def whereDefAsLet(whereDef: WhereDef): String = {
       whereDef match {

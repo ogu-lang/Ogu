@@ -2,7 +2,7 @@ package codegen.clojure.types
 
 import codegen.clojure.decls.DeclGen._
 import codegen.{CodeGenerator, Translator}
-import parser.ast.types.{ClassDecl, ExtendsDecl, TraitDecl, TraitDef}
+import parser.ast.types._
 
 object TypeGen {
 
@@ -62,4 +62,27 @@ object TypeGen {
       }
     }
   }
+
+  implicit object RecordDeclTranslator extends Translator[RecordDecl] {
+
+    override def mkString(node: RecordDecl): String = {
+      s"(defrecord ${node.name} [${node.args.mkString(" ")}])\n"
+    }
+
+  }
+
+  implicit object AdtDeclTranslator extends Translator[AdtDecl] {
+    override def mkString(node: AdtDecl): String = {
+      val strBuf = new StringBuilder()
+      strBuf ++= s"(defprotocol ${node.name})\n"
+      for (adt <- node.defs) {
+        strBuf ++=  s"(deftype ${adt.name} [${adt.args.mkString(" ")}] ${node.name})\n"
+      }
+      strBuf.mkString
+    }
+  }
+
+
+
+
 }
