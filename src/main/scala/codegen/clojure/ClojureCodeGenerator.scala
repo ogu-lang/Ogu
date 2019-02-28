@@ -37,12 +37,6 @@ import parser.ast.module._
           strBuf ++=  s"(deftype ${adt.name} [${adt.args.mkString(" ")}] $name)\n"
         }
 
-      case DispatchDecl(id, dispatcher) =>
-        strBuf ++= s"(defmulti $id "
-        dispatcher match {
-          case ClassDispatcher => strBuf ++= "class)\n"
-          case ExpressionDispatcher(expr) => strBuf ++= s"${toClojure(expr)})\n"
-        }
 
       case BindDeclExpression(decls, expression) =>
         strBuf ++= s"(binding ["
@@ -125,22 +119,6 @@ import parser.ast.module._
 
 
 
-      case MultiMethod(_, id, matches, args, BodyGuardsExpresion(guards), None) =>
-        strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
-        strBuf ++= s"[${args.map(toClojureDefArg).mkString(" ")}]\n"
-        strBuf ++= s"  (cond\n${guards.map(toClojureDefBodyGuardExpr).mkString("\n")}"
-        strBuf ++= "))\n\n"
-
-      case MultiMethod(_, id, matches, args, body, None) =>
-        strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
-        strBuf ++= s"[${args.map(toClojureDefArg).mkString(" ")}]\n\t${toClojure(body)})\n\n"
-
-
-
-
-
-
-
 
       case LazyExpression(expr) =>
         strBuf ++= s"(lazy-seq ${toClojure(expr)})"
@@ -174,14 +152,6 @@ import parser.ast.module._
 
 
 
-
-  def toClojureDefMatchArg(defArg: DefArg): String = {
-    defArg match {
-      case DefArg(ConstructorExpression(cls, _)) => s"$cls"
-      case DefArg(RecordConstructorExpression(cls, _)) => s"$cls"
-      case d => toClojureDefArg(d)
-    }
-  }
 
 
 

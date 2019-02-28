@@ -9,6 +9,19 @@ import parser.ast.expressions.types._
 
 object DeclGen {
 
+  implicit object DispatchDeclTranslator extends Translator[DispatchDecl] {
+
+    override def mkString(node: DispatchDecl): String = {
+      val strBuf = new StringBuilder()
+      strBuf ++= s"(defmulti ${node.id} "
+      node.dispatcher match {
+        case ClassDispatcher => strBuf ++= "class)\n"
+        case ExpressionDispatcher(expr) => strBuf ++= s"${CodeGenerator.buildString(expr)})\n"
+      }
+      strBuf.mkString
+    }
+  }
+
   implicit object DefArgTranslator extends Translator[DefArg] {
 
     override def mkString(node: DefArg): String = {
@@ -40,6 +53,38 @@ object DeclGen {
       }
     }
   }
+
+  implicit object MultiMethodTranslator extends Translator[MultiMethod] {
+
+    override def mkString(node: MultiMethod): String = {
+      val strBuf = new StringBuilder()
+      node match {
+        case MultiMethod(_, id, matches, args, BodyGuardsExpresion(guards), None) =>
+          strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
+          strBuf ++= s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n"
+          strBuf ++= s"  (cond\n${guards.map(CodeGenerator.buildString(_)).mkString("\n")}"
+          strBuf ++= "))\n\n"
+
+        case MultiMethod(_, id, matches, args, body, None) =>
+          strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
+          strBuf ++= s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n\t${CodeGenerator.buildString(body)})\n\n"
+      }
+      strBuf.mkString
+    }
+
+
+    private[this] def toClojureDefMatchArg(defArg: DefArg): String = {
+      defArg match {
+        case DefArg(ConstructorExpression(cls, _)) => s"$cls"
+        case DefArg(RecordConstructorExpression(cls, _)) => s"$cls"
+        case d => CodeGenerator.buildString(d)
+      }
+    }
+
+  }
+
+
+
 
   implicit object WhereGuardTranslator extends Translator[WhereGuard] {
 
