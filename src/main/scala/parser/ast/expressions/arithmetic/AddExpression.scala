@@ -1,9 +1,9 @@
 package parser.ast.expressions.arithmetic
 
 import lexer.PLUS
-import parser.ast.expressions.{Expression, LeftAssociativeExpressionParser}
+import parser.ast.expressions.{ArithmeticExpression, Expression, LeftAssociativeExpressionParser}
 
-case class AddExpression(args: List[Expression]) extends Expression
+case class AddExpression(args: List[Expression]) extends ArithmeticExpression
 
 object AddExpression extends LeftAssociativeExpressionParser(AddBigExpression, PLUS) {
 

@@ -1,9 +1,9 @@
 package parser.ast.expressions.arithmetic
 
 import lexer.{MOD, NL, TokenStream}
-import parser.ast.expressions.{Expression, ExpressionParser}
+import parser.ast.expressions.{ArithmeticExpression, Expression, ExpressionParser}
 
-case class ModExpression(left: Expression, right: Expression) extends Expression
+case class ModExpression(left: Expression, right: Expression) extends ArithmeticExpression
 
 object ModExpression extends ExpressionParser {
 

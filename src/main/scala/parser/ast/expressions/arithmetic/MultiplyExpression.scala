@@ -1,9 +1,9 @@
 package parser.ast.expressions.arithmetic
 
 import lexer.MULT
-import parser.ast.expressions.{Expression, LeftAssociativeExpressionParser}
+import parser.ast.expressions.{ArithmeticExpression, Expression, LeftAssociativeExpressionParser}
 
-case class MultiplyExpression(args: List[Expression]) extends Expression
+case class MultiplyExpression(args: List[Expression]) extends ArithmeticExpression
 
 object MultiplyExpression extends LeftAssociativeExpressionParser(MultiplyBigExpression, MULT) {
 

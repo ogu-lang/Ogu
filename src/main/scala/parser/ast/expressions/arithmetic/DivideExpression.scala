@@ -1,9 +1,9 @@
 package parser.ast.expressions.arithmetic
 
 import lexer.DIV
-import parser.ast.expressions.{Expression, LeftAssociativeExpressionParser}
+import parser.ast.expressions.{ArithmeticExpression, Expression, LeftAssociativeExpressionParser}
 
-case class DivideExpression(args: List[Expression]) extends Expression
+case class DivideExpression(args: List[Expression]) extends ArithmeticExpression
 
 object DivideExpression extends LeftAssociativeExpressionParser(ModExpression, DIV) {
 
