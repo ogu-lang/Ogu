@@ -5,7 +5,7 @@ import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 import parser.ast.expressions.{AssignableExpression, Expression, ExpressionParser, parsePipedOrBodyExpression}
 import parser.CantAssignToExpression
 
-case class SimpleAssignExpression(left: Expression, right: Expression) extends Expression with AssignableExpression
+case class SimpleAssignExpression(left: Expression, right: Expression) extends ControlExpression with AssignableExpression
 
 object SimpleAssignExpression extends ExpressionParser {
 

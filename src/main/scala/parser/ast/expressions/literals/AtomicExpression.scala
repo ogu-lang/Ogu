@@ -1,9 +1,8 @@
 package parser.ast.expressions.literals
 
 import lexer._
-import parser.InvalidExpression
 import parser.ast.expressions._
-import parser.ast.expressions.types.{DictionaryExpression, ListExpression, SetExpression}
+import parser.ast.expressions.types.{DictionaryExpression, ListExpression, SetExpression, TupleExpression}
 
 object AtomicExpression extends ExpressionParser {
 

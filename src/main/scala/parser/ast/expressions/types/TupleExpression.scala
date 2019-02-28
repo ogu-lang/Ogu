@@ -1,5 +1,7 @@
-package parser.ast.expressions
+package parser.ast.expressions.types
+
 import lexer._
+import parser.ast.expressions.{Expression, ExpressionParser, Identifier}
 import parser.ast.expressions.functions.{ForwardPipeFuncCallExpression, FunctionCallExpression}
 
 case class TupleExpression(expressions: List[Expression]) extends Expression

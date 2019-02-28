@@ -7,6 +7,6 @@ case class LogicalOrExpression(args: List[Expression]) extends LogicalExpression
 
 object LogicalOrExpression extends LeftAssociativeExpressionParser(LogicalAndExpression, OR)  {
 
-  override def build(args: List[Expression]): Expression = LogicalAndExpression(args)
+  override def build(args: List[Expression]): Expression = LogicalOrExpression(args)
 
 }

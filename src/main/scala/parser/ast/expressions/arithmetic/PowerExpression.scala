@@ -2,9 +2,9 @@ package parser.ast.expressions.arithmetic
 
 import lexer.{POW, TokenStream}
 import parser.ast.expressions.functions.ComposeExpressionForward
-import parser.ast.expressions.{Expression, ExpressionParser}
+import parser.ast.expressions.{ArithmeticExpression, Expression, ExpressionParser}
 
-case class PowerExpression(base: Expression, exponent: Expression) extends Expression
+case class PowerExpression(base: Expression, exponent: Expression) extends ArithmeticExpression
 
 object PowerExpression extends ExpressionParser {
 

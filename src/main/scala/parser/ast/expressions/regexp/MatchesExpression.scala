@@ -3,7 +3,7 @@ package parser.ast.expressions.regexp
 import lexer.{MATCHES, NL, TokenStream}
 import parser.ast.expressions.{Expression, ExpressionParser}
 
-case class MatchesExpression(left: Expression, right: Expression) extends Expression
+case class MatchesExpression(left: Expression, right: Expression) extends RegexExpression
 
 object MatchesExpression extends ExpressionParser {
 

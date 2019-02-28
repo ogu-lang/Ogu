@@ -4,7 +4,9 @@ import lexer.{CONS, NL, TokenStream}
 import parser.ast.expressions.arithmetic.AddExpression
 import parser.ast.expressions.{Expression, RightAssociativeExpressionParser}
 
-case class ConsExpression(args: List[Expression]) extends Expression
+
+
+case class ConsExpression(args: List[Expression]) extends ListOpExpresion
 
 object ConsExpression extends RightAssociativeExpressionParser(AddExpression, CONS) {
 

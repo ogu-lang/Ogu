@@ -4,7 +4,7 @@ import lexer.{BIND, TokenStream}
 import parser.InvalidExpression
 import parser.ast.expressions.{Expression, ExpressionParser}
 
-case class BindDeclExpression(decls: List[Variable], inExpr: Expression) extends Expression
+case class BindDeclExpression(decls: List[LetVariable], inExpr: Expression) extends Expression
 
 object BindDeclExpression extends ExpressionParser {
 

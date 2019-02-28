@@ -2,13 +2,14 @@ package parser.ast.decls
 
 import lexer._
 import parser.ast.expressions._
-import parser.ast.expressions.Expression
 import parser.ast.expressions.logical.LogicalExpression
 
 trait DefBodyGuardExpr
 
 case class DefBodyGuardExpression(comp: Expression, body: Expression) extends DefBodyGuardExpr
 case class DefBodyGuardOtherwiseExpression(body: Expression) extends DefBodyGuardExpr
+
+
 case class BodyGuardsExpresion(guards: List[DefBodyGuardExpr]) extends Expression
 case class BodyGuardsExpresionAndWhere(guards: List[DefBodyGuardExpr], whereBlock: WhereBlock) extends Expression
 

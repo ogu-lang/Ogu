@@ -4,7 +4,7 @@ import lexer.{CONTAINS, NL, TokenStream}
 import parser.ast.expressions.regexp.MatchesExpression
 import parser.ast.expressions.{Expression, ExpressionParser}
 
-case class ContainsExpr(val left: Expression, val right: Expression) extends Expression
+case class ContainsExpr(val left: Expression, val right: Expression) extends ListOpExpresion
 
 object ContainsExpr extends ExpressionParser {
 

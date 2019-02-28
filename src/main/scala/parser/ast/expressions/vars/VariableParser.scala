@@ -9,7 +9,7 @@ import scala.annotation.tailrec
 
 object VariableParser {
 
-  def parseListOfLetVars(tokens: TokenStream, token: TOKEN): List[Variable] = {
+  def parseListOfLetVars(tokens: TokenStream, token: TOKEN): List[LetVariable] = {
     tokens.consume(token)
     tokens.consumeOptionals(NL)
     val initIndent = if (tokens.peek(INDENT)) { tokens.consume(INDENT); 1 } else 0
@@ -39,7 +39,7 @@ object VariableParser {
 
   @tailrec
   private[this]
-  def parseListOfLetVars(tokens: TokenStream, indent: Int, vars: List[Variable]) : (Int, List[Variable]) = {
+  def parseListOfLetVars(tokens: TokenStream, indent: Int, vars: List[LetVariable]) : (Int, List[LetVariable]) = {
     if (!tokens.peek(COMMA)) {
       (indent, vars.reverse)
     }
@@ -57,7 +57,7 @@ object VariableParser {
   }
 
 
-  private[this] def parseLetVar(tokens:TokenStream) : Variable = {
+  private[this] def parseLetVar(tokens:TokenStream) : LetVariable = {
     tokens.consumeOptionals(NL)
     val id = parseLetId(tokens)
     tokens.consume(ASSIGN)

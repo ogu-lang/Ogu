@@ -22,7 +22,7 @@ object WhereDef {
       case ASSIGN =>
         tokens.consume(ASSIGN)
         val body = parsePipedOrBodyExpression(tokens)
-        if (1 == listOfIds.size )
+        if (1 == listOfIds.size)
           WhereDefSimple(listOfIds.head, listOfArgs, body)
         else
           WhereDefTupled(listOfIds, listOfArgs, body)

@@ -4,7 +4,7 @@ import lexer.PLUS_PLUS
 import parser.ast.expressions.{Expression, LeftAssociativeExpressionParser}
 import parser.ast.expressions.arithmetic.MultiplyExpression
 
-case class ConcatExpression(args: List[Expression]) extends Expression
+case class ConcatExpression(args: List[Expression]) extends ListOpExpresion
 
 object ConcatExpression extends LeftAssociativeExpressionParser(MultiplyExpression, PLUS_PLUS) {
 
