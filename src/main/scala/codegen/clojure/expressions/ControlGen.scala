@@ -8,6 +8,18 @@ import parser.ast.expressions.control._
 
 object ControlGen {
 
+  implicit object LoopGuardTranslator extends Translator[LoopGuard] {
+
+    override def mkString(node: LoopGuard): String = {
+      node match {
+        case WhileGuardExpr(comp) =>
+          s"when ${CodeGenerator.buildString(comp)}"
+
+        case UntilGuardExpr(comp) =>
+          s"when-not ${CodeGenerator.buildString(comp)}"
+      }
+    }
+  }
 
   implicit object ControlExpressionTranslator extends Translator[ControlExpression] {
 
@@ -25,9 +37,24 @@ object ControlGen {
             s"(${mkString(IfExpression(ep.comp, ep.body, tail, elsePart))}))"
 
 
+        case LoopExpression(variables, None, body) =>
+          s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n ${CodeGenerator.buildString(body)})"
+
+        case LoopExpression(variables, Some(guard), body) =>
+          s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n" +
+            s"   (${CodeGenerator.buildString(guard)} ${CodeGenerator.buildString(body)}))"
+
+        case RepeatExpresion(Some(newValues)) =>
+          s"(let [${newValues.map(toClojureNewVarValue).mkString(" ")}]" +
+          s"(recur ${newValues.map(nv => nv.variable).mkString(" ")}))"
+
+
+        case WhenExpression(comp, body) =>
+          s"(when ${CodeGenerator.buildString(comp)}\n\t${CodeGenerator.buildString(body)})"
+
+
         case WhileExpression(comp, body) =>
           s"(while ${CodeGenerator.buildString(comp)} ${CodeGenerator.buildString(body)})"
-
 
         case SimpleAssignExpression(ArrayAccessExpression(array, index), value) =>
           s"(aset ${CodeGenerator.buildString(array)} ${CodeGenerator.buildString(index)} ${CodeGenerator.buildString(value)})"
@@ -42,5 +69,19 @@ object ControlGen {
 
       }
     }
+
+
+    private[this] def toClojureLoopVar(variable: LoopDeclVariable): String = {
+      variable match {
+        case LoopVarDecl(id, initialValue) => s"$id ${CodeGenerator.buildString(initialValue)}"
+      }
+    }
+
+
+    private[this] def toClojureNewVarValue(variable: RepeatNewVarValue): String = {
+      s"${variable.variable} ${CodeGenerator.buildString(variable.value)}"
+    }
+
+
   }
 }

@@ -3,7 +3,7 @@ package codegen.clojure.expressions
 import codegen.{CodeGenerator, Translator}
 import parser.ast.expressions.functions._
 import codegen.clojure.expressions.ExpressionsGen._
-import parser.ast.expressions.types.NewCallExpression
+import parser.ast.expressions.types.{ConstructorExpression, NewCallExpression, RecordConstructorExpression}
 import parser.ast.expressions.{CallExpression, LambdaArg, LambdaSimpleArg, LambdaTupleArg}
 
 object FunctionsGen {
@@ -22,6 +22,12 @@ object FunctionsGen {
           s"(->> ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
         case FunctionCallWithDollarExpression(func, args) =>
           s"(${CodeGenerator.buildString(func)} ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
+
+        case ConstructorExpression(cls, args) =>
+          s"($cls. ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
+
+        case RecordConstructorExpression(cls, args) =>
+          s"(->$cls ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
 
         case NewCallExpression(cls, Nil) =>
           s"($cls.)"

@@ -1,12 +1,14 @@
 package codegen.clojure.module
 
+import codegen.clojure.decls.DeclGen._
+import codegen.clojure.expressions.ExpressionsGen._
+import codegen.clojure.types.TypeGen._
 import codegen.{CodeGenerator, Translator}
 import parser.ast.LangNode
 import parser.ast.expressions.TopLevelExpression
 import parser.ast.module._
-import codegen.clojure.decls.DeclGen._
-import codegen.clojure.expressions.ExpressionsGen._
 import parser.ast.decls.{MultiDefDecl, SimpleDefDecl}
+import parser.ast.types.{ClassDecl, ExtendsDecl, TraitDecl}
 
 import scala.annotation.tailrec
 
@@ -91,9 +93,12 @@ object ModuleGen {
     }
     else {
       val s = nodes.head match {
-        case e:TopLevelExpression => CodeGenerator.buildString(e)
-        case sd: SimpleDefDecl => CodeGenerator.buildString(sd)
+        case cd: ClassDecl => CodeGenerator.buildString(cd)
+        case ed: ExtendsDecl => CodeGenerator.buildString(ed)
         case md: MultiDefDecl => CodeGenerator.buildString(md)
+        case sd: SimpleDefDecl => CodeGenerator.buildString(sd)
+        case tl:TopLevelExpression => CodeGenerator.buildString(tl)
+        case td: TraitDecl => CodeGenerator.buildString(td)
         case _ => s"**ERROR (${nodes.head.getClass})**"
       }
       genDecls(nodes.tail, s :: strs )

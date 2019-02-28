@@ -67,7 +67,7 @@ object DeclGen {
           strBuf ++= s"(def _*temp*_ ${CodeGenerator.buildString(body)})\n"
           var i = 0
           for (id <- idList) {
-            strBuf ++= s"(def ${id} (nth _*temp*_ $i))\n"
+            strBuf ++= s"(def $id (nth _*temp*_ $i))\n"
             i += 1
           }
           strBuf.toString()
@@ -82,6 +82,7 @@ object DeclGen {
     }
 
   }
+
 
   implicit object SimpleDefDeclTranslator extends Translator[SimpleDefDecl] {
 
@@ -224,6 +225,8 @@ object DeclGen {
       strBuf.mkString
     }
 
+
+
     private[this] def whereDefAsLet(whereDef: WhereDef): String = {
       whereDef match {
         case WhereDefSimple(id, None, body) => s"$id ${CodeGenerator.buildString(body)}"
@@ -241,6 +244,16 @@ object DeclGen {
             i += 1
           }
           strBuf.toString()
+      }
+    }
+  }
+
+  implicit object DefDeclTranslator extends Translator[DefDecl] {
+
+    override def mkString(node: DefDecl): String = {
+      node match {
+        case sd: SimpleDefDecl => CodeGenerator.buildString(sd)
+        case md: MultiDefDecl => CodeGenerator.buildString(md)
       }
     }
   }

@@ -17,33 +17,11 @@ import parser.ast.module._
           strBuf ++= toClojure(node)
         }
 
-      case TopLevelExpression(expression) =>
-        strBuf ++= toClojure(expression) + "\n"
 
       case RecordDecl(name, args) =>
         strBuf ++= s"(defrecord $name [${args.mkString(" ")}])\n"
 
-      case ClassDecl(_, name, args, traits) =>
-        strBuf ++= s"(deftype $name [${args.getOrElse(List.empty[String]).mkString(" ")}]\n"
-        if (traits.nonEmpty) {
-          strBuf ++= s"\t${traits.map(toClojure).mkString("\n\t")}"
-        }
-        strBuf ++= ")\n\n"
 
-      case TraitDef(traitName, methods) =>
-        strBuf ++= s"$traitName\n"
-        for (method <- methods) {
-          val s = toClojure(method.definition).replaceFirst("\\(defn\\s+", "\t(")
-          strBuf ++= s
-        }
-
-      case ExtendsDecl(cls, traitClass, methods) =>
-        strBuf ++= s"(extend-type $cls $traitClass"
-        for (method <- methods.getOrElse(List.empty)) {
-          val s = toClojure(method.definition).replaceFirst("\\(defn\\s+", "\t(")
-          strBuf ++= s
-        }
-        strBuf ++= ")\n\n"
 
       case ReifyExpression(name, methods) =>
         strBuf ++= s"(reify $name\n"
@@ -130,39 +108,17 @@ import parser.ast.module._
 
 
 
-      case LoopExpression(variables, None, body) =>
-        strBuf ++= s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n ${toClojure(body)})"
 
-      case LoopExpression(variables, Some(guard), body) =>
-        strBuf ++= s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n" +
-          s"   (${toClojure(guard)} ${toClojure(body)}))"
-
-      case WhileGuardExpr(comp) =>
-        strBuf ++= s"when ${toClojure(comp)}"
-
-      case UntilGuardExpr(comp) =>
-        strBuf ++= s"when-not ${toClojure(comp)}"
-
-      case RepeatExpresion(Some(newValues)) =>
-        strBuf ++= s"(let [${newValues.map(toClojureNewVarValue).mkString(" ")}]"
-        strBuf ++= s"(recur ${newValues.map(nv => nv.variable).mkString(" ")}))"
 
 
       case CondExpression(guards) =>
         strBuf ++= s"(cond\n\t${guards.map(toClojureCondGuard).mkString("\n\t")})"
 
-      case WhenExpression(comp, body) =>
-        strBuf ++= s"(when ${toClojure(comp)}\n ${toClojure(body)})"
 
 
       case RecurExpression(args) =>
         strBuf ++= s"(recur ${args.map(toClojure).mkString(" ")})"
 
-      case ConstructorExpression(cls, args) =>
-        strBuf ++= s"($cls. ${args.map(toClojure).mkString(" ")})"
-
-      case RecordConstructorExpression(cls, args) =>
-        strBuf ++= s"(->$cls ${args.map(toClojure).mkString(" ")})"
 
       case NewCallExpression(cls, args) if args.isEmpty =>
         strBuf ++= s"($cls.)"
@@ -210,12 +166,7 @@ import parser.ast.module._
       case ThrowExpression(ctor) =>
         strBuf ++= s"(throw ${toClojure(ctor)})"
 
-      case TraitDecl(_, name, decls) =>
-        strBuf ++= s"(defprotocol $name\n"
-        for (decl <- decls) {
-          strBuf ++= s"\t(${decl.name} [${decl.args.mkString(" ")}])\n"
-        }
-        strBuf ++= ")\n\n"
+
 
       case _ =>
         strBuf ++= node.toString
@@ -225,18 +176,6 @@ import parser.ast.module._
 
 
 
-
-  def toClojureLoopVar(variable: LoopDeclVariable): String = {
-    variable match {
-      case LoopVarDecl(id, initialValue) => s"$id ${toClojure(initialValue)}"
-      case _ => ???
-    }
-  }
-
-
-  def toClojureNewVarValue(variable: RepeatNewVarValue): String = {
-    s"${variable.variable} ${toClojure(variable.value)}"
-  }
 
 
 
