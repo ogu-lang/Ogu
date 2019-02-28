@@ -33,6 +33,12 @@ object VariableParser {
         val result = parseInBodyExpr(tokens)
         tokens.consume(DEDENT)
         result
+      case INDENT if tokens.peek(2, IN)  =>
+        tokens.consume(INDENT)
+        val result = parseInBodyExpr(tokens)
+        tokens.consumeOptionals(NL)
+        tokens.consume(DEDENT)
+        result
       case _ => None
     }
   }

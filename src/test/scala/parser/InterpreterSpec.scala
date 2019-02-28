@@ -2,7 +2,13 @@ package parser
 
 import backend.Backend
 import clojure.lang
+import interpreter.Interpreter
+import lexer.Lexer
 import org.scalatest.{FlatSpec, Matchers}
+import parser.ast.LangNode
+import parser.ast.module.Module
+
+import scala.util.{Failure, Success, Try}
 
 
 class InterpreterSpec extends FlatSpec with Matchers {
@@ -10,6 +16,17 @@ class InterpreterSpec extends FlatSpec with Matchers {
   def run(oguScript: String): AnyRef = {
     val stream = getClass.getResourceAsStream(oguScript)
     Backend.compileStream(oguScript, stream)
+  }
+
+  def compile(oguScript: String) : Try[_] = {
+    val lexer = new Lexer()
+    val tryScan = lexer.scan(oguScript, getClass.getResourceAsStream(oguScript))
+    tryScan match {
+      case Success(tokens) =>
+        val parser = new Parser(oguScript, tokens)
+        Success(parser.parse())
+      case Failure(exception) => Failure(exception)
+    }
   }
 
   private[this] def toList(anyRef: AnyRef) = {
@@ -41,6 +58,10 @@ class InterpreterSpec extends FlatSpec with Matchers {
 
   def bigInt(value: String): lang.BigInt = lang.BigInt.fromBigInteger(new java.math.BigInteger(value))
 
+
+  "An compiler" should "compile demo files" in {
+    compile("/demos/black-jack.ogu") should be (Success(Module))
+  }
 
   "An Interpreter" should "run misc files" in {
     run("/misc/test0.ogu") should be (null)
@@ -93,6 +114,8 @@ class InterpreterSpec extends FlatSpec with Matchers {
     run("/misc/test36.ogu") should be (null)
     toList(run("/misc/test37.ogu")) should be (List(22, 21))
     run("/misc/test38.ogu") should be (30)
+    run("/misc/test39.ogu") should be (10)
+    run("/misc/test40.ogu") should be (80)
   }
 
   "An Interpeter" should "run alg files" in {

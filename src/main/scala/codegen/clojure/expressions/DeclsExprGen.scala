@@ -102,6 +102,7 @@ object DeclsExprGen {
       for (v <- decls) {
         v match {
           case LetVariable(LetSimpleId(id), _) => varDecls = varDecls - id
+          case _ =>
         }
       }
     }

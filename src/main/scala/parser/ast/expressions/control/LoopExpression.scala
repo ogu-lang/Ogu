@@ -62,7 +62,7 @@ object LoopExpression extends ExpressionParser {
       tokens.consume(ASSIGN)
       LoopVarDecl(id.value, ForwardPipeFuncCallExpression.parse(tokens))
     } else {
-      throw UnexpectedTokenClassException()
+      throw UnexpectedTokenClassException(tokens.nextToken())
     }
   }
 

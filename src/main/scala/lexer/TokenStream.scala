@@ -89,7 +89,8 @@ case class TokenStream(var tokens: List[TOKEN]) {
       result.asInstanceOf[T]
     }
     else {
-      throw UnexpectedTokenClassException()
+      println(s"!!!@@@${tokens}")
+      throw UnexpectedTokenClassException(tokens.head)
     }
   }
 

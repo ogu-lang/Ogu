@@ -16,7 +16,8 @@ object FunctionCallExpression extends ExpressionParser {
     else if (tokens.peek(classOf[ATOM])) {
       Atom.parse(tokens)
     } else {
-      throw InvalidExpression()
+      println(s"@@@@!!!${tokens}")
+      throw InvalidExpression(tokens.nextToken())
     }
     if (funcCallEndToken(tokens)) {
       expr

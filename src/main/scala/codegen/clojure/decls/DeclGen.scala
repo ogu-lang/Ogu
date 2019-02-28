@@ -130,30 +130,36 @@ object DeclGen {
   implicit object SimpleDefDeclTranslator extends Translator[SimpleDefDecl] {
 
     override def mkString(node: SimpleDefDecl): String = {
-      node match {
-        case SimpleDefDecl(inner, id, args, BodyGuardsExpresion(guards), None) =>
-          val conds = s"\t(cond\n${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")})"
-          if (inner) {
-            s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t$conds)"
-          } else {
-            s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t$conds)"
-          }
+      if (node.isMulti()) {
+        // special case, a single multimethod
+        MultiDefDeclTranslator.mkString(MultiDefDecl(node.id, List(node)))
+      }
+      else {
+        node match {
+          case SimpleDefDecl(inner, id, args, BodyGuardsExpresion(guards), None) =>
+            val conds = s"\t(cond\n${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")})"
+            if (inner) {
+              s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t$conds)"
+            } else {
+              s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t$conds)"
+            }
 
-        case SimpleDefDecl(inner, id, args, body, None) =>
-          if (inner) {
-            s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t\t${CodeGenerator.buildString(body)})\n\n"
-          } else {
-            s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t\t${CodeGenerator.buildString(body)})\n\n"
-          }
+          case SimpleDefDecl(inner, id, args, body, None) =>
+            if (inner) {
+              s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t\t${CodeGenerator.buildString(body)})\n\n"
+            } else {
+              s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t\t${CodeGenerator.buildString(body)})\n\n"
+            }
 
-        case SimpleDefDecl(inner, id, args, body, Some(whereBlock)) =>
-          if (inner) {
-            s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n" +
-              s"\t\t${CodeGenerator.buildString(whereBlock)}\n    ${CodeGenerator.buildString(body)})\n\n"
-          } else {
-            s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n" +
-              s"\t\t${CodeGenerator.buildString(whereBlock)}\n    ${CodeGenerator.buildString(body)})\n\n"
-          }
+          case SimpleDefDecl(inner, id, args, body, Some(whereBlock)) =>
+            if (inner) {
+              s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n" +
+                s"\t\t${CodeGenerator.buildString(whereBlock)}\n    ${CodeGenerator.buildString(body)})\n\n"
+            } else {
+              s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n" +
+                s"\t\t${CodeGenerator.buildString(whereBlock)}\n    ${CodeGenerator.buildString(body)})\n\n"
+            }
+        }
       }
     }
 
