@@ -1,12 +1,21 @@
 package codegen.clojure.expressions
 
 import codegen.{CodeGenerator, Translator}
-import codegen.clojure.expressions.FunctionsGen._
+import codegen.clojure.expressions.ArithmeticsGen._
+import codegen.clojure.expressions.ComparativeGen._
 import codegen.clojure.expressions.DeclsGen._
+import codegen.clojure.expressions.FunctionsGen._
+import codegen.clojure.expressions.LiteralsGen._
+import codegen.clojure.expressions.PartialOperGen._
+import codegen.clojure.expressions.RangeGen._
 import parser.ast.expressions._
-import parser.ast.expressions.functions.FunctionCallExpression
-import parser.ast.expressions.literals.StringLiteral
+import parser.ast.expressions.arithmetic.PartialOper
+import parser.ast.expressions.comparisons.ComparativeExpression
+import parser.ast.expressions.functions.LambdaExpression
+import parser.ast.expressions.literals.{LiteralExpression, StringLiteral}
+import parser.ast.expressions.types.ValidRangeExpression
 import parser.ast.expressions.vars.LetDeclExpression
+
 
 object ExpressionsGen {
 
@@ -17,9 +26,14 @@ object ExpressionsGen {
       node match {
         case Identifier(name) => name
         case StringLiteral(value) => value
-        case f: FunctionCallExpression => CodeGenerator.buildString(f)
+        case ce: CallExpression => CodeGenerator.buildString(ce)
+        case ce: ComparativeExpression => CodeGenerator.buildString(ce)
+        case le: LambdaExpression => CodeGenerator.buildString(le)
         case ld: LetDeclExpression => CodeGenerator.buildString(ld)
-        case ae:
+        case po: PartialOper => CodeGenerator.buildString(po)
+        case ae: ArithmeticExpression => CodeGenerator.buildString(ae)
+        case le: LiteralExpression => CodeGenerator.buildString(le)
+        case re: ValidRangeExpression => CodeGenerator.buildString(re)
         case _ => s"EXPRESSION(${node.getClass})"
       }
     }

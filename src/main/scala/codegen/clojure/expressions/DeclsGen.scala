@@ -28,7 +28,7 @@ object DeclsGen {
            }.mkString(" ")
        case LetDeclExpression(decls, None) =>
          decls.map{
-           decl => s"(def ${CodeGenerator.buildString(decl.id)} ${CodeGenerator.buildString(decl.value)}"
+           decl => s"(def ${CodeGenerator.buildString(decl.id)} ${CodeGenerator.buildString(decl.value)})"
          }.mkString("\n")
      }
     }

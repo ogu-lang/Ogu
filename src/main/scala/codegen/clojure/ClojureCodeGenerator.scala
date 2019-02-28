@@ -189,23 +189,12 @@ import parser.ast.module._
       case ArrayAccessExpression(array, index) =>
         strBuf ++= s"(aget ${toClojure(array)} ${toClojure(index)})"
 
-      case RangeExpression(ini, end) =>
-        strBuf ++= s"(range ${toClojure(ini)} (inc ${toClojure(end)}))"
 
-      case RangeExpressionUntil(ini, end) =>
-        strBuf ++= s"(range ${toClojure(ini)} ${toClojure(end)})"
-
-      case RangeWithIncrementExpression(ini,inc, end) =>
-        strBuf ++= s"(range ${toClojure(ini)} (inc ${toClojure(end)}) ${toClojure(inc)})"
-
-      case RangeWithIncrementExpressionUntil(ini,inc, end) =>
-        strBuf ++= s"(range ${toClojure(ini)} ${toClojure(end)} ${toClojure(inc)})"
 
       case SetExpression(elements) =>
         strBuf ++= s"#{${elements.map(toClojure).mkString(" ")}}"
 
-      case EmptyListExpresion() =>
-        strBuf ++= "[]"
+
 
       case ListExpression(listOfExpr, None) =>
         strBuf ++= s"[${listOfExpr.map(toClojure).mkString(" ")}]"
@@ -278,23 +267,8 @@ import parser.ast.module._
         strBuf ++= s"($cls.)"
 
 
-      case FunctionCallWithDollarExpression(func, args) =>
-        strBuf ++= s"(${toClojure(func)} ${args.map(toClojure).mkString(" ")})"
 
-      case EqualsExpression(args) =>
-        strBuf ++= s"(= ${args.map(toClojure).mkString(" ")})"
 
-      case GreaterThanExpression(args) =>
-        strBuf ++= s"(> ${args.map(toClojure).mkString(" ")})"
-
-      case GreaterOrEqualThanExpression(args) =>
-        strBuf ++= s"(>= ${args.map(toClojure).mkString(" ")})"
-
-      case LessThanExpression(args) =>
-        strBuf ++= s"(< ${args.map(toClojure).mkString(" ")})"
-
-      case LessOrEqualThanExpression(args) =>
-        strBuf ++= s"(<= ${args.map(toClojure).mkString(" ")})"
 
       case ConcatExpression(args) =>
         strBuf ++= s"(concat ${args.map(toClojure).mkString(" ")})"
@@ -302,62 +276,15 @@ import parser.ast.module._
       case ConsExpression(args) =>
         strBuf ++= s"(cons ${args.map(toClojure).mkString(" ")})"
 
-      case LambdaExpression(args, expr) =>
-        strBuf ++= s"(fn [${args.map(toClojureLambdaArg).mkString(" ")}] ${toClojure(expr)})"
-
       case LogicalAndExpression(args) =>
         strBuf ++= s"(and ${args.map(toClojure).mkString(" ")})"
 
       case LogicalOrExpression(args) =>
         strBuf ++= s"(or ${args.map(toClojure).mkString(" ")})"
 
-      case PartialAdd(args) =>
-        if (args.isEmpty) strBuf ++= "+" else strBuf ++= s"(+ ${args.map(toClojure).mkString(" ")})"
 
-      case PartialSub(args) =>
-        if (args.isEmpty) strBuf ++= "-" else strBuf ++= s"(- ${args.map(toClojure).mkString(" ")})"
 
-      case PartialMul(args) =>
-        if (args.isEmpty) strBuf ++= "*'" else strBuf ++= s"(* ${args.map(toClojure).mkString(" ")})"
 
-      case PartialDiv(args) =>
-        if (args.isEmpty) strBuf ++= "/" else strBuf ++= s"(/ ${args.map(toClojure).mkString(" ")})"
-
-      case PartialMod(args) =>
-        if (args.isEmpty) strBuf ++= "%'" else strBuf ++= s"(% ${args.map(toClojure).mkString(" ")})"
-
-      case PartialEQ(args) =>
-        if (args.isEmpty) strBuf ++= "=" else strBuf ++= s"(= ${args.map(toClojure).mkString(" ")})"
-
-      case PartialNE(args) =>
-        if (args.isEmpty) strBuf ++= "not=" else strBuf ++= s"(not= ${args.map(toClojure).mkString(" ")})"
-
-      case PartialLT(args) =>
-        if (args.isEmpty) strBuf ++= "<" else strBuf ++= s"(< ${args.map(toClojure).mkString(" ")})"
-
-      case PartialLE(args) =>
-        if (args.isEmpty) strBuf ++= "<=" else strBuf ++= s"(<= ${args.map(toClojure).mkString(" ")})"
-
-      case PartialGT(args) =>
-        if (args.isEmpty) strBuf ++= ">" else strBuf ++= s"(> ${args.map(toClojure).mkString(" ")})"
-
-      case PartialGE(args) =>
-        if (args.isEmpty) strBuf ++= ">=" else strBuf ++= s"(>= ${args.map(toClojure).mkString(" ")})"
-
-      case PartialCons(args) =>
-        if (args.isEmpty) strBuf ++= "cons" else strBuf ++= s"(cons ${args.map(toClojure).mkString(" ")})"
-
-      case PartialConcat(args) =>
-        if (args.isEmpty) strBuf ++= "concat" else strBuf ++= s"(concat ${args.map(toClojure).mkString(" ")})"
-
-      case ForwardPipeFuncCallExpression(args) =>
-        strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})"
-
-      case ForwardPipeFirstArgFuncCallExpression(args) =>
-        strBuf ++= s"(-> ${args.map(toClojure).mkString(" ")})"
-
-      case BackwardPipeFuncCallExpression(args) =>
-        strBuf ++= s"(->> ${args.map(toClojure).mkString(" ")})"
 
       case SimpleAssignExpression(ArrayAccessExpression(array, index), value) =>
         strBuf ++= s"(aset ${toClojure(array)} ${toClojure(index)} ${toClojure(value)})"
@@ -520,8 +447,7 @@ import parser.ast.module._
       case LazyExpression(expr) =>
         strBuf ++= s"(lazy-seq ${toClojure(expr)})"
 
-      case InfiniteRangeExpression(init) =>
-        strBuf ++= s"(-range-to-inf ${toClojure(init)})"
+
 
       case TryExpression(body, catches, finExpr) =>
         strBuf ++= s"(try ${toClojure(body)}\n"
@@ -587,13 +513,6 @@ import parser.ast.module._
     guard match {
       case DefBodyGuardExpression(comp, expr) => s"\t${toClojure(comp)} ${toClojure(expr)}"
       case DefBodyGuardOtherwiseExpression(expr) => s"\t:else ${toClojure(expr)}"
-      case _ => ???
-    }
-  }
-
-  def toClojureLambdaArg(lambdaArg: LambdaArg): String = {
-    lambdaArg match {
-      case LambdaSimpleArg(id) => id
       case _ => ???
     }
   }

@@ -15,7 +15,7 @@ case class RangeExpressionUntil(rangeInit:Expression, rangeEnd:Expression) exten
 case class RangeWithIncrementExpression(rangeInit:Expression, rangeIncrement: Expression, rangeEnd:Expression) extends ValidRangeExpression
 case class RangeWithIncrementExpressionUntil(rangeInit:Expression, rangeIncrement: Expression, rangeEnd:Expression) extends ValidRangeExpression
 case class InfiniteRangeExpression(rangeInit: Expression) extends ValidRangeExpression
-case class InfiniteRangeWithIncrementExpression(rangeInit: Expression, rangeIncrement: Expression)
+case class InfiniteRangeWithIncrementExpression(rangeInit: Expression, rangeIncrement: Expression) extends ValidRangeExpression
 case class EmptyListExpresion() extends ValidRangeExpression
 
 trait ListGuard
