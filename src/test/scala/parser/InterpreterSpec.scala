@@ -60,7 +60,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
 
 
   "An compiler" should "compile demo files" in {
-    compile("/demos/black-jack.ogu") should be (Success(Module))
+    compile("/demos/black-jack.ogu") should not be(Failure(new Exception))
   }
 
   "An Interpreter" should "run misc files" in {
@@ -116,6 +116,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
     run("/misc/test38.ogu") should be (30)
     run("/misc/test39.ogu") should be (10)
     run("/misc/test40.ogu") should be (80)
+    run("/demos/black-jack.ogu") should be(10)
   }
 
   "An Interpeter" should "run alg files" in {

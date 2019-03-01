@@ -5,6 +5,7 @@ import codegen.clojure.expressions.ExpressionsGen._
 import parser.ast.decls._
 import parser.ast.expressions.{Expression, Identifier}
 import parser.ast.expressions.list_ops.ConsExpression
+import parser.ast.expressions.literals.LiteralExpression
 import parser.ast.expressions.types._
 
 object DeclGen {
@@ -106,6 +107,9 @@ object DeclGen {
         case WhereDefWithGuards(id, Some(args), guards) =>
           s"(def $id (fn [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}] \n" +
             s"(cond ${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")})))"
+        case WhereDefWithGuards(id, None, guards) =>
+          s"(def $id  \n" +
+            s"(cond ${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")}))"
         case WhereDefTupled(idList, None, body) =>
           var strBuf = new StringBuilder()
           strBuf ++= s"(def _*temp*_ ${CodeGenerator.buildString(body)})\n"
@@ -234,6 +238,15 @@ object DeclGen {
                   letDecls = argDecls.reverse ++ letDecls
                 case DefArg(IdIsType(_, cls)) =>
                   andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
+
+                case DefArg(TupleExpression(List(lit:Expression, Identifier("_"))))  =>
+                  lit match {
+                    case Identifier(n) =>
+                      andList = s":else " :: andList
+                      letDecls = s"[$n & _] ${namedArgs.head}" :: letDecls
+                    case _ =>
+                      andList = s"\t\t(= (head ${namedArgs.head}) ${CodeGenerator.buildString(lit)})" :: andList
+                  }
 
                 case DefArg(exp: Expression) =>
                   andList = s"\t\t(= ${namedArgs.head} ${CodeGenerator.buildString(exp)})" :: andList

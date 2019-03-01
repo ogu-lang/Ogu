@@ -18,7 +18,7 @@ class Lexer {
 
   def scanLine(inputLine: String, lineNumber: Int): List[TOKEN] = {
     // remove comments
-    val withComments = inputLine.split("--")
+    val withComments = splitComments(inputLine)
     val textLine = withComments.head
     val len = textLine.length
     val (iniCol, indents) = scanIndentation(textLine, lineNumber, len)
@@ -35,6 +35,30 @@ class Lexer {
     else
       tokens
     result.filter(t => t != SKIP)
+  }
+
+  private[this] def splitComments(line: String) : List[String] = {
+    var result = List.empty[String]
+    var insideString = false
+    var commentFound = -1
+    var pos = 0
+    while (pos < line.length && commentFound < 0) {
+      if (line(pos) == '-' && (pos+1) < line.length && line(pos+1) == '-' && !insideString) {
+        commentFound = pos
+      }
+      if (line(pos) == '"') {
+        insideString = !insideString
+      }
+      if (line(pos) == '\\') {
+        pos += 1
+      }
+      pos += 1
+    }
+    if (commentFound >= 0) {
+      List(line.substring(0, commentFound), line.substring(commentFound))
+    } else {
+      List(line)
+    }
   }
 
   def splitLine(str: String, currentLine: Int): List[TOKEN] = {

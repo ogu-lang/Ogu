@@ -8,6 +8,6 @@ case class BackwardPipeFuncCallExpression(args: List[Expression]) extends CallEx
 object BackwardPipeFuncCallExpression
   extends LeftAssociativeExpressionParser(BackwardPipeFirstArgFuncCallExpression, PIPE_LEFT) {
 
-  override def build(args: List[Expression]): Expression = BackwardPipeFuncCallExpression(args)
+  override def build(args: List[Expression]): Expression = BackwardPipeFuncCallExpression(args.reverse)
 
 }
