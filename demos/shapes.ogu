@@ -1,58 +1,52 @@
 
-trait Shape is
+trait Shape
 
     def area self
 
-trait Widget is
+trait Widget
 
      def draw! self
 
      def move! self x y
 
-trait Origin is
+trait Origin
 
-     getX self
-     getY self
+     def getX self
+     def getY self
 
-class Circle (var x,  var y, val radius)
+class Circle (x, y, radius)
 
-  as Shape
+  extends Shape
 
-      area self = pi * (!self.radius ^ 2)
+      def area self = pi * (self.radius ^ 2)
 
-  as Widget
+  extends Widget
 
       def draw! self = println! "draw a circle at (" x ", " y ") with radius " radius
 
-      def move! self new-x new-y = begin
-            !x = new-x
-            !y = new-y
-           draw! self
-      end
+      def move! self new-x new-y =
+            Circle(new-x, new-y, self.radius)
 
-  as Origin
+  extends Origin
 
      def getX self = x
 
      def getY self = y
 
 
-class Rectangle( x,  y, width, height)
+class Rectangle (x,  y, width, height)
 
 
-extend Rectangle
+extends Rectangle with Shape
 
-  as Shape
+     def area self = (.width self) * (.height self)
 
-     area self = (.width self) * (.height self)
+extends Rectangle  with Widget
 
-  as Widget
+     def draw! self = println! "draw a rectangle at (" self.x  ", " self.y   ") with width = " (.width self) " and height = " (.height self)
 
-     draw! self = println! "draw a rectangle at (" !self.x  ", " !self.y   ") with width = " (.width self) " and height = " (.height self)
-
-     def move! self new-x new-y = begin
+     def move! self new-x new-y =
            draw! self
-      end
 
 def show-area! shape : Rectangle = println! "el area de un rectangulo es " (area shape) " y es de tipo " (typeof shape )
 
@@ -73,5 +67,5 @@ show-area! rec
 (move! cir 20 20)
 
 
-println!  (getX cir) (getY cir) !cir.radius
+println!  (getX cir) (getY cir) cir.radius
 

@@ -2,6 +2,4 @@ let date = #2017-02-26
 
 let timestamp = #2017-02-26T04:03:30
 
-let (year, month, date), uno = extractDateParts date, 1
-
 .getYear date

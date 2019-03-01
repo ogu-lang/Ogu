@@ -2,6 +2,6 @@ for i in [0 .. 1000] do
     if i % 3 == 0 then
         println! #"${i} FIZZ"
     elif i % 5 == 0 then
-        println! #"{$i} BUZZ"
+        println! #"${i} BUZZ"
     else
         println! i

@@ -1,6 +1,6 @@
 
 def rev num =
-    loop  reversed = 0, n = num in
+    loop  reversed = 0, n = num do
         if zero? n then
             reversed
         else

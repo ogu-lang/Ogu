@@ -1,6 +1,0 @@
-def valor-mano? mano
-   | ases && (valor + 10) <= 21 = valor + 10
-   | otherwise = valor
-   where
-        valor = mano |> map valor-carta |> sum
-        ases  = mano |> filter \(v, p) -> v == 'A' |> not-empty?

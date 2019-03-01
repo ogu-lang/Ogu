@@ -1,23 +1,20 @@
 def primes n =
-    let root = n |> math.sqrt |> int
+    let root = n |> Math.sqrt |> int
     let sieve = boolean-array n true
-    for i in [2 .. root - 1] do
+    for i in [2 ..< root ] do
         when sieve @ i then
           loop j = i * 2 while j < n do
-            sieve @ j = false
+            set sieve @ j = false
             repeat with j = j + i
     filter (\i -> sieve @ i) [2 .. n - 1]
 
 def calc-limit n = (int (n * logsum)) + 3
-    where log = math.log n
-          loglog = math.log log
+    where log = Math.log n
+          loglog = Math.log log
           logsum = log + loglog
 
-def nth_prime 1 = dos
-def nth_prime 2 = tres
-def nth_prime n = calc-limit n |> primes |> take n |> last
-    where
-        dos = 2
-        tres = 3
+def nth-prime 1 = 2
+def nth-prime 2 = 3
+def nth-prime n = calc-limit n |> primes |> take n |> last
 
 println! <| nth-prime 10001

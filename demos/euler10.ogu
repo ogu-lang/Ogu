@@ -2,19 +2,16 @@
 def primes n =
     let root =  n |> Math.sqrt |> int,
         sieve = boolean-array! n true
-    in begin
-        loop i = 2 in
-            when i < root do begin
-                when aget sieve i do
-                    loop j = i * 2 in
-                       when j < n do begin
+    in
+        loop i = 2 do
+            when i < root then
+                when aget sieve i then
+                    loop j = i * 2 do
+                       when j < n then
                          aset! sieve j false
                          repeat j' = j + i
-                       end
                 repeat i' = inc i
-            end
         filter (\i -> aget sieve i)  [2..<n]
-    end
 
 
 println! $ reduce (+) (primes (dec 2000000))
