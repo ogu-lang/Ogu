@@ -1,0 +1,10 @@
+module snake
+
+from [:jvm] java.awt import Color, Dimension
+from [:jvm] javax.swing import JPanel, JFrame, Timer, JOptionPane
+from [:jvm] java.awt.event import ActionListener, KeyListener
+
+from [:jvm] java.awt.event.KeyEvent import VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN
+
+sync
+    println "VK_UP"
