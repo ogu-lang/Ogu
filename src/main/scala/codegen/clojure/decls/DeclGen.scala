@@ -31,6 +31,8 @@ object DeclGen {
 
         case DefArg(Identifier(id)) => id
 
+        case DefArg(VariadicArg(id)) => s"& $id"
+
         case DefArg(TupleExpression(exprs)) => s"[${exprs.map(e => CodeGenerator.buildString(e)).mkString(" ")}]"
 
         case DefArg(InfiniteTupleExpr(exprs)) =>
@@ -238,6 +240,9 @@ object DeclGen {
                   letDecls = argDecls.reverse ++ letDecls
                 case DefArg(IdIsType(_, cls)) =>
                   andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
+
+                case DefArg(VariadicArg(expr)) =>
+                  andList = s"\t\t(= ${namedArgs.head} $expr)" :: andList
 
                 case DefArg(TupleExpression(List(lit:Expression, Identifier("_"))))  =>
                   lit match {

@@ -119,6 +119,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
     run("/misc/test40.ogu") should be (80)
     run("/misc/test41.ogu") should be(null)
     run("/misc/test42.ogu") should be(null)
+    run("/misc/test43.ogu") should be(null)
     run("/demos/black-jack.ogu") should be(10)
   }
 

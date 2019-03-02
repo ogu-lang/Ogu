@@ -17,6 +17,12 @@ object FunctionsGen {
         case ComposeExpressionBackward(args) =>
          s"(comp ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
 
+        case DotoForwardExpression(args) =>
+          s"(doto ${args.map(CodeGenerator.buildString(_)).mkString("\n\t")})"
+
+        case DotoBackwardExpression(args) =>
+          s"(doto ${args.reverse.map(CodeGenerator.buildString(_)).mkString("\n\t")})"
+
         case FunctionCallExpression(func, args) =>
           s"(${CodeGenerator.buildString(func)} ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
 
