@@ -14,6 +14,7 @@ object ControlExpression extends ExpressionParser {
       case FOR => ForExpression.parse(tokens)
       case IF => IfExpression.parse(tokens)
       case LOOP => LoopExpression.parse(tokens)
+      case PROXY => ProxyExpression.parse(tokens)
       case RECUR => RecurExpression.parse(tokens)
       case REIFY => ReifyExpression.parse(tokens)
       case REPEAT => RepeatExpresion.parse(tokens)

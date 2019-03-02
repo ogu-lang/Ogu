@@ -1,6 +1,8 @@
 package parser.ast.expressions.types
 
 import lexer._
+import parser.ast.expressions.functions.FunctionCallExpression
+import parser.ast.expressions.functions.FunctionCallExpression.parseCallArgs
 import parser.ast.expressions.{CallExpression, ExpressionParser, _}
 
 case class ConstructorExpression(cls: String, args: List[Expression]) extends CallExpression
@@ -22,7 +24,11 @@ object ConstructorExpression extends ExpressionParser {
         tokens.consume(RCURLY)
         RecordConstructorExpression(cls, args)
       case _ =>
-        RecordConstructorExpression(cls, List.empty)
+        if (funcCallEndToken(tokens)) {
+          ConstructorExpression(cls, List.empty)
+        } else {
+          FunctionCallExpression(Identifier(cls), FunctionCallExpression.parseCallArgs(tokens, Nil))
+        }
     }
   }
 

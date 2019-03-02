@@ -1,8 +1,9 @@
 package parser.ast.expressions.types
 
 import lexer._
-import parser.ast.expressions.literals.{Atom, LiteralExpression}
-import parser.ast.expressions.{Expression, ExpressionParser, ParseExpr}
+import parser.InvalidExpression
+import parser.ast.expressions.literals.{Atom, AtomicExpression, LiteralExpression}
+import parser.ast.expressions.{Expression, ExpressionParser, Identifier, ParseExpr}
 
 case class DictionaryExpression(items: List[(Expression, Expression)]) extends Expression
 
@@ -32,11 +33,16 @@ object DictionaryExpression extends ExpressionParser {
   }
 
   def parseKeyExpr(tokens:TokenStream) : Expression = {
-    if (tokens.peek(classOf[ATOM])) {
-      Atom.parse(tokens)
-    }
-    else {
-      LiteralExpression.parse(tokens)
+    tokens.nextToken() match {
+      case _:ATOM => Atom.parse(tokens)
+      case _:TID if !tokens.peek(2, LPAREN) =>  Identifier(tokens.consume(classOf[TID]).value)
+      case _:ID if !tokens.peek(2, LPAREN) =>  Identifier(tokens.consume(classOf[ID]).value)
+      case _:LITERAL => LiteralExpression.parse(tokens)
+      case LPAREN => AtomicExpression.parse(tokens)
+      case LBRACKET => AtomicExpression.parse(tokens)
+      case _ =>
+        println(s"@@! ${tokens}")
+        throw InvalidExpression(tokens.nextToken())
     }
   }
 

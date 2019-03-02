@@ -6,5 +6,23 @@ from [:jvm] java.awt.event import ActionListener, KeyListener
 
 from [:jvm] java.awt.event.KeyEvent import VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN
 
+def ref-set a b = a + b
+
+let apple = 0
+
+let move = 0
+
+let snake = 0
+
+def alter a b = b
+def alter a b c = c
+
+def create-apple = 1
+
 sync
-    println "VK_UP"
+    if 0 < apple then
+       ref-set apple (create-apple)
+       alter snake move :grow
+    else
+	    alter snake move
+    nil

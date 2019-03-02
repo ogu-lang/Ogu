@@ -26,7 +26,7 @@ object FunctionCallExpression extends ExpressionParser {
     }
   }
 
-  private[this] def parseCallArgs(tokens: TokenStream, args: List[Expression]) : List[Expression] = {
+  def parseCallArgs(tokens: TokenStream, args: List[Expression]) : List[Expression] = {
     if (funcCallEndToken(tokens)) {
       args.reverse
     }

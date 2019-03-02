@@ -30,11 +30,10 @@ object LambdaExpression extends ExpressionParser {
 
   @tailrec
   private[this] def parseListOfLambdaArgs(tokens: TokenStream, args: List[LambdaArg]): List[LambdaArg] = {
-    if (!tokens.peek(COMMA)) {
+    if (tokens.peek(ARROW)) {
       args.reverse
     }
     else {
-      tokens.consume(COMMA)
       parseListOfLambdaArgs(tokens, parseLambdaArg(tokens) :: args)
     }
   }

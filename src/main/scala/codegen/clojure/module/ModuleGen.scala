@@ -14,7 +14,6 @@ import scala.annotation.tailrec
 
 object ModuleGen {
 
-
   def toClojureImportClauses(importClauses: List[ImportClause]): String = {
     val strBuf = new StringBuilder()
     val (imp, staticImp) = importClauses.span {

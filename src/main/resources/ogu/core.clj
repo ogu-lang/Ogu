@@ -1,3 +1,4 @@
+
 (def ^:dynamic **args** [])
 
 (defn banner! [msg]
@@ -43,6 +44,8 @@
     (catch java.lang.NumberFormatException e d)))
 
 (defn  sum [args] (reduce + (seq args)))
+
+(require 'clojure.set)
 
 (defn union [a b] (clojure.set/union (set a) (set b)))
 

@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+### Added
+
+- add proxy
+- add sync
+
+### Fixed 
+
+- bug on impor from jvm
+- fix tabs on some demos
+- Static method call
+- dictionary expressions
+
 ## [0.2.5] - 2019-2-28
 
 ### Changed

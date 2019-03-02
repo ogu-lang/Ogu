@@ -1,0 +1,54 @@
+module snake
+
+from [:jvm] java.awt import Color, Dimension
+from [:jvm] javax.swing import JPanel, JFrame, Timer, JOptionPane
+from [:jvm] java.awt.event import ActionListener, KeyListener
+
+from [:jvm] java.awt.event.KeyEvent import VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN
+
+def paint g n = println "paint"
+
+def update-direction s a = println "update-direction"
+
+def update-positions s a = println "update-positions"
+
+def lose? s = true
+
+def win? s = false
+
+def reset-game s a = println "reset-game"
+
+def dirs a = println "dirs"
+
+let width = 10
+let height = 10
+let point-size = 10
+
+def game-panel frame snake apple =
+    proxy JPanel with ActionListener, KeyListener
+
+        def paintComponent g =
+          proxy-super paintComponent g
+          paint g snake
+          paint g apple
+
+        def actionPerformed e =
+          update-positions snake apple
+          when lose? snake then
+            reset-game snake apple
+            JOptionPane.showMessageDialog frame "You lose!"
+          when win? snake then
+            reset-game snake apple
+            JOptionPane.showMessageDialog frame "You win!"
+          .repaint this
+
+        def keyPressed e =
+          update-direction snake (dirs (.getKeyCode e))
+
+        def getPreferredSize = new Dimension((inc width) * point-size, (inc height) * point-size)
+
+        def keyReleased e = nothing
+
+        def keyTyped e = when (.getKeyChar e) == 'q' then System.exit -1
+
+nil

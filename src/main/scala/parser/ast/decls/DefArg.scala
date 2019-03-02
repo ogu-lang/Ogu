@@ -11,7 +11,7 @@ case class DefArg(expression: Expression)
 object DefOtherwiseArg extends DefArg(null)
 
 case class IdIsType(id: String, cl: String) extends Expression
-
+case class VariadicArg(id: String) extends Expression
 
 object DefArg {
 
@@ -21,11 +21,15 @@ object DefArg {
     }
     else {
       val id = tokens.consume(classOf[ID]).value
-      if (!tokens.peek(COLON)) {
-        DefArg(Identifier(id))
-      } else {
-        tokens.consume(COLON)
-        DefArg(IdIsType(id, tokens.consume(classOf[TID]).value))
+      tokens.nextToken() match {
+        case COLON =>
+          tokens.consume(COLON)
+          DefArg(IdIsType(id, tokens.consume(classOf[TID]).value))
+        case DOTDOTDOT =>
+          tokens.consume(DOTDOTDOT)
+          DefArg(VariadicArg(id))
+        case _ =>
+          DefArg(Identifier(id))
       }
     }
   }

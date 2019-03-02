@@ -65,9 +65,18 @@ object ControlGen {
           s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n" +
             s"   (${CodeGenerator.buildString(guard)} ${CodeGenerator.buildString(body)}))"
 
+        case ProxyExpression(name, interfaces, methods) =>
+          val strBuf = new StringBuilder()
+          strBuf ++= s"(proxy [$name] [${interfaces.mkString(" ")}]\n"
+          for (method <- methods) {
+            val s = CodeGenerator.buildString(method.definition).replaceFirst("\\(defn\\s+", "\t(")
+            strBuf ++= s
+          }
+          strBuf ++= ")\n"
+          strBuf.mkString
+
         case RecurExpression(args) =>
            s"(recur ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
-
 
         case ReifyExpression(name, methods) =>
           val strBuf = new StringBuilder()
@@ -94,6 +103,9 @@ object ControlGen {
             s"(alter-var-root (var $variable) (constantly ${CodeGenerator.buildString(value)}))"
           }
 
+        case SyncExpression(body) =>
+          s"(dosync ${CodeGenerator.buildString(body)})"
+
         case TryExpression(body, catches, finExpr) =>
           val strBuf = new StringBuilder()
           strBuf ++= s"(try ${CodeGenerator.buildString(body)}\n"
@@ -103,8 +115,6 @@ object ControlGen {
           }
           strBuf ++= ")\n"
           strBuf.mkString
-
-
 
         case WhenExpression(comp, body) =>
           s"(when ${CodeGenerator.buildString(comp)}\n\t${CodeGenerator.buildString(body)})"

@@ -8,7 +8,6 @@ import parser.ast.expressions.{CallExpression, LambdaArg, LambdaSimpleArg, Lambd
 
 object FunctionsGen {
 
-
   implicit object CallExpressionExpressionTranslator extends Translator[CallExpression] {
     override def mkString(node: CallExpression): String = {
       node match {
@@ -41,8 +40,9 @@ object FunctionsGen {
 
         case NewCallExpression(cls, Nil) =>
           s"($cls.)"
+
         case NewCallExpression(cls, args) =>
-          s"($cls. ${args.map(CodeGenerator.buildString(_))}"
+          s"($cls. ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
 
       }
     }
