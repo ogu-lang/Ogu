@@ -1,14 +1,14 @@
 
 
-let a = ref 10
+var a = 10
 
-let b = ref 11
+var b = 11
 
 def alt a b =
     sync
         alter a 20
         alter b 30
 
-println! @a @b
+println! a b
 
-@a + @b
+a + b

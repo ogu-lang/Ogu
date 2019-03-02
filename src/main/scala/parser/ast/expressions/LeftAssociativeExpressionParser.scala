@@ -1,6 +1,6 @@
 package parser.ast.expressions
 
-import lexer.{TOKEN, TokenStream}
+import lexer.{NL, TOKEN, TokenStream}
 
 import scala.annotation.tailrec
 
@@ -24,6 +24,7 @@ abstract class LeftAssociativeExpressionParser(nextLevel: ExpressionParser, oper
     }
     else {
       consumeOper(tokens)
+      tokens.consumeOptionals(NL)
       consumeArgs(tokens, nextLevel, nextLevel.parse(tokens) :: args)
     }
   }
