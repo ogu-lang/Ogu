@@ -5,7 +5,7 @@ import codegen.clojure.expressions.ExpressionsGen._
 import parser.ast.decls._
 import parser.ast.expressions.{Expression, Identifier}
 import parser.ast.expressions.list_ops.ConsExpression
-import parser.ast.expressions.literals.LiteralExpression
+import parser.ast.expressions.literals.{Atom, LiteralExpression}
 import parser.ast.expressions.types._
 
 object DeclGen {
@@ -39,6 +39,9 @@ object DeclGen {
           val rest = exprs.last
           val args = exprs.dropRight(1)
           s"[${args.map(a => CodeGenerator.buildString(a)).mkString(" ")} & ${CodeGenerator.buildString(rest)}]"
+
+        case DefArg(DictionaryExpression(List((ConsExpression(args), Atom(a))))) =>
+          s"{[${args.init.map(CodeGenerator.buildString(_)).mkString(" ")} & ${CodeGenerator.buildString(args.last)}] $a}"
 
         case DefArg(expression) => s"${CodeGenerator.buildString(expression)}"
 
@@ -210,6 +213,8 @@ object DeclGen {
                 // nothing
                 case DefArg(_:EmptyListExpresion) =>
                   andList = s"\t\t(empty? ${namedArgs.head})" :: andList
+
+
 
                 case DefArg(ConsExpression(args)) =>
                   val tail = args.last
