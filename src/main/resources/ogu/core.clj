@@ -173,7 +173,7 @@ Returns an exact number if the base is an exact number and the power is an integ
                   (set (map (memfn getName)
                             (filter static? array))))
         all-fields (statics (.getFields the-class))
-        all-methods (statics (.gerMethods the-class))
+        all-methods (statics (.getMethods the-class))
         fields-to-do (clojure.set/intersection all-fields only)
         methods-to-do (clojure.set/intersection all-methods only)
         make-sym (fn [string]

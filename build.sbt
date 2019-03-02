@@ -13,3 +13,4 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 libraryDependencies += "com.github.lalyos" % "jfiglet" % "0.0.8"
 libraryDependencies += "org.clojure" % "clojure" % "1.10.0"
 
+scalacOptions += "-deprecation"

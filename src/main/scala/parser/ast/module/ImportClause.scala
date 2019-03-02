@@ -1,12 +1,15 @@
 package parser.ast.module
 
 import lexer._
+import parser.{UnexpectedTokenClassException, UnexpectedTokenException}
 
 import scala.annotation.tailrec
 
 trait ImportClause
 case class FromCljRequire(from: String, names: List[ImportAlias]) extends ImportClause
+case class FromCljRequireStatic(from: String, names: List[ImportAlias]) extends ImportClause
 case class FromJvmRequire(from: String, names: List[ImportAlias]) extends ImportClause
+case class FromJvmRequireStatic(from: String, names: List[ImportAlias]) extends ImportClause
 case class CljImport(name:List[ImportAlias]) extends ImportClause
 case class JvmImport(name:List[ImportAlias]) extends ImportClause
 
@@ -48,13 +51,31 @@ object ImportClause {
   private[this] def parseFrom(tokens:TokenStream): ImportClause = {
     tokens.consume(FROM)
     val tag = parseTag(tokens)
-    val name = tokens.consume(classOf[ID]).value
+    val (name, isType) = {
+      val token = tokens.pop()
+      token match {
+        case ID(id) =>
+          (id, false)
+        case TID(tid) => (tid, true)
+        case _ => throw UnexpectedTokenException(token, tokens.tokens)
+      }
+    }
     tokens.consume(IMPORT)
-    if (tag equals ":jvm") {
-      FromJvmRequire(name, ImportAlias.parseListOfAlias(tokens))
+    if (isType) {
+      if (tag equals ":jvm") {
+        FromJvmRequireStatic(name, ImportAlias.parseListOfAlias(tokens))
+      }
+      else {
+        FromCljRequireStatic(name, ImportAlias.parseListOfAlias(tokens))
+      }
     }
     else {
-      FromCljRequire(name, ImportAlias.parseListOfAlias(tokens))
+      if (tag equals ":jvm") {
+        FromJvmRequire(name, ImportAlias.parseListOfAlias(tokens))
+      }
+      else {
+        FromCljRequire(name, ImportAlias.parseListOfAlias(tokens))
+      }
     }
   }
 

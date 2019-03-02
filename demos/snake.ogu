@@ -2,11 +2,12 @@
 -- by “Stuart Halloway, Aaron Bedra”
 -- chapter 5
 module snake
-  import java.awt Color Dimension,
-         javax.swing JPanel JFrame Timer JOptionPane,
-         java.awt.event ActionListener KeyListener
 
-import static java.awt.event.KeyEvent (VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN)
+from java.awt import Color, Dimension
+from javax.swing import JPanel, JFrame, Timer, JOptionPane
+from java.awt.event import ActionListener, KeyListener
+
+from java.awt.event.KeyEvent import VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN
 
 -- ----------------------------------------------------------
 -- functional model

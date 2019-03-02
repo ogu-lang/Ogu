@@ -17,17 +17,44 @@ object ModuleGen {
 
   def toClojureImportClauses(importClauses: List[ImportClause]): String = {
     val strBuf = new StringBuilder()
-    val (cljImp, jvmImp) = importClauses.span {
+    val (imp, staticImp) = importClauses.span {
+      case FromJvmRequireStatic(_,_) => false
+      case FromCljRequireStatic(_, _) => false
+      case _ => true
+    }
+
+    val (cljImp, jvmImp) = imp.span {
       case CljImport(_) => true
       case FromCljRequire(_, _) => true
       case _ => false
     }
     if (cljImp.nonEmpty) {
-      strBuf ++= s"(:require [${cljImp.map(toClojureImportClause).mkString(" ")}]) "
+      strBuf ++= s"(:require ${cljImp.map(toClojureImportClause).mkString(" ")}) "
     }
     if (jvmImp.nonEmpty) {
       strBuf ++= s"(:import ${jvmImp.map(toClojureJvmImportClause).mkString(" ")}) "
     }
+    strBuf.toString
+  }
+
+
+  def toClojureImportStaticClauses(importClauses: List[ImportClause]): String = {
+    val strBuf = new StringBuilder()
+    val staticImp = importClauses.filter {
+      case FromJvmRequireStatic(_,_) => true
+      case FromCljRequireStatic(_, _) => true
+      case _ => false
+    }
+
+    if (staticImp.nonEmpty) {
+      staticImp.foreach {
+        case FromJvmRequireStatic(from, names) =>
+          strBuf ++= s"(import-static $from ${names.map(toClojureImportAlias).mkString(" ")})\n"
+        case FromCljRequireStatic(from, names) =>
+          strBuf ++= s"(import-static $from ${names.map(toClojureImportAlias).mkString(" ")})\n"
+      }
+    }
+
     strBuf.toString
   }
 
@@ -37,10 +64,10 @@ object ModuleGen {
       case FromCljRequire(from, names) =>
         val renames = names.filter(p => p.alias.nonEmpty)
         if (renames.isEmpty) {
-          s"$from :refer [${names.map(n => n.name).mkString(" ")}] "
+          s"[$from :refer [${names.map(n => n.name).mkString(" ")}]]"
         }
         else {
-          s"$from :refer [${names.map(n => n.name)} :rename ${renames.map(toClojureImporteRename).mkString(", ")}] "
+          s"[$from :refer [${names.map(n => n.name)} :rename ${renames.map(toClojureImporteRename).mkString(", ")}]]"
         }
       case _ => ""
     }
@@ -74,7 +101,7 @@ object ModuleGen {
 
     override def mkString(node: Module): String = {
 
-      s"(ns ${node.name} ${mkString(node.imports)})\n\n" + genDecls(node.decls, Nil)
+      s"(ns ${node.name} ${mkString(node.imports)})\n\n${staticImports(node.imports)}" + genDecls(node.decls, Nil)
     }
 
     private[this] def mkString(imports: Option[List[ImportClause]]): String = {
@@ -84,6 +111,12 @@ object ModuleGen {
       }
     }
 
+    private[this] def staticImports(maybeClauses: Option[List[ImportClause]]): String = {
+      maybeClauses match {
+        case None => ""
+        case Some(l) => toClojureImportStaticClauses(l)
+      }
+    }
   }
 
   @tailrec
