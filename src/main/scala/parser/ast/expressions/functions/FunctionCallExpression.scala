@@ -33,7 +33,11 @@ object FunctionCallExpression extends ExpressionParser {
     else {
       val expr = if (tokens.peek(classOf[ID])) {
          Identifier(tokens.consume(classOf[ID]).value)
-      } else {
+      }
+      else if (tokens.peek(classOf[ATOM])) {
+        Atom.parse(tokens)
+      }
+      else {
         FunctionCallWithDollarExpression.parse(tokens)
       }
       parseCallArgs(tokens, expr :: args)

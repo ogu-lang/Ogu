@@ -1,0 +1,14 @@
+
+
+let a = ref 10
+
+let b = ref 11
+
+def alt a b =
+    sync
+        alter a 20
+        alter b 30
+
+println! @a @b
+
+@a + @b

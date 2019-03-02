@@ -4,7 +4,7 @@ import codegen.{CodeGenerator, Translator}
 import parser.ast.expressions.functions._
 import codegen.clojure.expressions.ExpressionsGen._
 import parser.ast.expressions.types.{ConstructorExpression, NewCallExpression, RecordConstructorExpression}
-import parser.ast.expressions.{CallExpression, LambdaArg, LambdaSimpleArg, LambdaTupleArg}
+import parser.ast.expressions._
 
 object FunctionsGen {
 
@@ -60,8 +60,7 @@ object FunctionsGen {
       node match {
         case LambdaSimpleArg(name) => name
         case LambdaTupleArg(names) => s"[${names.mkString(" ")}]"
-
-
+        case LambdaVariadicArg(name) => s"& $name"
       }
     }
   }

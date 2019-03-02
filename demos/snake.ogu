@@ -49,7 +49,7 @@ def win? {body :body} = count body >= win-length
 -- START: lose?
 def head-overlaps-body? {(head :: body) :body} = member? head body
 
-def lose? x = head-overlaps-body? x
+let lose? = head-overlaps-body?
 -- END: lose?
 
 -- START: eats?
@@ -63,7 +63,7 @@ def eats? {[snake-head] :body} {apple :location} = snake-head == apple
 -- START: update-positions
 def update-positions snake apple =
    sync
-       if eats? snake apple then
+       if eats? @snake @apple then
           ref-set apple (create-apple)
           alter snake move :grow
        else
@@ -98,7 +98,7 @@ def fill-point g pt color =
 -- END: fill-point
 
 -- START: paint
-dispatch paint with \g object  -> :type object
+dispatch paint with \g object _...  -> :type object
 
 def paint :apple ? g {:keys [location, color]}  = fill-point g location color
 

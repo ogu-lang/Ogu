@@ -46,7 +46,7 @@ object ControlGen {
           s"(cond\n\t${guards.map(toClojureCondGuard).mkString("\n\t")})"
 
         case ForExpression(variables, body) =>
-          s"(doall (for [${variables.map(CodeGenerator.buildString(_)).mkString("\n")}] \n${CodeGenerator.buildString(body)}))"
+          s"(doseq [${variables.map(CodeGenerator.buildString(_)).mkString("\n")}] \n${CodeGenerator.buildString(body)})"
 
         case IfExpression(comp, thenPart, Nil, elsePart) =>
           s"(if ${CodeGenerator.buildString(comp)}\n\t${CodeGenerator.buildString(thenPart)}\n\t${CodeGenerator.buildString(elsePart)})"
@@ -67,7 +67,7 @@ object ControlGen {
 
         case ProxyExpression(name, interfaces, methods) =>
           val strBuf = new StringBuilder()
-          strBuf ++= s"(proxy [$name] [${interfaces.mkString(" ")}]\n"
+          strBuf ++= s"(proxy [$name ${interfaces.mkString(" ")}] []\n"
           for (method <- methods) {
             val s = CodeGenerator.buildString(method.definition).replaceFirst("\\(defn\\s+", "\t(")
             strBuf ++= s
