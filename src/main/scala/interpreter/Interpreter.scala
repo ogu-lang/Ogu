@@ -12,6 +12,7 @@ object Interpreter {
   val clojureLoader = Clojure.`var`("clojure.core", "load-string")
 
   clojureLoader.invoke(readOguRuntime())
+  clojureLoader.invoke(readOguTurtle())
 
   def load(ast:Module): AnyRef = {
     val clojureStr = toClojure(ast)
@@ -29,11 +30,16 @@ object Interpreter {
     Source.fromInputStream(classLoader.getResourceAsStream("ogu/core.clj")).mkString
   }
 
+  def readOguTurtle() : String = {
+    val classLoader = this.getClass.getClassLoader
+    Source.fromInputStream(classLoader.getResourceAsStream("ogu/turtle.clj")).mkString
+  }
+
   def banner(msg: String) : Unit = {
     println(com.github.lalyos.jfiglet.FigletFont.convertOneLine(msg))
   }
 
   def debug(str: String): Unit = {
-    println(str)
+    //println(str)
   }
 }

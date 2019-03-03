@@ -2,11 +2,8 @@ package parser
 
 import backend.Backend
 import clojure.lang
-import interpreter.Interpreter
 import lexer.Lexer
 import org.scalatest.{FlatSpec, Matchers}
-import parser.ast.LangNode
-import parser.ast.module.Module
 
 import scala.util.{Failure, Success, Try}
 
@@ -124,6 +121,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
     run("/misc/test45.ogu") should be(10)
     run("/misc/test46.ogu") should be(50)
     run("/misc/test47.ogu") should be(463)
+    run("/misc/test48.ogu") should be(null)
     run("/demos/black-jack.ogu") should be(10)
   }
 

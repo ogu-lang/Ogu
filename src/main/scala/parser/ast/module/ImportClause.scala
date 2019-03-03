@@ -1,14 +1,16 @@
 package parser.ast.module
 
 import lexer._
-import parser.{UnexpectedTokenClassException, UnexpectedTokenException}
+import parser.UnexpectedTokenException
 
 import scala.annotation.tailrec
 
 trait ImportClause
 case class FromCljRequire(from: String, names: List[ImportAlias]) extends ImportClause
+case class FromCljRequireAll(from: String) extends ImportClause
 case class FromCljRequireStatic(from: String, names: List[ImportAlias]) extends ImportClause
 case class FromJvmRequire(from: String, names: List[ImportAlias]) extends ImportClause
+case class FromJvmRequireAll(from: String) extends ImportClause
 case class FromJvmRequireStatic(from: String, names: List[ImportAlias]) extends ImportClause
 case class CljImport(name:List[ImportAlias]) extends ImportClause
 case class JvmImport(name:List[ImportAlias]) extends ImportClause
@@ -70,11 +72,17 @@ object ImportClause {
       }
     }
     else {
-      if (tag equals ":jvm") {
-        FromJvmRequire(name, ImportAlias.parseListOfAlias(tokens))
-      }
-      else {
-        FromCljRequire(name, ImportAlias.parseListOfAlias(tokens))
+      if (tokens.peek(MULT)) {
+        tokens.consume(MULT)
+        tag match {
+          case ":jvm" => FromJvmRequireAll(name)
+          case _ => FromCljRequireAll(name)
+        }
+      } else {
+        tag match {
+          case ":jvm" => FromJvmRequire(name, ImportAlias.parseListOfAlias(tokens))
+          case _ => FromCljRequire(name, ImportAlias.parseListOfAlias(tokens))
+        }
       }
     }
   }

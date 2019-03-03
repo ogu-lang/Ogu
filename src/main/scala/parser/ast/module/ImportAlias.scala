@@ -4,17 +4,26 @@ import lexer._
 
 import scala.annotation.tailrec
 
-case class ImportAlias(name:String, alias:Option[String])
+sealed trait ImportAlias
+object ImportAll extends ImportAlias
+case class ImportSimple(name:String) extends ImportAlias
+case class ImportRename(name:String, alias:String) extends ImportAlias
 
 object ImportAlias {
 
   def parse(tokens:TokenStream): ImportAlias = {
-    val id = if (tokens.peek(classOf[TID])) tokens.consume(classOf[TID]).value else tokens.consume(classOf[ID]).value
-    if (!tokens.peek(AS)) {
-      ImportAlias(id, None)
-    } else {
-      tokens.consume(AS)
-      ImportAlias(id, Some(tokens.consume(classOf[ID]).value))
+    if (tokens.peek(MULT)) {
+      tokens.consume(MULT)
+      ImportAll
+    }
+    else {
+      val id = if (tokens.peek(classOf[TID])) tokens.consume(classOf[TID]).value else tokens.consume(classOf[ID]).value
+      if (!tokens.peek(AS)) {
+        ImportSimple(id)
+      } else {
+        tokens.consume(AS)
+        ImportRename(id, tokens.consume(classOf[ID]).value)
+      }
     }
   }
 
