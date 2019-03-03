@@ -5,7 +5,7 @@ def main (x :: xs) =
         recur xs
     where
         count-words line =  line |> split-words |> count
-        report x = using rdr = reader (file x)
-                   in println! "file" x "words: " (rdr |> line-seq |> map count-words |> sum)
+        report x = using rdr = reader (file x) in
+                       println! "file" x "words: " (rdr |> line-seq |> map count-words |> sum)
 
 main **args**

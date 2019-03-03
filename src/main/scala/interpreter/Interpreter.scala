@@ -40,6 +40,6 @@ object Interpreter {
   }
 
   def debug(str: String): Unit = {
-    println(str)
+    //println(str)
   }
 }
