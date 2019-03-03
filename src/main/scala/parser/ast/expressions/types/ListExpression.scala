@@ -16,7 +16,7 @@ case class RangeWithIncrementExpression(rangeInit:Expression, rangeIncrement: Ex
 case class RangeWithIncrementExpressionUntil(rangeInit:Expression, rangeIncrement: Expression, rangeEnd:Expression) extends ValidRangeExpression
 case class InfiniteRangeExpression(rangeInit: Expression) extends ValidRangeExpression
 case class InfiniteRangeWithIncrementExpression(rangeInit: Expression, rangeIncrement: Expression) extends ValidRangeExpression
-case class EmptyListExpresion() extends ValidRangeExpression
+object EmptyListExpresion extends ValidRangeExpression
 
 trait ListGuard
 case class ListGuardDecl(id: String, value: Expression) extends ListGuard
@@ -32,7 +32,7 @@ object ListExpression extends ExpressionParser {
     tokens.consume(LBRACKET)
     if (tokens.peek(RBRACKET)) {
       tokens.consume(RBRACKET)
-      EmptyListExpresion()
+      EmptyListExpresion
     }
     else {
       val exprs = parseListOfCommaSeparatedExpressions(tokens)
@@ -74,7 +74,7 @@ object ListExpression extends ExpressionParser {
   private[this] def parseEndRange(tokens: TokenStream, expression: Expression, include: Boolean): Expression = {
     expression match {
       case ListExpression(exprs, _) if 2 == exprs.size  =>
-        val rangeInit = exprs(0)
+        val rangeInit = exprs.head
         val rangeEnd = exprs(1)
         val rangeIncrement = SubstractExpression(List(rangeEnd, rangeInit))
         if (include)

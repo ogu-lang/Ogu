@@ -50,8 +50,7 @@ object RangeGen {
         case InfiniteRangeWithIncrementExpression(init, inc) =>
           s"(-range-to-inf ${CodeGenerator.buildString(init)} ${CodeGenerator.buildString(inc)})"
 
-        case EmptyListExpresion() =>
-          "[]"
+        case EmptyListExpresion => "[]"
       }
 
     }
