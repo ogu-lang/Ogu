@@ -6,9 +6,13 @@ var b = 11
 
 def alt a b =
     sync
-        alter a 20
-        alter b 30
+        set a = 20
+        set b = 30
 
 println! a b
+
+
+set a = 20
+set b = 30
 
 a + b

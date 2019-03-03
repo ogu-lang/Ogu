@@ -99,8 +99,7 @@ object ModuleGen {
   implicit object ModuleTranslator extends Translator[Module] {
 
     override def mkString(node: Module): String = {
-
-      s"(ns ${node.name} ${mkString(node.imports)})\n\n${staticImports(node.imports)}" + genDecls(node.decls, Nil)
+      s"(ns ${node.name} (:require [ogu.core :refer :all]) ${mkString(node.imports)})\n\n${staticImports(node.imports)}" + genDecls(node.decls, Nil)
     }
 
     private[this] def mkString(imports: Option[List[ImportClause]]): String = {

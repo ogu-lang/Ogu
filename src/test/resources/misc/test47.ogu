@@ -24,3 +24,5 @@ let arbol = Node(30, Leaf(70),
 t-max arbol |> println "El valor maximo del arbol  es: "
 
 t-sum arbol |> println "La suma del arbol  es: "
+
+t-sum arbol

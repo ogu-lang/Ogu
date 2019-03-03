@@ -75,6 +75,12 @@ object DeclGen {
           strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
           strBuf ++= s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n\t${CodeGenerator.buildString(body)})\n\n"
 
+        case MultiMethod(_, id, matches, args, body, Some(whereBlock)) =>
+          strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
+          strBuf ++= s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n"
+          val whereDefs = whereBlock.whereDefs
+          strBuf ++= s"\t(let [${whereDefs.map(WhereDefTranslator.mkStringAsLet).mkString("\n")}]"
+          strBuf ++= s"\n\t\t${CodeGenerator.buildString(body)}))"
         case _ => ???
       }
       strBuf.mkString
@@ -124,6 +130,22 @@ object DeclGen {
             i += 1
           }
           strBuf.toString()
+      }
+    }
+
+    def mkStringAsLet(node: WhereDef): String = {
+      node match {
+        case WhereDefSimple(id, None, body) => s"$id ${CodeGenerator.buildString(body)}"
+        case WhereDefSimple(id, Some(args), body) =>
+          s"$id (fn [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}] ${CodeGenerator.buildString(body)})"
+        case WhereDefWithGuards(id, Some(args), guards) =>
+          s"$id (fn [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}] \n" +
+            s"(cond ${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")}))"
+        case WhereDefWithGuards(id, None, guards) =>
+          s"$id  \n" +
+            s"(cond ${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")})"
+        case WhereDefTupled(idList, None, body) =>
+          s"[${idList.mkString(" ")}] ${CodeGenerator.buildString(body)}"
       }
     }
   }
@@ -182,11 +204,14 @@ object DeclGen {
           strBuf ++= s"\n(defn ${node.id}\n"
           for (decl <- node.decls) {
             strBuf ++= "([" + decl.args.map(arg => s"${CodeGenerator.buildString(arg.expression)}").mkString(" ") + "] "
-            if (decl.whereBlock.nonEmpty) {
-              val whereDefs = decl.whereBlock.get.whereDefs
-              strBuf ++= s"${whereDefs.map(CodeGenerator.buildString(_)).mkString("\n")}"
+            decl.whereBlock match {
+              case None =>
+                strBuf ++= s"${CodeGenerator.buildString(decl.body)})\n"
+              case Some(whereBlock) =>
+                val whereDefs = whereBlock.whereDefs
+                strBuf ++= s"(let [${whereDefs.map(WhereDefTranslator.mkStringAsLet).mkString("\n")}]"
+                strBuf ++= s"\n\t${CodeGenerator.buildString(decl.body)})"
             }
-            strBuf ++= s"${CodeGenerator.buildString(decl.body)})\n"
           }
           strBuf ++= ")\n\n"
         }
