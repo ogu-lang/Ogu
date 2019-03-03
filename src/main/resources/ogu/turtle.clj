@@ -14,7 +14,6 @@
 
 (defn pen-up? "Is the pen up?" [turtle] (not (:drawing @turtle)))
 
-
 (defn pen-up "Disable Drawing." [turtle] (dosync (alter turtle merge {:drawing false})))
 
 (defn pen-down "Enable Drawing." [turtle] (dosync (alter turtle merge {:drawing true})))

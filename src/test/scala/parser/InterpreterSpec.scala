@@ -2,7 +2,10 @@ package parser
 
 import backend.Backend
 import clojure.lang
+import lexer.Lexer
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.{Failure, Success, Try}
 
 
 class InterpreterSpec extends FlatSpec with Matchers {
@@ -10,6 +13,17 @@ class InterpreterSpec extends FlatSpec with Matchers {
   def run(oguScript: String): AnyRef = {
     val stream = getClass.getResourceAsStream(oguScript)
     Backend.compileStream(oguScript, stream)
+  }
+
+  def compile(oguScript: String) : Try[_] = {
+    val lexer = new Lexer()
+    val tryScan = lexer.scan(oguScript, getClass.getResourceAsStream(oguScript))
+    tryScan match {
+      case Success(tokens) =>
+        val parser = new Parser(oguScript, tokens)
+        Success(parser.parse())
+      case Failure(exception) => Failure(exception)
+    }
   }
 
   private[this] def toList(anyRef: AnyRef) = {
@@ -42,6 +56,11 @@ class InterpreterSpec extends FlatSpec with Matchers {
   def bigInt(value: String): lang.BigInt = lang.BigInt.fromBigInteger(new java.math.BigInteger(value))
 
 
+  "An compiler" should "compile demo files" in {
+    compile("/demos/black-jack.ogu") should not be(Failure(new Exception))
+    compile("/demos/snake.ogu") should not be(Failure(new Exception))
+  }
+
   "An Interpreter" should "run misc files" in {
     run("/misc/test0.ogu") should be (null)
     run("/misc/test1.ogu") should be (11)
@@ -62,7 +81,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
     toList(run("/misc/test16.ogu")) should be(List(4, 7, 6, 8, 11, 4))
     run("/misc/test17.ogu") should be(10)
     run("/misc/test18.ogu") should be(5040)
-    toList(run("/misc/test19.ogu")) should be(List(1, 4, 9))
+    run("/misc/test19.ogu") should be(null)
 
     val palo = List(new java.lang.Character('C'), new java.lang.Character('D'),
       new java.lang.Character('T'), new java.lang.Character('P'))
@@ -93,6 +112,20 @@ class InterpreterSpec extends FlatSpec with Matchers {
     run("/misc/test36.ogu") should be (null)
     toList(run("/misc/test37.ogu")) should be (List(22, 21))
     run("/misc/test38.ogu") should be (30)
+    run("/misc/test39.ogu") should be (10)
+    run("/misc/test40.ogu") should be (80)
+    run("/misc/test41.ogu") should be(null)
+    run("/misc/test42.ogu") should be(null)
+    run("/misc/test43.ogu") should be(null)
+    run("/misc/test44.ogu") should equal(false)
+    run("/misc/test45.ogu") should be(10)
+    run("/misc/test46.ogu") should be(50)
+    run("/misc/test47.ogu") should be(463)
+    run("/misc/test48.ogu") should be(null)
+    run("/misc/test49.ogu") should be(null)
+    run("/misc/test50.ogu") should be(null)
+    run("/misc/test51.ogu") should be(null)
+    run("/demos/black-jack.ogu") should be(10)
   }
 
   "An Interpeter" should "run alg files" in {

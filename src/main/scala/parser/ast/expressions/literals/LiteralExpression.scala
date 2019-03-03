@@ -35,7 +35,8 @@ object LiteralExpression extends ExpressionParser {
       case fsl if fsl.isInstanceOf[FSTRING_LITERAL] =>
         FStringLiteral(tokens.consume(classOf[FSTRING_LITERAL]).value)
       case _ =>
-        throw InvalidExpression()
+        println(s"@@ tokens${tokens}")
+        throw InvalidExpression(tokens.nextToken())
     }
   }
 

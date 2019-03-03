@@ -1,12 +1,11 @@
 
+def greet = greet "you"
 
-greet = greet "you"
-
-greet name
+def greet name
     | name == "world " = println! "hello world"
     | otherwise = println! "hello " name
 
-greet name1 name2 = println! "hello " name1 " & " name2
+def greet name1 name2 = println! "hello " name1 " & " name2
 
 
 (greet)
@@ -18,7 +17,7 @@ greet "Mampato"
 greet "Mampato" "Rena"
 
 
-greet2 name & rest =  println! $ str "hola " name ", " (join ", " rest)
+def greet2 name rest... =  println! $ str "hola " name ", " (join ", " rest)
 
 
 greet2 "Mampato" "Ogu" "Rena" "Xse"

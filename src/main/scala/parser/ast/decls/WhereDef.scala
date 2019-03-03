@@ -74,7 +74,7 @@ object WhereDef {
         parseListOfWhereGuards(tokens, parseWhereGuard(tokens) :: guards)
       case INDENT =>
         tokens.consume(INDENT)
-        val result = parseListOfWhereGuards(tokens, guards)
+        val result = parseListOfWhereGuards(tokens, guards).reverse
         tokens.consume(DEDENT)
         parseListOfWhereGuards(tokens, result)
       case _ => guards.reverse

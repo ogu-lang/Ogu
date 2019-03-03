@@ -1,0 +1,18 @@
+
+
+var a = 10
+
+var b = 11
+
+def alt a b =
+    sync
+        set a = 20
+        set b = 30
+
+println! a b
+
+
+set a = 20
+set b = 30
+
+a + b

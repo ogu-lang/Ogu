@@ -5,6 +5,7 @@ import codegen.clojure.expressions.ExpressionsGen._
 import parser.ast.decls._
 import parser.ast.expressions.{Expression, Identifier}
 import parser.ast.expressions.list_ops.ConsExpression
+import parser.ast.expressions.literals.{Atom, LiteralExpression}
 import parser.ast.expressions.types._
 
 object DeclGen {
@@ -30,12 +31,17 @@ object DeclGen {
 
         case DefArg(Identifier(id)) => id
 
+        case DefArg(VariadicArg(id)) => s"& $id"
+
         case DefArg(TupleExpression(exprs)) => s"[${exprs.map(e => CodeGenerator.buildString(e)).mkString(" ")}]"
 
         case DefArg(InfiniteTupleExpr(exprs)) =>
           val rest = exprs.last
           val args = exprs.dropRight(1)
           s"[${args.map(a => CodeGenerator.buildString(a)).mkString(" ")} & ${CodeGenerator.buildString(rest)}]"
+
+        case DefArg(DictionaryExpression(List((ConsExpression(args), Atom(a))))) =>
+          s"{[${args.init.map(CodeGenerator.buildString(_)).mkString(" ")} & ${CodeGenerator.buildString(args.last)}] $a}"
 
         case DefArg(expression) => s"${CodeGenerator.buildString(expression)}"
 
@@ -69,6 +75,12 @@ object DeclGen {
           strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
           strBuf ++= s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n\t${CodeGenerator.buildString(body)})\n\n"
 
+        case MultiMethod(_, id, matches, args, body, Some(whereBlock)) =>
+          strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
+          strBuf ++= s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n"
+          val whereDefs = whereBlock.whereDefs
+          strBuf ++= s"\t(let [${whereDefs.map(WhereDefTranslator.mkStringAsLet).mkString("\n")}]"
+          strBuf ++= s"\n\t\t${CodeGenerator.buildString(body)}))"
         case _ => ???
       }
       strBuf.mkString
@@ -106,6 +118,9 @@ object DeclGen {
         case WhereDefWithGuards(id, Some(args), guards) =>
           s"(def $id (fn [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}] \n" +
             s"(cond ${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")})))"
+        case WhereDefWithGuards(id, None, guards) =>
+          s"(def $id  \n" +
+            s"(cond ${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")}))"
         case WhereDefTupled(idList, None, body) =>
           var strBuf = new StringBuilder()
           strBuf ++= s"(def _*temp*_ ${CodeGenerator.buildString(body)})\n"
@@ -115,6 +130,22 @@ object DeclGen {
             i += 1
           }
           strBuf.toString()
+      }
+    }
+
+    def mkStringAsLet(node: WhereDef): String = {
+      node match {
+        case WhereDefSimple(id, None, body) => s"$id ${CodeGenerator.buildString(body)}"
+        case WhereDefSimple(id, Some(args), body) =>
+          s"$id (fn [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}] ${CodeGenerator.buildString(body)})"
+        case WhereDefWithGuards(id, Some(args), guards) =>
+          s"$id (fn [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}] \n" +
+            s"(cond ${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")}))"
+        case WhereDefWithGuards(id, None, guards) =>
+          s"$id  \n" +
+            s"(cond ${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")})"
+        case WhereDefTupled(idList, None, body) =>
+          s"[${idList.mkString(" ")}] ${CodeGenerator.buildString(body)}"
       }
     }
   }
@@ -130,30 +161,36 @@ object DeclGen {
   implicit object SimpleDefDeclTranslator extends Translator[SimpleDefDecl] {
 
     override def mkString(node: SimpleDefDecl): String = {
-      node match {
-        case SimpleDefDecl(inner, id, args, BodyGuardsExpresion(guards), None) =>
-          val conds = s"\t(cond\n${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")})"
-          if (inner) {
-            s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t$conds)"
-          } else {
-            s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t$conds)"
-          }
+      if (node.isMulti()) {
+        // special case, a single multimethod
+        MultiDefDeclTranslator.mkString(MultiDefDecl(node.id, List(node)))
+      }
+      else {
+        node match {
+          case SimpleDefDecl(inner, id, args, BodyGuardsExpresion(guards), None) =>
+            val conds = s"\t(cond\n${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")})"
+            if (inner) {
+              s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t$conds)"
+            } else {
+              s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t$conds)"
+            }
 
-        case SimpleDefDecl(inner, id, args, body, None) =>
-          if (inner) {
-            s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t\t${CodeGenerator.buildString(body)})\n\n"
-          } else {
-            s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t\t${CodeGenerator.buildString(body)})\n\n"
-          }
+          case SimpleDefDecl(inner, id, args, body, None) =>
+            if (inner) {
+              s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t\t${CodeGenerator.buildString(body)})\n\n"
+            } else {
+              s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n\t\t${CodeGenerator.buildString(body)})\n\n"
+            }
 
-        case SimpleDefDecl(inner, id, args, body, Some(whereBlock)) =>
-          if (inner) {
-            s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n" +
-              s"\t\t${CodeGenerator.buildString(whereBlock)}\n    ${CodeGenerator.buildString(body)})\n\n"
-          } else {
-            s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n" +
-              s"\t\t${CodeGenerator.buildString(whereBlock)}\n    ${CodeGenerator.buildString(body)})\n\n"
-          }
+          case SimpleDefDecl(inner, id, args, body, Some(whereBlock)) =>
+            if (inner) {
+              s"(defn- $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n" +
+                s"\t\t${CodeGenerator.buildString(whereBlock)}\n    ${CodeGenerator.buildString(body)})\n\n"
+            } else {
+              s"(defn $id [${args.map(a => CodeGenerator.buildString(a)).mkString(" ")}]\n" +
+                s"\t\t${CodeGenerator.buildString(whereBlock)}\n    ${CodeGenerator.buildString(body)})\n\n"
+            }
+        }
       }
     }
 
@@ -167,18 +204,27 @@ object DeclGen {
           strBuf ++= s"\n(defn ${node.id}\n"
           for (decl <- node.decls) {
             strBuf ++= "([" + decl.args.map(arg => s"${CodeGenerator.buildString(arg.expression)}").mkString(" ") + "] "
-            if (decl.whereBlock.nonEmpty) {
-              val whereDefs = decl.whereBlock.get.whereDefs
-              strBuf ++= s"${whereDefs.map(CodeGenerator.buildString(_)).mkString("\n")}"
+            decl.whereBlock match {
+              case None =>
+                strBuf ++= s"${CodeGenerator.buildString(decl.body)})\n"
+              case Some(whereBlock) =>
+                val whereDefs = whereBlock.whereDefs
+                strBuf ++= s"(let [${whereDefs.map(WhereDefTranslator.mkStringAsLet).mkString("\n")}]"
+                strBuf ++= s"\n\t${CodeGenerator.buildString(decl.body)})"
             }
-            strBuf ++= s"${CodeGenerator.buildString(decl.body)})\n"
           }
           strBuf ++= ")\n\n"
         }
         else {
-          strBuf ++= s"\n(defn ${node.id} [" + node.args.mkString(" ") + "]\n"
+          val args: List[String] = 0.until(node.count).map(i => s"arg_$i").toList
+          strBuf ++= s"\n(defn ${node.id} [" + args.mkString(" ") + "]\n"
+          if (node.count == node.args.length) {
+            strBuf ++= "(let [" + node.args.zip(args).map(p => s"${p._1} ${p._2}").mkString(" ") + "]\n"
+          } else if (node.count < node.args.length){
+            val args_args = args ++ args
+            strBuf ++= "(let [" + node.args.zip(args_args).map(p => s"${p._1} ${p._2}").mkString(" ") + "]\n"
+          }
           strBuf ++= "\t(cond\n"
-          val args: List[String] = node.args
           for (decl <- node.decls) {
             var andList = List.empty[String]
             var letDecls = List.empty[String]
@@ -198,6 +244,8 @@ object DeclGen {
                 // nothing
                 case DefArg(_:EmptyListExpresion) =>
                   andList = s"\t\t(empty? ${namedArgs.head})" :: andList
+
+
 
                 case DefArg(ConsExpression(args)) =>
                   val tail = args.last
@@ -228,6 +276,18 @@ object DeclGen {
                   letDecls = argDecls.reverse ++ letDecls
                 case DefArg(IdIsType(_, cls)) =>
                   andList = s"(isa-type? $cls ${namedArgs.head})" :: andList
+
+                case DefArg(VariadicArg(expr)) =>
+                  andList = s"\t\t(= ${namedArgs.head} $expr)" :: andList
+
+                case DefArg(TupleExpression(List(lit:Expression, Identifier("_"))))  =>
+                  lit match {
+                    case Identifier(n) =>
+                      andList = s":else " :: andList
+                      letDecls = s"[$n & _] ${namedArgs.head}" :: letDecls
+                    case _ =>
+                      andList = s"\t\t(= (head ${namedArgs.head}) ${CodeGenerator.buildString(lit)})" :: andList
+                  }
 
                 case DefArg(exp: Expression) =>
                   andList = s"\t\t(= ${namedArgs.head} ${CodeGenerator.buildString(exp)})" :: andList
@@ -262,7 +322,7 @@ object DeclGen {
               }
             }
           }
-          strBuf ++= "))\n\n"
+          strBuf ++= ")))\n\n"
         }
       strBuf.mkString
     }

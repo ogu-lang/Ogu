@@ -22,6 +22,7 @@ object IfExpression extends ExpressionParser {
     val thenPart = parsePipedOrBodyExpression(tokens)
     tokens.consumeOptionals(NL)
     val elif = if (tokens.peek(ELIF)) consumeElifPart(tokens, Nil) else Nil
+    tokens.consumeOptionals(NL)
     tokens.consume(ELSE)
     IfExpression(comp, thenPart, elif, parsePipedOrBodyExpression(tokens))
   }

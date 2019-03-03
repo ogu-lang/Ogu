@@ -4,7 +4,9 @@ def ingresar tam = prompt! #"Ingresa una secuencia de ${tam} dígitos distintos 
 
 def famas num xs = zip num xs |> filter \x -> first x == second x |> count
 
-def toques num xs = num |> filter \x -> x in xs |> count
+def toques num xs =
+    println "toques nun = " num " xs = " xs
+    num |> filter \x -> xs contains x |> count
 
 def validar n xs = if (length num) == n then num else []
     where num = xs |> filter is-digit?  |> map to-digit  |> uniq
@@ -30,13 +32,15 @@ loop intentos = 1, accion = ingresar tam do
        let num = validar tam accion
        if empty? num then
           println! "error!\n"
-          repeat with intentos = succ intentos, accion = ingresar tam
+          repeat with intentos = inc intentos, accion = ingresar tam
        else
-          println! "tu ingresaste " num
-          let (toques, famas) = (toques num sec, famas num sec)
-          println! "resultado: "  (toques - famas)  " Toques "  famas  "Famas"
-          if famas == tam then
-             println! #"Ganaste! Acertaste al intento ${intentos}! La secuencia era ${sec}"
-          else
-             repeat with intentos = succ intentos, accion = ingresar tam
+          println! "tu ingresaste " num "(es " sec ")"
+          let t = toques num sec,
+              f = famas num sec
+          in
+              println! "resultado: "  (t - t)  " Toques "  f  "Famas"
+              if f == tam then
+                 println! #"Ganaste! Acertaste al intento ${intentos}! La secuencia era ${sec}"
+              else
+                 repeat with intentos = inc intentos, accion = ingresar tam
 

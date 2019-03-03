@@ -1,14 +1,11 @@
 -- algebraic data types
 
-data Tree = Empty
-          | Leaf(value)
-          | Node(left, right)
-
+data Tree = Empty | Leaf(value) | Node(left, right)
 
 -- NOTE, in Plunke y you implements Node after Leaf you get wrong results
 
 def tmax Node(left, right) = let ml = tmax left, mr = tmax right
-                      in if ml > mr then ml else mr
+                                in if ml > mr then ml else mr
 
 def tmax Leaf(value) = value
 

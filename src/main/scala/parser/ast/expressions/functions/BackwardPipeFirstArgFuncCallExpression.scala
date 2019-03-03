@@ -6,8 +6,8 @@ import parser.ast.expressions.{CallExpression, Expression, LeftAssociativeExpres
 case class BackwardPipeFirstArgFuncCallExpression(args: List[Expression]) extends CallExpression
 
 object BackwardPipeFirstArgFuncCallExpression
-  extends LeftAssociativeExpressionParser(FunctionCallWithDollarExpression, PIPE_LEFT_FIRST_ARG) {
+  extends LeftAssociativeExpressionParser(DotoForwardExpression, PIPE_LEFT_FIRST_ARG) {
 
-  override def build(args: List[Expression]): Expression = BackwardPipeFirstArgFuncCallExpression(args)
+  override def build(args: List[Expression]): Expression = BackwardPipeFirstArgFuncCallExpression(args.reverse)
 
 }

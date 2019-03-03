@@ -4,23 +4,20 @@ import clojure.java.api.Clojure
 import codegen.{Translator, _}
 import codegen.clojure.module.ModuleGen._
 import parser.ast.module.Module
-
 import scala.io.Source
 
 
 object Interpreter {
 
+  val clojureLoader = Clojure.`var`("clojure.core", "load-string")
+
+  clojureLoader.invoke(readOguRuntime())
+  clojureLoader.invoke(readOguTurtle())
 
   def load(ast:Module): AnyRef = {
     val clojureStr = toClojure(ast)
-    println(clojureStr)
-
-    val loadStr = Clojure.`var`("clojure.core", "load-string")
-    val require = Clojure.`var`("clojure.core", "require")
-    require.invoke(Clojure.read("clojure.set"))
-    loadStr.invoke(readOguRuntime())
-    val result = loadStr.invoke(clojureStr)
-    println(s"@@RESULT = $result")
+    debug(clojureStr)
+    val result = clojureLoader.invoke(clojureStr)
     result
   }
 
@@ -33,7 +30,16 @@ object Interpreter {
     Source.fromInputStream(classLoader.getResourceAsStream("ogu/core.clj")).mkString
   }
 
+  def readOguTurtle() : String = {
+    val classLoader = this.getClass.getClassLoader
+    Source.fromInputStream(classLoader.getResourceAsStream("ogu/turtle.clj")).mkString
+  }
+
   def banner(msg: String) : Unit = {
     println(com.github.lalyos.jfiglet.FigletFont.convertOneLine(msg))
+  }
+
+  def debug(str: String): Unit = {
+    //println(str)
   }
 }

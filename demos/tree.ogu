@@ -1,20 +1,20 @@
 
 data Tree = Leaf(value) | Node(value, left, right)
 
-dispatch t-max on type
+dispatch t-max with type
 
-def t-max Leaf? leaf = .value leaf
+def t-max Leaf ? leaf = .value leaf
 
-def t-max Node? node = max ml mr mn
+def t-max Node ? node = max ml mr mn
  where ml = .left node |> t-max
 	 mr = .right node |> t-max
 	 mn = .value node
 
-dispatch t-sum on type
+dispatch t-sum with type
 
-def t-sum Leaf? leaf = .value leaf
+def t-sum Leaf ? leaf = .value leaf
 
-def t-sum Node? node = [t-sum !node.left, t-sum !node.right, !node.value] |> sum
+def t-sum Node ? node = [t-sum node.left, t-sum node.right, node.value] |> sum
 
 let arbol = Node(30, Leaf(70),
 			     Node(15,

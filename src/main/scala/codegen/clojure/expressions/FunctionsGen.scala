@@ -4,10 +4,9 @@ import codegen.{CodeGenerator, Translator}
 import parser.ast.expressions.functions._
 import codegen.clojure.expressions.ExpressionsGen._
 import parser.ast.expressions.types.{ConstructorExpression, NewCallExpression, RecordConstructorExpression}
-import parser.ast.expressions.{CallExpression, LambdaArg, LambdaSimpleArg, LambdaTupleArg}
+import parser.ast.expressions._
 
 object FunctionsGen {
-
 
   implicit object CallExpressionExpressionTranslator extends Translator[CallExpression] {
     override def mkString(node: CallExpression): String = {
@@ -17,6 +16,12 @@ object FunctionsGen {
 
         case ComposeExpressionBackward(args) =>
          s"(comp ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
+
+        case DotoForwardExpression(args) =>
+          s"(doto ${args.map(CodeGenerator.buildString(_)).mkString("\n\t")})"
+
+        case DotoBackwardExpression(args) =>
+          s"(doto ${args.reverse.map(CodeGenerator.buildString(_)).mkString("\n\t")})"
 
         case FunctionCallExpression(func, args) =>
           s"(${CodeGenerator.buildString(func)} ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
@@ -41,8 +46,9 @@ object FunctionsGen {
 
         case NewCallExpression(cls, Nil) =>
           s"($cls.)"
+
         case NewCallExpression(cls, args) =>
-          s"($cls. ${args.map(CodeGenerator.buildString(_))}"
+          s"($cls. ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
 
       }
     }
@@ -54,8 +60,7 @@ object FunctionsGen {
       node match {
         case LambdaSimpleArg(name) => name
         case LambdaTupleArg(names) => s"[${names.mkString(" ")}]"
-
-
+        case LambdaVariadicArg(name) => s"& $name"
       }
     }
   }

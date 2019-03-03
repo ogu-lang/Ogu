@@ -1,13 +1,13 @@
 package parser.ast.expressions.functions
 
-import lexer.PIPE_LEFT_FIRST_ARG
+import lexer.{PIPE_LEFT, PIPE_LEFT_FIRST_ARG}
 import parser.ast.expressions.{CallExpression, Expression, LeftAssociativeExpressionParser}
 
 case class BackwardPipeFuncCallExpression(args: List[Expression]) extends CallExpression
 
 object BackwardPipeFuncCallExpression
-  extends LeftAssociativeExpressionParser(BackwardPipeFirstArgFuncCallExpression, PIPE_LEFT_FIRST_ARG) {
+  extends LeftAssociativeExpressionParser(BackwardPipeFirstArgFuncCallExpression, PIPE_LEFT) {
 
-  override def build(args: List[Expression]): Expression = BackwardPipeFuncCallExpression(args)
+  override def build(args: List[Expression]): Expression = BackwardPipeFuncCallExpression(args.reverse)
 
 }

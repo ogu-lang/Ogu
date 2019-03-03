@@ -16,7 +16,9 @@ object LiteralsGen {
         case RegexpLiteral(re) => "#\"" + re + "\""
         case BigIntLiteral(bi) => bi.toString()
         case BigDecimalLiteral(bd) => bd.toString()
-        case CharLiteral(c) => s"\\${c.stripPrefix("\'").stripSuffix("\'")}"
+        case CharLiteral(c) =>
+          val s = s"${c.stripPrefix("\'").stripSuffix("\'")}"
+          "\\" + s.stripPrefix("\\")
         case DateTimeLiteral(date) => "#inst  \"" + s"$date" + "\""
         case DoubleLiteral(d) => d.toString
         case IntLiteral(i) => i.toString

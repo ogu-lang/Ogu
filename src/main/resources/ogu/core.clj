@@ -1,5 +1,6 @@
-(def ^:dynamic **args** [])
+(ns ogu.core)
 
+(def ^:dynamic **args** [])
 (defn banner! [msg]
   (interpreter.Interpreter/banner msg))
 
@@ -43,6 +44,8 @@
     (catch java.lang.NumberFormatException e d)))
 
 (defn  sum [args] (reduce + (seq args)))
+
+(require 'clojure.set)
 
 (defn union [a b] (clojure.set/union (set a) (set b)))
 
@@ -173,7 +176,7 @@ Returns an exact number if the base is an exact number and the power is an integ
                   (set (map (memfn getName)
                             (filter static? array))))
         all-fields (statics (.getFields the-class))
-        all-methods (statics (.gerMethods the-class))
+        all-methods (statics (.getMethods the-class))
         fields-to-do (clojure.set/intersection all-fields only)
         methods-to-do (clojure.set/intersection all-methods only)
         make-sym (fn [string]

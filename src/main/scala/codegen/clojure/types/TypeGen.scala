@@ -50,23 +50,25 @@ object TypeGen {
 
     override def mkString(node: ClassDecl): String = {
       val strBuf = new StringBuilder()
-      node match {
-        case ClassDecl(_, name, args, traits) =>
-          strBuf ++= s"(deftype $name [${args.getOrElse(List.empty[String]).mkString(" ")}]\n"
-          if (traits.nonEmpty) {
-            strBuf ++= s"\t${traits.map(CodeGenerator.buildString(_)).mkString("\n\t")}"
-          }
-          strBuf ++= ")\n\n"
-          strBuf.mkString
-
+      strBuf ++= s"(deftype ${node.name} [${node.args.getOrElse(List.empty[String]).mkString(" ")}]\n"
+      if (node.traits.nonEmpty) {
+        strBuf ++= s"\t${node.traits.map(CodeGenerator.buildString(_)).mkString("\n\t")}"
       }
+      strBuf ++= ")\n\n"
+      strBuf.mkString
     }
   }
 
   implicit object RecordDeclTranslator extends Translator[RecordDecl] {
 
     override def mkString(node: RecordDecl): String = {
-      s"(defrecord ${node.name} [${node.args.mkString(" ")}])\n"
+      val strBuf = new StringBuilder()
+      strBuf ++= s"(defrecord ${node.name} [${node.args.mkString(" ")}]\n"
+      if (node.traits.nonEmpty) {
+        strBuf ++= s"\t${node.traits.map(CodeGenerator.buildString(_)).mkString("\n\t")}"
+      }
+      strBuf ++= ")\n\n"
+      strBuf.mkString
     }
 
   }

@@ -20,6 +20,14 @@ object DeclsExprGen {
 
   }
 
+  implicit object UsingExpressionTranslator extends Translator[UsingExpression] {
+
+    override def mkString(node: UsingExpression): String = {
+      s"(with-open [${LetIdTranslator.mkString(node.decl.id)} ${CodeGenerator.buildString(node.decl.value)}]" +
+        s"\n\t${CodeGenerator.buildString(node.inExpr)})\n"
+    }
+  }
+
   implicit object LetDeclExpressionTranslator extends Translator[LetDeclExpression] {
 
     override def mkString(node: LetDeclExpression): String = {
@@ -56,7 +64,6 @@ object DeclsExprGen {
     }
   }
 
-
   implicit object VarDeclExpressionTranslator extends Translator[VarDeclExpression] {
 
     override def mkString(node: VarDeclExpression): String = {
@@ -77,7 +84,6 @@ object DeclsExprGen {
       }
       strBuf.mkString
     }
-
 
     def toClojureOguVariable(variable: LetVariable) : String = {
         s"(-def-ogu-var- ${CodeGenerator.buildString(variable.id)} ${CodeGenerator.buildString(variable.value)})\n"
@@ -102,6 +108,7 @@ object DeclsExprGen {
       for (v <- decls) {
         v match {
           case LetVariable(LetSimpleId(id), _) => varDecls = varDecls - id
+          case _ =>
         }
       }
     }

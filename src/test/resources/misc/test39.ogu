@@ -1,0 +1,9 @@
+-- algebraic data types
+
+data Tree = Empty | Leaf(value) | Node(left, right)
+
+def tmax Leaf(value) = value
+
+let tree = Leaf(10)
+
+tmax tree

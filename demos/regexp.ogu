@@ -1,6 +1,6 @@
-'aaabbb' =~ #/(a|b)+/
+"aaabbb" =~ #/(a|b)+/
 
-'basas' !~ #/(a|b)+/
+"basas" !~ #/(a|b)+/
 
 
 

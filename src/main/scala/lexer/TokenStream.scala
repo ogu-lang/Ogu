@@ -55,6 +55,15 @@ case class TokenStream(var tokens: List[TOKEN]) {
     case Some(token) => token
   }
 
+  def pop() : TOKEN = {
+    tokens.headOption match {
+      case None => EOF
+      case Some(result) =>
+        tokens = tokens.tail
+        result
+    }
+  }
+
   def consume(n: Int, token: TOKEN): Unit = {
     if (n > 0) {
       consume(token)
@@ -89,7 +98,8 @@ case class TokenStream(var tokens: List[TOKEN]) {
       result.asInstanceOf[T]
     }
     else {
-      throw UnexpectedTokenClassException()
+      println(s"!!!@@@${tokens}")
+      throw UnexpectedTokenClassException(tokens.head)
     }
   }
 

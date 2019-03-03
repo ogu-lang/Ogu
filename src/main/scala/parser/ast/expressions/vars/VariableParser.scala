@@ -33,6 +33,12 @@ object VariableParser {
         val result = parseInBodyExpr(tokens)
         tokens.consume(DEDENT)
         result
+      case INDENT if tokens.peek(2, IN)  =>
+        tokens.consume(INDENT)
+        val result = parseInBodyExpr(tokens)
+        tokens.consumeOptionals(NL)
+        tokens.consume(DEDENT)
+        result
       case _ => None
     }
   }
@@ -57,7 +63,7 @@ object VariableParser {
   }
 
 
-  private[this] def parseLetVar(tokens:TokenStream) : LetVariable = {
+  def parseLetVar(tokens:TokenStream) : LetVariable = {
     tokens.consumeOptionals(NL)
     val id = parseLetId(tokens)
     tokens.consume(ASSIGN)

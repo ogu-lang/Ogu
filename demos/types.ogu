@@ -1,34 +1,32 @@
-
-trait Vehicle is
-
-    move this
+trait Vehicle
+    def move this
 
 
 record Car {company, model, year}
-   as Vehicle
-   def move this = println! "moving car " company model year
+    extends Vehicle
+
+        def move this = println! "moving car " company model year
 
 record Plane {company, series, year}
-   as Vehicle
-   def move this = println! "flying plane " company series year
+   extends Vehicle
+        def move this = println! "flying plane " company series year
 
 record Ship {name}
 
-    as Vehicle
+    extends Vehicle
 
-    def move this
-        | name == "Titanic" = println! name "sink"
-        | otherwise = println! "sail"
+        def move this
+            | name == "Titanic" = println! name "sink"
+            | otherwise = println! "sail"
 
 let mustang56 = Car {company = "Ford", model = "Mustang", year = 1956}
 
 let boeing747 = Plane{company = "Boeing", series = "747", year = 2000}
 
-
 def show-model p:Plane = println! (.series  p) (.company  p)
 def show-model c:Car   = println! !c.model !c.company
 
-dispatch show on class
+dispatch show with class
 
 def show Plane ? plane = println! "plane " -- (show-model plane)
 def show Car   ? car = println!   "car " -- (show-model car)
@@ -38,7 +36,6 @@ let queen = Ship ("Queen Mary")
 
 show mustang56
 show boeing747
-
 
 show-model mustang56
 show-model boeing747

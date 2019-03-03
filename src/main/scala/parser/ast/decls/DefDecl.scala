@@ -7,9 +7,6 @@ import parser.ast.expressions._
 
 class DefDecl(id: String) extends LangNode
 
-
-
-
 object DefDecl {
 
   def parse(inner: Boolean, tokens: TokenStream): DefDecl = {

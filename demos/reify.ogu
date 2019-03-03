@@ -4,32 +4,27 @@ record Banana {quantity}
 record Grape  {quantity}
 record Orange {quantity}
 
-trait Fruit is
+trait Fruit
 
     def subtotal item
 
 
-extend Banana
-    as Fruit
+extends Banana with Fruit
 
     def subtotal item = 158 * (.quantity item)
 
-extend Grape
-    as Fruit
+extends Grape with Fruit
 
     def subtotal item = 178 * (.quantity item)
 
 
-extend Orange
-    as Fruit
+extends Orange with Fruit
 
     def subtotal item = 98 * (.quantity item)
 
 
-def coupon item = reify as Fruit
+def coupon item = reify Fruit
                      def subtotal _ = 0.75 * (subtotal item)
-
-                  end
 
 
 

@@ -16,7 +16,8 @@ object FunctionCallExpression extends ExpressionParser {
     else if (tokens.peek(classOf[ATOM])) {
       Atom.parse(tokens)
     } else {
-      throw InvalidExpression()
+      println(s"@@@@!!!${tokens}")
+      throw InvalidExpression(tokens.nextToken())
     }
     if (funcCallEndToken(tokens)) {
       expr
@@ -25,14 +26,18 @@ object FunctionCallExpression extends ExpressionParser {
     }
   }
 
-  private[this] def parseCallArgs(tokens: TokenStream, args: List[Expression]) : List[Expression] = {
+  def parseCallArgs(tokens: TokenStream, args: List[Expression]) : List[Expression] = {
     if (funcCallEndToken(tokens)) {
       args.reverse
     }
     else {
       val expr = if (tokens.peek(classOf[ID])) {
          Identifier(tokens.consume(classOf[ID]).value)
-      } else {
+      }
+      else if (tokens.peek(classOf[ATOM])) {
+        Atom.parse(tokens)
+      }
+      else {
         FunctionCallWithDollarExpression.parse(tokens)
       }
       parseCallArgs(tokens, expr :: args)

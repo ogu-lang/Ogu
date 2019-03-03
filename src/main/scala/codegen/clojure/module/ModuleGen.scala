@@ -6,7 +6,7 @@ import codegen.clojure.types.TypeGen._
 import codegen.{CodeGenerator, Translator}
 import parser.ast.LangNode
 import parser.ast.expressions.TopLevelExpression
-import parser.ast.module._
+import parser.ast.module.{ImportAll, _}
 import parser.ast.decls.{DispatchDecl, MultiDefDecl, MultiMethod, SimpleDefDecl}
 import parser.ast.types._
 
@@ -14,16 +14,22 @@ import scala.annotation.tailrec
 
 object ModuleGen {
 
-
   def toClojureImportClauses(importClauses: List[ImportClause]): String = {
     val strBuf = new StringBuilder()
-    val (cljImp, jvmImp) = importClauses.span {
+    val (imp, staticImp) = importClauses.span {
+      case FromJvmRequireStatic(_,_) => false
+      case FromCljRequireStatic(_, _) => false
+      case _ => true
+    }
+
+    val (cljImp, jvmImp) = imp.span {
       case CljImport(_) => true
       case FromCljRequire(_, _) => true
+      case FromCljRequireAll(_) => true
       case _ => false
     }
     if (cljImp.nonEmpty) {
-      strBuf ++= s"(:require [${cljImp.map(toClojureImportClause).mkString(" ")}]) "
+      strBuf ++= s"(:require ${cljImp.map(toClojureImportClause).mkString(" ")}) "
     }
     if (jvmImp.nonEmpty) {
       strBuf ++= s"(:import ${jvmImp.map(toClojureJvmImportClause).mkString(" ")}) "
@@ -31,16 +37,38 @@ object ModuleGen {
     strBuf.toString
   }
 
+
+  def toClojureImportStaticClauses(importClauses: List[ImportClause]): String = {
+    val strBuf = new StringBuilder()
+    val staticImp = importClauses.filter {
+      case FromJvmRequireStatic(_,_) => true
+      case FromCljRequireStatic(_, _) => true
+      case _ => false
+    }
+
+    if (staticImp.nonEmpty) {
+      staticImp.foreach {
+        case FromJvmRequireStatic(from, names) =>
+          strBuf ++= s"(import-static $from ${names.map(toClojureImportAlias).mkString(" ")})\n"
+        case FromCljRequireStatic(from, names) =>
+          strBuf ++= s"(import-static $from ${names.map(toClojureImportAlias).mkString(" ")})\n"
+      }
+    }
+
+    strBuf.toString
+  }
+
   def toClojureImportClause(importClause: ImportClause) : String = {
     importClause match {
-      case CljImport(name) => name.map(toClojureImportAlias).mkString(" ")
+      case CljImport(name) => name.map(i => "["+toClojureImportAlias(i)+"]").mkString(" ")
+      case FromCljRequireAll(name) => s"[$name :refer :all]"
       case FromCljRequire(from, names) =>
-        val renames = names.filter(p => p.alias.nonEmpty)
+        val renames = names.filter(p => p.isInstanceOf[ImportRename])
         if (renames.isEmpty) {
-          s"$from :refer [${names.map(n => n.name).mkString(" ")}] "
+          s"[$from :refer [${names.map(n => toClojureImportAlias(n)).mkString(" ")}]]"
         }
         else {
-          s"$from :refer [${names.map(n => n.name)} :rename ${renames.map(toClojureImporteRename).mkString(", ")}] "
+          s"[$from :refer [${names.map(n => toClojureImportAlias(n))} :rename ${renames.map(toClojureImportRename).mkString(", ")}]]"
         }
       case _ => ""
     }
@@ -50,22 +78,24 @@ object ModuleGen {
     importClause match {
       case JvmImport(name) => name.map(toClojureImportAlias).mkString(" ")
       case FromJvmRequire(from, names) =>
-        s"($from ${names.map(n => n.name).mkString(" ")}) "
+        s"($from ${names.map(n => toClojureImportAlias(n)).mkString(" ")}) "
       case _ => ""
     }
   }
 
   def toClojureImportAlias(importAlias: ImportAlias) : String = {
     importAlias match {
-      case ImportAlias(name, None) => name
-      case ImportAlias(name, Some(alias)) => s"$name :as $alias"
+      case ImportAll => ":all"
+      case ImportSimple(name) => name
+      case ImportRename(name, alias) => s"$name :as $alias"
     }
   }
 
-  def toClojureImporteRename(importAlias: ImportAlias) : String = {
+  def toClojureImportRename(importAlias: ImportAlias) : String = {
     importAlias match {
-      case ImportAlias(_, None) => ""
-      case ImportAlias(name, Some(alias)) => s"$name $alias"
+      case ImportAll => ":all"
+      case ImportSimple(_) => ""
+      case ImportRename(name, alias) => s"$name $alias"
     }
   }
 
@@ -73,8 +103,7 @@ object ModuleGen {
   implicit object ModuleTranslator extends Translator[Module] {
 
     override def mkString(node: Module): String = {
-
-      s"(ns ${node.name} ${mkString(node.imports)})\n\n" + genDecls(node.decls, Nil)
+      s"(ns ${node.name} (:require [ogu.core :refer :all]) ${mkString(node.imports)})\n\n${staticImports(node.imports)}" + genDecls(node.decls, Nil)
     }
 
     private[this] def mkString(imports: Option[List[ImportClause]]): String = {
@@ -84,6 +113,12 @@ object ModuleGen {
       }
     }
 
+    private[this] def staticImports(maybeClauses: Option[List[ImportClause]]): String = {
+      maybeClauses match {
+        case None => ""
+        case Some(l) => toClojureImportStaticClauses(l)
+      }
+    }
   }
 
   @tailrec
