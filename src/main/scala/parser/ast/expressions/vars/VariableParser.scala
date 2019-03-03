@@ -63,7 +63,7 @@ object VariableParser {
   }
 
 
-  private[this] def parseLetVar(tokens:TokenStream) : LetVariable = {
+  def parseLetVar(tokens:TokenStream) : LetVariable = {
     tokens.consumeOptionals(NL)
     val id = parseLetId(tokens)
     tokens.consume(ASSIGN)

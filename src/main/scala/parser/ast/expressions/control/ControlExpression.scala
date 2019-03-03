@@ -3,6 +3,7 @@ package parser.ast.expressions.control
 import lexer._
 import parser.ast.expressions._
 import parser.InvalidNodeException
+import parser.ast.expressions.vars.UsingExpression
 
 class ControlExpression extends Expression
 
@@ -23,6 +24,7 @@ object ControlExpression extends ExpressionParser {
       case THROW => ThrowExpression.parse(tokens)
       case TRY => TryExpression.parse(tokens)
       case UNTIL => UntilExpression.parse(tokens)
+      case USING => UsingExpression.parse(tokens)
       case WHEN => WhenExpression.parse(tokens)
       case WHILE => WhileExpression.parse(tokens)
       case token => throw InvalidNodeException(token)

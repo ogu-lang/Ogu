@@ -64,6 +64,7 @@ case object THROW extends CONTROL
 case object TRAIT extends DECL
 case object TRY extends CONTROL
 case object UNTIL extends CONTROL
+case object USING extends CONTROL
 case object VAR extends DECL
 case object WHEN extends CONTROL
 case object WHERE extends KEYWORD
@@ -194,6 +195,7 @@ object KEYWORD_MAP {
     ("true", TRUE),
     ("try", TRY),
     ("until", UNTIL),
+    ("using", USING),
     ("var", VAR),
     ("val", LET),
     ("when", WHEN),

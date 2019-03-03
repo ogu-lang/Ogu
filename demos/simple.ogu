@@ -1,6 +1,6 @@
-var sum = 0
+var suma = 0
 for i in [0 .. 999] do
     when i % 3 == 0 || i % 5 == 0 then
-        set sum = sum + i
-    set sum = sum + 0
-println! "la suma es" sum
+        set suma = suma + i
+    set suma = suma + 0
+println! "la suma es" suma

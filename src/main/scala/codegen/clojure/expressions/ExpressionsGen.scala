@@ -24,7 +24,7 @@ import parser.ast.expressions.literals.{LiteralExpression, StringLiteral}
 import parser.ast.expressions.logical.LogicalExpression
 import parser.ast.expressions.regexp.RegexExpression
 import parser.ast.expressions.types.{DictionaryExpression, SetExpression, TupleExpression, ValidRangeExpression}
-import parser.ast.expressions.vars.{BindDeclExpression, LetDeclExpression, VarDeclExpression}
+import parser.ast.expressions.vars.{BindDeclExpression, LetDeclExpression, UsingExpression, VarDeclExpression}
 
 
 object ExpressionsGen {
@@ -89,6 +89,7 @@ object ExpressionsGen {
         case se: SetExpression => CodeGenerator.buildString(se)
         case te: ThrowExpression => CodeGenerator.buildString(te)
         case te: TupleExpression => CodeGenerator.buildString(te)
+        case ue: UsingExpression => CodeGenerator.buildString(ue)
         case re: ValidRangeExpression => CodeGenerator.buildString(re)
         case vd: VarDeclExpression => CodeGenerator.buildString(vd)
         case _ => s"EXPRESSION(${node.getClass})"

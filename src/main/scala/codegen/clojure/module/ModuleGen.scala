@@ -60,7 +60,7 @@ object ModuleGen {
 
   def toClojureImportClause(importClause: ImportClause) : String = {
     importClause match {
-      case CljImport(name) => name.map(toClojureImportAlias).mkString(" ")
+      case CljImport(name) => name.map(i => "["+toClojureImportAlias(i)+"]").mkString(" ")
       case FromCljRequireAll(name) => s"[$name :refer :all]"
       case FromCljRequire(from, names) =>
         val renames = names.filter(p => p.isInstanceOf[ImportRename])
