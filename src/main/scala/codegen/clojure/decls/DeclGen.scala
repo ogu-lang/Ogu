@@ -336,14 +336,10 @@ object DeclGen {
           s"$id (fn [${args.map(CodeGenerator.buildString(_)).mkString(" ")}] \n" +
             s"(cond ${guards.map(CodeGenerator.buildString(_)).mkString("\n")}))"
         case WhereDefTupled(idList, None, body) =>
-          var strBuf = new StringBuilder()
-          strBuf ++= s"_*temp*_ ${CodeGenerator.buildString(body)}\n"
-          var i = 0
-          for (id <- idList) {
-            strBuf ++= s"${id} (nth _*temp*_ $i)\n"
-            i += 1
-          }
-          strBuf.toString()
+          val stemp = s"_*temp*_ ${CodeGenerator.buildString(body)}\n"
+          val indices = 0.until(idList.length)
+          val sind = idList.zip(indices).map{case (id,i) => s"$id (nth _*temp*_ $i)"}.mkString("\n")
+          stemp + sind
       }
     }
   }
@@ -354,6 +350,7 @@ object DeclGen {
       node match {
         case sd: SimpleDefDecl => CodeGenerator.buildString(sd)
         case md: MultiDefDecl => CodeGenerator.buildString(md)
+        case mm: MultiMethod => CodeGenerator.buildString(mm)
       }
     }
   }
