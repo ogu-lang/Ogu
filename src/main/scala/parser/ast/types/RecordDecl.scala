@@ -4,7 +4,7 @@ import lexer._
 import parser.ast._
 
 
-case class RecordDecl(name: String, args: List[String]) extends LangNode
+case class RecordDecl(name: String, args: List[String], traits: List[TraitDef]) extends LangNode
 
 object RecordDecl {
 
@@ -14,6 +14,7 @@ object RecordDecl {
     tokens.consume(LCURLY)
     val args = consumeListOfIdsSepByComma(tokens)
     tokens.consume(RCURLY)
-    RecordDecl(name, args)
+    tokens.consumeOptionals(NL)
+    RecordDecl(name, args, TraitDef.parse(tokens))
   }
 }

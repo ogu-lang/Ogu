@@ -48,7 +48,7 @@ object ExpressionsGen {
             strBuf ++= "@"
           }
           val pos = id.lastIndexOf('.')
-          if (pos <= 1) {
+          if (pos < 1) {
             strBuf ++= id
           } else {
             var containsClass = false

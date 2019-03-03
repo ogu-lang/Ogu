@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. This change
 - add proxy
 - add sync
 - doto
+- turtle graphics
 
 ### Fixed 
 

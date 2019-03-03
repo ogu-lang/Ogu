@@ -19,12 +19,12 @@ record Ship {name}
             | name == "Titanic" = println! name "sink"
             | otherwise = println! "sail"
 
-let mustang56 = Car {company = "Ford", model = "Mustang", year = 1956}
+let mustang56 = Car {"Ford", "Mustang", 1956}
 
-let boeing747 = Plane{company = "Boeing", series = "747", year = 2000}
+let boeing747 = Plane {"Boeing", "747", 2000}
 
-def show-model p:Plane = println! (.series  p) (.company  p)
-def show-model c:Car   = println! !c.model !c.company
+def show-model p : Plane = println! (.series  p) (.company  p)
+def show-model c : Car   = println! c.model c.company
 
 dispatch show with class
 
