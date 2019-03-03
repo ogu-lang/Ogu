@@ -10,8 +10,9 @@ import parser.ast.expressions.types.TupleExpression
 case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(id) {
   def patternMatching(): Boolean = decls.exists(_.patterMatching())
 
+  val count = decls.map(_.args.size).max
+
   def args : List[String] = {
-    val count = decls.map(_.args.size).max
     val ids: List[String] = decls.flatMap(decl => decl.args.flatMap {
       case DefArg(Identifier(name)) => Some(name)
       case DefArg(IdIsType(name, _)) => Some(name)

@@ -32,6 +32,7 @@ def show Plane ? plane = println! "plane " -- (show-model plane)
 def show Car   ? car = println!   "car " -- (show-model car)
 
 let titanic = Ship ("Titanic")
+
 let queen = Ship ("Queen Mary")
 
 show mustang56

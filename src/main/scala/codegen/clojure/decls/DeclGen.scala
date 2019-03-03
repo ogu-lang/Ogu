@@ -216,9 +216,15 @@ object DeclGen {
           strBuf ++= ")\n\n"
         }
         else {
-          strBuf ++= s"\n(defn ${node.id} [" + node.args.mkString(" ") + "]\n"
+          val args: List[String] = 0.until(node.count).map(i => s"arg_$i").toList
+          strBuf ++= s"\n(defn ${node.id} [" + args.mkString(" ") + "]\n"
+          if (node.count == node.args.length) {
+            strBuf ++= "(let [" + node.args.zip(args).map(p => s"${p._1} ${p._2}").mkString(" ") + "]\n"
+          } else if (node.count < node.args.length){
+            val args_args = args ++ args
+            strBuf ++= "(let [" + node.args.zip(args_args).map(p => s"${p._1} ${p._2}").mkString(" ") + "]\n"
+          }
           strBuf ++= "\t(cond\n"
-          val args: List[String] = node.args
           for (decl <- node.decls) {
             var andList = List.empty[String]
             var letDecls = List.empty[String]
@@ -316,7 +322,7 @@ object DeclGen {
               }
             }
           }
-          strBuf ++= "))\n\n"
+          strBuf ++= ")))\n\n"
         }
       strBuf.mkString
     }
