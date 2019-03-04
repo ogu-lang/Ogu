@@ -9,11 +9,11 @@ object NoMatchExpr extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
     val expr = ReMatchExpr.parse(tokens)
-    if (!tokens.peek(NOT_MATCHES)) {
+    if (!tokens.peek(NOTMATCHES)) {
       expr
     }
     else {
-      tokens.consume(NOT_MATCHES)
+      tokens.consume(NOTMATCHES)
       tokens.consumeOptionals(NL)
       NoMatchExpr(expr, ReMatchExpr.parse(tokens))
     }

@@ -46,22 +46,22 @@ object PartialOperExpression extends ExpressionParser {
   private[this] def classifyPartialOper(parOp: OPER, args: List[Expression]) : Expression = {
     parOp match {
       case PLUS => PartialAdd(args)
-      case PLUS_BIG => PartialBigAdd(args)
+      case PLUSBIG => PartialBigAdd(args)
       case MINUS => PartialSub(args)
       case MINUS_BIG => PartialBigSub(args)
       case MULT => PartialMul(args)
-      case MULT_BIG => PartialBigMul(args)
+      case MULTBIG => PartialBigMul(args)
       case DIV => PartialDiv(args)
       case MOD => PartialMod(args)
       case EQUALS => PartialEQ(args)
-      case NOT_EQUALS => PartialNE(args)
+      case NOTEQUALS => PartialNE(args)
       case LT => PartialLT(args)
       case GT => PartialGT(args)
       case LE => PartialLE(args)
       case GE => PartialGE(args)
       case POW => PartialPow(args)
       case CONS => PartialCons(args)
-      case PLUS_PLUS => PartialConcat(args)
+      case PLUSPLUS => PartialConcat(args)
       case _ => throw PartialOperNotSupported(parOp)
     }
   }

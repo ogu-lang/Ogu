@@ -8,30 +8,29 @@ object EmptyOptions extends Options(false, false, false, Nil, Nil)
 
 object Options {
 
-
   def parse(args: List[String]) : OPT = {
     args match {
       case Nil => NoOptions
       case _ =>
         val init = args.takeWhile(a => !a.equalsIgnoreCase("--"))
         val rest = args.drop(init.length)
-        parseOptions(init, rest.dropWhile(a => a.equalsIgnoreCase("--")))
+        parse(init, rest.dropWhile(a => a.equalsIgnoreCase("--")))
     }
   }
 
-  def parseOptions(args: List[String], rest: List[String]) : Options = {
-    parseOptions(args, Options(true, false, false, Nil, rest))
+  private[this] def parse(args: List[String], rest: List[String]) : Options = {
+    parse(args, Options(true, false, false, Nil, rest))
   }
 
-  private[this] def parseOptions(args: List[String], options: Options) : Options = {
+  private[this] def parse(args: List[String], options: Options) : Options = {
     args.headOption match {
       case None => options.copy(files = options.files.reverse)
       case Some(value) =>
         value match {
-          case "-n" | "--no-banner" => parseOptions(args.tail, options.copy(banner = false))
-          case "-p" | "--print" => parseOptions(args.tail, options.copy(print = true))
-          case "-h" | "--help" => parseOptions(args.tail, options.copy(usage = true))
-          case _ => parseOptions(args.tail, options.copy(files = value :: options.files))
+          case "-n" | "--no-banner" => parse(args.tail, options.copy(banner = false))
+          case "-p" | "--print" => parse(args.tail, options.copy(print = true))
+          case "-h" | "--help" => parse(args.tail, options.copy(usage = true))
+          case _ => parse(args.tail, options.copy(files = value :: options.files))
         }
     }
   }

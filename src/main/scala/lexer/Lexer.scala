@@ -170,7 +170,7 @@ class Lexer {
       }
       else {
         parseMultiLineString = false
-        STRING_LITERAL(currentString.mkString)
+        STRING(currentString.mkString)
       }
     }
     else {
@@ -180,15 +180,15 @@ class Lexer {
           currentString ++= str
           this.parseMultiLineString = true
           SKIP
-        case '\"' => STRING_LITERAL(str)
-        case '\'' => CHAR_LITERAL(str)
+        case '\"' => STRING(str)
+        case '\'' => CHAR(str)
         case '#' => tryParseHashTag(str, currentLine)
         case ':' if str.length > 1 && str != "::" => ATOM(str)
         case _ =>
           var token = tryParseId(str, currentLine)
-          if (token.isInstanceOf[LEXER_ERROR])
+          if (token.isInstanceOf[ERROR])
             token = tryParseNum(str, currentLine)
-          if (token.isInstanceOf[LEXER_ERROR])
+          if (token.isInstanceOf[ERROR])
             token = tryParseOp(str, currentLine)
           token
       }
@@ -226,7 +226,7 @@ class Lexer {
         val s = str.takeWhile(c => !isIdentifierChar(c))
         val isValidId = s.length < str.length
         if (!isValidId) {
-          LEXER_ERROR(currentLine, str)
+          ERROR(currentLine, str)
         } else {
           val id = if (str.endsWith("...")) {
             str.substring(0, str.length - 3)
@@ -253,28 +253,28 @@ class Lexer {
     val value = BigDecimal(str)
     if (isIntegerValue(value)) {
       if (value < Int.MaxValue)
-        INT_LITERAL(value.toIntExact)
+        INT(value.toIntExact)
       else if (value < Long.MaxValue)
-        LONG_LITERAL(value.toLongExact)
+        LONG(value.toLongExact)
       else
-        BIGINT_LITERAL(value.toBigInt())
+        BIGINT(value.toBigInt())
     }
     else {
       if (value.isExactDouble)
-        DOUBLE_LITERAL(value.toDouble)
+        DOUBLE(value.toDouble)
       else if (value.isValidLong)
-        LONG_LITERAL(value.toLongExact)
+        LONG(value.toLongExact)
       else if (value.isBinaryFloat)
-        FLOAT_LITERAL(value.toFloat)
+        FLOAT(value.toFloat)
       else
-        BIGDECIMAL_LITERAL(value)
+        BIGDECIMAL(value)
     }
   }
 
   private[this] def tryParseNum(str: String, currentLine: Int): TOKEN = {
     Try(strToNumToken(str)) match {
       case Success(token) => token
-      case Failure(_) => LEXER_ERROR(currentLine, str)
+      case Failure(_) => ERROR(currentLine, str)
     }
   }
 
@@ -293,7 +293,7 @@ class Lexer {
         }
         token
       case None =>
-        LEXER_ERROR(currentLine, str)
+        ERROR(currentLine, str)
     }
 
   private[this] def tryParseHashTag(str: String, currentLine: Int): TOKEN =
@@ -302,13 +302,13 @@ class Lexer {
         parenLevel += 1
         HASHLCURLY
       case _ if str.startsWith("#\"") =>
-        FSTRING_LITERAL(str.substring(1))
+        FSTRING(str.substring(1))
       case _ if str.startsWith("#/") =>
-        REGEXP_LITERAL(str.substring(2, str.length - 1))
+        REGEXP(str.substring(2, str.length - 1))
       case _ =>
-        Try(ISODATETIME_LITERAL(new DateTime(str.substring(1)))) match {
+        Try(ISODATETIME(new DateTime(str.substring(1)))) match {
           case Success(token) => token
-          case Failure(_) => LEXER_ERROR(currentLine, str)
+          case Failure(_) => ERROR(currentLine, str)
         }
     }
 

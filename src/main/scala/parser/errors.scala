@@ -1,6 +1,6 @@
 package parser
 
-import lexer.{LEXER_ERROR, TOKEN}
+import lexer.{ERROR, TOKEN}
 
 case class InvalidNodeException(token: TOKEN) extends Throwable
 
@@ -16,7 +16,7 @@ case class InvalidLetDeclaration(message: String) extends Throwable
 
 case class CantAssignToExpression() extends Throwable
 
-case class LexerError(error: LEXER_ERROR) extends Throwable
+case class LexerError(error: ERROR) extends Throwable
 
 case class InvalidDef() extends Throwable
 

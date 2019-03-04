@@ -42,7 +42,7 @@ case class TokenStream(var tokens: List[TOKEN]) {
       case None => false
       case Some(token) =>
         token match {
-          case lexererror: LEXER_ERROR =>
+          case lexererror: ERROR =>
             throw LexerError(lexererror)
           case _ =>
         }
