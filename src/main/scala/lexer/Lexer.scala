@@ -18,8 +18,7 @@ class Lexer {
 
   def scanLine(inputLine: String, lineNumber: Int): List[TOKEN] = {
     // remove comments
-    val withComments = splitComments(inputLine)
-    val textLine = withComments.head
+    val textLine = removeComments(inputLine)
     val len = textLine.length
     val (iniCol, indents) = scanIndentation(textLine, lineNumber, len)
     val tokens = if (iniCol >= len) {
@@ -37,27 +36,28 @@ class Lexer {
     result.filter(t => t != SKIP)
   }
 
-  private[this] def splitComments(line: String) : List[String] = {
-    var result = List.empty[String]
-    var insideString = false
-    var commentFound = -1
-    var pos = 0
-    while (pos < line.length && commentFound < 0) {
-      if (line(pos) == '-' && (pos+1) < line.length && line(pos+1) == '-' && !insideString) {
-        commentFound = pos
-      }
-      if (line(pos) == '"') {
-        insideString = !insideString
-      }
-      if (line(pos) == '\\') {
-        pos += 1
-      }
-      pos += 1
-    }
-    if (commentFound >= 0) {
-      List(line.substring(0, commentFound), line.substring(commentFound))
+  private[this] def removeComments(line: String): String = {
+    val commentPos = findCommentPos(line, 0, false)
+    if (commentPos < 0) {
+      line
     } else {
-      List(line)
+      line.substring(0, commentPos)
+    }
+  }
+
+  private[this] def findCommentPos(line:String, pos: Int, insideString: Boolean) : Int = {
+    line.headOption match {
+      case None => -1
+      case Some(c) =>
+        if (line.startsWith("--") && !insideString)
+          pos
+        else {
+          c match {
+            case '\\' => findCommentPos(line.drop(2), pos + 2, insideString)
+            case '"' => findCommentPos(line.tail, pos + 1, !insideString)
+            case _ => findCommentPos(line.tail, pos + 1, insideString)
+          }
+        }
     }
   }
 
@@ -196,7 +196,7 @@ class Lexer {
   }
 
 
-  def scanIndentation(text: String, currentLine: Int,  len: Int): (Int, List[TOKEN]) =
+  def scanIndentation(text: String, currentLine: Int, len: Int): (Int, List[TOKEN]) =
     if (parenLevel > 0) {
       (0, List.empty[TOKEN])
     }
@@ -212,7 +212,7 @@ class Lexer {
       else {
         val n = indentStack.length
         indentStack = indentStack.dropWhile(p => startColumn < p && p > 0)
-        val result = List.fill(n-indentStack.length)(DEDENT)
+        val result = List.fill(n - indentStack.length)(DEDENT)
         (startColumn, result)
       }
     }
@@ -249,7 +249,7 @@ class Lexer {
 
   private[this] def isIntegerValue(bd: BigDecimal): Boolean = (bd.signum == 0) || bd.scale <= 0
 
-  private[this] def strToNumToken(str: String) : TOKEN = {
+  private[this] def strToNumToken(str: String): TOKEN = {
     val value = BigDecimal(str)
     if (isIntegerValue(value)) {
       if (value < Int.MaxValue)
@@ -319,27 +319,36 @@ class Lexer {
 
   def isBlank(c: Char): Boolean = Character.isWhitespace(c)
 
-  def isIdentifierChar(c: Char): Boolean = Character.isAlphabetic(c) || c == '_'
+  def isIdentifierChar(c: Char): Boolean =
+    c match {
+      case '_' => true
+      case _ => Character.isAlphabetic(c)
+    }
 
   def isPunct(c: Char): Boolean = punctChars contains c
 
   def isNumericChar(c: Char): Boolean = Character.isDigit(c)
 
-  def isTimeValidChar(c: Char): Boolean = c == '-' || c == ':' || Character.isDigit(c) || Character.isUpperCase(c)
+  def isTimeValidChar(c: Char): Boolean = {
+    c match {
+      case '-' | ':' => true
+      case _ => Character.isDigit(c) || Character.isUpperCase(c)
+    }
+  }
 
   def isOpChar(c: Char): Boolean = opChars contains c
 
   def scanLines(lines: Iterator[(String, Int)]): TokenStream = {
     val tokens = lines.flatMap {
-      case (text,line) =>
+      case (text, line) =>
         scanLine(text, line)
     }.toList
     val result = if (indentStack.isEmpty) {
       tokens
     } else {
-        val n = indentStack.length
-        indentStack = indentStack.dropWhile(p => p > 0)
-        List.fill(n - indentStack.length)(DEDENT) ++ tokens.reverse
+      val n = indentStack.length
+      indentStack = indentStack.dropWhile(p => p > 0)
+      List.fill(n - indentStack.length)(DEDENT) ++ tokens.reverse
     }
     TokenStream(result.reverse)
   }
@@ -353,7 +362,7 @@ class Lexer {
       case Failure(e) =>
         Failure(CantScanFileException(filename, e))
       case Success(rdr) =>
-        Success(scanLines(rdr.getLines.zipWithIndex.filter(_._1.length > 0)))
+        Success(scanLines(rdr.getLines.zipWithIndex.filter { case (s, _) => s.nonEmpty }))
     }
   }
 
@@ -363,7 +372,7 @@ class Lexer {
 
   def scanString(code: String): Try[TokenStream] = {
     Try {
-      scanLines(code.split('\n').zipWithIndex.filter(_._1.length > 0).toIterator)
+      scanLines(code.split('\n').zipWithIndex.filter { case (s, _) => s.nonEmpty }.toIterator)
     }
   }
 
