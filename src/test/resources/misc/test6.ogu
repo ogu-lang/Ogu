@@ -4,12 +4,8 @@
 
 def multiplicar x y = x * y
 
-
 let doblar = curry multiplicar 2
 
-println! $ multiplicar 2 4
-
-println! $ doblar 4
 
 doblar 4
 

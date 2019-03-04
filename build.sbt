@@ -1,7 +1,7 @@
 
 name := "ogu-ferrilo"
 
-version := "0.1"
+version := "0.2.5"
 
 scalaVersion := "2.12.8"
 

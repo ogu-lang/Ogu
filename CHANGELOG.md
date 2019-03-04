@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file. This change
 - add sync
 - doto
 - turtle graphics
+- add **args**
+- arguments parsing
 
 ### Fixed 
 

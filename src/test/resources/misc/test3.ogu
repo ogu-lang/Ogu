@@ -10,11 +10,5 @@
 "foo" >| str "bar" >| str "zoo" >| println -- foobarzoo (clojure ->)
 
 
-val c = 5
-
-
-c >| (+ 3) >| (/ 2)  >| (- 1) >| println!
-
-c |> (== 5) |> println!
 
 "foo" >| str "bar"
