@@ -11,28 +11,32 @@ import scala.util.{Failure, Success, Try}
 
 object Backend {
 
-  def compile(fileNames: List[String]): Unit = {
+  def run(fileNames: List[String]): Unit = {
+    run(fileNames, Nil)
+  }
+
+  def run(fileNames: List[String], args: List[String]): Unit = {
+    println(s"run with args = ${args}")
     for (fileName <- fileNames) {
-      println(s"scanning $fileName...")
-      compileFile(fileName)
+      runFile(fileName, args)
     }
   }
 
-  def compileFromResource(fileName: String) : AnyRef = {
+  def runFromResource(fileName: String, args: List[String]) : AnyRef = {
     Try(getClass.getResourceAsStream(fileName)) match {
-      case Success(inputStream) => compileStream(fileName, inputStream)
+      case Success(inputStream) => runStream(fileName, inputStream, args)
       case Failure(exception) => Failure(exception)
     }
   }
 
-  def compileFile(fileName: String): AnyRef = {
+  def runFile(fileName: String, args: List[String]): AnyRef = {
     Try(new FileInputStream(new File(fileName))) match {
-      case Success(inputStream) => compileStream(fileName, inputStream)
+      case Success(inputStream) => runStream(fileName, inputStream, args)
       case Failure(exception) => Failure(exception)
     }
   }
 
-  def compileStream(fileName: String, inputStream: InputStream): AnyRef =
+  def runStream(fileName: String, inputStream: InputStream, args: List[String]): AnyRef =
     Option(inputStream) match {
       case None => Failure(new NullPointerException)
       case Some(stream) =>
@@ -41,8 +45,7 @@ object Backend {
         tryScan match {
           case Success(tokens) =>
             val parser = new Parser(fileName, tokens)
-            val ast = parser.parse()
-            Interpreter.load(ast)
+            Interpreter.load(parser.parse(), args)
           case Failure(exception) => Failure(exception)
         }
     }

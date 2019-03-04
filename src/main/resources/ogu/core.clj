@@ -1,8 +1,7 @@
 (ns ogu.core)
 
-(def ^:dynamic **args** [])
 (defn banner! [msg]
-  (interpreter.Interpreter/banner msg))
+  (interpreter.Runtime/banner msg))
 
 (def println! println)
 

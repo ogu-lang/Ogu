@@ -1,9 +1,4 @@
 -- test 1
 let a = 10
 
-println! "a es = " a
-
-
-println! "a + 1 es = " (a + 1)
-
 a + 1
