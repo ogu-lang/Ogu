@@ -3,7 +3,6 @@ package lexer
 import org.joda.time.DateTime
 
 sealed trait TOKEN
-case object SKIP extends TOKEN
 
 class OPER extends TOKEN
 class PAREN extends TOKEN
