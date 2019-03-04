@@ -90,7 +90,7 @@ object DeclGen {
       defArg match {
         case DefArg(ConstructorExpression(cls, _)) => s"$cls"
         case DefArg(RecordConstructorExpression(cls, _)) => s"$cls"
-        case d => CodeGenerator.buildString(d)
+        case _ => CodeGenerator.buildString(defArg)
       }
     }
 
@@ -125,7 +125,6 @@ object DeclGen {
             idList.zipWithIndex.map { case (id, i) => s"(def $id (nth _*temp*_ $i))" }.mkString("\n")
       }
     }
-
 
   }
 
@@ -197,67 +196,70 @@ object DeclGen {
 
     @tailrec
     private[this]
-    def buildCond(body:Expression, argDecls: List[DefArg], args: StrList, andList: StrList, lets: StrList): String = {
+    def buildCond(body:Expression, argDecls: List[DefArg], args: StrList, ands: StrList, lets: StrList): String = {
       argDecls.headOption match {
-        case None => mergeAndLets(andList, lets, body)
+        case None => mergeAndLets(ands, lets, body)
         case Some(arg) =>
+          val headArg = args.headOption.getOrElse("")
           arg match {
             case DefArg(EmptyListExpresion) =>
-              val and = s"\t\t(empty? ${args.head})"
-              buildCond(body, argDecls.tail, args.tail, and :: andList, lets)
+              buildCond(body, argDecls.tail, args.tail, s"\t\t(empty? $headArg)" :: ands, lets)
 
             case DefArg(ConsExpression(cArgs)) =>
               val tail = CodeGenerator.buildString(cArgs.last)
               val head = cArgs.init.map(CodeGenerator.buildString(_)).mkString(" ")
-              val letDecl = s"[$head & $tail] ${args.head}"
-              buildCond(body, argDecls.tail, args.tail, andList, letDecl :: lets)
+              val letDecl = s"[$head & $tail] ${args.headOption.getOrElse("")}"
+              buildCond(body, argDecls.tail, args.tail, ands, letDecl :: lets)
 
             case DefArg(ListExpression(defArgs, None)) =>
-              val letDecl = s"[${defArgs.map(CodeGenerator.buildString(_)).mkString(" ")}] ${args.head}]"
-              buildCond(body, argDecls.tail, args.tail, andList, letDecl :: lets)
+              val letDecl = s"[${defArgs.map(CodeGenerator.buildString(_)).mkString(" ")}] $headArg]"
+              buildCond(body, argDecls.tail, args.tail, ands, letDecl :: lets)
 
             case DefArg(ConstructorExpression(cls, ctorArgs)) =>
-              val and = s"(isa-type? $cls ${args.head})"
-              val ctorDecls = ctorArgs.flatMap {
-                case Identifier(id) => Some(s"$id (.$id ${args.head})")
-                case _ => None
-              }
-              buildCond(body, argDecls.tail, args.tail, and :: andList, ctorDecls ++ lets)
+              ctor(cls, ctorArgs, body, argDecls, args, ands, lets)
 
             case DefArg(RecordConstructorExpression(cls, ctorArgs)) =>
-              val and = s"(isa-type? $cls ${args.head})"
-              val ctorDecls = ctorArgs.flatMap {
-                case Identifier(id) => Some(s"$id (.$id ${args.head})")
-                case _ => None
-              }
-              buildCond(body, argDecls.tail, args.tail, and :: andList, ctorDecls ++ lets)
+              ctor(cls, ctorArgs, body, argDecls, args, ands, lets)
 
             case DefArg(IdIsType(_, cls)) =>
-              val and = s"(isa-type? $cls ${args.head})"
-              buildCond(body, argDecls.tail, args.tail, and :: andList, lets)
+              buildCond(body, argDecls.tail, args.tail, s"(isa-type? $cls $headArg)" :: ands, lets)
 
             case DefArg(VariadicArg(expr)) =>
-              val and = s"\t\t(= ${args.head} $expr)"
-              buildCond(body, argDecls.tail, args.tail, and :: andList, lets)
+              buildCond(body, argDecls.tail, args.tail, s"\t\t(= $headArg $expr)" :: ands, lets)
 
             case DefArg(TupleExpression(List(lit: Expression, Identifier("_")))) =>
               lit match {
                 case Identifier(n) =>
-                  val newAndList = s":else " :: andList
-                  val newLetDecls = s"[$n & _] ${args.head}" :: lets
+                  val newAndList = s":else " :: ands
+                  val newLetDecls = s"[$n & _] $headArg" :: lets
                   buildCond(body, argDecls.tail, args.tail, newAndList, newLetDecls)
 
                 case _ =>
-                  val newAndList = s"\t\t(= (head ${args.head}) ${CodeGenerator.buildString(lit)})" :: andList
+                  val newAndList = s"\t\t(= (head $headArg) ${CodeGenerator.buildString(lit)})" :: ands
                   buildCond(body, argDecls.tail, args.tail, newAndList, lets)
               }
 
             case DefArg(exp: Expression) =>
-              val newAndList = s"\t\t(= ${args.head} ${CodeGenerator.buildString(exp)})" :: andList
+              val newAndList = s"\t\t(= $headArg ${CodeGenerator.buildString(exp)})" :: ands
               buildCond(body, argDecls.tail, args.tail, newAndList, lets)
+
+            case _ =>
+              buildCond(body, argDecls.tail, args.tail, ands, lets)
           }
       }
     }
+
+    private[this]
+    def ctor(cls: String, ctorArgs: List[Expression], body: Expression, argDecls: List[DefArg], args: StrList, andList: StrList, lets: StrList) : String = {
+      val head= args.headOption.getOrElse("")
+      val and = s"(isa-type? $cls $head)"
+      val ctorDecls = ctorArgs.flatMap {
+        case Identifier(id) => Some(s"$id (.$id $head)")
+        case _ => None
+      }
+      buildCond(body, argDecls.tail, args.tail, and :: andList, ctorDecls ++ lets)
+    }
+
 
     private[this] def mergeAndLets(andList: StrList, letDecls: StrList, body: Expression) : String = {
       val sBody = CodeGenerator.buildString(body)
@@ -272,7 +274,6 @@ object DeclGen {
       }
     }
 
-
   }
 
   implicit object DefDeclTranslator extends Translator[DefDecl] {
@@ -282,6 +283,7 @@ object DeclGen {
         case sd: SimpleDefDecl => CodeGenerator.buildString(sd)
         case md: MultiDefDecl => CodeGenerator.buildString(md)
         case mm: MultiMethod => CodeGenerator.buildString(mm)
+        case _ => ""
       }
     }
   }
