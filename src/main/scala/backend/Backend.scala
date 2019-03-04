@@ -1,38 +1,59 @@
 package backend
 
 
-import interpreter.Interpreter
+import interpreter.{Interpreter,Runtime}
 import java.io.{File, FileInputStream, InputStream}
 import lexer.Lexer
 import parser._
-
 import scala.util.{Failure, Success, Try}
-
 
 object Backend {
 
-  def compile(fileNames: List[String]): Unit = {
-    for (fileName <- fileNames) {
-      println(s"scanning $fileName...")
-      compileFile(fileName)
+  val version = "Ogu compiler version 0.2.5 (Ferrilo)"
+
+  def usage() : Unit = {
+    val usageMessage = """
+      |       OLA AMIKO MIO DE MI
+      |
+      |Usage: ogu [options] modules... [-- args...]
+      |
+      |Options
+      |-p, --print      Print Clojure Code
+      |-n, --no-banner  Don't Show Ogu akarru banner
+      |-h, --help       Show Usage
+    """.stripMargin
+    println(usageMessage)
+  }
+
+  def run(options: Options): Unit = {
+    if (options.banner) {
+      akarru()
+    }
+    if (options.usage) {
+      usage()
+    }
+    else {
+      for (fileName <- options.files) {
+        runFile(fileName, options)
+      }
     }
   }
 
-  def compileFromResource(fileName: String) : AnyRef = {
+  def runFromResource(fileName: String, options: Options) : AnyRef = {
     Try(getClass.getResourceAsStream(fileName)) match {
-      case Success(inputStream) => compileStream(fileName, inputStream)
+      case Success(inputStream) => runStream(fileName, inputStream, options)
       case Failure(exception) => Failure(exception)
     }
   }
 
-  def compileFile(fileName: String): AnyRef = {
+  def runFile(fileName: String, options: Options): AnyRef = {
     Try(new FileInputStream(new File(fileName))) match {
-      case Success(inputStream) => compileStream(fileName, inputStream)
+      case Success(inputStream) => runStream(fileName, inputStream, options)
       case Failure(exception) => Failure(exception)
     }
   }
 
-  def compileStream(fileName: String, inputStream: InputStream): AnyRef =
+  def runStream(fileName: String, inputStream: InputStream, options: Options): AnyRef =
     Option(inputStream) match {
       case None => Failure(new NullPointerException)
       case Some(stream) =>
@@ -41,10 +62,14 @@ object Backend {
         tryScan match {
           case Success(tokens) =>
             val parser = new Parser(fileName, tokens)
-            val ast = parser.parse()
-            Interpreter.load(ast)
+            Interpreter.load(parser.parse(), options)
           case Failure(exception) => Failure(exception)
         }
     }
+
+  private[this] def akarru() : Unit = {
+    Runtime.banner("akarrú")
+    println(version)
+  }
 
 }

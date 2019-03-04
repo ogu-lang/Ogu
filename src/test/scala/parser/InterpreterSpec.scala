@@ -1,6 +1,6 @@
 package parser
 
-import backend.Backend
+import backend.{Backend, EmptyOptions, Options}
 import clojure.lang
 import lexer.Lexer
 import org.scalatest.{FlatSpec, Matchers}
@@ -12,7 +12,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
 
   def run(oguScript: String): AnyRef = {
     val stream = getClass.getResourceAsStream(oguScript)
-    Backend.compileStream(oguScript, stream)
+    Backend.runStream(oguScript, stream, EmptyOptions)
   }
 
   def compile(oguScript: String) : Try[_] = {
@@ -32,8 +32,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
         l.toArray().toList.map(toNative)
       case l:lang.PersistentVector =>
         l.toArray().toList.map(toNative)
-      case null =>
-        List()
+      case _ => List()
     }
   }
 
@@ -47,9 +46,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
         v.toArray.toList
       case k:lang.Keyword =>
         k.toString
-      case x =>
-        //println(s"@@@ ${x} ${x.getClass}")
-        x
+      case _ => anyRef
     }
   }
 
