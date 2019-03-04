@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [0.2.5] - 2019-3-3
+
 ### Added
 
 - add proxy
@@ -11,6 +13,7 @@ All notable changes to this project will be documented in this file. This change
 - turtle graphics
 - add **args**
 - arguments parsing
+- change bin/ogu bash script
 
 ### Fixed 
 
@@ -18,8 +21,6 @@ All notable changes to this project will be documented in this file. This change
 - fix tabs on some demos
 - Static method call
 - dictionary expressions
-
-## [0.2.5] - 2019-2-28
 
 ### Changed
 
