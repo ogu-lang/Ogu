@@ -112,6 +112,7 @@ object ControlGen {
           s"(when ${CodeGenerator.buildString(comp)}\n\t${CodeGenerator.buildString(body)})"
         case WhileExpression(comp, body) =>
           s"(while ${CodeGenerator.buildString(comp)} ${CodeGenerator.buildString(body)})"
+        case _ => ""
       }
     }
 

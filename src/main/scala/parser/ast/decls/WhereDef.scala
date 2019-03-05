@@ -22,27 +22,21 @@ object WhereDef {
       case ASSIGN =>
         tokens.consume(ASSIGN)
         val body = parsePipedOrBodyExpression(tokens)
-        if (1 == listOfIds.size)
-          WhereDefSimple(listOfIds.head, listOfArgs, body)
-        else
-          WhereDefTupled(listOfIds, listOfArgs, body)
+        listOfIds.size match {
+          case 1 =>  WhereDefSimple(listOfIds.head, listOfArgs, body)
+          case _ => WhereDefTupled(listOfIds, listOfArgs, body)
+        }
 
       case GUARD | NL =>
         tokens.consumeOptionals(NL)
-        val indent = if (!tokens.peek(INDENT)) {
-          false
-        } else {
-          tokens.consume(INDENT)
-          true
-        }
+        val indent = tokens.peek(INDENT)
+        if (indent) tokens.consume(INDENT)
         val guards = parseListOfWhereGuards(tokens, Nil)
-        if (indent) {
-          tokens.consume(DEDENT)
+        if (indent) tokens.consume(DEDENT)
+        listOfIds.size match {
+          case 1 => WhereDefWithGuards(listOfIds.head, listOfArgs, guards)
+          case _ => WhereDefTupledWithGuards(listOfIds, listOfArgs, guards)
         }
-        if (1 == listOfIds.size)
-          WhereDefWithGuards(listOfIds.head, listOfArgs, guards)
-        else
-          WhereDefTupledWithGuards(listOfIds, listOfArgs, guards)
 
       case _ => throw InvalidDef()
     }

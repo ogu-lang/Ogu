@@ -87,6 +87,7 @@ object ListExpression extends ExpressionParser {
           RangeExpression(rangeInit, LogicalExpression.parse(tokens))
         else
           RangeExpressionUntil(rangeInit, LogicalExpression.parse(tokens))
+      case _ => EmptyListExpresion
     }
   }
 

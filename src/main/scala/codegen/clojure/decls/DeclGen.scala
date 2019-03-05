@@ -127,6 +127,7 @@ object DeclGen {
         case WhereDefTupled(idList, None, body) =>
           s"(def _*temp*_ ${CodeGenerator.buildString(body)})\n" +
             idList.zipWithIndex.map { case (id, i) => s"(def $id (nth _*temp*_ $i))" }.mkString("\n")
+        case _ => ""
       }
     }
 

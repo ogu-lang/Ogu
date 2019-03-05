@@ -14,6 +14,7 @@ object DeclsExprGen {
       node match {
         case LetSimpleId(id) => id
         case LetTupledId(ids) => s"[${ids.map(mkString).mkString(" ")}]"
+        case _ => ""
       }
     }
   }
