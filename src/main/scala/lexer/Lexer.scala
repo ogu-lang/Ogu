@@ -52,6 +52,7 @@ class Lexer {
     }
   }
 
+  @tailrec
   private[this] def findCommentPos(line:String, pos: Int, insideString: Boolean) : Int = {
     line.headOption match {
       case None => -1
@@ -68,72 +69,77 @@ class Lexer {
     }
   }
 
+  @tailrec
+  private[this] def findQuot(quot: Set[Char], str: String, pos: Int) : Int = {
+    str.headOption match {
+      case None => pos
+      case Some(c) =>
+        c match {
+          case q if quot contains q => pos+1
+          case '\\' => findQuot(quot, str.drop(2), pos+2)
+          case _ => findQuot(quot, str.tail, pos+1)
+        }
+    }
+  }
+
+  private[this] def parseQuoted(quot: Char, str: String, ini: Int, oldPos: Int): (String, Int) = {
+    val pos = findQuot(Set(quot), str.substring(oldPos+1), oldPos+1)
+    (str.substring(ini, pos), pos)
+  }
+
   def splitLine(str: String, currentLine: Int, parenLevel: Int): (List[Option[TOKEN]], Int) = {
     var result = List.empty[Option[TOKEN]]
     val len = str.length
     var ini = 0
     var pos = 0
+    var newParenLevel = parenLevel
 
-    def parseQuoted(quot: Char): String = {
-      pos += 1
-      while (pos < len && str(pos) != quot) {
-        if (str(pos) == '\\')
-          pos += 1
-        pos += 1
-      }
-      if (pos < len)
-        pos += 1
-      val quotedStr = str.substring(ini, pos)
-      ini = pos
-      quotedStr
+    def addToken() : Unit = {
+      val (token, level) = strToToken(str.substring(ini, pos), currentLine, newParenLevel)
+      result = token :: result
+      newParenLevel = level
     }
 
-    var newParenLevel = parenLevel
+    def checkToken(pos: Int, ini: Int): Unit = {
+      if (pos > ini) {
+        addToken()
+      }
+    }
+
+    def addQuoted(quot:Char) : Unit = {
+      val (quotedStr, newIni) = parseQuoted(quot, str, ini, pos)
+      ini = newIni
+      pos = newIni
+      val (token, level) = strToToken(quotedStr, currentLine, newParenLevel)
+      result =  token :: result
+      newParenLevel = level
+    }
     while (pos < len) {
       str(pos) match {
         case '\"' =>
-          if (pos > ini) {
-            val (token, level) = strToToken(str.substring(ini, pos), currentLine, newParenLevel)
-            result = token :: result
-            newParenLevel = level
-          }
-          val (token, level) = strToToken(parseQuoted('\"'), currentLine, newParenLevel)
-          result =  token :: result
-          newParenLevel = level
+          checkToken(pos, ini)
+          addQuoted(str(pos))
         case '\'' =>
           if (pos == ini) {
-            val (token, level) = strToToken(parseQuoted('\''), currentLine, newParenLevel)
-            result = token :: result
-            newParenLevel = level
+            addQuoted(str(pos))
           }
-          else
+          else {
             pos += 1
-
-        case '.' if pos + 2 < len && (str.substring(pos, pos + 3) == "..." || str.substring(pos, pos + 3) == "..<") =>
-          if (pos > ini) {
-            val (token, level) = strToToken(str.substring(ini, pos), currentLine, newParenLevel)
-            result = token :: result
           }
+        case '.' if pos + 2 < len && (str.substring(pos, pos + 3) == "..." || str.substring(pos, pos + 3) == "..<") =>
+          checkToken(pos, ini)
           result = OPER_MAP(str.substring(pos, pos + 3)) :: result
           ini = pos + 3
           pos += 3
 
         case '.' if pos + 1 < len && str.substring(pos, pos + 2) == ".." =>
-          if (pos > ini) {
-            val (token, level) = strToToken(str.substring(ini, pos), currentLine, newParenLevel)
-            result = token  :: result
-            newParenLevel = level
-          }
+          checkToken(pos, ini)
           result = Some(DOTDOT) :: result
           ini = pos + 2
           pos += 2
 
         case '#' =>
-          if (pos > ini) {
-            val (token, level) = strToToken(str.substring(ini, pos), currentLine, parenLevel)
-            result = token :: result
-            newParenLevel = level
-          }
+          checkToken(pos, ini)
           if (pos + 1 >= len) {
             pos += 1
           } else {
@@ -141,13 +147,14 @@ class Lexer {
               case '\"' =>
                 ini = pos
                 pos += 1
-                val (token, level) = tryParseHashTag(parseQuoted('\"'), currentLine, newParenLevel)
-                result = token :: result
-                newParenLevel = level
+                addQuoted(str(pos))
               case '/' =>
                 ini = pos
                 pos += 1
-                val (token, level) = tryParseHashTag(parseQuoted('/'), currentLine, newParenLevel)
+                val (quotedStr, newIni) = parseQuoted('/', str, ini, pos)
+                ini = newIni
+                pos = newIni
+                val (token, level) = tryParseHashTag(quotedStr, currentLine, newParenLevel)
                 result = token :: result
                 newParenLevel = level
               case '{' =>
@@ -159,10 +166,7 @@ class Lexer {
                 ini = pos
               case c if isTimeValidChar(c) =>
                 ini = pos
-                pos += 1
-                while (pos < len && isTimeValidChar(str(pos))) {
-                  pos += 1
-                }
+                pos = skip(pos+1, str.substring(pos+1), isTimeValidChar)
                 val (token, level) = tryParseHashTag(str.substring(ini, pos), currentLine, newParenLevel)
                 result = token :: result
                 newParenLevel = level
@@ -173,21 +177,12 @@ class Lexer {
           }
 
         case c if isBlank(c) =>
-          if (pos > ini) {
-            val (token, level) = strToToken(str.substring(ini, pos), currentLine, newParenLevel)
-            result = token :: result
-            newParenLevel = level
-          }
-          while (pos < len && isBlank(str(pos)))
-            pos += 1
+          checkToken(pos, ini)
+          pos = skip(pos, str.substring(pos), isBlank)
           ini = pos
 
         case c if isPunct(c) =>
-          if (pos > ini) {
-            val (token, level) = strToToken(str.substring(ini, pos), currentLine, newParenLevel)
-            result = token :: result
-            newParenLevel = level
-          }
+          checkToken(pos, ini)
           ini = pos
           pos += 1
           val (token, level) = tryParseOp(str.substring(ini, pos), currentLine, newParenLevel)
@@ -206,6 +201,15 @@ class Lexer {
     }
     else {
       (result.reverse, newParenLevel)
+    }
+  }
+
+  @tailrec
+  private[this] def skip(pos: Int, str: String, f: Char => Boolean): Int = {
+    str.headOption match {
+      case None => pos
+      case Some(c) if f(c) => skip(pos+1, str.tail, f)
+      case _ => pos
     }
   }
 
@@ -231,14 +235,14 @@ class Lexer {
         case '#' => tryParseHashTag(str, currentLine, parenLevel)
         case ':' if str.length > 1 && str != "::" => (Some(ATOM(str)), parenLevel)
         case _ =>
-          var token = tryParseId(str, currentLine)
-          token match {
-            case Some(ERROR(_,_)) => token = tryParseNum(str, currentLine)
-            case _ => /**/
+          val token1 = tryParseId(str, currentLine)
+          val token2 = token1 match {
+            case Some(ERROR(_,_)) => tryParseNum(str, currentLine)
+            case _ => token1
           }
-          token match {
+          token2 match {
             case Some(ERROR(_,_)) =>  tryParseOp(str, currentLine, parenLevel)
-            case _ => (token, parenLevel)
+            case _ => (token2, parenLevel)
           }
       }
     }
