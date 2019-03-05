@@ -27,6 +27,8 @@ object ComparativeGen {
 
         case LessOrEqualThanExpression(args) =>
           s"(<= ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
+
+        case _ => ""
       }
     }
   }

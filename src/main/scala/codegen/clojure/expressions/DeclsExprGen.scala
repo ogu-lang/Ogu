@@ -10,18 +10,15 @@ import parser.ast.expressions.vars._
 object DeclsExprGen {
 
   implicit object LetIdTranslator extends Translator[LetId] {
-
     override def mkString(node: LetId): String = {
       node match {
         case LetSimpleId(id) => id
         case LetTupledId(ids) => s"[${ids.map(mkString).mkString(" ")}]"
       }
     }
-
   }
 
   implicit object UsingExpressionTranslator extends Translator[UsingExpression] {
-
     override def mkString(node: UsingExpression): String = {
       s"(with-open [${LetIdTranslator.mkString(node.decl.id)} ${CodeGenerator.buildString(node.decl.value)}]" +
         s"\n\t${CodeGenerator.buildString(node.inExpr)})\n"
@@ -29,7 +26,6 @@ object DeclsExprGen {
   }
 
   implicit object LetDeclExpressionTranslator extends Translator[LetDeclExpression] {
-
     override def mkString(node: LetDeclExpression): String = {
       node match {
         case LetDeclExpression(decls, Some(expression)) =>
@@ -46,7 +42,6 @@ object DeclsExprGen {
   }
 
   implicit object LoopDeclVariableTranslator extends Translator[LoopDeclVariable] {
-
     override def mkString(node: LoopDeclVariable): String = {
       node match {
         case ForVarDeclIn(id, initialValue) => s"$id ${CodeGenerator.buildString(initialValue)}"
@@ -56,7 +51,6 @@ object DeclsExprGen {
   }
 
   implicit object BindDeclExpressionTranslator extends Translator[BindDeclExpression] {
-
     override def mkString(node: BindDeclExpression): String = {
         s"(binding [" +
         node.decls.map(d => s"${CodeGenerator.buildString(d.id)} ${CodeGenerator.buildString(d.value)}").mkString(" ") +
@@ -65,7 +59,6 @@ object DeclsExprGen {
   }
 
   implicit object VarDeclExpressionTranslator extends Translator[VarDeclExpression] {
-
     override def mkString(node: VarDeclExpression): String = {
       val strBuf = new StringBuilder()
       node match {
@@ -89,7 +82,7 @@ object DeclsExprGen {
         s"(-def-ogu-var- ${CodeGenerator.buildString(variable.id)} ${CodeGenerator.buildString(variable.value)})\n"
     }
 
-    var varDecls : Set[String] = Set.empty[String]
+    private[this] var varDecls : Set[String] = Set.empty[String]
 
     def isVariable(id: String): Boolean = {
       varDecls.contains(id)

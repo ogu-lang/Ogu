@@ -23,6 +23,7 @@ object LiteralsGen {
         case DoubleLiteral(d) => d.toString
         case IntLiteral(i) => i.toString
         case LongLiteral(l) => l.toString
+        case _ => ""
       }
     }
   }

@@ -39,23 +39,20 @@ object ModuleGen {
 
 
   def toClojureImportStaticClauses(importClauses: List[ImportClause]): String = {
-    val strBuf = new StringBuilder()
     val staticImp = importClauses.filter {
       case FromJvmRequireStatic(_,_) => true
       case FromCljRequireStatic(_, _) => true
       case _ => false
     }
-
-    if (staticImp.nonEmpty) {
-      staticImp.foreach {
-        case FromJvmRequireStatic(from, names) =>
-          strBuf ++= s"(import-static $from ${names.map(toClojureImportAlias).mkString(" ")})\n"
-        case FromCljRequireStatic(from, names) =>
-          strBuf ++= s"(import-static $from ${names.map(toClojureImportAlias).mkString(" ")})\n"
-      }
+    staticImp match {
+      case Nil => ""
+      case _ =>
+        staticImp.map {
+          case FromJvmRequireStatic(frm, names) => s"(import-static $frm ${names.map(toClojureImportAlias).mkString(" ")})"
+          case FromCljRequireStatic(frm, names) => s"(import-static $frm ${names.map(toClojureImportAlias).mkString(" ")})"
+          case _ => ""
+        }.mkString("\n")
     }
-
-    strBuf.toString
   }
 
   def toClojureImportClause(importClause: ImportClause) : String = {

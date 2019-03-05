@@ -13,43 +13,31 @@ object FunctionsGen {
       node match {
         case ComposeExpressionForward(args) =>
           s"(comp ${args.reverse.map(CodeGenerator.buildString(_)).mkString(" ")})"
-
         case ComposeExpressionBackward(args) =>
          s"(comp ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
-
         case DotoForwardExpression(args) =>
           s"(doto ${args.map(CodeGenerator.buildString(_)).mkString("\n\t")})"
-
         case DotoBackwardExpression(args) =>
           s"(doto ${args.reverse.map(CodeGenerator.buildString(_)).mkString("\n\t")})"
-
         case FunctionCallExpression(func, args) =>
           s"(${CodeGenerator.buildString(func)} ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
-
         case ForwardPipeFuncCallExpression(args) =>
           s"(->> ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
-
         case ForwardPipeFirstArgFuncCallExpression(args) =>
           s"(-> ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
-
         case BackwardPipeFuncCallExpression(args) =>
           s"(->> ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
-
         case FunctionCallWithDollarExpression(func, args) =>
           s"(${CodeGenerator.buildString(func)} ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
-
         case ConstructorExpression(cls, args) =>
           s"($cls. ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
-
         case RecordConstructorExpression(cls, args) =>
           s"(->$cls ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
-
         case NewCallExpression(cls, Nil) =>
           s"($cls.)"
-
         case NewCallExpression(cls, args) =>
           s"($cls. ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
-
+        case _ => ""
       }
     }
   }
