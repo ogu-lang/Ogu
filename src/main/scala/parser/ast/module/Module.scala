@@ -19,10 +19,10 @@ object Module {
       tokens.consume(MODULE)
       if (tokens.peek(classOf[TID])) tokens.consume(classOf[TID]).value else tokens.consume(classOf[ID]).value
     }
-    parseModule(moduleName, tokens)
+    parse(moduleName, tokens)
   }
 
-  private[this] def parseModule(moduleName: String, tokens: TokenStream): Module = {
+  private[this] def parse(moduleName: String, tokens: TokenStream): Module = {
     tokens.consumeOptionals(NL)
     Module(moduleName, ImportClause.parse(tokens), parseModuleNodes(tokens))
   }

@@ -24,7 +24,7 @@ object AdtDecl {
   }
 
   @tailrec
-  private def consumeADTs(tokens: TokenStream, indents: Int, adts: List[ADT]) : (List[ADT], Int) = {
+  private[this] def consumeADTs(tokens: TokenStream, indents: Int, adts: List[ADT]) : (List[ADT], Int) = {
     if (!tokens.peek(GUARD)) {
       (adts.reverse, indents)
     }

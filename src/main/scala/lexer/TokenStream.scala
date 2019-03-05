@@ -22,7 +22,7 @@ case class TokenStream(var tokens: List[TOKEN]) {
     else
       tokens.drop(n - 1).headOption match {
         case None => false
-        case Some(token) => token.equals(obj)
+        case Some(token) => token == obj
       }
   }
 

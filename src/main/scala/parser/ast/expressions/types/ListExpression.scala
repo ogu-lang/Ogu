@@ -36,7 +36,10 @@ object ListExpression extends ExpressionParser {
     }
     else {
       val exprs = parseListOfCommaSeparatedExpressions(tokens)
-      val expr = if (1 == exprs.length) exprs(0) else ListExpression(exprs, None)
+      val expr = exprs match {
+        case List(e) => e
+        case _ => ListExpression(exprs, None)
+      }
       val finalExpr = tokens.nextToken() match {
         case DOTDOT =>
           tokens.consume(DOTDOT)

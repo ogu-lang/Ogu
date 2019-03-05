@@ -124,18 +124,22 @@ object ModuleGen {
       strs.reverse.mkString("\n")
     }
     else {
-      val s = nodes.head match {
-        case ad: AdtDecl => CodeGenerator.buildString(ad)
-        case cd: ClassDecl => CodeGenerator.buildString(cd)
-        case dd: DispatchDecl => CodeGenerator.buildString(dd)
-        case ed: ExtendsDecl => CodeGenerator.buildString(ed)
-        case md: MultiDefDecl => CodeGenerator.buildString(md)
-        case mm: MultiMethod => CodeGenerator.buildString(mm)
-        case rd: RecordDecl => CodeGenerator.buildString(rd)
-        case sd: SimpleDefDecl => CodeGenerator.buildString(sd)
-        case tl:TopLevelExpression => CodeGenerator.buildString(tl)
-        case td: TraitDecl => CodeGenerator.buildString(td)
-        case _ => s"**ERROR (${nodes.head.getClass})**"
+      val s = nodes.headOption match {
+        case None => "**ERROR{$nodes}"
+        case Some(head) =>
+          head match {
+            case ad: AdtDecl => CodeGenerator.buildString(ad)
+            case cd: ClassDecl => CodeGenerator.buildString(cd)
+            case dd: DispatchDecl => CodeGenerator.buildString(dd)
+            case ed: ExtendsDecl => CodeGenerator.buildString(ed)
+            case md: MultiDefDecl => CodeGenerator.buildString(md)
+            case mm: MultiMethod => CodeGenerator.buildString(mm)
+            case rd: RecordDecl => CodeGenerator.buildString(rd)
+            case sd: SimpleDefDecl => CodeGenerator.buildString(sd)
+            case tl: TopLevelExpression => CodeGenerator.buildString(tl)
+            case td: TraitDecl => CodeGenerator.buildString(td)
+            case _ => s"**ERROR (${head.getClass})**"
+          }
       }
       genDecls(nodes.tail, s :: strs )
     }

@@ -45,7 +45,7 @@ object ExpressionsGen {
             val sb = new StringBuilder(id)
             sb.replace(pos, pos + 1, "/")
             prefix + sb.toString()
-          case Array(head, last) => s"(.${parts.last} ${parts.head})"
+          case Array(head, last) => s"(.${last} ${head})"
           case _ => prefix + id
         }
       }

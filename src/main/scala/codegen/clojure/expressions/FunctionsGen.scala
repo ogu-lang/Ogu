@@ -49,6 +49,7 @@ object FunctionsGen {
         case LambdaSimpleArg(name) => name
         case LambdaTupleArg(names) => s"[${names.mkString(" ")}]"
         case LambdaVariadicArg(name) => s"& $name"
+        case _ => ""
       }
     }
   }

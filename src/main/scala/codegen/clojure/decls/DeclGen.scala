@@ -36,9 +36,13 @@ object DeclGen {
         case DefArg(TupleExpression(exprs)) => s"[${exprs.map(e => CodeGenerator.buildString(e)).mkString(" ")}]"
 
         case DefArg(InfiniteTupleExpr(exprs)) =>
-          val rest = exprs.last
-          val args = exprs.dropRight(1)
-          s"[${args.map(a => CodeGenerator.buildString(a)).mkString(" ")} & ${CodeGenerator.buildString(rest)}]"
+          exprs.reverse match {
+            case body :: args =>
+              s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")} & ${CodeGenerator.buildString(body)}]"
+            case Nil => ""
+            case _ => s"[${exprs.map(CodeGenerator.buildString(_)).mkString(" ")}]"
+          }
+
 
         case DefArg(DictionaryExpression(List((ConsExpression(args), Atom(a))))) =>
           s"{[${args.init.map(CodeGenerator.buildString(_)).mkString(" ")} & ${CodeGenerator.buildString(args.last)}] $a}"

@@ -42,11 +42,9 @@ object ImportClause {
 
   private[this] def parseImport(tokens:TokenStream): ImportClause = {
     tokens.consume(IMPORT)
-    if (parseTag(tokens) equals ":jvm") {
-      JvmImport(ImportAlias.parseListOfAlias(tokens))
-    }
-    else {
-      CljImport(ImportAlias.parseListOfAlias(tokens))
+    parseTag(tokens) match {
+      case ":jvm" => JvmImport(ImportAlias.parseListOfAlias(tokens))
+      case _ => CljImport(ImportAlias.parseListOfAlias(tokens))
     }
   }
 
