@@ -66,27 +66,23 @@ object Module {
 
   private[this]
   def filter(nodes: List[LangNode], result: List[LangNode], defs: Map[String, MultiDefDecl]): List[LangNode] = {
-    if (nodes.isEmpty) {
-      result.reverse
-    }
-    else {
-      val node = nodes.head
-      node match {
-        case MultiDefDecl(mdId, _) =>
-          defs.get(mdId) match {
-            case None => filter(nodes.tail, result, defs)
-            case Some(MultiDefDecl(id, decls)) =>
-              val multiDef = MultiDefDecl(id, decls.reverse)
-              if (multiDef.decls.length == 1)
-                filter(nodes.tail, multiDef.decls.head :: result, defs - id)
-              else
-                filter(nodes.tail, multiDef :: result, defs - id)
-          }
-        case _ =>
-          filter(nodes.tail, node :: result, defs)
-      }
+    nodes.headOption match {
+      case None => result.reverse
+      case Some(node) =>
+        node match {
+          case MultiDefDecl(mdId, _) =>
+            defs.get(mdId) match {
+              case None => filter(nodes.tail, result, defs)
+              case Some(MultiDefDecl(id, decls)) =>
+                val multiDef = MultiDefDecl(id, decls.reverse)
+                multiDef.decls match {
+                  case List(decl) => filter(nodes.tail, decl :: result, defs - id)
+                  case _ => filter(nodes.tail, multiDef :: result, defs - id)
+                }
+            }
+          case _ =>
+            filter(nodes.tail, node :: result, defs)
+        }
     }
   }
-
-
 }

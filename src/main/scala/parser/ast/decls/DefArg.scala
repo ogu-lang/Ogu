@@ -8,7 +8,9 @@ import scala.annotation.tailrec
 
 case class DefArg(expression: Expression)
 
-object DefOtherwiseArg extends DefArg(null)
+object NoExpression extends Expression
+
+object DefOtherwiseArg extends DefArg(NoExpression)
 
 case class IdIsType(id: String, cl: String) extends Expression
 case class VariadicArg(id: String) extends Expression

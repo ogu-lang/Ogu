@@ -64,11 +64,9 @@ object ImportClause {
     }
     tokens.consume(IMPORT)
     if (isType) {
-      if (tag equals ":jvm") {
-        FromJvmRequireStatic(name, ImportAlias.parseListOfAlias(tokens))
-      }
-      else {
-        FromCljRequireStatic(name, ImportAlias.parseListOfAlias(tokens))
+      tag match {
+        case ":jvm" => FromJvmRequireStatic(name, ImportAlias.parseListOfAlias(tokens))
+        case _ =>  FromCljRequireStatic(name, ImportAlias.parseListOfAlias(tokens))
       }
     }
     else {
@@ -90,7 +88,8 @@ object ImportClause {
   def parseTag(tokens:TokenStream): String = {
     if (!tokens.peek(LBRACKET)) {
       ""
-    } else {
+    }
+    else {
       tokens.consume(LBRACKET)
       val tag = tokens.consume(classOf[ATOM]).value
       tokens.consume(RBRACKET)

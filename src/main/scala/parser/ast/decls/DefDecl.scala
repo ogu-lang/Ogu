@@ -33,11 +33,11 @@ object DefDecl {
   }
 
   private[this]
-  def buildResult(inn: Boolean, id: String, args: List[DefArg], disps: List[DefArg],
+  def buildResult(inn: Boolean, id: String, args: List[DefArg], dispatches: List[DefArg],
              body: Expression, where: Option[WhereBlock]): DefDecl = {
-    disps match {
+    dispatches match {
       case Nil => SimpleDefDecl(inn, id, args, body, where)
-      case dispatches => MultiMethod(inn, id, dispatches, args, body, where)
+      case _ => MultiMethod(inn, id, dispatches, args, body, where)
     }
   }
 

@@ -73,9 +73,7 @@ object ListExpression extends ExpressionParser {
 
   private[this] def parseEndRange(tokens: TokenStream, expression: Expression, include: Boolean): Expression = {
     expression match {
-      case ListExpression(exprs, _) if 2 == exprs.size  =>
-        val rangeInit = exprs.head
-        val rangeEnd = exprs(1)
+      case ListExpression(List(rangeInit, rangeEnd), _)   =>
         val rangeIncrement = SubstractExpression(List(rangeEnd, rangeInit))
         if (include)
           RangeWithIncrementExpression(rangeInit, rangeIncrement, LogicalExpression.parse(tokens))
