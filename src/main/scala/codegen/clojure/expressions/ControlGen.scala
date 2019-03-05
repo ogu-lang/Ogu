@@ -5,8 +5,8 @@ import codegen.clojure.expressions.DeclsExprGen._
 import codegen.clojure.expressions.ExpressionsGen._
 import codegen.clojure.expressions.FunctionsGen._
 import codegen.{CodeGenerator, Translator}
-import parser.ast.expressions.{ArrayAccessExpression, Identifier}
 import parser.ast.expressions.control._
+import parser.ast.expressions.{ArrayAccessExpression, Identifier}
 
 object ControlGen {
 
@@ -19,11 +19,13 @@ object ControlGen {
 
         case UntilGuardExpr(comp) =>
           s"when-not ${CodeGenerator.buildString(comp)}"
+
+        case _ => ""
       }
     }
   }
 
-  implicit object CatchExpressionTranslatro extends Translator[CatchExpression] {
+  implicit object CatchExpressionTranslator extends Translator[CatchExpression] {
 
     override def mkString(node: CatchExpression): String = {
       s"(catch ${node.ex} ${node.id.getOrElse("_")} ${CodeGenerator.buildString(node.body)})"
@@ -38,98 +40,87 @@ object ControlGen {
 
   }
 
+  implicit object ProxyExpressionTranslator extends Translator[ProxyExpression] {
+    override def mkString(node: ProxyExpression): String = {
+      val strBuf = new StringBuilder()
+      strBuf ++= s"(proxy [${node.traitName} ${node.interfaces.mkString(" ")}] []\n"
+      for (method <- node.methods) {
+        val s = CodeGenerator.buildString(method.definition).replaceFirst("\\(defn\\s+", "\t(")
+        strBuf ++= s
+      }
+      strBuf ++= ")\n"
+      strBuf.mkString
+    }
+  }
+
+  implicit object ReifyExpressionTranslator extends Translator[ReifyExpression] {
+    override def mkString(node: ReifyExpression): String = {
+      val smethods = node.methods.map{method=>
+        CodeGenerator.buildString(method.definition).replaceFirst("\\(defn\\s+", "\t(")
+      }.mkString("\n")
+      s"(reify ${node.traitName}\n" + smethods + ")\n"
+    }
+  }
+
+  implicit object TryExpressionTranslator extends Translator[TryExpression] {
+    override def mkString(node: TryExpression): String = {
+      s"(try ${CodeGenerator.buildString(node.body)}\n" +
+        s"\t${node.catches.map(CodeGenerator.buildString(_)).mkString("\n\t")}" +
+        (node.fin match {
+          case None => ")\n"
+          case Some(fin) => s"\t(finally ${CodeGenerator.buildString(fin)})\n)\n"
+        })
+    }
+  }
+
   implicit object ControlExpressionTranslator extends Translator[ControlExpression] {
 
     override def mkString(node: ControlExpression): String = {
       node match {
-        case CondExpression(guards) =>
-          s"(cond\n\t${guards.map(toClojureCondGuard).mkString("\n\t")})"
-
+        case CondExpression(guards) => s"(cond\n\t${guards.map(toClojureCondGuard).mkString("\n\t")})"
         case ForExpression(variables, body) =>
           s"(doseq [${variables.map(CodeGenerator.buildString(_)).mkString("\n")}] \n${CodeGenerator.buildString(body)})"
-
         case IfExpression(comp, thenPart, Nil, elsePart) =>
           s"(if ${CodeGenerator.buildString(comp)}\n\t${CodeGenerator.buildString(thenPart)}\n\t${CodeGenerator.buildString(elsePart)})"
-
         case IfExpression(comp, thenPart, ep :: tail, elsePart) =>
           s"(if ${CodeGenerator.buildString(comp)}\n ${CodeGenerator.buildString(thenPart)}\n " +
             s"${mkString(IfExpression(ep.comp, ep.body, tail, elsePart))})"
-
-        case LazyExpression(expr) =>
-          s"(lazy-seq ${CodeGenerator.buildString(expr)})"
-
+        case LazyExpression(expr) => s"(lazy-seq ${CodeGenerator.buildString(expr)})"
         case LoopExpression(variables, None, body) =>
           s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n ${CodeGenerator.buildString(body)})"
-
         case LoopExpression(variables, Some(guard), body) =>
           s"(loop [${variables.map(toClojureLoopVar).mkString(" ")}]\n" +
             s"   (${CodeGenerator.buildString(guard)} ${CodeGenerator.buildString(body)}))"
-
-        case ProxyExpression(name, interfaces, methods) =>
-          val strBuf = new StringBuilder()
-          strBuf ++= s"(proxy [$name ${interfaces.mkString(" ")}] []\n"
-          for (method <- methods) {
-            val s = CodeGenerator.buildString(method.definition).replaceFirst("\\(defn\\s+", "\t(")
-            strBuf ++= s
-          }
-          strBuf ++= ")\n"
-          strBuf.mkString
-
-        case RecurExpression(args) =>
-           s"(recur ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
-
-        case ReifyExpression(name, methods) =>
-          val strBuf = new StringBuilder()
-          strBuf ++= s"(reify $name\n"
-          for (method <- methods) {
-            val s = CodeGenerator.buildString(method.definition).replaceFirst("\\(defn\\s+", "\t(")
-            strBuf ++= s
-          }
-          strBuf ++= ")\n"
-          strBuf.mkString
-
+        case pe: ProxyExpression => CodeGenerator.buildString(pe)
+        case RecurExpression(args) => s"(recur ${args.map(CodeGenerator.buildString(_)).mkString(" ")})"
+        case re: ReifyExpression => CodeGenerator.buildString(re)
         case RepeatExpresion(Some(newValues)) =>
           s"(let [${newValues.map(toClojureNewVarValue).mkString(" ")}]" +
             s"(recur ${newValues.map(nv => nv.variable).mkString(" ")}))"
-
         case SimpleAssignExpression(ArrayAccessExpression(array, index), value) =>
           s"(aset ${CodeGenerator.buildString(array)} ${CodeGenerator.buildString(index)} ${CodeGenerator.buildString(value)})"
-
         case SimpleAssignExpression(Identifier(variable), value) =>
-          if (VarDeclExpressionTranslator.isVariable(variable)) {
+          if (VarDeclExpressionTranslator.isVariable(variable))
             s"(var-set $variable ${CodeGenerator.buildString(value)})"
-          }
-          else {
+          else
             s"(alter-var-root (var $variable) (constantly ${CodeGenerator.buildString(value)}))"
-          }
 
         case SyncExpression(body) =>
           s"(dosync ${CodeGenerator.buildString(body)})"
-
-        case TryExpression(body, catches, finExpr) =>
-          val strBuf = new StringBuilder()
-          strBuf ++= s"(try ${CodeGenerator.buildString(body)}\n"
-          strBuf ++= s"\t${catches.map(CodeGenerator.buildString(_)).mkString("\n\t")}"
-          if (finExpr.isDefined) {
-            strBuf ++= s"\t(finally ${CodeGenerator.buildString(finExpr.get)})\n"
-          }
-          strBuf ++= ")\n"
-          strBuf.mkString
-
+        case te: TryExpression => CodeGenerator.buildString(te)
         case WhenExpression(comp, body) =>
           s"(when ${CodeGenerator.buildString(comp)}\n\t${CodeGenerator.buildString(body)})"
-
         case WhileExpression(comp, body) =>
           s"(while ${CodeGenerator.buildString(comp)} ${CodeGenerator.buildString(body)})"
-
-
       }
     }
 
-
     private[this] def toClojureLoopVar(variable: LoopDeclVariable): String = {
       variable match {
-        case LoopVarDecl(id, initialValue) => s"$id ${CodeGenerator.buildString(initialValue)}"
+        case LoopVarDecl(id, init) => s"$id ${CodeGenerator.buildString(init)}"
+        case ForVarDeclIn(id, init) => s"$id ${CodeGenerator.buildString(init)}"
+        case ForVarDeclTupledIn(ids, init) => s"[${ids.mkString(" ")}] ${CodeGenerator.buildString(init)}"
+        case _ => ""
       }
     }
 
@@ -144,7 +135,7 @@ object ControlGen {
           s"${CodeGenerator.buildString(comp)} ${CodeGenerator.buildString(value)}"
         case CondGuard(None, value) =>
           s":else ${CodeGenerator.buildString(condGuard.value)}"
-
+        case _ => ""
       }
     }
 
