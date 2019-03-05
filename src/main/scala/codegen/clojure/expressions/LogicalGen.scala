@@ -1,7 +1,7 @@
 package codegen.clojure.expressions
 
-import codegen.{CodeGenerator, Translator}
 import codegen.clojure.expressions.ExpressionsGen._
+import codegen.{CodeGenerator, Translator}
 import parser.ast.expressions.logical.{LogicalAndExpression, LogicalExpression, LogicalOrExpression}
 
 object LogicalGen {
@@ -16,7 +16,7 @@ object LogicalGen {
         case LogicalAndExpression(args) =>
           s"(and ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
 
-
+        case _ => ""
       }
     }
   }

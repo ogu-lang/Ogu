@@ -1,7 +1,7 @@
 package codegen.clojure.expressions
 
-import codegen.{CodeGenerator, Translator}
 import codegen.clojure.expressions.ExpressionsGen._
+import codegen.{CodeGenerator, Translator}
 import parser.ast.expressions.list_ops.{ConcatExpression, ConsExpression, ContainsExpr, ListOpExpresion}
 
 object ListOpsGen {
@@ -18,6 +18,8 @@ object ListOpsGen {
 
         case ContainsExpr(left, right) =>
           s"(elem ${CodeGenerator.buildString(right)} ${CodeGenerator.buildString(left)})"
+
+        case _ => ""
       }
     }
 

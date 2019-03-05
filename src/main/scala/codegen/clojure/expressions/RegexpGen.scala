@@ -1,7 +1,7 @@
 package codegen.clojure.expressions
 
-import codegen.{CodeGenerator, Translator}
 import codegen.clojure.expressions.ExpressionsGen._
+import codegen.{CodeGenerator, Translator}
 import parser.ast.expressions.regexp.{MatchesExpression, NoMatchExpr, ReMatchExpr, RegexExpression}
 
 object RegexpGen {
@@ -18,6 +18,8 @@ object RegexpGen {
 
         case NoMatchExpr(expr, re) =>
           s"(nil? (re-matches ${CodeGenerator.buildString(re)} ${CodeGenerator.buildString(expr)}))"
+
+        case _ => ""
       }
     }
   }
