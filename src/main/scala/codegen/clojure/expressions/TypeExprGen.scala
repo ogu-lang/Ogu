@@ -1,7 +1,7 @@
 package codegen.clojure.expressions
 
-import codegen.{CodeGenerator, Translator}
 import codegen.clojure.expressions.ExpressionsGen._
+import codegen.{CodeGenerator, Translator}
 import parser.ast.expressions.types.{DictionaryExpression, SetExpression, TupleExpression}
 
 object TypeExprGen {
@@ -9,18 +9,14 @@ object TypeExprGen {
   implicit object DictionaryExpressionTranslator extends Translator[DictionaryExpression] {
 
     override def mkString(node: DictionaryExpression): String = {
-      s"{${node.items.map(i => CodeGenerator.buildString(i._1) + " " + CodeGenerator.buildString(i._2)).mkString(" ")}}"
+      s"{${node.items.map{case (k,v) => CodeGenerator.buildString(k) + " " + CodeGenerator.buildString(v)}.mkString(" ")}}"
     }
   }
 
   implicit object TupleExpressionTranslator extends Translator[TupleExpression] {
 
     override def mkString(node: TupleExpression): String = {
-      node match {
-        case TupleExpression(exprs) =>
-          s"[${exprs.map(e => CodeGenerator.buildString(e)).mkString(" ")}]"
-      }
-
+      s"[${node.expressions.map(e => CodeGenerator.buildString(e)).mkString(" ")}]"
     }
 
   }
@@ -30,9 +26,6 @@ object TypeExprGen {
     override def mkString(node: SetExpression): String = {
       s"#{${node.values.map(CodeGenerator.buildString(_)).mkString(" ")}}"
     }
-
-
-
 
   }
 }

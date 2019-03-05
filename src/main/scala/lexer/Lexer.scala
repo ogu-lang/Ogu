@@ -131,14 +131,14 @@ class Lexer {
                 scanTokens(txt, cl, npl2, r2, ip, ip)
               case '/' =>
                 val (quotedStr, newIni) = parseQuoted('/', txt, pos, pos+1)
-                val (token, level) = tryParseHashTag(quotedStr, cl, npl)
+                val (token, level) = parseHashTag(quotedStr, cl, npl)
                 scanTokens(txt, cl, level, token :: r, newIni, newIni)
               case '{' =>
-                val (token, level) = tryParseHashTag(txt.substring(ini, pos+2), cl, npl)
+                val (token, level) = parseHashTag(txt.substring(ini, pos+2), cl, npl)
                 scanTokens(txt, cl, level, token::r, pos+2, pos+2)
               case c if isTimeValidChar(c) =>
                 val newPos = skip(pos+1, txt.substring(pos+1), isTimeValidChar)
-                val (token, level) = tryParseHashTag(txt.substring(ini, newPos), cl, npl)
+                val (token, level) = parseHashTag(txt.substring(ini, newPos), cl, npl)
                 scanTokens(txt, cl, level, token :: r, newPos, newPos)
               case _ =>
                 scanTokens(txt, cl, npl, r, ini, pos+1)
@@ -216,11 +216,11 @@ class Lexer {
         case None => (Some(ERROR(currentLine, str)), parenLevel)
         case Some(c) =>
           c match {
+            case ':'=> parseColonToken(str, parenLevel)
+            case '#' => parseHashTag(str, currentLine, parenLevel)
             case '\"' if !str.endsWith("\"") =>
               currentString ++= str
               (None, parenLevel)
-            case '#' => tryParseHashTag(str, currentLine, parenLevel)
-            case ':' if str.length > 1 && str != "::" => (Some(ATOM(str)), parenLevel)
             case '\"' => (Some(STRING(str)), parenLevel)
             case '\'' => (Some(CHAR(str)), parenLevel)
             case _ =>
@@ -235,6 +235,14 @@ class Lexer {
               }
           }
       }
+    }
+  }
+
+  private[this] def parseColonToken(str: String, parenLevel: Int): (OptToken, Int) = {
+    str match {
+      case ":" => (OPER_MAP(str), parenLevel)
+      case "::" => (OPER_MAP(str), parenLevel)
+      case _ => (Some(ATOM(str)), parenLevel)
     }
   }
 
@@ -310,7 +318,7 @@ class Lexer {
     }
   }
 
-  private[this] def tryParseHashTag(str: String, currentLine: Int, parenLevel: Int): (OptToken, Int) = {
+  private[this] def parseHashTag(str: String, currentLine: Int, parenLevel: Int): (OptToken, Int) = {
     str match {
       case "#{" =>
         (Some(HASHLCURLY), parenLevel + 1)
