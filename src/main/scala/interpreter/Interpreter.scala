@@ -2,8 +2,8 @@ package interpreter
 
 import backend.Options
 import clojure.java.api.Clojure
-import codegen.clojure.module.ModuleGen._
 import codegen._
+import codegen.clojure.module.ModuleGen._
 import parser.ast.module.Module
 
 import scala.io.Source

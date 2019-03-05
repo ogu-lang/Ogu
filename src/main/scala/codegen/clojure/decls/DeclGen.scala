@@ -66,27 +66,25 @@ object DeclGen {
   implicit object MultiMethodTranslator extends Translator[MultiMethod] {
 
     override def mkString(node: MultiMethod): String = {
-      val strBuf = new StringBuilder()
       node match {
         case MultiMethod(_, id, matches, args, BodyGuardsExpresion(guards), None) =>
-          strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
-          strBuf ++= s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n"
-          strBuf ++= s"  (cond\n${guards.map(CodeGenerator.buildString(_)).mkString("\n")}"
-          strBuf ++= "))\n\n"
+          s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} " +
+          s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n" +
+          s"  (cond\n${guards.map(CodeGenerator.buildString(_)).mkString("\n")}" +
+          "))\n\n"
 
         case MultiMethod(_, id, matches, args, body, None) =>
-          strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
-          strBuf ++= s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n\t${CodeGenerator.buildString(body)})\n\n"
+          s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} " +
+          s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n\t${CodeGenerator.buildString(body)})\n\n"
 
-        case MultiMethod(_, id, matches, args, body, Some(whereBlock)) =>
-          strBuf ++= s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} "
-          strBuf ++= s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n"
-          val whereDefs = whereBlock.whereDefs
-          strBuf ++= s"\t(let [${whereDefs.map(mkStringAsLet).mkString("\n")}]"
-          strBuf ++= s"\n\t\t${CodeGenerator.buildString(body)}))"
+        case MultiMethod(_, id, matches, args, body, Some(WhereBlock(whereDefs))) =>
+          s"(defmethod $id ${matches.map(toClojureDefMatchArg).mkString(" ")} " +
+          s"[${args.map(CodeGenerator.buildString(_)).mkString(" ")}]\n" +
+          s"\t(let [${whereDefs.map(mkStringAsLet).mkString("\n")}]" +
+          s"\n\t\t${CodeGenerator.buildString(body)}))"
 
+        case _ => ""
       }
-      strBuf.mkString
     }
 
 
