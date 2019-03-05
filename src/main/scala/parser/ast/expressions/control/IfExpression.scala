@@ -1,8 +1,8 @@
 package parser.ast.expressions.control
 
 import lexer._
-import parser.ast.expressions.{parsePipedOrBodyExpression, Expression,ExpressionParser}
 import parser.ast.expressions.logical.LogicalExpression
+import parser.ast.expressions.{parsePipedOrBodyExpression, Expression,ExpressionParser}
 
 import scala.annotation.tailrec
 

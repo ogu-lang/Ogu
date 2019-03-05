@@ -97,11 +97,11 @@ object ListExpression extends ExpressionParser {
         tokens.consume(LPAREN)
         val listOfIds = consumeListOfIdsSepByComma(tokens)
         tokens.consume(RPAREN)
-        tokens.consume(BACK_ARROW)
+        tokens.consume(BACKARROW)
         ListGuardDeclTupled(listOfIds, ForwardPipeFuncCallExpression.parse(tokens))
-      case _: ID if tokens.peek(2, BACK_ARROW) =>
+      case _: ID if tokens.peek(2, BACKARROW) =>
         val id = tokens.consume(classOf[ID]).value
-        tokens.consume(BACK_ARROW)
+        tokens.consume(BACKARROW)
         ListGuardDecl(id, ForwardPipeFuncCallExpression.parse(tokens))
       case _ =>
         ListGuardExpr(ForwardPipeFuncCallExpression.parse(tokens))

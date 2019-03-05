@@ -7,8 +7,8 @@ sealed trait TOKEN
 class OPER extends TOKEN
 class PAREN extends TOKEN
 trait PIPEOPER extends OPER
-trait LOGICAL_BIN_OPER extends OPER
-trait COMPARATIVE_BIN_OPER extends OPER
+trait LOGICALBINOPER extends OPER
+trait COMPARATIVEBINOPER extends OPER
 trait SUMOPER extends OPER
 trait MULOPER extends OPER
 
@@ -88,12 +88,12 @@ case object FALSE extends BOOL(false)
 
 case class ISODATETIME(value: DateTime) extends LITERAL
 
-case object AND extends LOGICAL_BIN_OPER
+case object AND extends LOGICALBINOPER
 case object ANDB extends OPER
 case object ARROBA extends OPER
 case object ARROW extends OPER
 case object ASSIGN extends OPER
-case object BACK_ARROW extends OPER
+case object BACKARROW extends OPER
 case object COMMA extends OPER
 case object CONS extends OPER
 class COMPOSEOPER extends OPER
@@ -107,33 +107,33 @@ case object DOTDOT extends OPER
 case object DOTDOTLESS extends OPER
 case object DOTDOTDOT extends OPER
 case object DOTO extends PIPEOPER
-case object DOTO_BACK extends PIPEOPER
-case object EQUALS extends COMPARATIVE_BIN_OPER
+case object DOTOBACK extends PIPEOPER
+case object EQUALS extends COMPARATIVEBINOPER
 case object GUARD extends OPER
-case object GE extends COMPARATIVE_BIN_OPER
-case object GT extends COMPARATIVE_BIN_OPER
+case object GE extends COMPARATIVEBINOPER
+case object GT extends COMPARATIVEBINOPER
 case object LAMBDA extends TOKEN
 case object LBRACKET extends PAREN
 case object LCURLY extends PAREN
 case object HASHLCURLY extends PAREN
 case object LPAREN extends PAREN
-case object LE extends COMPARATIVE_BIN_OPER
-case object LT extends COMPARATIVE_BIN_OPER
-case object MATCH extends COMPARATIVE_BIN_OPER
-case object MATCHES extends COMPARATIVE_BIN_OPER
+case object LE extends COMPARATIVEBINOPER
+case object LT extends COMPARATIVEBINOPER
+case object MATCH extends COMPARATIVEBINOPER
+case object MATCHES extends COMPARATIVEBINOPER
 case object MINUS extends SUMOPER
 case object MINUSBIG extends SUMOPER
 case object MOD extends MULOPER
 case object MULT extends MULOPER
 case object MULTBIG extends MULOPER
-case object NOTEQUALS extends COMPARATIVE_BIN_OPER
-case object NOTMATCHES extends COMPARATIVE_BIN_OPER
-case object OR extends LOGICAL_BIN_OPER
+case object NOTEQUALS extends COMPARATIVEBINOPER
+case object NOTMATCHES extends COMPARATIVEBINOPER
+case object OR extends LOGICALBINOPER
 case object PIPELEFT extends PIPEOPER
 case object PIPELEFTFIRSTARG extends PIPEOPER
-trait FORWARD_PIPE extends PIPEOPER
-case object PIPERIGHT extends FORWARD_PIPE
-case object PIPERIGHTFIRSTARG extends FORWARD_PIPE
+trait FORWARDPIPE extends PIPEOPER
+case object PIPERIGHT extends FORWARDPIPE
+case object PIPERIGHTFIRSTARG extends FORWARDPIPE
 
 case object PLUS extends SUMOPER
 case object PLUSBIG extends SUMOPER
@@ -216,7 +216,7 @@ object OperatorMap {
       ("@", ARROBA),
       ("->", ARROW),
       ("=", ASSIGN),
-      ("<-", BACK_ARROW),
+      ("<-", BACKARROW),
       (":", COLON),
       (",", COMMA),
       (">>", COMPOSEFORWARD),
@@ -229,7 +229,7 @@ object OperatorMap {
       ("..", DOTDOT),
       (".", DOT),
       ("!>", DOTO),
-      ("<!", DOTO_BACK),
+      ("<!", DOTOBACK),
       ("==", EQUALS),
       (">=", GE),
       (">", GT),
