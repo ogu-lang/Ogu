@@ -3,8 +3,8 @@ package parser.ast.expressions.functions
 import lexer._
 import parser.InvalidLambdaExpression
 import parser.ast._
-import parser.ast.expressions.logical.LogicalExpression
 import parser.ast.expressions._
+import parser.ast.expressions.logical.LogicalExpression
 
 import scala.annotation.tailrec
 

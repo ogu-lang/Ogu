@@ -145,7 +145,7 @@ case object RCURLY extends PAREN
 case object RPAREN extends PAREN
 case object SEMI extends OPER
 
-object KEYWORD_MAP {
+object KeywordMap {
 
   def apply(str: String) : Option[TOKEN] = {
     table.get(str)
@@ -203,7 +203,7 @@ object KEYWORD_MAP {
     ("with", WITH))
 }
 
-object OPER_MAP {
+object OperatorMap {
 
   def apply(str: String) : Option[TOKEN] = {
     table.get(str)

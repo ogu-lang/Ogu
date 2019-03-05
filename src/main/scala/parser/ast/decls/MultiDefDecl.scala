@@ -3,9 +3,8 @@ package parser.ast.decls
 import lexer.TokenStream
 import parser.ast._
 import parser.ast.expressions.Identifier
-import parser.InvalidDef
 import parser.ast.expressions.types.TupleExpression
-
+import parser.InvalidDef
 
 case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(id) {
   def patternMatching(): Boolean = decls.exists(_.patterMatching())

@@ -3,9 +3,9 @@ package parser
 import lexer._
 import org.scalatest.{FlatSpec, Matchers}
 import parser.ast.expressions.arithmetic.AddExpression
-import parser.ast.expressions.literals.IntLiteral
-import parser.ast.expressions.{Identifier, LambdaSimpleArg, LambdaTupleArg, TopLevelExpression}
 import parser.ast.expressions.functions.{ForwardPipeFuncCallExpression, LambdaExpression}
+import parser.ast.expressions.literals.IntLiteral
+import parser.ast.expressions._
 import parser.ast.module.Module
 
 import scala.util.{Failure, Success, Try}
@@ -14,7 +14,7 @@ class ParserSpec extends FlatSpec with Matchers {
 
   case class ParserException(code:String) extends Throwable
 
-  private[this] def parseExpr(code:String) = {
+  private[this] def parseExpr(code:String): Try[Expression] = {
     val lexer = new Lexer()
     val lexResult = lexer.scanString(code)
     lexResult match {

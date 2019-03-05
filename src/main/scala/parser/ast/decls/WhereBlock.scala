@@ -10,13 +10,10 @@ object WhereBlock {
   def parse(tokens:TokenStream): Option[WhereBlock] = {
     tokens.nextToken() match {
       case WHERE => Some(parseUnindented(tokens))
-
       case NL if tokens.peek(2, INDENT) =>
         tokens.consume(NL)
-        Some(parseWhereBlock(tokens))
-
-      case _ =>
-        None
+        Some(consumeWhereBlock(tokens))
+      case _ => None
     }
   }
 
@@ -51,7 +48,7 @@ object WhereBlock {
     }
   }
 
-  private[this] def parseWhereBlock(tokens:TokenStream): WhereBlock = {
+  private[this] def consumeWhereBlock(tokens:TokenStream): WhereBlock = {
     tokens.consume(INDENT)
     val whereBlock = parseUnindented(tokens)
     tokens.consume(DEDENT)

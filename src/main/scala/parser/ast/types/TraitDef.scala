@@ -11,18 +11,19 @@ case class TraitDef(traitName: String, methods: List[ClassMethodDecl]) extends L
 object TraitDef {
 
   def parse(tokens: TokenStream): List[TraitDef] = {
-    if (tokens.peek(INDENT)) {
+    if (!tokens.peek(INDENT)) {
+      Nil
+    }
+    else {
       tokens.consume(INDENT)
       val traits = consumeTraitDefs(tokens, List.empty)
       tokens.consume(DEDENT)
       traits
-    } else {
-      List.empty
     }
   }
 
   @tailrec
-  private def consumeTraitDefs(tokens: TokenStream, traits: List[TraitDef]) : List[TraitDef]  = {
+  private[this] def consumeTraitDefs(tokens: TokenStream, traits: List[TraitDef]) : List[TraitDef]  = {
     if (tokens.peek(DEDENT)) {
       traits.reverse
     } else {

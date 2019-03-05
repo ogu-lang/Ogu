@@ -113,7 +113,7 @@ class Lexer {
           }
         case '.' if pos + 2 < len && (txt.substring(pos, pos + 3) == "..." || txt.substring(pos, pos + 3) == "..<") =>
           val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
-          val r2 = OPER_MAP(txt.substring(pos, pos + 3)) :: r
+          val r2 = OperatorMap(txt.substring(pos, pos + 3)) :: r
           scanTokens(txt, cl, npl, r2, pos+3, pos+3)
 
         case '.' if pos + 1 < len && txt.substring(pos, pos + 2) == ".." =>
@@ -240,14 +240,14 @@ class Lexer {
 
   private[this] def parseColonToken(str: String, parenLevel: Int): (OptToken, Int) = {
     str match {
-      case ":" => (OPER_MAP(str), parenLevel)
-      case "::" => (OPER_MAP(str), parenLevel)
+      case ":" => (OperatorMap(str), parenLevel)
+      case "::" => (OperatorMap(str), parenLevel)
       case _ => (Some(ATOM(str)), parenLevel)
     }
   }
 
   private[this] def tryParseId(str: String, currentLine: Int): OptToken = {
-    KEYWORD_MAP(str) match {
+    KeywordMap(str) match {
       case Some(token) => Some(token)
       case None =>
         val s = str.takeWhile(c => !isIdentifierChar(c))
@@ -305,7 +305,7 @@ class Lexer {
   }
 
   private[this] def tryParseOp(str: String, currentLine: Int, parenLevel: Int): (OptToken, Int) = {
-    OPER_MAP(str) match {
+    OperatorMap(str) match {
       case Some(token) =>
         val newLevel = token match {
           case LPAREN | LBRACKET | LCURLY | HASHLCURLY => parenLevel + 1

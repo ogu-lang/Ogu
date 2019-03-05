@@ -209,47 +209,37 @@ object DeclGen {
           arg match {
             case DefArg(EmptyListExpresion) =>
               buildCond(body, argDecls.tail, args.tail, s"\t\t(empty? $headArg)" :: ands, lets)
-
             case DefArg(ConsExpression(cArgs)) =>
               val tail = CodeGenerator.buildString(cArgs.last)
               val head = cArgs.init.map(CodeGenerator.buildString(_)).mkString(" ")
               val letDecl = s"[$head & $tail] ${args.headOption.getOrElse("")}"
               buildCond(body, argDecls.tail, args.tail, ands, letDecl :: lets)
-
             case DefArg(ListExpression(defArgs, None)) =>
               val letDecl = s"[${defArgs.map(CodeGenerator.buildString(_)).mkString(" ")}] $headArg]"
               buildCond(body, argDecls.tail, args.tail, ands, letDecl :: lets)
-
             case DefArg(ConstructorExpression(cls, ctorArgs)) =>
               ctor(cls, ctorArgs, body, argDecls, args, ands, lets)
-
             case DefArg(RecordConstructorExpression(cls, ctorArgs)) =>
               ctor(cls, ctorArgs, body, argDecls, args, ands, lets)
-
             case DefArg(IdIsType(_, cls)) =>
               buildCond(body, argDecls.tail, args.tail, s"(isa-type? $cls $headArg)" :: ands, lets)
-
             case DefArg(VariadicArg(expr)) =>
               buildCond(body, argDecls.tail, args.tail, s"\t\t(= $headArg $expr)" :: ands, lets)
-
             case DefArg(TupleExpression(List(lit: Expression, Identifier("_")))) =>
               lit match {
                 case Identifier(n) =>
                   val newAndList = s":else " :: ands
                   val newLetDecls = s"[$n & _] $headArg" :: lets
                   buildCond(body, argDecls.tail, args.tail, newAndList, newLetDecls)
-
                 case _ =>
                   val newAndList = s"\t\t(= (head $headArg) ${CodeGenerator.buildString(lit)})" :: ands
                   buildCond(body, argDecls.tail, args.tail, newAndList, lets)
               }
-
             case DefArg(exp: Expression) =>
               val newAndList = s"\t\t(= $headArg ${CodeGenerator.buildString(exp)})" :: ands
               buildCond(body, argDecls.tail, args.tail, newAndList, lets)
 
-            case _ =>
-              buildCond(body, argDecls.tail, args.tail, ands, lets)
+            case _ => buildCond(body, argDecls.tail, args.tail, ands, lets)
           }
       }
     }
