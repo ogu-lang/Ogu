@@ -85,10 +85,11 @@ case class TokenStream(var tokens: List[TOKEN]) {
     if (peek(obj)) {
       val result = tokens.head
       tokens = tokens.tail
-      return result
+      result
+    } else {
+      println(s"can't consume $obj, tokens=$tokens")
+      throw UnexpectedTokenException(obj, tokens)
     }
-    println(s"can't consume $obj, tokens=$tokens")
-    throw UnexpectedTokenException(obj, tokens)
   }
 
   def consume[T](t:Class[T]) : T = {

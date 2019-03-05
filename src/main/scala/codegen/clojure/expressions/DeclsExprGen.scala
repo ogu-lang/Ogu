@@ -1,8 +1,8 @@
 package codegen.clojure.expressions
 
-import codegen.{CodeGenerator, Translator}
 import codegen.clojure.decls.DeclGen._
 import codegen.clojure.expressions.ExpressionsGen._
+import codegen.{CodeGenerator, Translator}
 import parser.ast.decls.BodyGuardsExpresion
 import parser.ast.expressions.control.{ForVarDeclIn, ForVarDeclTupledIn, LoopDeclVariable}
 import parser.ast.expressions.vars._
@@ -61,22 +61,20 @@ object DeclsExprGen {
 
   implicit object VarDeclExpressionTranslator extends Translator[VarDeclExpression] {
     override def mkString(node: VarDeclExpression): String = {
-      val strBuf = new StringBuilder()
       node match {
         case VarDeclExpression(decls, None) =>
-          for (d <- decls) {
-            strBuf ++= toClojureOguVariable(d)
-          }
+          decls.map{d => toClojureOguVariable(d)}.mkString("\n")
 
         case VarDeclExpression(decls, Some(expression)) =>
-          strBuf ++= "(with-local-vars ["
-          strBuf ++= decls.asInstanceOf[List[LetVariable]].map(d => s"${CodeGenerator.buildString(d.id)} ${CodeGenerator.buildString(d.value)}").mkString(" ")
-          strBuf ++= "]\n"
+          val preamble = "(with-local-vars [" +
+          decls.asInstanceOf[List[LetVariable]].map(d => s"${CodeGenerator.buildString(d.id)} ${CodeGenerator.buildString(d.value)}").mkString(" ") +
+          "]\n"
           addVariables(decls)
-          strBuf ++= s"${CodeGenerator.buildString(expression)})\n"
+          val body = s"${CodeGenerator.buildString(expression)})\n"
           removeVariables(decls)
+          preamble + body
+        case _ => ""
       }
-      strBuf.mkString
     }
 
     def toClojureOguVariable(variable: LetVariable) : String = {

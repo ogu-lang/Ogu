@@ -1,9 +1,9 @@
 package codegen.clojure.expressions
 
-import codegen.{CodeGenerator, Translator}
 import codegen.clojure.expressions.ExpressionsGen._
-import parser.ast.expressions.ArithmeticExpression
+import codegen.{CodeGenerator, Translator}
 import parser.ast.expressions.arithmetic._
+import parser.ast.expressions.ArithmeticExpression
 
 object ArithmeticsGen {
 

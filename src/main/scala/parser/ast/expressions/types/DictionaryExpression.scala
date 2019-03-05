@@ -2,8 +2,8 @@ package parser.ast.expressions.types
 
 import lexer._
 import parser.InvalidExpression
-import parser.ast.expressions.literals.{Atom, AtomicExpression, LiteralExpression}
 import parser.ast.expressions.{Expression, ExpressionParser, Identifier, ParseExpr}
+import parser.ast.expressions.literals.{Atom, AtomicExpression, LiteralExpression}
 
 case class DictionaryExpression(items: List[(Expression, Expression)]) extends Expression
 

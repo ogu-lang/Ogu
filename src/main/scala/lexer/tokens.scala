@@ -122,7 +122,7 @@ case object LT extends COMPARATIVE_BIN_OPER
 case object MATCH extends COMPARATIVE_BIN_OPER
 case object MATCHES extends COMPARATIVE_BIN_OPER
 case object MINUS extends SUMOPER
-case object MINUS_BIG extends SUMOPER
+case object MINUSBIG extends SUMOPER
 case object MOD extends MULOPER
 case object MULT extends MULOPER
 case object MULTBIG extends MULOPER
@@ -244,7 +244,7 @@ object OperatorMap {
       ("~", MATCH),
       ("=~", MATCHES),
       ("-", MINUS),
-      ("-'", MINUS_BIG),
+      ("-'", MINUSBIG),
       ("%", MOD),
       ("*", MULT),
       ("*'", MULTBIG),

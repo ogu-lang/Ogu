@@ -1,10 +1,10 @@
 package codegen.clojure.expressions
 
-import codegen.{CodeGenerator, Translator}
-import parser.ast.expressions.functions._
 import codegen.clojure.expressions.ExpressionsGen._
-import parser.ast.expressions.types.{ConstructorExpression, NewCallExpression, RecordConstructorExpression}
+import codegen.{CodeGenerator, Translator}
 import parser.ast.expressions._
+import parser.ast.expressions.functions._
+import parser.ast.expressions.types.{ConstructorExpression, NewCallExpression, RecordConstructorExpression}
 
 object FunctionsGen {
 

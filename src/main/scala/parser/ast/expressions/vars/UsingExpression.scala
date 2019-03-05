@@ -1,8 +1,8 @@
 package parser.ast.expressions.vars
 
-import lexer.{BIND, TokenStream, USING}
-import parser.InvalidExpression
+import lexer.{TokenStream, USING}
 import parser.ast.expressions.{Expression, ExpressionParser}
+import parser.InvalidExpression
 
 case class UsingExpression(decl: LetVariable, inExpr: Expression) extends Expression
 

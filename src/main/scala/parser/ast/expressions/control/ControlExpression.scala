@@ -2,8 +2,8 @@ package parser.ast.expressions.control
 
 import lexer._
 import parser.ast.expressions._
-import parser.InvalidNodeException
 import parser.ast.expressions.vars.UsingExpression
+import parser.InvalidNodeException
 
 class ControlExpression extends Expression
 

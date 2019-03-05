@@ -1,7 +1,7 @@
 package codegen.clojure.expressions
 
-import codegen.{CodeGenerator, Translator}
 import codegen.clojure.expressions.ExpressionsGen._
+import codegen.{CodeGenerator, Translator}
 import parser.ast.expressions.comparisons._
 
 object ComparativeGen {

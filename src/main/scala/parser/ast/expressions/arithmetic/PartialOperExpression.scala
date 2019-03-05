@@ -48,7 +48,7 @@ object PartialOperExpression extends ExpressionParser {
       case PLUS => PartialAdd(args)
       case PLUSBIG => PartialBigAdd(args)
       case MINUS => PartialSub(args)
-      case MINUS_BIG => PartialBigSub(args)
+      case MINUSBIG => PartialBigSub(args)
       case MULT => PartialMul(args)
       case MULTBIG => PartialBigMul(args)
       case DIV => PartialDiv(args)

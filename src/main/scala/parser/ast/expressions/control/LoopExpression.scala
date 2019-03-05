@@ -3,7 +3,6 @@ package parser.ast.expressions.control
 import lexer._
 import parser._
 import parser.ast.expressions._
-import parser.ast.expressions.ExpressionParser
 import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 import parser.ast.expressions.logical.LogicalExpression
 
@@ -25,18 +24,15 @@ object LoopExpression extends ExpressionParser {
     tokens.consume(LOOP)
     val loopDecls = parseLoopDecls(tokens)
     tokens.consumeOptionals(NL)
-    val guardExpr = if (tokens.peek(WHILE)) {
-      tokens.consume(WHILE)
-      Some(WhileGuardExpr(LogicalExpression.parse(tokens)))
+    val guardExpr = tokens.nextToken() match {
+      case WHILE =>
+        tokens.consume(WHILE)
+        Some(WhileGuardExpr(LogicalExpression.parse(tokens)))
+      case UNTIL =>
+        tokens.consume(UNTIL)
+        Some(UntilGuardExpr(LogicalExpression.parse(tokens)))
+      case _ => None
     }
-    else if (tokens.peek(UNTIL)) {
-      tokens.consume(UNTIL)
-      Some(UntilGuardExpr(LogicalExpression.parse(tokens)))
-    }
-    else {
-      None
-    }
-
     tokens.consume(DO)
     LoopExpression(loopDecls, guardExpr, parsePipedOrBodyExpression(tokens))
   }
