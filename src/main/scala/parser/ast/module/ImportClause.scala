@@ -57,7 +57,7 @@ object ImportClause {
         case ID(id) =>
           (id, false)
         case TID(tid) => (tid, true)
-        case _ => throw UnexpectedTokenException(token, tokens.tokens)
+        case _ => throw UnexpectedTokenException(token, tokens.nextTokenBox())
       }
     }
     tokens.consume(IMPORT)

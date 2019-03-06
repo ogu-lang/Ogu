@@ -1,9 +1,9 @@
 package lexer
 
-import parser.{LexerError, UnexpectedTokenClassException, UnexpectedTokenException}
+import exceptions.{LexerError, UnexpectedTokenClassException, UnexpectedTokenException}
 
 
-case class TokenStream(var tokens: List[TOKEN]) {
+case class TokenStream(var tokens: List[TokenBox]) {
 
   def nonEmpty: Boolean = tokens.nonEmpty
 
@@ -12,7 +12,7 @@ case class TokenStream(var tokens: List[TOKEN]) {
   def peek(obj: TOKEN): Boolean = {
     tokens.headOption match {
       case None => false
-      case Some(token) => token.equals(obj)
+      case Some(TokenBox(token, line)) => token.equals(obj)
     }
   }
 
@@ -22,7 +22,7 @@ case class TokenStream(var tokens: List[TOKEN]) {
     else
       tokens.drop(n - 1).headOption match {
         case None => false
-        case Some(token) => token == obj
+        case Some(TokenBox(token, line)) => token == obj
       }
   }
 
@@ -32,7 +32,7 @@ case class TokenStream(var tokens: List[TOKEN]) {
     else {
       tokens.drop(n - 1).headOption match {
         case None => false
-        case Some(token) => t.isAssignableFrom(token.getClass)
+        case Some(TokenBox(token, line)) => t.isAssignableFrom(token.getClass)
       }
     }
   }
@@ -40,7 +40,7 @@ case class TokenStream(var tokens: List[TOKEN]) {
   def peek[T](t: Class[T]) : Boolean = {
     tokens.headOption match {
       case None => false
-      case Some(token) =>
+      case Some(TokenBox(token, line)) =>
         token match {
           case lexererror: ERROR =>
             throw LexerError(lexererror)
@@ -50,15 +50,23 @@ case class TokenStream(var tokens: List[TOKEN]) {
     }
   }
 
+  def currentLine(): Int =
+    tokens.headOption match {
+      case None => -1
+      case Some(TokenBox(token, line)) => line
+    }
+
   def nextToken() : TOKEN = tokens.headOption match {
     case None => EOF
-    case Some(token) => token
+    case Some(TokenBox(token, line)) => token
   }
+
+  def nextTokenBox() : TokenBox = tokens.head
 
   def pop() : TOKEN = {
     tokens.headOption match {
       case None => EOF
-      case Some(result) =>
+      case Some(TokenBox(result, line)) =>
         tokens = tokens.tail
         result
     }
@@ -77,7 +85,7 @@ case class TokenStream(var tokens: List[TOKEN]) {
     else {
       val result = tokens.head
       tokens = tokens.tail
-      Some(result.asInstanceOf[T])
+      Some(result.token.asInstanceOf[T])
     }
   }
 
@@ -85,22 +93,20 @@ case class TokenStream(var tokens: List[TOKEN]) {
     if (peek(obj)) {
       val result = tokens.head
       tokens = tokens.tail
-      result
+      result.token
     } else {
-      println(s"can't consume $obj, tokens=$tokens")
-      throw UnexpectedTokenException(obj, tokens)
+      throw UnexpectedTokenException(obj, tokens.head)
     }
   }
 
   def consume[T](t:Class[T]) : T = {
     if (peek(t)) {
-      val result = tokens.head
+      val result = tokens.head.token
       tokens = tokens.tail
       result.asInstanceOf[T]
     }
     else {
-      println(s"!!!@@@${tokens}")
-      throw UnexpectedTokenClassException(tokens.head)
+      throw UnexpectedTokenClassException(tokens.head.token, tokens.head.line)
     }
   }
 

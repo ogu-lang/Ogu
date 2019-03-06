@@ -10,13 +10,14 @@ class Lexer {
 
   type OptToken = Option[TOKEN]
   type TokList = List[TOKEN]
+  type TokenList = List[TokenBox]
   type OptTokList = List[Option[TOKEN]]
   type IntList = List[Int]
 
   private[this] val currentString = new StringBuilder()
   private[this] def parseMultiLineString: Boolean = currentString.nonEmpty
 
-  def scanLine(line: String, lineNum: Int, indentStack: IntList, parenLevel: Int): (TokList, IntList, Int) = {
+  def scanLine(line: String, lineNum: Int, indentStack: IntList, parenLevel: Int): (TokenList, IntList, Int) = {
     val text = removeComments(line)
     val (str, indents, newStack) = if (parenLevel > 0) (text, Nil, indentStack) else scanIndentation(text, indentStack)
     val (tokens, newParenLevel) = splitLine(str, lineNum, parenLevel)
@@ -24,7 +25,7 @@ class Lexer {
       indents ++ tokens
     else
       indents ++ tokens ++ List(Some(NL))
-    (result.flatten, newStack, newParenLevel)
+    (result.flatten.map(TokenBox(_, lineNum)), newStack, newParenLevel)
   }
 
   private[this] def removeComments(line: String): String = {
@@ -355,7 +356,7 @@ class Lexer {
 
   @tailrec
   private[this]
-  def mapLines(lines: List[(String, Int)], indentStack: IntList, tokens: List[TokList], parenLevel: Int) : (TokList, IntList) = {
+  def mapLines(lines: List[(String, Int)], indentStack: IntList, tokens: List[TokenList], parenLevel: Int) : (TokenList, IntList) = {
     lines.headOption match {
       case None => (tokens.reverse.flatten, indentStack)
       case Some((text, line)) =>
@@ -364,13 +365,13 @@ class Lexer {
     }
   }
 
-  private[this] def scanLines(lines: Iterator[(String, Int)]): TokenStream = {
-    val (tokens, indentStack) = mapLines(lines.toList, List(0), Nil, parenLevel = 0)
+  private[this] def scanLines(lines: List[(String, Int)]): TokenStream = {
+    val (tokens, indentStack) = mapLines(lines, List(0), Nil, parenLevel = 0)
     val result = if (indentStack.isEmpty) {
       tokens
     } else {
       val newIndentStack = indentStack.dropWhile(p => p > 0)
-      List.fill(indentStack.length - newIndentStack.length)(DEDENT) ++ tokens.reverse
+      List.fill(indentStack.length - newIndentStack.length)(TokenBox(DEDENT,lines.length+1)) ++ tokens.reverse
     }
     TokenStream(result.reverse)
   }
@@ -380,7 +381,7 @@ class Lexer {
       case Failure(e) =>
         Failure(CantScanFileException(filename, e))
       case Success(rdr) =>
-        Success(scanLines(rdr.getLines.zipWithIndex.filter { case (s, _) => s.nonEmpty }))
+        Success(scanLines(rdr.getLines.zipWithIndex.filter { case (s, _) => s.nonEmpty }.toList))
     }
   }
 
@@ -390,7 +391,7 @@ class Lexer {
 
   def scanString(code: String): Try[TokenStream] = {
     Try {
-      scanLines(code.split('\n').zipWithIndex.filter { case (s, _) => s.nonEmpty }.toIterator)
+      scanLines(code.split('\n').zipWithIndex.filter { case (s, _) => s.nonEmpty }.toList)
     }
   }
 

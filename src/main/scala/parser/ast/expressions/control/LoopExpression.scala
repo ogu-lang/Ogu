@@ -1,6 +1,6 @@
 package parser.ast.expressions.control
 
-import exceptions.UnexpectedTokenClassException
+import exceptions.{InvalidExpression, UnexpectedTokenClassException}
 import lexer._
 import parser._
 import parser.ast.expressions._
@@ -59,7 +59,7 @@ object LoopExpression extends ExpressionParser {
       tokens.consume(ASSIGN)
       LoopVarDecl(id.value, ForwardPipeFuncCallExpression.parse(tokens))
     } else {
-      throw UnexpectedTokenClassException(tokens.nextToken())
+      throw InvalidExpression(tokens.nextToken(), tokens.currentLine())
     }
   }
 

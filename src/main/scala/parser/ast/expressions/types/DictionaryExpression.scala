@@ -42,7 +42,7 @@ object DictionaryExpression extends ExpressionParser {
       case LBRACKET => AtomicExpression.parse(tokens)
       case _ =>
         println(s"@@! ${tokens}")
-        throw InvalidExpression(tokens.nextToken())
+        throw InvalidExpression(tokens.nextToken(), tokens.currentLine())
     }
   }
 

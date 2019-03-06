@@ -12,7 +12,7 @@ object UsingExpression extends ExpressionParser {
     tokens.consume(USING)
     val letVar = VariableParser.parseLetVar(tokens)
     VariableParser.parseInBodyOptExpr(tokens) match {
-      case None => throw InvalidExpression(tokens.nextToken())
+      case None => throw InvalidExpression(tokens.nextToken(), tokens.currentLine())
       case Some(body) => UsingExpression(letVar, body)
     }
   }
