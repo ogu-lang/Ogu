@@ -1,10 +1,10 @@
 package parser.ast.decls
 
+import exceptions.InvalidDef
 import lexer.TokenStream
 import parser.ast._
 import parser.ast.expressions.Identifier
 import parser.ast.expressions.types.TupleExpression
-import parser.InvalidDef
 
 case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(id) {
   def patternMatching(): Boolean = decls.exists(_.patterMatching())
@@ -25,7 +25,8 @@ case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(
 object MultiDefDecl {
 
   def parse(inner: Boolean, tokens: TokenStream, defs: Map[String, MultiDefDecl]) : (Map[String, MultiDefDecl], LangNode) = {
-    DefDecl.parse(inner, tokens) match {
+    val defDecl = DefDecl.parse(inner, tokens)
+    defDecl match {
       case decl: SimpleDefDecl =>
         defs.get(decl.id) match {
           case None =>

@@ -1,10 +1,14 @@
 package backend
 
 
-import interpreter.{Interpreter,Runtime}
+import interpreter.{Interpreter, Runtime}
 import java.io.{File, FileInputStream, InputStream}
+
+import exceptions.ParserException
 import lexer.Lexer
 import parser._
+
+import scala.reflect.macros.ParseException
 import scala.util.{Failure, Success, Try}
 
 object Backend {
@@ -62,7 +66,15 @@ object Backend {
         tryScan match {
           case Success(tokens) =>
             val parser = new Parser(fileName, tokens)
-            Interpreter.load(parser.parse(), options)
+            val tryAst = Try(parser.parse())
+            tryAst match {
+              case Success(ast) => Interpreter.load(ast, options)
+              case Failure(exception) =>
+                exception match {
+                  case err:ParserException => err.showError(System.err)
+                }
+            }
+
           case Failure(exception) => Failure(exception)
         }
     }

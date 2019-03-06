@@ -1,7 +1,7 @@
 package parser.ast.expressions.functions
 
+import exceptions.InvalidLambdaExpression
 import lexer._
-import parser.InvalidLambdaExpression
 import parser.ast._
 import parser.ast.expressions._
 import parser.ast.expressions.logical.LogicalExpression

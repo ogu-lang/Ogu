@@ -1,9 +1,9 @@
 package parser.ast.decls
 
+import exceptions.InvalidDef
 import lexer._
 import parser.ast._
 import parser.ast.expressions._
-import parser.InvalidDef
 
 class DefDecl(id: String) extends LangNode
 

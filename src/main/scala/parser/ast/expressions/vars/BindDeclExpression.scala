@@ -1,8 +1,8 @@
 package parser.ast.expressions.vars
 
+import exceptions.InvalidExpression
 import lexer.{BIND, TokenStream}
 import parser.ast.expressions.{Expression, ExpressionParser}
-import parser.InvalidExpression
 
 case class BindDeclExpression(decls: List[LetVariable], inExpr: Expression) extends Expression
 

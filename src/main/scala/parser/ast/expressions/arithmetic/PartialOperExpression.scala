@@ -1,5 +1,6 @@
 package parser.ast.expressions.arithmetic
 
+import exceptions.PartialOperNotSupported
 import lexer._
 import parser._
 import parser.ast.expressions.logical.LogicalExpression

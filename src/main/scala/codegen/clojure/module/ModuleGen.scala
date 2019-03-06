@@ -8,6 +8,7 @@ import parser.ast.decls.{DispatchDecl, MultiDefDecl, MultiMethod, SimpleDefDecl}
 import parser.ast.expressions.TopLevelExpression
 import parser.ast.module._
 import parser.ast.types._
+
 import parser.ast.LangNode
 
 import scala.annotation.tailrec

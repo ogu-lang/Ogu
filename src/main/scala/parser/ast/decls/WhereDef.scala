@@ -1,10 +1,10 @@
 package parser.ast.decls
 
+import exceptions.InvalidDef
 import lexer._
 import parser.ast.consumeListOfIdsSepByComma
 import parser.ast.expressions._
 import parser.ast.expressions.logical.LogicalExpression
-import parser.InvalidDef
 
 trait WhereDef
 case class WhereDefSimple(id: String, args: Option[List[Expression]], body: Expression) extends WhereDef

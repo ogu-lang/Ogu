@@ -4,6 +4,8 @@ import org.joda.time.DateTime
 
 sealed trait TOKEN
 
+case class MARK(line:Int) extends TOKEN
+
 class OPER extends TOKEN
 class PAREN extends TOKEN
 trait PIPEOPER extends OPER

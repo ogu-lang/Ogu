@@ -1,7 +1,7 @@
 package parser.ast.module
 
+import exceptions.UnexpectedTokenException
 import lexer._
-import parser.UnexpectedTokenException
 
 import scala.annotation.tailrec
 

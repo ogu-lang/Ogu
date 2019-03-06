@@ -3,7 +3,6 @@ package parser.ast.expressions.functions
 import lexer.{ATOM, ID, TokenStream}
 import parser.ast.expressions._
 import parser.ast.expressions.literals.Atom
-import parser.InvalidExpression
 
 case class FunctionCallExpression(func: Expression, args:List[Expression]) extends CallExpression
 

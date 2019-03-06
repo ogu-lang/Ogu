@@ -21,7 +21,7 @@ class InterpreterSpec extends FlatSpec with Matchers {
     tryScan match {
       case Success(tokens) =>
         val parser = new Parser(oguScript, tokens)
-        Success(parser.parse())
+        Try(parser.parse())
       case Failure(exception) => Failure(exception)
     }
   }

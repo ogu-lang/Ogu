@@ -1,6 +1,5 @@
 package lexer
 
-
 case class EmptyTokenStream() extends RuntimeException("no tokens available")
 
 case class CantScanFileException(filename: String, exception: Throwable)
