@@ -10,6 +10,7 @@ class DefDecl(id: String) extends LangNode
 object DefDecl {
 
   def parse(inner: Boolean, tokens: TokenStream): DefDecl = {
+    val line = tokens.currentLine()
     tokens.consume(DEF)
     val defId = tokens.consume(classOf[ID]).value
     val (args, dispatchers) = DefArg.parseDefArgs(tokens)
@@ -28,7 +29,7 @@ object DefDecl {
             buildResult(inner, defId, args, dispatchers, body, WhereBlock.parse(tokens))
         }
 
-      case _ => throw InvalidDef()
+      case _ => throw InvalidDef(line)
     }
   }
 

@@ -6,6 +6,5 @@ def multiplicar x y = x * y
 
 let doblar = curry multiplicar 2
 
-
 doblar 4
 

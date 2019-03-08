@@ -8,12 +8,12 @@ import parser.ast.expressions.{AssignableExpression, Expression, ExpressionParse
 case class SimpleAssignExpression(left: Expression, right: Expression) extends ControlExpression with AssignableExpression
 
 object SimpleAssignExpression extends ExpressionParser {
-
   override def parse(tokens: TokenStream): Expression = {
+    val line = tokens.currentLine()
     tokens.consume(SET)
     val expr = parsePipedOrBodyExpression(tokens)
     if (!expr.isInstanceOf[AssignableExpression])
-      throw CantAssignToExpression()
+      throw CantAssignToExpression(line)
     tokens.consume(ASSIGN)
     SimpleAssignExpression(expr, ForwardPipeFuncCallExpression.parse(tokens))
   }

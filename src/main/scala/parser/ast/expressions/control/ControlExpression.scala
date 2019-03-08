@@ -27,7 +27,7 @@ object ControlExpression extends ExpressionParser {
       case USING => UsingExpression.parse(tokens)
       case WHEN => WhenExpression.parse(tokens)
       case WHILE => WhileExpression.parse(tokens)
-      case _ => throw InvalidNodeException(tokens.nextToken())
+      case _ => throw InvalidNodeException(tokens.nextToken(), tokens.currentLine())
     }
   }
 

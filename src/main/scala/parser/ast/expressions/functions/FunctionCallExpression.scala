@@ -1,5 +1,6 @@
 package parser.ast.expressions.functions
 
+import exceptions.InvalidExpression
 import lexer.{ATOM, ID, TokenStream}
 import parser.ast.expressions._
 import parser.ast.expressions.literals.Atom
@@ -30,6 +31,7 @@ object FunctionCallExpression extends ExpressionParser {
     tokens.nextToken() match {
       case _:ID => Identifier(tokens.consume(classOf[ID]).value)
       case _:ATOM => Atom.parse(tokens)
+      case _ if funcCallEndToken(tokens) => throw InvalidExpression(tokens.nextToken(), tokens.currentLine())
       case _=>  FunctionCallWithDollarExpression.parse(tokens)
     }
   }

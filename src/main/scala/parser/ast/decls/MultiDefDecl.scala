@@ -25,6 +25,7 @@ case class MultiDefDecl(id: String, decls: List[SimpleDefDecl]) extends DefDecl(
 object MultiDefDecl {
 
   def parse(inner: Boolean, tokens: TokenStream, defs: Map[String, MultiDefDecl]) : (Map[String, MultiDefDecl], LangNode) = {
+    val line = tokens.currentLine()
     val defDecl = DefDecl.parse(inner, tokens)
     defDecl match {
       case decl: SimpleDefDecl =>
@@ -38,7 +39,7 @@ object MultiDefDecl {
             (defs + (mDecl.id -> mDecl), mDecl)
         }
       case node:LangNode => (defs, node)
-      case _ => throw InvalidDef()
+      case _ => throw InvalidDef(line)
     }
   }
 

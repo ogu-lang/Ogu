@@ -1,5 +1,6 @@
 package parser.ast
 
+import exceptions.InvalidExpression
 import lexer._
 import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 
@@ -41,6 +42,9 @@ package object expressions {
     else {
       tokens.consume(COMMA)
       tokens.consumeOptionals(NL)
+      if (tokens.peek(COMMA)) {
+        throw InvalidExpression(tokens.nextToken(), tokens.currentLine())
+      }
       consumeListOfExpression(tokens, parser, parser.parse(tokens) :: expressions)
     }
   }

@@ -35,13 +35,6 @@ def strIMC''' peso altura
   where imc = peso / altura ^ 2
         (delgado, normal, gordo) = (18.5, 25.0, 30.0)
 
-println! $ strIMC 12.0
-println! $ strIMC 22.0
-println! $ strIMC 27.0
-println! $ strIMC 32.0
-
-println! $ strIMC'' 70.0 1.50
-
 
 def calcIMCs lista = [imc p a | (p, a) <- lista]
     where imc peso altura = peso / altura ^ 2

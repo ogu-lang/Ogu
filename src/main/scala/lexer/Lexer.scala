@@ -25,7 +25,7 @@ class Lexer {
       indents ++ tokens
     else
       indents ++ tokens ++ List(Some(NL))
-    (result.flatten.map(TokenBox(_, lineNum)), newStack, newParenLevel)
+    (result.flatten.map(TokenBox(_, lineNum+1)), newStack, newParenLevel)
   }
 
   private[this] def removeComments(line: String): String = {

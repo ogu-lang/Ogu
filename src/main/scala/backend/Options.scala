@@ -5,6 +5,8 @@ object NoOptions extends OPT
 case class Options(banner: Boolean, print: Boolean, usage: Boolean, files: List[String], args: List[String]) extends OPT
 
 object EmptyOptions extends Options(false, false, false, Nil, Nil)
+object DebugOptions extends Options(false, true, false, Nil, Nil)
+
 
 object Options {
 

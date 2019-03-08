@@ -12,10 +12,16 @@ object PartialOperGen {
       node match {
         case PartialAdd(args) =>
           if (args.isEmpty) "+" else  s"(+ ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
+        case PartialBigAdd(args) =>
+          if (args.isEmpty) "+'" else  s"(+ ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
         case PartialSub(args) =>
           if (args.isEmpty) "-" else s"(- ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
-        case PartialMul(args) =>
+        case PartialBigSub(args) =>
+          if (args.isEmpty) "-'" else s"(- ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
+        case PartialBigMul(args) =>
           if (args.isEmpty) "*'" else s"(* ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
+        case PartialMul(args) =>
+          if (args.isEmpty) "*" else s"(* ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
         case PartialDiv(args) =>
           if (args.isEmpty) "/" else s"(/ ${args.map(a => CodeGenerator.buildString(a)).mkString(" ")})"
         case PartialMod(args) =>

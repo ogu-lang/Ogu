@@ -15,6 +15,7 @@ case class WhereDefTupledWithGuards(idList: List[String], args: Option[List[Expr
 object WhereDef {
 
   def parse(tokens:TokenStream): WhereDef = {
+    val line = tokens.currentLine()
     val listOfIds = parseListOfIds(tokens)
     val listOfArgs = parseListOfArgs(tokens, Nil)
 
@@ -38,7 +39,7 @@ object WhereDef {
           case _ => WhereDefTupledWithGuards(listOfIds, listOfArgs, guards)
         }
 
-      case _ => throw InvalidDef()
+      case _ => throw InvalidDef(line)
     }
   }
 
