@@ -295,6 +295,7 @@ object DeclGen {
           s"(cond ${guards.map(g => CodeGenerator.buildString(g)).mkString("\n")})"
       case WhereDefTupled(idList, None, body) =>
         s"[${idList.mkString(" ")}] ${CodeGenerator.buildString(body)}"
+      case _ => ""
     }
   }
 

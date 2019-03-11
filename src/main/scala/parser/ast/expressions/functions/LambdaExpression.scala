@@ -39,24 +39,22 @@ object LambdaExpression extends ExpressionParser {
   }
 
   private[this] def parseLambdaArg(tokens:TokenStream) : LambdaArg = {
-    if (tokens.peek(classOf[ID])) {
-      val arg = LambdaSimpleArg(tokens.consume(classOf[ID]).value)
-      if (tokens.peek(DOTDOTDOT)) {
-        tokens.consume(DOTDOTDOT)
-        LambdaVariadicArg(arg.name)
-      }
-      else {
-        arg
-      }
-    }
-    else if (tokens.peek(LPAREN)) {
-      tokens.consume(LPAREN)
-      val ids = consumeListOfIdsSepByComma(tokens)
-      tokens.consume(RPAREN)
-      LambdaTupleArg(ids)
-    } else {
-      println(s"@tokens = ${tokens}")
-      throw InvalidLambdaExpression(tokens.nextSymbol(), tokens.currentLine())
+    tokens.nextSymbol() match {
+      case LPAREN =>
+        tokens.consume(LPAREN)
+        val ids = consumeListOfIdsSepByComma(tokens)
+        tokens.consume(RPAREN)
+        LambdaTupleArg(ids)
+      case _ if tokens.nextSymbol().isInstanceOf[ID] =>
+        val arg = LambdaSimpleArg(tokens.consume(classOf[ID]).value)
+        if (!tokens.peek(DOTDOTDOT))
+          arg
+        else {
+          tokens.consume(DOTDOTDOT)
+          LambdaVariadicArg(arg.name)
+        }
+      case _ =>
+        throw InvalidLambdaExpression(tokens.nextSymbol(), tokens.currentLine())
     }
   }
 

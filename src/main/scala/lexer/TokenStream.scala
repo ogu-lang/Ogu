@@ -80,12 +80,11 @@ case class TokenStream(var tokens: List[Token]) {
   }
 
   def consume[T]() : Option[T] = {
-    if (tokens.isEmpty)
-      None
-    else {
-      val result = tokens.head
-      tokens = tokens.tail
-      Some(result.symbol.asInstanceOf[T])
+    tokens.headOption match {
+      case None => None
+      case Some(result) =>
+        tokens = tokens.tail
+        Some(result.symbol.asInstanceOf[T])
     }
   }
 
@@ -103,13 +102,12 @@ case class TokenStream(var tokens: List[Token]) {
   }
 
   def consume[T](t:Class[T]) : T = {
-    if (peek(t)) {
-      val result = tokens.head.symbol
-      tokens = tokens.tail
-      result.asInstanceOf[T]
-    }
-    else {
-      throw UnexpectedTokenClassException(tokens.headOption)
+    tokens.headOption match {
+      case None => throw UnexpectedTokenClassException(None)
+      case Some(token) =>
+        val result = token.symbol
+        tokens = tokens.tail
+        result.asInstanceOf[T]
     }
   }
 

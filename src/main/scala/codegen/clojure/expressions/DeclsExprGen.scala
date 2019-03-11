@@ -48,6 +48,7 @@ object DeclsExprGen {
       node match {
         case ForVarDeclIn(id, initialValue) => s"$id ${CodeGenerator.buildString(initialValue)}"
         case ForVarDeclTupledIn(ids, initialValue) => s"[${ids.mkString(" ")}] ${CodeGenerator.buildString(initialValue)}"
+        case _ => ""
       }
     }
   }
