@@ -47,40 +47,28 @@ object TypeGen {
   }
 
   implicit object ClassDeclTranslator extends Translator[ClassDecl] {
-
     override def mkString(node: ClassDecl): String = {
-      val strBuf = new StringBuilder()
-      strBuf ++= s"(deftype ${node.name} [${node.args.getOrElse(List.empty[String]).mkString(" ")}]\n"
-      if (node.traits.nonEmpty) {
-        strBuf ++= s"\t${node.traits.map(CodeGenerator.buildString(_)).mkString("\n\t")}"
-      }
-      strBuf ++= ")\n\n"
-      strBuf.mkString
+      mkTypeString(typeName="deftype", node.name, node.args.getOrElse(Nil), node.traits)
     }
   }
 
   implicit object RecordDeclTranslator extends Translator[RecordDecl] {
-
     override def mkString(node: RecordDecl): String = {
-      val strBuf = new StringBuilder()
-      strBuf ++= s"(defrecord ${node.name} [${node.args.mkString(" ")}]\n"
-      if (node.traits.nonEmpty) {
-        strBuf ++= s"\t${node.traits.map(CodeGenerator.buildString(_)).mkString("\n\t")}"
-      }
-      strBuf ++= ")\n\n"
-      strBuf.mkString
+     mkTypeString(typeName="defrecord", node.name, node.args, node.traits)
     }
+  }
 
+  private[this] def mkTypeString(typeName: String, name: String, args:List[String], traits: List[TraitDef]) : String = {
+    s"($typeName $name [${args.mkString(" ")}]\n" +
+      (if (traits.isEmpty) "" else s"\t${traits.map(CodeGenerator.buildString(_)).mkString("\n\t")}") + ")\n\n"
   }
 
   implicit object AdtDeclTranslator extends Translator[AdtDecl] {
     override def mkString(node: AdtDecl): String = {
-      val strBuf = new StringBuilder()
-      strBuf ++= s"(defprotocol ${node.name})\n"
-      for (adt <- node.defs) {
-        strBuf ++=  s"(deftype ${adt.name} [${adt.args.mkString(" ")}] ${node.name})\n"
-      }
-      strBuf.mkString
+      s"(defprotocol ${node.name})\n" +
+      node.defs.map { adt =>
+         s"(deftype ${adt.name} [${adt.args.mkString(" ")}] ${node.name})"
+      }.mkString("\n")
     }
   }
 

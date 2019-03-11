@@ -68,6 +68,7 @@ object Backend {
               case Failure(exception) =>
                 exception match {
                   case err:ParserException => err.showError(System.err)
+                  case _ => exception
                 }
               case _ => Nil
             }
