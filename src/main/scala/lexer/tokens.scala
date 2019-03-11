@@ -211,6 +211,26 @@ object OperatorMap {
     table.get(str)
   }
 
+  def isBlank(c: Char): Boolean = Character.isWhitespace(c)
+
+  def isIdentifierChar(c: Char): Boolean =
+    c match {
+      case '_' => true
+      case _ => Character.isAlphabetic(c)
+    }
+
+  def isPunct(c: Char): Boolean = {
+    val punctChars: Set[Char] = Set(',', '(', ')', '[', ']', '{', '}', '\\')
+    punctChars contains c
+  }
+
+  def isTimeValidChar(c: Char): Boolean = {
+    c match {
+      case '-' | ':' => true
+      case _ => Character.isDigit(c) || Character.isUpperCase(c)
+    }
+  }
+
   private[this] val table = Map(
       ("&&", AND),
       ("&", ANDB),

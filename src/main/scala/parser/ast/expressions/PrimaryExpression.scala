@@ -9,7 +9,7 @@ import parser.ast.expressions.types.{ConstructorExpression, NewCallExpression}
 object PrimaryExpression extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case LPAREN if tokens.peek(2, classOf[OPER]) => PartialOperExpression.parse(tokens)
       case LPAREN | LBRACKET | LCURLY | HASHLCURLY => AtomicExpression.parse(tokens)
       case LAZY => LazyExpression.parse(tokens)

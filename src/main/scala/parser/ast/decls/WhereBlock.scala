@@ -8,7 +8,7 @@ case class WhereBlock(whereDefs: List[WhereDef]) extends LangNode
 object WhereBlock {
 
   def parse(tokens:TokenStream): Option[WhereBlock] = {
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case WHERE => Some(parseUnindented(tokens))
       case NL if tokens.peek(2, INDENT) =>
         tokens.consume(NL)

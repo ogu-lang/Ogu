@@ -41,7 +41,7 @@ object Module {
       val inner = if (!tokens.peek(PRIVATE)) false else {
         tokens.consume(PRIVATE); true
       }
-      val (newDefs, newNodes) = tokens.nextToken() match {
+      val (newDefs, newNodes) = tokens.nextSymbol() match {
         case CLASS => (defs, ClassDecl.parse(inner, tokens) :: nodes)
         case DATA => (defs, AdtDecl.parse(inner, tokens) :: nodes)
         case DEF =>

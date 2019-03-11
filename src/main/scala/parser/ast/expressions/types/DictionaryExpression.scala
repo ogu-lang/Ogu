@@ -33,7 +33,7 @@ object DictionaryExpression extends ExpressionParser {
   }
 
   def parseKeyExpr(tokens:TokenStream) : Expression = {
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case _:ATOM => Atom.parse(tokens)
       case _:TID if !tokens.peek(2, LPAREN) =>  Identifier(tokens.consume(classOf[TID]).value)
       case _:ID if !tokens.peek(2, LPAREN) =>  Identifier(tokens.consume(classOf[ID]).value)
@@ -42,7 +42,7 @@ object DictionaryExpression extends ExpressionParser {
       case LBRACKET => AtomicExpression.parse(tokens)
       case _ =>
         println(s"@@! ${tokens}")
-        throw InvalidExpression(tokens.nextToken(), tokens.currentLine())
+        throw InvalidExpression(tokens.nextSymbol(), tokens.currentLine())
     }
   }
 

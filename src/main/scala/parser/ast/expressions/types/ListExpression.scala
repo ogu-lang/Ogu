@@ -40,7 +40,7 @@ object ListExpression extends ExpressionParser {
         case List(e) => e
         case _ => ListExpression(exprs, None)
       }
-      val finalExpr = tokens.nextToken() match {
+      val finalExpr = tokens.nextSymbol() match {
         case DOTDOT =>
           tokens.consume(DOTDOT)
           parseEndRange(tokens, expr, include = true)
@@ -92,7 +92,7 @@ object ListExpression extends ExpressionParser {
   }
 
   def parseListGuard(tokens: TokenStream): ListGuard = {
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case LPAREN if tokens.peek(2, classOf[ID]) && tokens.peek(3, COMMA) =>
         tokens.consume(LPAREN)
         val listOfIds = consumeListOfIdsSepByComma(tokens)

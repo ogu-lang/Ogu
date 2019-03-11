@@ -19,7 +19,7 @@ object WhereDef {
     val listOfIds = parseListOfIds(tokens)
     val listOfArgs = parseListOfArgs(tokens, Nil)
 
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case ASSIGN =>
         tokens.consume(ASSIGN)
         val body = parsePipedOrBodyExpression(tokens)
@@ -64,7 +64,7 @@ object WhereDef {
   }
 
   private[this] def parseListOfWhereGuards(tokens: TokenStream, guards: List[WhereGuard]) : List[WhereGuard] = {
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case GUARD =>
         parseListOfWhereGuards(tokens, parseWhereGuard(tokens) :: guards)
       case INDENT =>

@@ -25,7 +25,7 @@ object LoopExpression extends ExpressionParser {
     tokens.consume(LOOP)
     val loopDecls = parseLoopDecls(tokens)
     tokens.consumeOptionals(NL)
-    val guardExpr = tokens.nextToken() match {
+    val guardExpr = tokens.nextSymbol() match {
       case WHILE =>
         tokens.consume(WHILE)
         Some(WhileGuardExpr(LogicalExpression.parse(tokens)))
@@ -59,7 +59,7 @@ object LoopExpression extends ExpressionParser {
       tokens.consume(ASSIGN)
       LoopVarDecl(id.value, ForwardPipeFuncCallExpression.parse(tokens))
     } else {
-      throw InvalidExpression(tokens.nextToken(), tokens.currentLine())
+      throw InvalidExpression(tokens.nextSymbol(), tokens.currentLine())
     }
   }
 

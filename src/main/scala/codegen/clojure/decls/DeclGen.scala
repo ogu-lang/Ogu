@@ -104,6 +104,7 @@ object DeclGen {
         node match  {
           case WhereGuard(Some(comp), expr) => s"${CodeGenerator.buildString(comp)} ${CodeGenerator.buildString(expr)}"
           case WhereGuard(None, expr) => s":else ${CodeGenerator.buildString(expr)}"
+          case _ => ""
         }
     }
 

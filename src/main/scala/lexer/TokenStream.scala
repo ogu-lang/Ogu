@@ -12,7 +12,7 @@ case class TokenStream(var tokens: List[Token]) {
   def peek(obj: SYMBOL): Boolean = {
     tokens.headOption match {
       case None => false
-      case Some(Token(token, line)) => token.equals(obj)
+      case Some(Token(symbol, line)) => symbol.equals(obj)
     }
   }
 
@@ -56,12 +56,12 @@ case class TokenStream(var tokens: List[Token]) {
       case Some(Token(token, line)) => line
     }
 
-  def nextToken() : SYMBOL = tokens.headOption match {
+  def nextSymbol() : SYMBOL = tokens.headOption match {
     case None => EOF
     case Some(Token(token, line)) => token
   }
 
-  def nextTokenBox() : Token = tokens.head
+  def nextToken() : Option[Token] = tokens.headOption
 
   def pop() : SYMBOL = {
     tokens.headOption match {
@@ -91,11 +91,14 @@ case class TokenStream(var tokens: List[Token]) {
 
   def consume(obj: SYMBOL) : SYMBOL = {
     if (peek(obj)) {
-      val result = tokens.head
-      tokens = tokens.tail
-      result.symbol
+      tokens.headOption match {
+        case Some(result) =>
+          tokens = tokens.tail
+          result.symbol
+        case _ => EOF
+      }
     } else {
-      throw UnexpectedTokenException(obj, tokens.head)
+      throw UnexpectedTokenException(tokens.headOption)
     }
   }
 
@@ -106,7 +109,7 @@ case class TokenStream(var tokens: List[Token]) {
       result.asInstanceOf[T]
     }
     else {
-      throw UnexpectedTokenClassException(tokens.head.symbol, tokens.head.line)
+      throw UnexpectedTokenClassException(tokens.headOption)
     }
   }
 

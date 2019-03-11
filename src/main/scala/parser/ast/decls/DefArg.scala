@@ -23,7 +23,7 @@ object DefArg {
     }
     else {
       val id = tokens.consume(classOf[ID]).value
-      tokens.nextToken() match {
+      tokens.nextSymbol() match {
         case COLON =>
           tokens.consume(COLON)
           DefArg(IdIsType(id, tokens.consume(classOf[TID]).value))

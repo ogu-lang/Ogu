@@ -1,13 +1,18 @@
 package exceptions
 
 import java.io.PrintStream
+import lexer.Token
 
-import lexer.SYMBOL
 
-case class UnexpectedTokenClassException(token: SYMBOL, line: Int) extends ParserException {
+case class UnexpectedTokenClassException(tokenOpt: Option[Token]) extends ParserException {
   override def showError(stream: PrintStream): AnyRef = {
-    val msg = s"Unexpected token $token in line: $line"
-    stream.println(msg)
-    msg
+    tokenOpt match {
+      case Some(token) =>
+        val msg = s"Unexpected token ${token.symbol} in line: ${token.line}"
+        stream.println(msg)
+        msg
+      case _ => Nil
+    }
+
   }
 }

@@ -14,7 +14,7 @@ object DefDecl {
     tokens.consume(DEF)
     val defId = tokens.consume(classOf[ID]).value
     val (args, dispatchers) = DefArg.parseDefArgs(tokens)
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case ASSIGN =>
         tokens.consume(ASSIGN)
         buildResult(inner, defId, args, dispatchers, parsePipedOrBodyExpression(tokens), WhereBlock.parse(tokens))

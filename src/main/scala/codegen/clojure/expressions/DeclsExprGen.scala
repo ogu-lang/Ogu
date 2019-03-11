@@ -38,6 +38,7 @@ object DeclsExprGen {
           decls.map {
             decl => s"(def ${CodeGenerator.buildString(decl.id)} ${CodeGenerator.buildString(decl.value)})"
           }.mkString("\n")
+        case _ => ""
       }
     }
   }

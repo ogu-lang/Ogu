@@ -1,14 +1,10 @@
 package backend
 
-
+import exceptions.ParserException
 import interpreter.{Interpreter, Runtime}
 import java.io.{File, FileInputStream, InputStream}
-
-import exceptions.ParserException
 import lexer.Lexer
 import parser._
-
-import scala.reflect.macros.ParseException
 import scala.util.{Failure, Success, Try}
 
 object Backend {
@@ -74,13 +70,13 @@ object Backend {
                   case err:ParserException => err.showError(System.err)
                 }
             }
-
           case Failure(exception) => Failure(exception)
+          case _ => Nil
         }
     }
 
   private[this] def akarru() : Unit = {
-    Runtime.banner("akarrú")
+    Runtime.banner(msg="akarrú")
     println(version)
   }
 

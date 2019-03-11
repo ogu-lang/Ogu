@@ -10,7 +10,7 @@ class ControlExpression extends Expression
 object ControlExpression extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case COND => CondExpression.parse(tokens)
       case FOR => ForExpression.parse(tokens)
       case IF => IfExpression.parse(tokens)
@@ -27,7 +27,7 @@ object ControlExpression extends ExpressionParser {
       case USING => UsingExpression.parse(tokens)
       case WHEN => WhenExpression.parse(tokens)
       case WHILE => WhileExpression.parse(tokens)
-      case _ => throw InvalidNodeException(tokens.nextToken(), tokens.currentLine())
+      case _ => throw InvalidNodeException(tokens.nextSymbol(), tokens.currentLine())
     }
   }
 

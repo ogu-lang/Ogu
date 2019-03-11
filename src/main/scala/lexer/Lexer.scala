@@ -19,7 +19,7 @@ class Lexer {
   private[this] def parseMultiLineString: Boolean = currentString.nonEmpty
 
   def scanLine(line: String, lineNum: Int, indentStack: IntList, parenLevel: Int): (TokenList, IntList, Int) = {
-    val text = removeComments(line)
+    val text = line.substring(0, findCommentPos(line, pos = 0, insideString = false))
     val (str, indents, newStack) = if (parenLevel > 0) (text, Nil, indentStack) else scanIndentation(text, indentStack)
     val (tokens, newParenLevel) = splitLine(str, lineNum, parenLevel)
     val result = if (text.isEmpty || tokens.isEmpty || newParenLevel > 0 || parseMultiLineString)
@@ -29,12 +29,8 @@ class Lexer {
     (result.flatten.map(Token(_, lineNum + 1)), newStack, newParenLevel)
   }
 
-  private[this] def removeComments(line: String): String = {
-    line.substring(0, findCommentPos(line, pos = 0, insideString = false))
-  }
-
   private[this] def scanIndentation(text: String, indents: IntList): (String, OptTokList, IntList) = {
-    val s = text.dropWhile(isBlank)
+    val s = text.dropWhile(OperatorMap.isBlank)
     val startColumn = text.length - s.length
     indents.headOption match {
       case None => (s, Nil, indents)
@@ -92,7 +88,7 @@ class Lexer {
             val (r2, ip, npl2) = addQuoted(txt, str, ini, pos, cl, npl, r)
             scanTokens(txt, str.drop(ip - pos), cl, npl2, r2, ip, ip)
           case '\'' =>
-            if (pos != ini)
+            if (pos > ini || pos < ini)
               scanTokens(txt, str.drop(1), cl, pl, tokens, ini, pos + 1)
             else {
               val (r, ip, npl) = addQuoted(txt, str, ini, pos, cl, pl, tokens)
@@ -110,12 +106,12 @@ class Lexer {
           case '#' =>
             scanHash(txt, str, cl, pl, tokens, ini, pos)
 
-          case _ if isBlank(c) =>
+          case _ if OperatorMap.isBlank(c) =>
             val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
-            val newPos = skip(pos, txt.substring(pos), isBlank)
+            val newPos = skip(pos, txt.substring(pos), OperatorMap.isBlank)
             scanTokens(txt, str.drop(newPos - pos), cl, npl, r, newPos, newPos)
 
-          case _ if isPunct(c) =>
+          case _ if OperatorMap.isPunct(c) =>
             val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
             val (token, level) = tryParseOp(txt.substring(pos, pos + 1), cl, npl)
             scanTokens(txt, str.drop(1), cl, level, token :: r, pos + 1, pos + 1)
@@ -144,8 +140,8 @@ class Lexer {
           case '{' =>
             val (token, level) = parseHashTag(txt.substring(ini, pos + 2), cl, npl)
             scanTokens(txt, str.drop(2), cl, level, token :: r, pos + 2, pos + 2)
-          case _ if isTimeValidChar(c) =>
-            val newPos = skip(pos + 1, newTxt, isTimeValidChar)
+          case _ if OperatorMap.isTimeValidChar(c) =>
+            val newPos = skip(pos + 1, newTxt, OperatorMap.isTimeValidChar)
             val (token, level) = parseHashTag(txt.substring(ini, newPos), cl, npl)
             scanTokens(txt, str.drop(newPos - pos), cl, level, token :: r, newPos, newPos)
           case _ =>
@@ -255,7 +251,7 @@ class Lexer {
     KeywordMap(str) match {
       case Some(token) => Some(token)
       case None =>
-        val s = str.takeWhile(c => !isIdentifierChar(c))
+        val s = str.takeWhile(c => !OperatorMap.isIdentifierChar(c))
         if (s.length >= str.length) {
           Some(ERROR(currentLine, str))
         }
@@ -344,25 +340,6 @@ class Lexer {
     }
   }
 
-  private[this] def isBlank(c: Char): Boolean = Character.isWhitespace(c)
-
-  private[this] def isIdentifierChar(c: Char): Boolean =
-    c match {
-      case '_' => true
-      case _ => Character.isAlphabetic(c)
-    }
-
-  private[this] def isPunct(c: Char): Boolean = {
-    val punctChars: Set[Char] = Set(',', '(', ')', '[', ']', '{', '}', '\\')
-    punctChars contains c
-  }
-
-  private[this] def isTimeValidChar(c: Char): Boolean = {
-    c match {
-      case '-' | ':' => true
-      case _ => Character.isDigit(c) || Character.isUpperCase(c)
-    }
-  }
 
   @tailrec
   private[this]

@@ -7,7 +7,7 @@ import parser.ast.expressions.vars.{BindDeclExpression, LetDeclExpression, VarDe
 
 object ParseExpr extends ExpressionParser {
   def parse(tokens: TokenStream): Expression = {
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case LET => LetDeclExpression.parse(tokens)
       case VAR => VarDeclExpression.parse(tokens)
       case BIND => BindDeclExpression.parse(tokens)

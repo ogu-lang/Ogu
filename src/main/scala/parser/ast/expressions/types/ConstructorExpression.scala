@@ -11,7 +11,7 @@ object ConstructorExpression extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
     val cls = tokens.consume(classOf[TID]).value
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case LPAREN =>
         tokens.consume(LPAREN)
         val args = if (tokens.peek(RPAREN)) List.empty else parseListOfCommaSeparatedExpressions(tokens)

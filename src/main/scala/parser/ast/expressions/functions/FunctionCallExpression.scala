@@ -28,10 +28,10 @@ object FunctionCallExpression extends ExpressionParser {
   }
 
   private[this] def parsePrim(tokens: TokenStream): Expression = {
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case _:ID => Identifier(tokens.consume(classOf[ID]).value)
       case _:ATOM => Atom.parse(tokens)
-      case _ if funcCallEndToken(tokens) => throw InvalidExpression(tokens.nextToken(), tokens.currentLine())
+      case _ if funcCallEndToken(tokens) => throw InvalidExpression(tokens.nextSymbol(), tokens.currentLine())
       case _=>  FunctionCallWithDollarExpression.parse(tokens)
     }
   }

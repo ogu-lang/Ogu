@@ -7,7 +7,7 @@ import parser.ast.expressions.types.{DictionaryExpression, ListExpression, SetEx
 object AtomicExpression extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case LPAREN =>
         TupleExpression.parse(tokens)
       case LBRACKET =>

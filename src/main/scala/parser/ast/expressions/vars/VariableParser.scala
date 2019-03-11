@@ -21,7 +21,7 @@ object VariableParser {
   }
 
   def parseInBodyOptExpr(tokens:TokenStream) : Option[Expression] = {
-    tokens.nextToken match {
+    tokens.nextSymbol match {
       case IN =>
         parseInBodyExpr(tokens)
       case NL if tokens.peek(2, IN) =>

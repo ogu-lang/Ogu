@@ -7,7 +7,7 @@ import parser.ast.expressions.functions.ForwardPipeFuncCallExpression
 package object expressions {
 
   def funcCallEndToken(tokens:TokenStream) : Boolean =
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case NL | INDENT | DEDENT | ASSIGN | DOLLAR | COMMA | LET | VAR | DO | THEN | ELSE |
            RPAREN | IN | RBRACKET | RCURLY | WHERE => true
       case pipe if pipe.isInstanceOf[PIPEOPER] => true
@@ -43,7 +43,7 @@ package object expressions {
       tokens.consume(COMMA)
       tokens.consumeOptionals(NL)
       if (tokens.peek(COMMA)) {
-        throw InvalidExpression(tokens.nextToken(), tokens.currentLine())
+        throw InvalidExpression(tokens.nextSymbol(), tokens.currentLine())
       }
       consumeListOfExpression(tokens, parser, parser.parse(tokens) :: expressions)
     }

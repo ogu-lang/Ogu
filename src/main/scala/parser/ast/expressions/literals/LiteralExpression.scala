@@ -9,7 +9,7 @@ trait LiteralExpression extends Expression
 object LiteralExpression extends ExpressionParser {
 
   override def parse(tokens: TokenStream): Expression = {
-    tokens.nextToken() match {
+    tokens.nextSymbol() match {
       case TRUE =>
         tokens.consume(TRUE)
         BoolLiteral(true)
@@ -36,7 +36,7 @@ object LiteralExpression extends ExpressionParser {
         FStringLiteral(tokens.consume(classOf[FSTRING]).value)
       case _ =>
         println(s"@@ tokens${tokens}")
-        throw InvalidExpression(tokens.nextToken(), tokens.currentLine())
+        throw InvalidExpression(tokens.nextSymbol(), tokens.currentLine())
     }
   }
 

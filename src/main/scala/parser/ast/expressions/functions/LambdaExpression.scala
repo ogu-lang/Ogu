@@ -21,7 +21,7 @@ object LambdaExpression extends ExpressionParser {
       val arg = parseLambdaArg(tokens)
       val args = parseListOfLambdaArgs(tokens, List(arg))
       if (!tokens.peek(ARROW)) {
-        throw InvalidLambdaExpression(tokens.nextToken(), tokens.currentLine())
+        throw InvalidLambdaExpression(tokens.nextSymbol(), tokens.currentLine())
       }
       tokens.consume(ARROW)
       LambdaExpression(args, ParseExpr.parse(tokens))
@@ -56,7 +56,7 @@ object LambdaExpression extends ExpressionParser {
       LambdaTupleArg(ids)
     } else {
       println(s"@tokens = ${tokens}")
-      throw InvalidLambdaExpression(tokens.nextToken(), tokens.currentLine())
+      throw InvalidLambdaExpression(tokens.nextSymbol(), tokens.currentLine())
     }
   }
 
