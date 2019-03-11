@@ -4,12 +4,11 @@ import codegen.clojure.decls.DeclGen._
 import codegen.clojure.expressions.ExpressionsGen._
 import codegen.clojure.types.TypeGen._
 import codegen.{CodeGenerator, Translator}
+import parser.ast.LangNode
 import parser.ast.decls.{DispatchDecl, MultiDefDecl, MultiMethod, SimpleDefDecl}
 import parser.ast.expressions.TopLevelExpression
 import parser.ast.module._
 import parser.ast.types._
-
-import parser.ast.LangNode
 
 import scala.annotation.tailrec
 

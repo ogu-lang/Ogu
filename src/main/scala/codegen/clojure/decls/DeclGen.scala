@@ -162,6 +162,8 @@ object DeclGen {
           case SimpleDefDecl(inner, id, args, body, Some(whereBlock)) =>
             s"${prefix(inner)} $id [${sArgs(args)}]\n" +
               s"\t\t${CodeGenerator.buildString(whereBlock)}\n\t${CodeGenerator.buildString(body)})\n\n"
+
+          case _ => ""
         }
       }
     }
