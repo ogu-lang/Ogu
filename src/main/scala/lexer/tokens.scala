@@ -2,27 +2,27 @@ package lexer
 
 import org.joda.time.DateTime
 
-sealed trait TOKEN
+sealed trait SYMBOL
 
-case class TokenBox(token:TOKEN, line: Int)
+case class Token(symbol:SYMBOL, line: Int)
 
-class OPER extends TOKEN
-class PAREN extends TOKEN
+class OPER extends SYMBOL
+class PAREN extends SYMBOL
 trait PIPEOPER extends OPER
 trait LOGICALBINOPER extends OPER
 trait COMPARATIVEBINOPER extends OPER
 trait SUMOPER extends OPER
 trait MULOPER extends OPER
 
-case object EOF extends TOKEN
-case class ERROR(line:Int, text:String) extends TOKEN
-case object INDENT extends TOKEN
-case object DEDENT extends TOKEN
-case object NL extends TOKEN
-case class ATOM(value: String) extends TOKEN
-case class ID(value: String) extends TOKEN
-case class TID(value: String) extends TOKEN
-trait KEYWORD extends TOKEN
+case object EOF extends SYMBOL
+case class ERROR(line:Int, text:String) extends SYMBOL
+case object INDENT extends SYMBOL
+case object DEDENT extends SYMBOL
+case object NL extends SYMBOL
+case class ATOM(value: String) extends SYMBOL
+case class ID(value: String) extends SYMBOL
+case class TID(value: String) extends SYMBOL
+trait KEYWORD extends SYMBOL
 trait CONTROL extends KEYWORD
 case object AS extends KEYWORD
 case object BIND extends KEYWORD
@@ -72,7 +72,7 @@ case object WHERE extends KEYWORD
 case object WHILE extends CONTROL
 case object WITH extends KEYWORD
 
-class LITERAL extends TOKEN
+class LITERAL extends SYMBOL
 class TEXT(text: String) extends LITERAL
 case class STRING(value: String) extends TEXT(value)
 case class FSTRING(value: String) extends TEXT(value)
@@ -114,7 +114,7 @@ case object EQUALS extends COMPARATIVEBINOPER
 case object GUARD extends OPER
 case object GE extends COMPARATIVEBINOPER
 case object GT extends COMPARATIVEBINOPER
-case object LAMBDA extends TOKEN
+case object LAMBDA extends SYMBOL
 case object LBRACKET extends PAREN
 case object LCURLY extends PAREN
 case object HASHLCURLY extends PAREN
@@ -149,7 +149,7 @@ case object SEMI extends OPER
 
 object KeywordMap {
 
-  def apply(str: String) : Option[TOKEN] = {
+  def apply(str: String) : Option[SYMBOL] = {
     table.get(str)
   }
 
@@ -207,7 +207,7 @@ object KeywordMap {
 
 object OperatorMap {
 
-  def apply(str: String) : Option[TOKEN] = {
+  def apply(str: String) : Option[SYMBOL] = {
     table.get(str)
   }
 

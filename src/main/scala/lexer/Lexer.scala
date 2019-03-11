@@ -8,50 +8,51 @@ import scala.util.{Failure, Success, Try}
 
 class Lexer {
 
-  type OptToken = Option[TOKEN]
-  type TokList = List[TOKEN]
-  type TokenList = List[TokenBox]
-  type OptTokList = List[Option[TOKEN]]
+  type OptToken = Option[SYMBOL]
+  type TokList = List[SYMBOL]
+  type TokenList = List[Token]
+  type OptTokList = List[Option[SYMBOL]]
   type IntList = List[Int]
 
   private[this] val currentString = new StringBuilder()
+
   private[this] def parseMultiLineString: Boolean = currentString.nonEmpty
 
   def scanLine(line: String, lineNum: Int, indentStack: IntList, parenLevel: Int): (TokenList, IntList, Int) = {
     val text = removeComments(line)
     val (str, indents, newStack) = if (parenLevel > 0) (text, Nil, indentStack) else scanIndentation(text, indentStack)
     val (tokens, newParenLevel) = splitLine(str, lineNum, parenLevel)
-    val result = if (text.isEmpty || tokens.isEmpty || newParenLevel > 0  || parseMultiLineString)
+    val result = if (text.isEmpty || tokens.isEmpty || newParenLevel > 0 || parseMultiLineString)
       indents ++ tokens
     else
       indents ++ tokens ++ List(Some(NL))
-    (result.flatten.map(TokenBox(_, lineNum+1)), newStack, newParenLevel)
+    (result.flatten.map(Token(_, lineNum + 1)), newStack, newParenLevel)
   }
 
   private[this] def removeComments(line: String): String = {
     line.substring(0, findCommentPos(line, pos = 0, insideString = false))
   }
 
-  private[this] def scanIndentation(text: String, indentStack: IntList): (String, OptTokList, IntList) = {
+  private[this] def scanIndentation(text: String, indents: IntList): (String, OptTokList, IntList) = {
     val s = text.dropWhile(isBlank)
     val startColumn = text.length - s.length
-    indentStack.headOption match {
-      case None => (text, Nil, indentStack)
+    indents.headOption match {
+      case None => (s, Nil, indents)
       case Some(pos) =>
-        if (startColumn == pos)
-          (s, Nil, indentStack)
-        else if (startColumn > pos) {
-          (s, List(Some(INDENT)), startColumn :: indentStack)
-        }
-        else {
-          val newIndentStack = indentStack.dropWhile(p => startColumn < p && p > 0)
-          (s, List.fill(indentStack.length - newIndentStack.length)(Some(DEDENT)), newIndentStack)
+        pos match {
+          case _ if startColumn > pos =>
+            (s, List(Some(INDENT)), startColumn :: indents)
+          case _ if startColumn < pos =>
+            val newIndentStack = indents.dropWhile(p => startColumn < p && p > 0)
+            (s, List.fill(indents.length - newIndentStack.length)(Some(DEDENT)), newIndentStack)
+          case _ =>
+            (s, Nil, indents)
         }
     }
   }
 
   @tailrec
-  private[this] def findCommentPos(line:String, pos: Int, insideString: Boolean) : Int = {
+  private[this] def findCommentPos(line: String, pos: Int, insideString: Boolean): Int = {
     line.headOption match {
       case None => pos
       case Some(c) =>
@@ -67,6 +68,97 @@ class Lexer {
     }
   }
 
+  private[this] def splitLine(txt: String, currentLine: Int, parenLevel: Int): (OptTokList, Int) = {
+    val len = txt.length
+    val (tokLst, newParenLevel, ini, pos) = scanTokens(txt, txt, currentLine, parenLevel, Nil, 0, 0)
+    if (ini < len) {
+      val (token, level) = strToToken(txt.substring(ini, pos), currentLine, newParenLevel)
+      ((token :: tokLst).reverse, level)
+    }
+    else {
+      (tokLst.reverse, newParenLevel)
+    }
+  }
+
+  @tailrec
+  private[this]
+  def scanTokens(txt: String, str: String, cl: Int, pl: Int, tokens: OptTokList, ini: Int, pos: Int): (OptTokList, Int, Int, Int) = {
+    str.headOption match {
+      case None => (tokens, pl, ini, pos)
+      case Some(c) =>
+        c match {
+          case '\"' =>
+            val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
+            val (r2, ip, npl2) = addQuoted(txt, str, ini, pos, cl, npl, r)
+            scanTokens(txt, str.drop(ip - pos), cl, npl2, r2, ip, ip)
+          case '\'' =>
+            if (pos != ini)
+              scanTokens(txt, str.drop(1), cl, pl, tokens, ini, pos + 1)
+            else {
+              val (r, ip, npl) = addQuoted(txt, str, ini, pos, cl, pl, tokens)
+              scanTokens(txt, str.substring(ip - pos), cl, npl, r, ip, ip)
+            }
+          case '.' if str.startsWith("...") || str.startsWith("..<") =>
+            val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
+            val r2 = OperatorMap(txt.substring(pos, pos + 3)) :: r
+            scanTokens(txt, str.drop(3), cl, npl, r2, pos + 3, pos + 3)
+
+          case '.' if str.startsWith("..") =>
+            val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
+            scanTokens(txt, str.drop(2), cl, npl, Some(DOTDOT) :: r, pos + 2, pos + 2)
+
+          case '#' =>
+            scanHash(txt, str, cl, pl, tokens, ini, pos)
+
+          case _ if isBlank(c) =>
+            val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
+            val newPos = skip(pos, txt.substring(pos), isBlank)
+            scanTokens(txt, str.drop(newPos - pos), cl, npl, r, newPos, newPos)
+
+          case _ if isPunct(c) =>
+            val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
+            val (token, level) = tryParseOp(txt.substring(pos, pos + 1), cl, npl)
+            scanTokens(txt, str.drop(1), cl, level, token :: r, pos + 1, pos + 1)
+
+          case _ =>
+            scanTokens(txt, str.drop(1), cl, pl, tokens, ini, pos + 1)
+        }
+    }
+  }
+
+  private[this]
+  def scanHash(txt:String, str:String,  cl: Int, pl: Int, tokens: OptTokList, ini:Int, pos: Int): (OptTokList, Int, Int, Int)  = {
+    val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
+    val newTxt = str.drop(1)
+    newTxt.headOption match {
+      case None => scanTokens(txt, newTxt, cl, npl, r, ini, pos + 1)
+      case Some(c) =>
+        c match {
+          case '\"' =>
+            val (r2, ip, npl2) = addQuoted(txt, str, pos, pos + 1, cl, npl, r)
+            scanTokens(txt, str.drop(ip - pos), cl, npl2, r2, ip, ip)
+          case '/' =>
+            val (quotedStr, newIni) = parseQuoted('/', txt, pos, pos + 1)
+            val (token, level) = parseHashTag(quotedStr, cl, npl)
+            scanTokens(txt, str.drop(newIni - pos), cl, level, token :: r, newIni, newIni)
+          case '{' =>
+            val (token, level) = parseHashTag(txt.substring(ini, pos + 2), cl, npl)
+            scanTokens(txt, str.drop(2), cl, level, token :: r, pos + 2, pos + 2)
+          case _ if isTimeValidChar(c) =>
+            val newPos = skip(pos + 1, newTxt, isTimeValidChar)
+            val (token, level) = parseHashTag(txt.substring(ini, newPos), cl, npl)
+            scanTokens(txt, str.drop(newPos - pos), cl, level, token :: r, newPos, newPos)
+          case _ =>
+            scanTokens(txt, newTxt, cl, npl, r, ini, pos + 1)
+        }
+    }
+  }
+
+  private[this] def parseQuoted(quot: Char, txt: String, ini: Int, oldPos: Int): (String, Int) = {
+    val pos = findQuot(Set(quot), txt.substring(oldPos+1), oldPos+1)
+    (txt.substring(ini, pos), pos)
+  }
+
   @tailrec
   private[this] def findQuot(quot: Set[Char], str: String, pos: Int) : Int = {
     str.headOption match {
@@ -80,116 +172,28 @@ class Lexer {
     }
   }
 
-  private[this] def splitLine(txt: String, currentLine: Int, parenLevel: Int): (OptTokList, Int) = {
-    val len = txt.length
-    val (tokLst, newParenLevel, ini, pos) = scanTokens(txt, currentLine, parenLevel, Nil, 0, 0)
-    if (ini < len) {
-      val (token, level) = strToToken(txt.substring(ini, pos), currentLine, newParenLevel)
-      ((token :: tokLst).reverse, level)
-    }
-    else {
-      (tokLst.reverse, newParenLevel)
-    }
-  }
-
-  @tailrec
   private[this]
-  def scanTokens(txt:String, cl: Int, pl: Int, tokens: OptTokList, ini:Int, pos: Int): (OptTokList, Int, Int, Int) = {
-    val len = txt.length
-    if (pos >= len) {
-      (tokens, pl, ini, pos)
-    }
-    else {
-      txt(pos) match {
-        case '\"' =>
-          val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
-          val (r2, ip, npl2) = addQuoted(txt, ini, pos, cl, npl, r)
-          scanTokens(txt, cl, npl2, r2, ip, ip)
-        case '\'' =>
-          if (pos != ini)
-            scanTokens(txt, cl, pl, tokens, ini, pos+1)
-          else{
-            val (r, ip, npl) = addQuoted(txt, ini, pos, cl, pl, tokens)
-            scanTokens(txt, cl, npl, r, ip, ip)
-          }
-        case '.' if pos + 2 < len && (txt.substring(pos, pos + 3) == "..." || txt.substring(pos, pos + 3) == "..<") =>
-          val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
-          val r2 = OperatorMap(txt.substring(pos, pos + 3)) :: r
-          scanTokens(txt, cl, npl, r2, pos+3, pos+3)
-
-        case '.' if pos + 1 < len && txt.substring(pos, pos + 2) == ".." =>
-          val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
-          scanTokens(txt, cl, npl, Some(DOTDOT) :: r, pos+2, pos+2)
-
-        case '#' =>
-          val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
-          if (pos + 1 >= len) {
-            scanTokens(txt, cl, npl, r, ini, pos+1)
-          } else {
-            txt(pos + 1) match {
-              case '\"' =>
-                val (r2, ip, npl2) = addQuoted(txt, pos, pos+1, cl, npl, r)
-                scanTokens(txt, cl, npl2, r2, ip, ip)
-              case '/' =>
-                val (quotedStr, newIni) = parseQuoted('/', txt, pos, pos+1)
-                val (token, level) = parseHashTag(quotedStr, cl, npl)
-                scanTokens(txt, cl, level, token :: r, newIni, newIni)
-              case '{' =>
-                val (token, level) = parseHashTag(txt.substring(ini, pos+2), cl, npl)
-                scanTokens(txt, cl, level, token::r, pos+2, pos+2)
-              case c if isTimeValidChar(c) =>
-                val newPos = skip(pos+1, txt.substring(pos+1), isTimeValidChar)
-                val (token, level) = parseHashTag(txt.substring(ini, newPos), cl, npl)
-                scanTokens(txt, cl, level, token :: r, newPos, newPos)
-              case _ =>
-                scanTokens(txt, cl, npl, r, ini, pos+1)
-            }
-          }
-
-        case c if isBlank(c) =>
-          val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
-          val newPos = skip(pos, txt.substring(pos), isBlank)
-          scanTokens(txt, cl, npl, r, newPos, newPos)
-
-        case c if isPunct(c) =>
-          val (r, npl) = checkToken(txt, ini, pos, cl, pl, tokens)
-          val (token, level) = tryParseOp(txt.substring(pos, pos+1), cl, npl)
-          scanTokens(txt, cl, level, token::r, pos+1, pos+1)
-
-        case _ =>
-          scanTokens(txt, cl, pl, tokens, ini, pos+1)
-      }
-    }
-  }
-
-
-  private[this] def parseQuoted(quot: Char, str: String, ini: Int, oldPos: Int): (String, Int) = {
-    val pos = findQuot(Set(quot), str.substring(oldPos+1), oldPos+1)
-    (str.substring(ini, pos), pos)
-  }
-
-  private[this]
-  def addQuoted(str: String, ini: Int, pos: Int, cl: Int, pl: Int, lst: OptTokList): (OptTokList, Int, Int) = {
-    val (quotedStr, newIni) = parseQuoted(str(pos), str, ini, pos)
+  def addQuoted(txt:String, str: String, ini: Int, pos: Int, cl: Int, pl: Int, tokens: OptTokList): (OptTokList, Int, Int) = {
+    val (quotedStr, newIni) = parseQuoted(str.head, txt, ini, pos)
     val (token, level) = strToToken(quotedStr, cl, pl)
-    (token::lst, newIni, level)
+    (token::tokens, newIni, level)
   }
 
-
   private[this]
-  def checkToken(str: String, ini: Int, pos: Int, cl: Int, pl: Int, lst:OptTokList): (OptTokList, Int) = {
+  def checkToken(txt: String, ini: Int, pos: Int, cl: Int, pl: Int, lst:OptTokList): (OptTokList, Int) = {
     if (pos > ini) {
-      addToken(str, ini, pos, cl, pl, lst)
+      addToken(txt.substring(ini, pos), cl, pl, lst)
     } else {
       (lst, pl)
     }
   }
 
   private[this]
-  def addToken(str:String, ini: Int, pos: Int, cl: Int, pl: Int, lst: OptTokList) : (OptTokList, Int) = {
-    val (token, level) = strToToken(str.substring(ini, pos), cl, pl)
-    (token :: lst, level)
+  def addToken(str:String, currentLine: Int, parenLevel: Int, tokens: OptTokList) : (OptTokList, Int) = {
+    val (token, level) = strToToken(str, currentLine, parenLevel)
+    (token :: tokens, level)
   }
+
   @tailrec
   private[this] def skip(pos: Int, str: String, f: Char => Boolean): Int = {
     str.headOption match {
@@ -277,9 +281,14 @@ class Lexer {
     }
   }
 
-  private[this] def isIntegerValue(bd: BigDecimal): Boolean = (bd.signum == 0) || bd.scale <= 0
+  private[this] def isIntegerValue(bd: BigDecimal): Boolean = {
+    bd.signum match {
+      case 0 => true
+      case _ => bd.scale <= 0
+    }
+  }
 
-  private[this] def strToNumToken(str: String): TOKEN = {
+  private[this] def strToNumToken(str: String): SYMBOL = {
     val value = BigDecimal(str)
     if (isIntegerValue(value)) {
       value match {
@@ -335,8 +344,6 @@ class Lexer {
     }
   }
 
-  val punctChars: Set[Char] = Set(',', '(', ')', '[', ']', '{', '}', '\\')
-
   private[this] def isBlank(c: Char): Boolean = Character.isWhitespace(c)
 
   private[this] def isIdentifierChar(c: Char): Boolean =
@@ -345,7 +352,10 @@ class Lexer {
       case _ => Character.isAlphabetic(c)
     }
 
-  private[this] def isPunct(c: Char): Boolean = punctChars contains c
+  private[this] def isPunct(c: Char): Boolean = {
+    val punctChars: Set[Char] = Set(',', '(', ')', '[', ']', '{', '}', '\\')
+    punctChars contains c
+  }
 
   private[this] def isTimeValidChar(c: Char): Boolean = {
     c match {
@@ -371,7 +381,7 @@ class Lexer {
       tokens
     } else {
       val newIndentStack = indentStack.dropWhile(p => p > 0)
-      List.fill(indentStack.length - newIndentStack.length)(TokenBox(DEDENT,lines.length+1)) ++ tokens.reverse
+      List.fill(indentStack.length - newIndentStack.length)(Token(DEDENT,lines.length+1)) ++ tokens.reverse
     }
     TokenStream(result.reverse)
   }

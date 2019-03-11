@@ -1,8 +1,8 @@
 package parser.ast.expressions
 
-import lexer.{TOKEN, TokenStream}
+import lexer.{SYMBOL, TokenStream}
 
-abstract class AssociativeExpressionParser(nextLevel: ExpressionParser, oper: TOKEN) extends ExpressionParser {
+abstract class AssociativeExpressionParser(nextLevel: ExpressionParser, oper: SYMBOL) extends ExpressionParser {
 
   def build(args: List[Expression]): Expression
 

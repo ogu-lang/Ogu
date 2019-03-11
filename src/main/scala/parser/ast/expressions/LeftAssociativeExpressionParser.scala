@@ -1,10 +1,10 @@
 package parser.ast.expressions
 
-import lexer.{NL, TOKEN, TokenStream}
+import lexer.{NL, SYMBOL, TokenStream}
 
 import scala.annotation.tailrec
 
-abstract class LeftAssociativeExpressionParser(nextLevel: ExpressionParser, oper: TOKEN)
+abstract class LeftAssociativeExpressionParser(nextLevel: ExpressionParser, oper: SYMBOL)
   extends AssociativeExpressionParser(nextLevel, oper) {
 
   def parse(tokens: TokenStream): Expression = {

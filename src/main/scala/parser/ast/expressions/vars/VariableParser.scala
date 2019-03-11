@@ -9,7 +9,7 @@ import scala.annotation.tailrec
 
 object VariableParser {
 
-  def parseListOfLetVars(tokens: TokenStream, token: TOKEN): List[LetVariable] = {
+  def parseListOfLetVars(tokens: TokenStream, token: SYMBOL): List[LetVariable] = {
     tokens.consume(token)
     tokens.consumeOptionals(NL)
     val initIndent = if (tokens.peek(INDENT)) { tokens.consume(INDENT); 1 } else 0
