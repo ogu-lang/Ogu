@@ -2,8 +2,16 @@
 
 # bugs
 
+Esto no compila:
+
+    def tell [] = “lista vacía”
+    def tell [x] = “la lista tiene un elemento “
+    def tell [x, y] = “la lista tiene dos elementos:“
+    def tell [x, y :: _]= “la lista es larga."
+
 # todo
 
+- try in windows and linux
 - exceptions
 - compile into java class
 - ogu projects
