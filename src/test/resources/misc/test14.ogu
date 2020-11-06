@@ -1,0 +1,15 @@
+
+
+let d = [{:problem "euler1", :value 233168},
+            {:problem "euler2", :value 4613732},
+              {:problem "euler3", :value 6857},
+              {:problem "euler4", :value 906609},
+              {:problem "euler5", :value 232792560},
+              {:problem "euler6", :value 25164150},
+              {:problem "euler7", :value 104743},
+              {:problem "euler8", :value 23514624000},
+              {:problem "euler9", :value 31875000},
+              {:problem "euler10", :value 142913828922}]
+
+d |> map :value |> sum
+

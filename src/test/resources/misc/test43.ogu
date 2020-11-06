@@ -1,0 +1,30 @@
+module snake
+
+from [:jvm] java.awt import Color, Dimension
+from [:jvm] javax.swing import JPanel, JFrame, Timer, JOptionPane
+from [:jvm] java.awt.event import ActionListener, KeyListener
+
+from [:jvm] java.awt.event.KeyEvent import VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN
+
+def create-snake = nil
+def create-apple = nil
+
+def game-panel f s a = nil
+
+let turn-millis = 0
+
+-- START: game
+def game =
+  let snake = ref (create-snake),
+      apple = ref (create-apple),
+      frame = new JFrame ("Snake"),
+      panel = game-panel frame snake apple,
+      timer = new Timer (turn-millis, panel)
+  in
+     panel !> .setFocusable true !> .addKeyListener panel
+     frame !> .add panel !> .pack !> .setVisible true
+     .start timer
+     [snake, apple, timer]
+-- END: game
+
+nil

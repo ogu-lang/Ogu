@@ -1,0 +1,19 @@
+-- test ADT
+
+data Tree = Leaf (value) | Node (value, left, right)
+
+def t-max Node(value, left, right) = max value (t-max left) (t-max right)
+
+def t-max Leaf(value) = value
+
+def t-sum Node(value, left, right) = value + (t-sum left) + (t-sum right)
+
+def t-sum Leaf(value) = value
+
+let arbol = Node(30, Leaf(70),
+			     Node(15,
+			     	Node(42, Leaf(54), Leaf(66)),
+			     	Node(25, Leaf(89), Leaf(72))))
+
+[t-max arbol, t-sum arbol]
+

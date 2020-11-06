@@ -1,0 +1,24 @@
+
+def primes n =
+    let
+        root =  n |> Math.sqrt |> int,
+        sieve = boolean-array! n true
+    in
+        for i in [2 ..< root] do
+            when sieve @ i then
+                loop j = i * 2 while j < n do
+                     set sieve @ j = false
+                     repeat with j = j + i
+        filter (\i -> sieve @ i) [2 ..< n]
+
+def calc-limit n = (int (n * logsum)) + 3
+    where log = Math.log n
+          loglog = Math.log log
+          logsum = log + loglog
+
+def nth-prime 1 = 2
+def nth-prime 2 = 3
+def nth-prime n = calc-limit n |> primes |> take n |> last
+
+nth-prime 10001
+

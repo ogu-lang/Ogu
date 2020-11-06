@@ -1,6 +1,0 @@
--- test 9 funciones con listas
-
-let even = [2 * x | x <- [1..100] ]
-
-even >| sum
-

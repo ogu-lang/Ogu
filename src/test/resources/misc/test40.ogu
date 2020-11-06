@@ -1,0 +1,12 @@
+-- algebraic data types
+
+data Tree = Empty | Leaf(value) | Node(left, right)
+
+def tmax Node(left, right) = let ml = tmax left, mr = tmax right
+                                 in if ml > mr then ml else mr
+
+def tmax Leaf(value) = value
+
+let tree = Node(Leaf(10), Node(Node(Leaf(4), Node(Leaf(10), Leaf(32))), Node(Leaf(80), Leaf(50))))
+
+tmax tree

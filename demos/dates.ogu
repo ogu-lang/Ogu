@@ -1,0 +1,5 @@
+let date = #2017-02-26
+
+let timestamp = #2017-02-26T04:03:30
+
+.getYear date

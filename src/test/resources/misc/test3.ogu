@@ -1,0 +1,11 @@
+-- test 3
+
+2 + 2 |> range |> sum
+
+"a b c d" |> .toUpperCase |> .split " " |> first
+
+"foo" |> str "bar" |> str "zoo"
+
+"foo" >| str "bar" >| str "zoo"
+
+"foo" >| str "bar"

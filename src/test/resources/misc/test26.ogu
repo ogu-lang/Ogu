@@ -1,0 +1,50 @@
+trait Shape
+
+    def area self
+
+    def move self x y
+
+trait Draw
+
+    def show self
+
+class Circle(x,  y, radius)
+
+   extends Shape
+
+       def area self = pi * (radius ^ 2)
+
+       def move self x y =
+            println! "move to " x y
+
+   extends Draw
+
+        def show this = println! "this circle is at " this.x "," this.y " with radius = " this.radius
+
+
+class Rectangle(x, y, width, height)
+
+
+extends Rectangle with Shape
+
+    def area self = (.width self) * (.height self)
+
+
+class Triangle(b, h)
+
+    extends Shape
+
+        def area self = self.b * self.h
+
+
+def test-area shape : Rectangle = str "area of rectangle: " (area shape)
+
+def test-area shape : Shape = str  "area of shape: "  (area shape)
+
+let cir = Circle(10, 10, 10)
+let rec = Rectangle(0,0, 100, 50)
+let tri = Triangle(10, 20)
+
+println! cir.x cir.y cir.radius
+
+[test-area cir, test-area rec, test-area tri]

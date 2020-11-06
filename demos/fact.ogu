@@ -1,13 +1,24 @@
 
-fact 0 = 1
+def fact 0 = 1
+def fact 1 = 1
+def fact n = n * (fact $ dec n)
 
-fact 1 = 1
+def test a = fact a
+def test a b = (fact  a) + (fact b)
 
-fact n = n * (fact $ dec n)
+def funny 0 0 = 0
+def funny 0 1 = 2
+def funny 1 0 = 4
+def funny 1 b = 4 + 2 * b
+def funny a 1 = 4 * a + 2
+def funny a b = 4 * a +  2 * b
 
-test a = fact a
 
-test a b = (fact  a) + (fact b)
+println $ funny 0 0
+println $ funny 0 1
+println $ funny 1 0
+println $ funny 2 2
+
 
 println $ test 4
 

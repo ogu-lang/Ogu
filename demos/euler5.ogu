@@ -1,6 +1,6 @@
 
 def gcd x y =
-    loop a = x, b = y in
+    loop a = x, b = y do
         if zero? b then a
         else repeat a' = b, b' = a % b
 

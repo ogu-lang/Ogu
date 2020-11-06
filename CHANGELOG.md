@@ -3,6 +3,76 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+### Changed
+
+- args pass
+
+## [0.2.5] - 2019-3-3
+
+### Added
+
+- add proxy
+- add sync
+- doto
+- turtle graphics
+- add **args**
+- arguments parsing
+- change bin/ogu bash script
+
+### Fixed 
+
+- bug on impor from jvm
+- fix tabs on some demos
+- Static method call
+- dictionary expressions
+
+### Changed
+
+- major refactor of codegen to clojure
+
+## [0.2.4] - 2019-2-26
+
+### Changed
+
+- all expressions are in separated parse objects
+- more functional style for code of parser
+
+## [0.2.3] - 2019-2-25
+
+### Fixed
+
+- restructure packages
+
+## [0.2.2] - 2019-2-24
+
+### Fixed 
+
+- major refactoring
+- morefunctional style
+- remove duplicated code in parser
+
+## [0.2.1] - 2019-2-22
+
+### Fixed
+
+- Refactor Parser
+- Refactor Lexer
+- remove duplicated code
+
+## [0.2.0] - 2019-2-21
+
+### Changed
+
+- new parser in scala, but runtime still is clojure
+- function definitions require def keyword
+- val is marked deprecated, in next release will be removed
+- many minors changes in syntax
+
+### Removed
+
+- begin/end, now you must indent like python/haskell.
+
+
 ## [0.1.5] - 2017-11-4
 
 ### Added

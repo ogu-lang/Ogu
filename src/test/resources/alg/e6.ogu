@@ -1,0 +1,10 @@
+
+def sum-n n = (n * (n + 1)) / 2
+
+def square-sum n = let s = sum-n n in s * s
+
+def sum-n-square n = sum $ map (\x -> x * x)  [1 .. n]
+
+def dif-squares n = (square-sum n) - (sum-n-square n)
+
+dif-squares 100 

@@ -1,0 +1,17 @@
+
+let v = [100, 2, 3, 4, 5]
+
+let s = #{:a, :b, :c}
+
+println! (v 0)
+
+println! (s :a)
+
+println! (:a s)
+
+let date = #2017-02-26
+let timestamp = #2017-02-26T04:03:30
+
+println! [.getYear date, (:a s), (v 0), (s :a)]
+
+[.getYear date, (:a s), (v 0), (s :a)]

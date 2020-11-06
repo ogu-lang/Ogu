@@ -1,0 +1,52 @@
+trait Vehicle
+    def move this
+
+
+record Car {company, model, year}
+    extends Vehicle
+
+        def move this = println! "moving car " company model year
+
+record Plane {company, series, year}
+   extends Vehicle
+        def move this = println! "flying plane " company series year
+
+record Ship {name}
+
+    extends Vehicle
+
+        def move this
+            | name == "Titanic" = println! name "sink"
+            | otherwise = println! "sail"
+
+let mustang56 = Car {"Ford", "Mustang", 1956}
+
+let boeing747 = Plane {"Boeing", "747", 2000}
+
+def show-model p : Plane = println! (.series  p) (.company  p)
+def show-model c : Car   = println! c.model c.company
+
+dispatch show with class
+
+def show Plane ? plane = println! "plane " -- (show-model plane)
+def show Car   ? car = println!   "car " -- (show-model car)
+
+let titanic = Ship ("Titanic")
+
+let queen = Ship ("Queen Mary")
+
+show mustang56
+show boeing747
+
+show-model mustang56
+show-model boeing747
+
+move mustang56
+
+move boeing747
+
+move titanic
+
+move queen
+
+
