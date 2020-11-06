@@ -1,5 +1,7 @@
 # The Ogú programming language
 
+This a deprecated version of the language. Please refer to current release (see README.md).
+
 ## Introduction
 
 This is Ogu version 0.1.x.

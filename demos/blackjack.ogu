@@ -34,7 +34,7 @@ def mostrar-manos! mano-jugador mano-croupier =
         mostrar-mano! "Cartas Jugador:  " mano-jugador
         mostrar-mano! "Cartas Couprier: " mano-croupier
     where
-         mostrar-mano! mensaje mano = println! #"\t ${mensaje}  " mano " ( Valor: "  (valor-mano? mano) " )"
+         mostrar-mano! mensaje mano = println! "\t" mensaje mano  "( Valor: "  (valor-mano? mano) " )"
 
 def determinar-ganancia mano-jugador mano-croupier apuesta jugada
   | jugada == 'R' = (- apuesta)
