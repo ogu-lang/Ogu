@@ -1,0 +1,71 @@
+-- 2021 Camilo Castro <camilo@ninjas.cl>
+
+module Fechas
+
+from clojure.core import slurp, spit, sort, conj, into, take
+from clojure.set import difference
+from clojure.data.json import read-str, write-str
+
+from [:jvm] java.time import LocalDate
+
+-- set constants
+
+-- java -jar bin/ogu.jar -n demos/fechas/fechas.ogu
+
+let input = "demos/fechas/input.json"
+let output = "demos/fechas/output.json"
+let max-elements = 100
+
+-- read input data
+
+let jsonData = slurp input
+let params = read-str jsonData :key-fn keyword
+
+let start-at = params :fechaCreacion
+set start-at = LocalDate.parse start-at
+
+let end-at = params :fechaFin
+set end-at = LocalDate.parse end-at
+
+let available-dates = params :fechas
+
+-- generate dates from start to end
+
+let all-dates = []
+
+loop finish = .isEqual start-at end-at do
+    when finish == false then
+        set all-dates = conj all-dates (.toString start-at)
+        set start-at = .plusMonths start-at 1
+        repeat with finish = .isEqual start-at end-at
+
+set all-dates = conj all-dates (.toString end-at)
+
+-- get which dates are missing using Sets
+
+let final-dates = take max-elements (
+    sort (
+        into [] (
+            difference (to-set all-dates) (to-set available-dates)
+            )
+        )
+    )
+
+-- output final json
+
+let solution = write-str {
+    :id (params :id),
+    :fechaCreacion (params :fechaCreacion),
+    :fechaFin (params :fechaFin),
+    :fechasFaltantes final-dates
+}
+
+-- write to file
+spit output solution
+
+-- write to stdout
+
+println! "In"
+println! jsonData
+println! "Out"
+println! solution
